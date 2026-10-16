@@ -138,6 +138,32 @@ header{display:flex;align-items:center;gap:1rem}
   #work{grid-template-columns:1fr}
   #stagecard{height:52vh}
 }
+
+/* ===== 平板觸控(10 吋左右):放大輸入區 ===== */
+@media (any-pointer:coarse) and (orientation:landscape) and (max-width:1400px){
+  html{font-size:clamp(12px,min(1.22vw,2vh),20px)}
+  #work{grid-template-columns:1fr 1.12fr;gap:.6rem}
+  main{padding:.6rem .7rem .7rem;gap:.4rem}
+  #reccard{padding:.6rem .7rem;gap:.4rem}
+  .row{padding:.35rem .1rem}
+  .eq{font-size:1.6rem}
+  .slot{height:max(1.95em,46px);min-width:max(2.9em,52px);border-radius:12px}
+  .slot.ch{min-width:4em}
+  .chk{font-size:1.25rem;padding:.55rem .8rem}
+  #pad{gap:.45rem;padding-top:.5rem}
+  #pad button{height:max(3.5rem,54px);font-size:2rem;border-radius:14px}
+  #pad .k-nx,#pad .k-ck{font-size:1.2rem}
+  #pad .chip{font-size:1.6rem}
+  .pn button{padding:.75rem;font-size:1.45rem}
+  .it .bd{width:2.5rem;height:2.5rem;font-size:1.25rem}
+  body{grid-template-columns:4.8rem 1fr}
+}
+@media (any-pointer:coarse) and (orientation:portrait){
+  #stagecard{height:40vh}
+  .slot{height:1.95em;min-width:2.9em}
+  #pad button{height:max(3.4rem,58px);font-size:2rem}
+  .pn button{padding:.75rem;font-size:1.45rem}
+}
 </style>
 </head>
 <body>
