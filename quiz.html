@@ -178,7 +178,59 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .res-line{font-size:clamp(20px,5vw,30px);font-weight:900;text-align:center}
 .rank-big{font-size:clamp(64px,19vw,160px);white-space:nowrap;font-weight:900;line-height:1;color:var(--gold);text-shadow:0 .05em 0 var(--ink)}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60;display:none}
-@media (max-width:820px){.setup{grid-template-columns:1fr}}
+/* 模式選擇 */
+.modepick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.modepick button{font:900 20px var(--font);color:var(--ink);background:var(--soft);border:3px solid var(--ink);border-radius:14px;padding:10px 6px;cursor:pointer}
+.modepick button.sel{background:var(--gold);box-shadow:0 4px 0 var(--ink)}
+.modepick button span{display:block;font-size:34px;line-height:1.2}
+.mode-pill{font-weight:900;font-size:clamp(18px,1.8vw,28px);background:rgba(255,255,255,.15);border-radius:999px;padding:.15em .8em}
+
+/* 摩艾島：老師端 */
+#h-esc{padding:0}
+#escCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.esc-top{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:12px;z-index:2}
+.pill{font-weight:900;font-size:clamp(18px,2vw,30px);background:rgba(26,17,71,.78);color:#fff;border-radius:999px;padding:.15em .7em;white-space:nowrap}
+.esc-bar{flex:1;position:relative;height:clamp(32px,5vh,48px);background:rgba(26,17,71,.6);border:3px solid var(--ink);border-radius:999px;overflow:hidden}
+#escBarFill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#f7a541,#ffd23f);transition:width .4s}
+#escBarText{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:clamp(16px,1.9vw,28px);color:#fff;text-shadow:0 2px 0 var(--ink)}
+.btn.small{font-size:clamp(16px,1.6vw,24px);padding:.15em .55em;border-radius:12px;box-shadow:0 4px 0 var(--ink)}
+.esc-banner{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);z-index:3;font-size:clamp(48px,8vw,130px);font-weight:900;color:#fff;text-shadow:0 .06em 0 var(--ink),0 0 .4em rgba(0,0,0,.35);white-space:nowrap;animation:pop .45s cubic-bezier(.3,1.6,.5,1);pointer-events:none}
+#h-esc-intro,#h-esc-end{background:linear-gradient(180deg,#2ec4d6 0%,#7fe0c2 55%,#f6d68b 100%)}
+.esc-title{font-size:clamp(44px,6.5vw,100px);font-weight:900;color:#fff;text-shadow:0 .07em 0 var(--ink);text-align:center}
+.esc-intro{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,2vw,30px);width:min(1200px,100%)}
+.esc-card{background:#fff;color:var(--ink);border:4px solid var(--ink);border-radius:24px;box-shadow:0 8px 0 var(--ink);padding:clamp(14px,2vw,26px);text-align:center}
+.esc-card .ic{font-size:clamp(56px,7.5vw,110px);line-height:1.15}
+.esc-card .tx{font-size:clamp(22px,2.6vw,40px);font-weight:900;margin-top:.2em;line-height:1.3}
+.esc-sub{font-size:clamp(22px,2.6vw,40px);font-weight:900;color:var(--ink)}
+.awards{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,1.6vw,22px);width:min(1250px,100%)}
+.award{background:#fff;color:var(--ink);border:4px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:12px;text-align:center}
+.award .ic{font-size:clamp(36px,4vw,60px);line-height:1.1}
+.award .lb{font-size:clamp(18px,1.8vw,28px);font-weight:900}
+.award .who{font-size:clamp(22px,2.4vw,38px);font-weight:900;margin-top:.15em}
+.award .val{font-size:clamp(16px,1.5vw,24px);font-weight:700;color:#4b4373}
+.crew{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:min(1250px,100%);max-height:26vh;overflow:auto;padding:6px}
+.crew .chip{cursor:default}
+.crew .chip small{font-size:.72em;color:#4b4373;margin-left:.25em}
+.btn.dark-ghost{background:transparent;color:var(--ink);border-color:var(--ink);box-shadow:0 6px 0 rgba(26,17,71,.35)}
+
+/* 摩艾島：學生端 */
+#p-esc-q{padding-top:58px}
+.esc-pbar{width:100%;display:flex;justify-content:center;align-items:center;gap:14px;font-weight:900;font-size:clamp(18px,4.5vw,28px);flex-wrap:wrap}
+.btn.coco{font-size:clamp(20px,5vw,30px);padding:.15em .6em;background:#ffd9a0;animation:wob 1s ease-in-out infinite}
+.esc-fb{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-weight:900;font-size:clamp(40px,12vw,80px);z-index:5;text-align:center;padding:20px}
+.esc-fb.good{background:rgba(22,182,115,.96)}
+.esc-fb.bad{background:rgba(255,79,94,.96)}
+.esc-fb small{display:block;font-size:.4em}
+.side-tag{font-size:clamp(26px,7vw,44px);font-weight:900;border:4px solid var(--ink);border-radius:999px;padding:.1em .8em;box-shadow:0 5px 0 var(--ink);color:#fff}
+.side-L{background:#2f8cff}
+.side-R{background:#ff8a2b}
+#p-esc-row{padding:64px 14px 18px}
+.row-btn{flex:1;width:100%;border:6px solid var(--ink);border-radius:32px;box-shadow:0 10px 0 var(--ink);color:#fff;font:900 clamp(44px,13vw,100px) var(--font);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.05em;touch-action:manipulation;cursor:pointer;text-shadow:0 4px 0 rgba(0,0,0,.25)}
+.row-btn:active{transform:translateY(6px);box-shadow:0 4px 0 var(--ink)}
+.row-btn .arrow{font-size:1.5em;line-height:1}
+.row-btn .cnt{font-size:.42em;opacity:.95}
+.pe-stats{font-size:clamp(24px,6.5vw,40px);font-weight:900;line-height:1.7;text-align:center}
+@media (max-width:820px){.setup{grid-template-columns:1fr}.awards{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -206,9 +258,19 @@ input,textarea{user-select:text;-webkit-user-select:text}
       <div id="qInfo"></div>
     </div>
     <div class="panel">
-      <h2>設定</h2>
-      <label class="set-item">每題秒數
+      <h2>遊戲模式</h2>
+      <div class="modepick" id="modePick">
+        <button type="button" data-mode="classic" class="sel"><span>⚡</span>經典搶答</button>
+        <button type="button" data-mode="escape"><span>🗿</span>摩艾島大逃亡</button>
+      </div>
+      <label class="set-item classic-only">每題秒數
         <select id="setTime"><option value="10">10 秒</option><option value="20" selected>20 秒</option><option value="30">30 秒</option><option value="60">60 秒</option></select>
+      </label>
+      <label class="set-item esc-only" hidden>關卡數
+        <select id="setLevels"><option value="2">2 關</option><option value="3" selected>3 關</option><option value="4">4 關</option><option value="5">5 關</option></select>
+      </label>
+      <label class="set-item esc-only" hidden>每關答題時間
+        <select id="setCollect"><option value="45">45 秒</option><option value="60" selected>60 秒</option><option value="90">90 秒</option><option value="120">120 秒</option></select>
       </label>
       <label class="set-item">選項自動打亂 <input type="checkbox" id="setShuffle" checked></label>
       <label class="set-item">背景音樂 <input type="checkbox" id="setMusic" checked></label>
@@ -230,6 +292,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
   </div>
   <div id="lobbyPlayers"></div>
   <div class="lobby-bottom">
+    <span class="mode-pill" id="lobbyMode"></span>
     <div class="count"><b id="lobbyCount">0</b> 人</div>
     <button class="btn gold" id="btnStart" data-primary disabled>開始遊戲</button>
   </div>
@@ -340,6 +403,65 @@ input,textarea{user-select:text;-webkit-user-select:text}
   <div class="res-title" id="pmTitle"></div>
   <div class="sub" id="pmSub"></div>
   <button class="btn gold" id="btnRejoin">重新加入</button>
+</section>
+
+<!-- ============ 摩艾島大逃亡：老師端 ============ -->
+<section class="screen" id="h-esc-intro">
+  <div class="esc-title">🗿 摩艾島大逃亡</div>
+  <div class="esc-intro">
+    <div class="esc-card"><div class="ic">❓🪵</div><div class="tx">答對收集木材<br>做出木筏</div></div>
+    <div class="esc-card"><div class="ic">🔥🥥</div><div class="tx">連對 3 題得椰子<br>丟摩艾！</div></div>
+    <div class="esc-card"><div class="ic">⬅🛶➡</div><div class="tx">左右兩隊划船<br>閃開石頭</div></div>
+  </div>
+  <button class="btn gold" id="btnEscGo" data-primary style="font-size:clamp(26px,3.2vw,48px)">出發！</button>
+</section>
+
+<section class="screen" id="h-esc">
+  <canvas id="escCanvas"></canvas>
+  <div class="esc-top">
+    <span class="pill" id="escLevel">第 1 關</span>
+    <span class="pill" id="escHearts"></span>
+    <div class="esc-bar"><div id="escBarFill"></div><span id="escBarText"></span></div>
+    <button class="btn small" id="escPause" data-primary title="暫停／繼續">⏸</button>
+    <button class="btn small" id="escSkip" title="跳過這一段">⏭</button>
+    <button class="btn small ghost" id="escStop" title="結束遊戲">✖</button>
+  </div>
+  <div class="esc-banner" id="escBanner" hidden></div>
+</section>
+
+<section class="screen" id="h-esc-end">
+  <div class="esc-title" id="eeTitle"></div>
+  <div class="esc-sub" id="eeSub"></div>
+  <div class="awards" id="eeAwards"></div>
+  <div class="crew" id="eeCrew"></div>
+  <div class="row">
+    <button class="btn gold" id="btnEscAgain">再玩一次</button>
+    <button class="btn dark-ghost" id="btnEscClose">關閉房間</button>
+  </div>
+</section>
+
+<!-- ============ 摩艾島大逃亡：學生端 ============ -->
+<section class="screen" id="p-esc-wait">
+  <div class="big-av" id="pewAv"></div>
+  <div class="sub" id="pewLine"></div>
+  <div class="side-tag" id="pewSide"></div>
+</section>
+
+<section class="screen" id="p-esc-q">
+  <div class="esc-pbar"><span id="peqHearts"></span><span id="peqWood"></span><button class="btn coco" id="peqCoco" hidden></button></div>
+  <div class="pq" id="peqText"></div>
+  <div class="pbtns" id="peqBtns"></div>
+  <div class="esc-fb" id="peqFb" hidden></div>
+</section>
+
+<section class="screen" id="p-esc-row">
+  <button class="row-btn" id="perBtn"><span class="arrow" id="perArrow">⬅</span><span id="perSide">左槳</span><span class="cnt" id="perCount">0</span></button>
+</section>
+
+<section class="screen" id="p-esc-end">
+  <div class="res-icon" id="peeIcon"></div>
+  <div class="res-title" id="peeTitle"></div>
+  <div class="pe-stats" id="peeStats"></div>
 </section>
 
 <canvas id="confetti"></canvas>
@@ -519,13 +641,29 @@ const Sound = (() => {
     swoosh: () => tone(300, 0.3, { type: 'sine', slide: 1400, vol: 0.18 }),
     drum: (sec) => { const n = Math.floor(sec / 0.05); for (let i = 0; i < n; i++) noise(0.05, 0.08 + 0.35 * i / n, i * 0.05); },
     cymbal: () => { noise(0.9, 0.5); tone(N(84), 0.5, { type: 'triangle', vol: 0.2 }); },
-    fanfare: () => [[67, 0], [72, .15], [76, .3], [79, .45], [76, .75], [79, .9], [84, 1.05]].forEach(([n, w]) => { tone(N(n), 0.35, { when: w, vol: 0.18 }); tone(N(n - 12), 0.35, { when: w, type: 'triangle', vol: 0.18 }); })
+    fanfare: () => [[67, 0], [72, .15], [76, .3], [79, .45], [76, .75], [79, .9], [84, 1.05]].forEach(([n, w]) => { tone(N(n), 0.35, { when: w, vol: 0.18 }); tone(N(n - 12), 0.35, { when: w, type: 'triangle', vol: 0.18 }); }),
+    step: (v) => tone(70, 0.22, { type: 'sine', vol: 0.05 + 0.35 * v, slide: 45 }),
+    stomp: () => { tone(90, 0.5, { type: 'sine', vol: 0.55, slide: 35 }); noise(0.3, 0.35); },
+    bonk: () => tone(N(86), 0.14, { type: 'triangle', vol: 0.35, slide: N(74) }),
+    wood: () => tone(N(74 + (Math.random() * 6 | 0)), 0.07, { type: 'triangle', vol: 0.15 }),
+    coco: () => [84, 88, 91, 96].forEach((n, i) => tone(N(n), 0.12, { type: 'triangle', when: i * 0.06, vol: 0.22 })),
+    splash: () => { noise(0.45, 0.45); tone(180, 0.3, { type: 'sine', vol: 0.2, slide: 80 }); },
+    hurt: () => [67, 62, 55].forEach((n, i) => tone(N(n), 0.22, { type: 'sawtooth', when: i * 0.13, vol: 0.13 })),
+    paddle: () => tone(260 + Math.random() * 90, 0.05, { type: 'sine', vol: 0.05 })
   };
   const chord = r => [r, 0, r + 12, 0, r + 7, 0, r + 12, r + 7];
   const SONGS = {
     lobby: { bpm: 116, len: 32, voices: [
       { notes: [...chord(48), ...chord(45), ...chord(41), ...chord(43)], type: 'triangle', vol: 0.35, len: 0.9 },
       { notes: [72,0,76,0,79,0,76,74, 72,0,69,0,72,0,0,0, 69,0,72,0,77,0,76,74, 71,0,74,0,79,0,0,0], type: 'square', vol: 0.08, len: 0.8 }
+    ]},
+    island: { bpm: 112, len: 16, voices: [
+      { notes: [48,0,55,0, 52,0,55,0, 45,0,52,0, 43,0,50,0], type: 'triangle', vol: 0.35, len: 0.8 },
+      { notes: [76,79,84,79, 76,0,74,76, 72,76,81,76, 74,0,71,74], type: 'sine', vol: 0.14, len: 0.45 }
+    ]},
+    row: { bpm: 150, len: 16, voices: [
+      { notes: [41,41,0,41, 43,43,0,43, 45,45,0,45, 43,0,48,0], type: 'triangle', vol: 0.4, len: 0.6 },
+      { notes: [77,0,81,0, 79,0,83,0, 81,0,84,0, 79,0,0,0], type: 'square', vol: 0.05, len: 0.5 }
     ]},
     question: { bpm: 140, len: 16, voices: [
       { notes: [45,0,45,57, 45,0,45,57, 43,0,43,55, 44,0,44,56], type: 'triangle', vol: 0.4, len: 0.7 },
@@ -615,7 +753,7 @@ async function hostCreate() {
   const { qs, errors } = hostValidate(); if (errors.length || !qs.length) return;
   Sound.unlock();
   Host.qs = qs;
-  Host.settings = { time: +$('#setTime').value, shuffle: $('#setShuffle').checked, music: $('#setMusic').checked };
+  Host.settings = { time: +$('#setTime').value, shuffle: $('#setShuffle').checked, music: $('#setMusic').checked, mode: hostMode(), levels: +$('#setLevels').value, collect: +$('#setCollect').value };
   Sound.setMusic(Host.settings.music);
   Host.game = buildGame(qs, Host.settings.shuffle);
   $('#btnCreate').disabled = true;
@@ -623,7 +761,7 @@ async function hostCreate() {
     let pin = null;
     for (let i = 0; i < 30 && !pin; i++) { const p = String(1000 + Math.random() * 9000 | 0); if (!(await Net.get(`rooms/${p}/state`))) pin = p; }
     Host.pin = pin;
-    await Net.set(`rooms/${pin}`, { meta: { created: Date.now() }, state: { phase: 'lobby', qIndex: -1, total: Host.game.length } });
+    await Net.set(`rooms/${pin}`, { meta: { created: Date.now(), mode: Host.settings.mode }, state: { phase: 'lobby', qIndex: -1, total: Host.game.length } });
     saveHost();
     Host.players = {}; Host.seen = new Set();
     hostLobby();
@@ -639,6 +777,7 @@ function hostSubscribePlayers() {
     const before = Object.keys(Host.players).length;
     Host.players = v || {};
     if (Host.phase === 'lobby') { if (Object.keys(Host.players).length > before) Sound.sfx.join(); hostRenderLobby(); }
+    else if (Esc.on) escAssignSides(false);
   });
 }
 
@@ -652,6 +791,7 @@ function hostLobby() {
   $('#qr').innerHTML = '';
   if (window.QRCode) new QRCode($('#qr'), { text: url, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M }); else $('#qr').hidden = true;
   $('#modeBadge').hidden = Net.mode !== 'local';
+  $('#lobbyMode').textContent = Host.settings.mode === 'escape' ? '🗿 摩艾島大逃亡' : '⚡ 經典搶答';
   hostSubscribePlayers();
   hostRenderLobby();
   Sound.playSong('lobby');
@@ -817,9 +957,10 @@ function hostShowAll() {
 
 async function hostAgain() {
   Host.endTimers.forEach(clearTimeout);
+  escShutdown();
   Host.game = buildGame(Host.qs, Host.settings.shuffle);
   Host.qIndex = -1; Host.prevRanks = {};
-  const upd = { answers: null, state: { phase: 'lobby', qIndex: -1, total: Host.game.length } };
+  const upd = { answers: null, stats: null, bank: null, state: { phase: 'lobby', qIndex: -1, total: Host.game.length } };
   for (const pid in Host.players) {
     const b = `players/${pid}/`;
     Object.assign(upd, { [b + 'score']: 0, [b + 'streak']: 0, [b + 'gain']: 0, [b + 'rank']: 0, [b + 'ok']: null, [b + 'answered']: null, [b + 'behind']: null, [b + 'aheadName']: null, [b + 'resQ']: null });
@@ -833,6 +974,7 @@ async function hostAgain() {
 async function hostClose() {
   if (!confirm('要關閉房間嗎？學生會被登出，分數也會清除。')) return;
   Host.endTimers.forEach(clearTimeout);
+  escShutdown();
   clearInterval(Host.timer);
   if (Host.unPlayers) { Host.unPlayers(); Host.unPlayers = null; }
   if (Host.unAns) { Host.unAns(); Host.unAns = null; }
@@ -856,6 +998,7 @@ async function hostResume() {
   hostSubscribePlayers();
   $('#btnMusic').hidden = false;
   if (st.phase === 'lobby') return hostLobby();
+  if (String(st.phase).startsWith('e-')) return escResume(st);
   Host.qIndex = st.qIndex;
   if (st.phase === 'end') return hostEnd();
   if (st.phase === 'question' || st.phase === 'ready') { Host.phase = 'question'; return hostReveal(); }
@@ -921,8 +1064,11 @@ function pRender() {
   const st = P.st, me = P.me;
   $('#pBar').hidden = false;
   $('#pbAv').textContent = me.avatar; $('#pbName').textContent = me.name; $('#pbScore').textContent = `${me.score || 0} 分`;
+  if (String(st.phase).startsWith('e-')) return pRenderEsc(st, me);
+  peRowStop();
   switch (st.phase) {
     case 'lobby':
+      peReset();
       P.answered = {}; P.qKey = null; P.soundQ = -1; P.endShown = false; clearTimeout(P.endTimer); P.endTimer = null;
       $('#pwAv').textContent = me.avatar; $('#pwAv').style.setProperty('--c', me.color); $('#pwName').textContent = me.name;
       show('p-wait'); break;
@@ -999,6 +1145,547 @@ function pRenderEnd(st, me) {
   show('p-end');
 }
 
+
+/* =========================================================
+   摩艾島大逃亡：老師端
+   全班合作：答對收集木材 → 做好木筏 → 左右兩隊划船逃離
+   ========================================================= */
+const Esc = { on: false, raf: null, unStats: null, stats: {}, prev: {}, fx: [], lay: {}, timers: [], hudKey: '' };
+const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+const escPlayers = () => Object.entries(Host.players).sort((a, b) => (a[1].joined || 0) - (b[1].joined || 0));
+const escSumC = () => Object.keys(Host.players).reduce((s, pid) => s + ((Esc.stats[pid] || {}).c || 0), 0);
+function hostMode() { const b = document.querySelector('#modePick .sel'); return b ? b.dataset.mode : 'classic'; }
+function escLater(ms, f) { Esc.timers.push(setTimeout(f, ms)); }
+function escClearTimers() { Esc.timers.forEach(id => { clearTimeout(id); clearInterval(id); }); Esc.timers = []; }
+function escState(o) { return Net.update(`rooms/${Host.pin}/state`, o); }
+function escShutdown() {
+  Esc.on = false; escClearTimers();
+  if (Esc.unStats) { Esc.unStats(); Esc.unStats = null; }
+  if (Esc.raf) { cancelAnimationFrame(Esc.raf); Esc.raf = null; }
+}
+
+function escAssignSides(fresh) {
+  let nL = 0, nR = 0; const upd = {}, list = escPlayers();
+  if (!fresh) list.forEach(([, p]) => { if (p.side === 'L') nL++; else if (p.side === 'R') nR++; });
+  list.forEach(([pid, p]) => {
+    if (!fresh && (p.side === 'L' || p.side === 'R')) return;
+    const side = nL <= nR ? 'L' : 'R';
+    if (side === 'L') nL++; else nR++;
+    upd[`players/${pid}/side`] = side; p.side = side;
+  });
+  if (Object.keys(upd).length) Net.update(`rooms/${Host.pin}`, upd);
+}
+
+function escSubscribe() {
+  if (Esc.unStats) Esc.unStats();
+  Esc.unStats = Net.on(`rooms/${Host.pin}/stats`, v => escOnStats(v || {}));
+}
+
+async function escBegin() {
+  escShutdown();
+  Host.phase = 'esc';
+  Object.assign(Esc, { on: true, level: 1, nLevels: Host.settings.levels || 3, hearts: 5, stats: {}, prev: {}, fx: [], paused: false, phase: 'e-intro', scene: 'collect', shake: 0, moai: 0, got: 0, target: 1 });
+  escAssignSides(true);
+  const bank = Host.game.map(q => ({ text: q.text, options: q.options, correct: q.correct }));
+  await Net.update(`rooms/${Host.pin}`, { bank, stats: null, answers: null, state: { mode: 'escape', phase: 'e-intro', level: 1, nLevels: Esc.nLevels, hearts: 5 } });
+  escSubscribe();
+  show('h-esc-intro');
+  Sound.playSong('island');
+}
+
+async function escResume(st) {
+  Host.phase = 'esc';
+  Object.assign(Esc, { on: true, level: st.level || 1, nLevels: st.nLevels || Host.settings.levels || 3, hearts: Math.max(1, st.hearts || 5), stats: (await Net.get(`rooms/${Host.pin}/stats`)) || {}, fx: [], paused: false, shake: 0 });
+  Esc.prev = JSON.parse(JSON.stringify(Esc.stats));
+  escSubscribe();
+  if (st.phase === 'e-end') return escEnd(st.win === true);
+  escStartCollect();
+}
+
+function escStartCollect() {
+  escClearTimers();
+  Object.assign(Esc, { phase: 'e-collect', scene: 'collect', moai: 0, baseC: escSumC(), got: 0, syncT: 0, paused: false, stepN: 0 });
+  Esc.target = Math.max(5, Math.ceil(Math.max(1, escPlayers().length) * (1.5 + 0.5 * (Esc.level - 1))));
+  escState({ phase: 'e-collect', level: Esc.level, hearts: Esc.hearts, target: Esc.target, got: 0, paused: false });
+  show('h-esc'); escHud(true);
+  escBanner(`第 ${Esc.level} 關`, 1500);
+  Sound.playSong('island');
+  escLoop();
+}
+
+function escLoop() {
+  if (Esc.raf) return;
+  let last = performance.now();
+  const tick = now => {
+    if (!Esc.on) { Esc.raf = null; return; }
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!Esc.paused) escUpdate(dt, now);
+    escDraw(now);
+    Esc.raf = requestAnimationFrame(tick);
+  };
+  Esc.raf = requestAnimationFrame(tick);
+}
+
+function escOnStats(v) {
+  const now = performance.now();
+  for (const pid in v) {
+    const s = v[pid] || {}, o = Esc.prev[pid] || {};
+    if (Esc.phase !== 'e-collect' || Esc.paused) continue;
+    const dc = (s.c || 0) - (o.c || 0);
+    if (dc > 0) { const L = Esc.lay[pid]; if (L) L.jump = now; Esc.fx.push({ k: 'wood', pid, t0: now, dur: 0.8 }); Sound.sfx.wood(); }
+    const dk = (s.coco || 0) - (o.coco || 0);
+    for (let i = 0; i < dk; i++) Esc.fx.push({ k: 'coco', pid, t0: now + i * 160, dur: 0.9, hit: false });
+  }
+  Esc.stats = v; Esc.prev = JSON.parse(JSON.stringify(v));
+}
+
+function escUpdate(dt, now) {
+  Esc.shake = Math.max(0, Esc.shake - dt * 2);
+  Esc.fx = Esc.fx.filter(f => now - f.t0 < f.dur * 1000 + 60 || (f.k === 'coco' && !f.hit));
+  if (Esc.phase === 'e-collect') {
+    for (const f of Esc.fx) if (f.k === 'coco' && !f.hit && now - f.t0 >= f.dur * 1000) {
+      f.hit = true; Esc.moai = Math.max(0, Esc.moai - 4 / Host.settings.collect); Esc.bonkT = now;
+      Sound.sfx.bonk(); Esc.fx.push({ k: 'txt', t0: now, dur: 0.8, s: '咚！' });
+    }
+    Esc.moai += dt / Host.settings.collect;
+    const n = Math.floor(now / 880); if (n !== Esc.stepN) { Esc.stepN = n; Sound.sfx.step(Esc.moai); }
+    Esc.got = escSumC() - Esc.baseC;
+    if (Esc.got >= Esc.target) return escBuilt();
+    if (Esc.moai >= 1) { escHurt('caught'); if (Esc.phase !== 'e-collect') return; }
+    Esc.syncT -= dt;
+    if (Esc.syncT <= 0) { Esc.syncT = 1; escState({ got: Esc.got, hearts: Esc.hearts }); }
+    escHud();
+  } else if (Esc.phase === 'e-row') escRowUpdate(dt, now);
+}
+
+function escHurt(kind) {
+  Esc.hearts--; Esc.shake = 1;
+  Sound.sfx.hurt();
+  escBanner(kind === 'rock' ? '撞到了！💔' : '被摩艾抓到了！💔', 1300);
+  escState({ hearts: Esc.hearts });
+  escHud(true);
+  if (Esc.hearts <= 0) { Esc.phase = 'e-over'; Sound.stopSong(); escLater(1500, () => escEnd(false)); return; }
+  if (kind === 'caught') { Sound.sfx.stomp(); if (Esc.phase === 'e-collect') Esc.moai = 0.45; else Esc.dist = 0.45; }
+}
+
+function escBuilt() {
+  Esc.phase = 'e-built';
+  Sound.stopSong(); Sound.sfx.fanfare();
+  escState({ phase: 'e-built', got: Esc.got });
+  escHud(true);
+  escBanner('🛶 木筏完成！', 2200);
+  escLater(2600, escRowReady);
+}
+
+function escRowReady() {
+  Esc.phase = 'e-rowready';
+  Object.assign(Esc, { scene: 'row', raftX: 0.5, moaiX: 0.5, rocks: [], prog: 0, len: 5 + Esc.level, dist: 0.55, inv: 0, spawnT: 1, hist: [], rL: 0, rR: 0, speedF: 0, water: 0 });
+  escState({ phase: 'e-rowready' });
+  escHud(true);
+  let n = 3;
+  const beat = () => { escBanner(String(n), 900); Sound.sfx.count(); };
+  beat();
+  const iv = setInterval(() => { n--; if (n <= 0) { clearInterval(iv); escStartRow(); } else beat(); }, 1000);
+  Esc.timers.push(iv);
+}
+
+function escStartRow() {
+  Esc.phase = 'e-row'; Esc.hist = [];
+  escState({ phase: 'e-row', paused: false });
+  escBanner('划！', 800);
+  Sound.playSong('row');
+}
+
+function escRowUpdate(dt, now) {
+  let TL = 0, TR = 0, nL = 0, nR = 0;
+  for (const [pid, p] of Object.entries(Host.players)) {
+    const tp = (Esc.stats[pid] || {}).taps || 0;
+    if (p.side === 'R') { TR += tp; nR++; } else { TL += tp; nL++; }
+  }
+  const h = Esc.hist; h.push({ t: now, TL, TR });
+  while (h.length > 2 && now - h[0].t > 1200) h.shift();
+  const span = Math.max(0.4, (now - h[0].t) / 1000);
+  const rL = nL ? Math.max(0, TL - h[0].TL) / span / nL : 0, rR = nR ? Math.max(0, TR - h[0].TR) / span / nR : 0;
+  const k = Math.min(1, dt * 4);
+  Esc.rL += (rL - Esc.rL) * k; Esc.rR += (rR - Esc.rR) * k;
+  const FULL = 3.5;
+  Esc.speedF = Math.min(1, (Esc.rL * nL + Esc.rR * nR) / Math.max(1, nL + nR) / FULL);
+  // 左隊划得多 → 往左；右隊划得多 → 往右；兩邊一樣 → 直走
+  Esc.raftX = Math.max(0.21, Math.min(0.79, Esc.raftX + (Esc.rR - Esc.rL) / FULL * 0.45 * dt));
+  Esc.moaiX += (Esc.raftX - Esc.moaiX) * Math.min(1, dt * 0.8);
+  const scroll = 0.12 + 0.38 * Esc.speedF;
+  Esc.prog += scroll * dt; Esc.water += scroll * dt;
+  for (const r of Esc.rocks) r.y += scroll * dt;
+  Esc.rocks = Esc.rocks.filter(r => r.y < 1.15 && !r.hit);
+  Esc.spawnT -= dt * (scroll / 0.3);
+  if (Esc.spawnT <= 0 && Esc.prog < Esc.len - 1) {
+    Esc.rocks.push({ x: 0.18 + Math.random() * 0.64, y: -0.08, r: 0.024 + Math.random() * 0.02, e: Math.random() < 0.3 ? '🐊' : '🪨' });
+    Esc.spawnT = Math.max(0.55, 1.6 - 0.22 * Esc.level) * (0.7 + Math.random() * 0.6);
+  }
+  Esc.inv = Math.max(0, Esc.inv - dt);
+  for (const r of Esc.rocks) {
+    if (!r.hit && Esc.inv <= 0 && Math.abs(r.y - 0.7) < 0.07 && Math.abs(r.x - Esc.raftX) < 0.095 + r.r) {
+      r.hit = true; Esc.inv = 1.5; Sound.sfx.splash(); escHurt('rock');
+      if (Esc.phase !== 'e-row') return;
+    }
+  }
+  Esc.dist = Math.min(0.7, Esc.dist + (Esc.speedF - (0.4 + 0.04 * Esc.level)) * 0.14 * dt);
+  if (Esc.dist <= 0) { escHurt('caught'); if (Esc.phase !== 'e-row') return; }
+  if (Esc.prog >= Esc.len) return escClear();
+  escHud();
+}
+
+function escClear() {
+  Esc.phase = 'e-clear';
+  Sound.stopSong(); Sound.sfx.fanfare();
+  const bonus = Esc.hearts < 5; if (bonus) Esc.hearts++;
+  escState({ phase: 'e-clear', hearts: Esc.hearts });
+  escHud(true);
+  escBanner(`第 ${Esc.level} 關過關！${bonus ? ' ❤️+1' : ''}`, 2400);
+  if (Esc.level >= Esc.nLevels) escLater(2800, () => escEnd(true));
+  else escLater(3000, () => { Esc.level++; escStartCollect(); });
+}
+
+async function escEnd(win) {
+  escClearTimers();
+  Esc.phase = 'e-end';
+  Sound.stopSong();
+  await escState({ phase: 'e-end', win: win === true, paused: false });
+  const totalC = Object.values(Esc.stats).reduce((s, x) => s + ((x && x.c) || 0), 0);
+  $('#eeTitle').textContent = win ? '🎉 成功逃離摩艾島！' : '🗿 摩艾佔領了小島…';
+  $('#eeSub').textContent = `全班一起答對 ${totalC} 題`;
+  escRenderAwards();
+  show('h-esc-end');
+  if (win) { Sound.sfx.fanfare(); confetti(5000); } else Sound.sfx.hurt();
+  escShutdown();
+}
+
+function escRenderAwards() {
+  const rows = escPlayers().map(([pid, p]) => ({ p, s: Esc.stats[pid] || {} }));
+  const best = (f, ok = () => true) => {
+    let b = null;
+    rows.forEach(r => { if (!ok(r)) return; const v = f(r); if (v > 0 && (!b || v > b.v)) b = { r, v }; });
+    return b;
+  };
+  const list = [
+    ['🏆', '答對王', best(r => r.s.c || 0), v => `答對 ${v} 題`],
+    ['🎯', '神準手', best(r => (r.s.c || 0) / (r.s.t || 1), r => (r.s.t || 0) >= 5), v => `正確率 ${Math.round(v * 100)}%`],
+    ['🥥', '椰子砲手', best(r => r.s.coco || 0), v => `丟中 ${v} 顆`],
+    ['🛶', '划船力士', best(r => r.s.taps || 0), v => `划了 ${v} 下`]
+  ];
+  $('#eeAwards').innerHTML = list.map(([ic, lb, b, fv]) => `<div class="award"><div class="ic">${ic}</div><div class="lb">${lb}</div><div class="who">${b ? esc(b.r.p.avatar) + ' ' + esc(b.r.p.name) : '—'}</div><div class="val">${b ? fv(b.v) : ''}</div></div>`).join('');
+  $('#eeCrew').innerHTML = rows.sort((a, b) => (b.s.c || 0) - (a.s.c || 0))
+    .map(r => `<span class="chip" style="--c:${esc(r.p.color)}"><span class="av">${esc(r.p.avatar)}</span>${esc(r.p.name)}<small>🪵${r.s.c || 0}</small></span>`).join('');
+}
+
+function escHud(force) {
+  const rowScene = Esc.scene === 'row';
+  const pct = rowScene ? Esc.prog / Esc.len : Esc.got / Esc.target;
+  const txt = rowScene ? `⛵ 划向港口 ${Math.min(100, Math.round(pct * 100))}%` : `🪵 ${Esc.got} / ${Esc.target}`;
+  const key = [Esc.level, Esc.hearts, txt, Esc.paused].join('|');
+  if (!force && key === Esc.hudKey) return;
+  Esc.hudKey = key;
+  $('#escLevel').textContent = `第 ${Esc.level} / ${Esc.nLevels} 關`;
+  $('#escHearts').textContent = '❤️'.repeat(Math.max(0, Esc.hearts)) + '🤍'.repeat(Math.max(0, 5 - Esc.hearts));
+  $('#escBarFill').style.width = Math.min(100, pct * 100) + '%';
+  $('#escBarText').textContent = txt;
+  $('#escPause').textContent = Esc.paused ? '▶' : '⏸';
+}
+
+function escBanner(txt, ms) {
+  const b = $('#escBanner');
+  b.textContent = txt; b.hidden = false;
+  b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+  clearTimeout(Esc.bT);
+  if (ms) Esc.bT = setTimeout(() => { b.hidden = true; }, ms);
+}
+
+function escPause() {
+  if (!['e-collect', 'e-row'].includes(Esc.phase)) return;
+  Esc.paused = !Esc.paused;
+  escState({ paused: Esc.paused });
+  if (Esc.paused) { Sound.stopSong(); escBanner('⏸ 暫停', 0); }
+  else { $('#escBanner').hidden = true; Esc.hist = []; Sound.playSong(Esc.phase === 'e-row' ? 'row' : 'island'); }
+  escHud(true);
+}
+function escSkip() {
+  if (Esc.paused) escPause();
+  if (Esc.phase === 'e-collect') escBuilt();
+  else if (Esc.phase === 'e-row') escClear();
+}
+
+/* ---------- 繪圖 ---------- */
+function emoji(c, e, x, y, size) { c.font = `${size}px ${EMOJI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(e, x, y); }
+function escDraw(now) {
+  const cv = $('#escCanvas'); if (!cv.offsetParent && !cv.clientWidth) return;
+  const c = cv.getContext('2d'), dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (!W || !H) return;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.save();
+  if (Esc.shake > 0) c.translate((Math.random() - .5) * Esc.shake * 18, (Math.random() - .5) * Esc.shake * 18);
+  if (Esc.scene === 'row') escDrawRow(c, W, H, now); else escDrawCollect(c, W, H, now);
+  c.restore();
+}
+
+function escDrawAvatar(c, p, x, y, s) {
+  c.fillStyle = p.color || '#ffd23f'; c.strokeStyle = '#1a1147'; c.lineWidth = Math.max(2, s * 0.08);
+  c.beginPath(); c.arc(x, y, s / 2, 0, Math.PI * 2); c.fill(); c.stroke();
+  emoji(c, p.avatar || '🙂', x, y + s * 0.04, s * 0.62);
+}
+
+function escDrawCollect(c, W, H, now) {
+  let g = c.createLinearGradient(0, 0, 0, H * 0.56);
+  g.addColorStop(0, '#36bfe0'); g.addColorStop(1, '#c4f3e8');
+  c.fillStyle = g; c.fillRect(0, 0, W, H * 0.56);
+  c.fillStyle = '#ffe58a'; c.beginPath(); c.arc(W * 0.86, H * 0.18, H * 0.07, 0, Math.PI * 2); c.fill();
+  emoji(c, '🌋', W * 0.12, H * 0.38, H * 0.22);
+  // 海
+  c.fillStyle = '#1aa0c4'; c.fillRect(W * 0.55, H * 0.43, W * 0.45, H * 0.14);
+  c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 3;
+  for (let i = 0; i < 6; i++) { const x = W * (0.58 + i * 0.075) + Math.sin(now / 700 + i) * W * 0.01; c.beginPath(); c.moveTo(x, H * 0.5); c.quadraticCurveTo(x + W * 0.015, H * 0.485, x + W * 0.03, H * 0.5); c.stroke(); }
+  // 沙灘
+  g = c.createLinearGradient(0, H * 0.5, 0, H);
+  g.addColorStop(0, '#f8dc9a'); g.addColorStop(1, '#e8bc6a');
+  c.fillStyle = g; c.beginPath(); c.moveTo(0, H * 0.52); c.quadraticCurveTo(W * 0.38, H * 0.47, W * 0.6, H * 0.56); c.lineTo(W, H * 0.57); c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
+  emoji(c, '🌴', W * 0.47, H * 0.5, H * 0.16); emoji(c, '🌴', W * 0.97, H * 0.5, H * 0.14);
+  // 木筏
+  const rx = W * 0.79, ry = H * 0.5, pw = W * 0.021, ph = H * 0.06;
+  const n = Math.floor(8 * Math.min(1, Esc.got / Math.max(1, Esc.target)));
+  Esc.rpos = { x: rx, y: ry };
+  c.strokeStyle = 'rgba(26,17,71,.35)'; c.setLineDash([6, 6]); c.lineWidth = 2;
+  c.strokeRect(rx - pw * 4, ry - ph / 2, pw * 8, ph); c.setLineDash([]);
+  for (let i = 0; i < n; i++) {
+    c.fillStyle = i % 2 ? '#a0612c' : '#b8743a'; c.strokeStyle = '#5a3412'; c.lineWidth = 2;
+    c.beginPath(); c.roundRect(rx - pw * 4 + i * pw, ry - ph / 2, pw - 2, ph, 5); c.fill(); c.stroke();
+  }
+  if (n >= 8 || Esc.phase === 'e-built') {
+    c.strokeStyle = '#5a3412'; c.lineWidth = 5; c.beginPath(); c.moveTo(rx, ry - ph / 2); c.lineTo(rx, ry - H * 0.2); c.stroke();
+    c.fillStyle = '#fff'; c.beginPath(); c.moveTo(rx + 4, ry - H * 0.19); c.lineTo(rx + W * 0.06, ry - H * 0.08); c.lineTo(rx + 4, ry - H * 0.07); c.closePath(); c.fill();
+  }
+  // 摩艾
+  const step = Math.abs(Math.sin(now / 280));
+  let mx = W * (0.05 + 0.53 * Math.min(1, Esc.moai)); const my = H * 0.74 - step * H * 0.03;
+  const bp = Esc.bonkT ? (now - Esc.bonkT) / 450 : 1;
+  if (bp < 1) mx -= W * 0.03 * (1 - bp);
+  Esc.mpos = { x: mx, y: my - H * 0.08 };
+  c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(mx, H * 0.88, H * 0.12, H * 0.025, 0, 0, Math.PI * 2); c.fill();
+  c.save(); c.translate(mx, my); if (bp < 1) c.rotate(-0.25 * (1 - bp)); emoji(c, '🗿', 0, 0, H * 0.3); c.restore();
+  if (Esc.moai > 0.7 && Esc.phase === 'e-collect') {
+    c.fillStyle = `rgba(255,40,60,${(Esc.moai - 0.7) * 0.5 * (0.6 + 0.4 * Math.sin(now / 150))})`;
+    c.fillRect(0, 0, W, H);
+  }
+  // 學生
+  const list = escPlayers(), cols = 7, rows = Math.max(1, Math.ceil(list.length / cols));
+  const x0 = W * 0.63, x1 = W * 0.985, y0 = H * 0.61, y1 = H * 0.97;
+  const cw = (x1 - x0) / cols, ch = Math.min(H * 0.12, (y1 - y0) / rows), s = Math.min(cw * 0.6, ch * 0.62);
+  list.forEach(([pid, p], i) => {
+    const L = Esc.lay[pid] || (Esc.lay[pid] = {});
+    L.x = x0 + cw * (i % cols + 0.5); L.y = y0 + ch * (Math.floor(i / cols) + 0.4); L.s = s;
+    const jp = L.jump ? Math.min(1, (now - L.jump) / 450) : 1;
+    const y = L.y - Math.sin(jp * Math.PI) * s * 0.9;
+    escDrawAvatar(c, p, L.x, y, s);
+    c.font = `900 ${Math.max(11, s * 0.34)}px var(--font), sans-serif`; c.font = `900 ${Math.max(11, s * 0.34)}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
+    c.textAlign = 'center'; c.textBaseline = 'top'; c.lineWidth = 4; c.strokeStyle = '#fff'; c.fillStyle = '#1a1147';
+    c.strokeText(p.name, L.x, y + s * 0.52); c.fillText(p.name, L.x, y + s * 0.52);
+  });
+  // 特效
+  for (const f of Esc.fx) {
+    const p = (now - f.t0) / (f.dur * 1000); if (p < 0 || p > 1) continue;
+    if (f.k === 'txt') {
+      c.font = `900 ${H * 0.07}px "Noto Sans TC",sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.lineWidth = 6; c.strokeStyle = '#1a1147'; c.fillStyle = '#ffd23f';
+      const ty = Esc.mpos.y - H * 0.12 - p * H * 0.06;
+      c.strokeText(f.s, Esc.mpos.x, ty); c.fillText(f.s, Esc.mpos.x, ty); continue;
+    }
+    const L = Esc.lay[f.pid]; if (!L) continue;
+    const to = f.k === 'coco' ? Esc.mpos : Esc.rpos;
+    const x = L.x + (to.x - L.x) * p, y = L.y + (to.y - L.y) * p - Math.sin(p * Math.PI) * H * (f.k === 'coco' ? 0.3 : 0.12);
+    emoji(c, f.k === 'coco' ? '🥥' : '🪵', x, y, H * (f.k === 'coco' ? 0.06 : 0.045));
+  }
+}
+
+function escDrawRow(c, W, H, now) {
+  c.fillStyle = '#29b6cf'; c.fillRect(0, 0, W, H);
+  c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 3;
+  const gap = H * 0.12, off = (Esc.water * H) % gap;
+  for (let y = -gap + off, j = 0; y < H; y += gap, j++) {
+    for (let k = 0; k < 5; k++) {
+      const x = W * (0.16 + k * 0.16 + (j % 2 ? 0.05 : 0));
+      c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + W * 0.02, y - H * 0.015, x + W * 0.04, y); c.stroke();
+    }
+  }
+  // 河岸
+  c.fillStyle = '#57c46b'; c.fillRect(0, 0, W * 0.1, H); c.fillRect(W * 0.9, 0, W * 0.1, H);
+  c.fillStyle = '#f3d58f'; c.fillRect(W * 0.1, 0, W * 0.014, H); c.fillRect(W * 0.886, 0, W * 0.014, H);
+  for (let i = 0; i < 6; i++) {
+    const y = (((i * 0.24 + Esc.water) % 1.44) - 0.2) * H;
+    emoji(c, '🌴', W * 0.05, y, H * 0.11); emoji(c, '🌴', W * 0.95, y + H * 0.12, H * 0.11);
+  }
+  // 障礙物
+  for (const r of Esc.rocks) emoji(c, r.e, r.x * W, r.y * H, r.r * W * 2);
+  // 摩艾在後面追
+  const RY = 0.7 * H, rw = W * 0.2, rh = H * 0.17, x = Esc.raftX * W;
+  const my = RY + rh / 2 + Esc.dist * H * 0.9 + H * 0.07;
+  if (my < H + H * 0.12) {
+    emoji(c, '🗿', Esc.moaiX * W, my, H * 0.2);
+    if (Esc.dist < 0.2 && Esc.phase === 'e-row' && Math.sin(now / 120) > 0) emoji(c, '⚠️', Esc.moaiX * W + H * 0.12, my - H * 0.1, H * 0.07);
+  }
+  // 木筏
+  c.save();
+  if (Esc.inv > 0 && Math.sin(now / 60) > 0) c.globalAlpha = 0.45;
+  for (let i = 0; i < 5; i++) {
+    c.fillStyle = i % 2 ? '#a0612c' : '#b8743a'; c.strokeStyle = '#5a3412'; c.lineWidth = 2;
+    c.beginPath(); c.roundRect(x - rw / 2, RY - rh / 2 + i * rh / 5, rw, rh / 5 - 2, 6); c.fill(); c.stroke();
+  }
+  const swing = side => Math.sin(now / 1000 * Math.PI * 2 * Math.max(0.6, side * 1.2)) * (side > 0.3 ? 0.6 : 0.1);
+  c.strokeStyle = '#5a3412'; c.lineWidth = 6;
+  [[-1, Esc.rL], [1, Esc.rR]].forEach(([d, rate]) => {
+    const a = swing(rate); c.beginPath();
+    c.moveTo(x + d * rw * 0.45, RY); c.lineTo(x + d * (rw * 0.45 + W * 0.05), RY + Math.sin(a) * H * 0.06); c.stroke();
+  });
+  const crew = escPlayers(), Ls = crew.filter(([, p]) => p.side !== 'R').slice(0, 8), Rs = crew.filter(([, p]) => p.side === 'R').slice(0, 8);
+  const as = Math.min(rw / 9, rh / 2.4);
+  [[Ls, -1], [Rs, 1]].forEach(([arr, d]) => arr.forEach(([, p], i) => {
+    escDrawAvatar(c, p, x + d * (as * 0.6 + (i % 4) * as * 0.95), RY - rh * 0.22 + Math.floor(i / 4) * rh * 0.45, as * 0.9);
+  }));
+  c.restore();
+  // 兩隊力量表
+  const meter = (mx, val, col, label, arrow) => {
+    const top = H * 0.24, mh = H * 0.5, mw = W * 0.045;
+    c.fillStyle = 'rgba(26,17,71,.55)'; c.beginPath(); c.roundRect(mx - mw / 2, top, mw, mh, 12); c.fill();
+    const v = Math.min(1, val / 3.5);
+    c.fillStyle = col; c.beginPath(); c.roundRect(mx - mw / 2 + 4, top + mh - (mh - 8) * v - 4, mw - 8, (mh - 8) * v, 9); c.fill();
+    c.font = `900 ${H * 0.04}px "Noto Sans TC",sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.lineWidth = 5; c.strokeStyle = '#1a1147'; c.fillStyle = '#fff';
+    c.strokeText(label, mx, top - H * 0.04); c.fillText(label, mx, top - H * 0.04);
+    emoji(c, arrow, mx, top + mh + H * 0.05, H * 0.06);
+  };
+  meter(W * 0.05, Esc.rL, '#2f8cff', '左槳', '⬅️');
+  meter(W * 0.95, Esc.rR, '#ff8a2b', '右槳', '➡️');
+}
+
+window.addEventListener('resize', () => { if (Esc.on) escHud(true); });
+
+/* =========================================================
+   摩艾島大逃亡：學生端
+   ========================================================= */
+const PE = { bank: null, loading: null, queue: [], cur: null, c: 0, t: 0, streak: 0, coco: 0, thrown: 0, taps: 0, sent: -1, lock: false, tapIv: null, fbT: null };
+function peReset() {
+  peRowStop(); clearTimeout(PE.fbT);
+  Object.assign(PE, { bank: null, loading: null, queue: [], cur: null, c: 0, t: 0, streak: 0, coco: 0, thrown: 0, taps: 0, sent: -1, lock: false });
+}
+function peLoad() {
+  if (PE.bank) return Promise.resolve();
+  if (!PE.loading) PE.loading = (async () => {
+    const [bank, mine] = await Promise.all([Net.get(`rooms/${P.pin}/bank`), Net.get(`rooms/${P.pin}/stats/${P.pid}`)]);
+    PE.bank = Array.isArray(bank) ? bank : Object.values(bank || {});
+    if (mine) { PE.c = mine.c || 0; PE.t = mine.t || 0; PE.thrown = mine.coco || 0; PE.taps = mine.taps || 0; }
+    PE.sent = PE.taps;
+    PE.queue = shuffleArr(PE.bank.map((_, i) => i));
+  })().catch(e => { PE.loading = null; throw e; });
+  return PE.loading;
+}
+function peNext() {
+  if (!PE.bank || !PE.bank.length) return;
+  if (!PE.queue.length) PE.queue = shuffleArr(PE.bank.map((_, i) => i));
+  PE.cur = PE.queue.shift();
+  const q = PE.bank[PE.cur];
+  $('#peqText').innerHTML = fmt(q.text);
+  $('#peqBtns').innerHTML = q.options.map((o, i) => `<button class="pbtn a${i}" data-i="${i}"><span class="shape">${SHAPES[i]}</span><span>${fmt(o)}</span></button>`).join('');
+  $('#peqFb').hidden = true; PE.lock = false;
+}
+function peAnswer(k) {
+  if (PE.lock || PE.cur == null || !P.st || P.st.phase !== 'e-collect' || P.st.paused) return;
+  PE.lock = true;
+  const q = PE.bank[PE.cur], ok = k === q.correct, fb = $('#peqFb');
+  PE.t++;
+  if (ok) {
+    PE.c++; PE.streak++;
+    let extra = '';
+    if (PE.streak % 3 === 0 && PE.coco < 3) { PE.coco++; extra = '<small>🥥 拿到椰子！</small>'; setTimeout(() => Sound.sfx.coco(), 200); }
+    Sound.sfx.correct();
+    fb.className = 'esc-fb good'; fb.innerHTML = `✔ 🪵+1${extra}`;
+  } else {
+    PE.streak = 0;
+    PE.queue.splice(Math.min(2, PE.queue.length), 0, PE.cur);
+    Sound.sfx.wrong();
+    fb.className = 'esc-fb bad'; fb.innerHTML = `✘<small>正確答案：${SHAPES[q.correct]} ${fmt(q.options[q.correct])}</small>`;
+  }
+  fb.hidden = false;
+  Net.update(`rooms/${P.pin}/stats/${P.pid}`, { c: PE.c, t: PE.t });
+  peHud();
+  PE.fbT = setTimeout(() => {
+    if (P.st && P.st.phase === 'e-collect' && !P.st.paused) peNext();
+    else { PE.cur = null; fb.hidden = true; PE.lock = false; }
+  }, ok ? 800 : 1800);
+}
+function peThrow() {
+  if (PE.coco <= 0 || !P.st || P.st.phase !== 'e-collect' || P.st.paused) return;
+  PE.coco--; PE.thrown++;
+  Sound.sfx.bonk();
+  Net.update(`rooms/${P.pin}/stats/${P.pid}`, { coco: PE.thrown });
+  peHud();
+}
+function peHud() {
+  const st = P.st || {};
+  $('#peqHearts').textContent = '❤️'.repeat(Math.max(0, st.hearts || 0));
+  $('#peqWood').textContent = `🪵 ${st.got || 0} / ${st.target || 0}`;
+  const b = $('#peqCoco'); b.hidden = PE.coco <= 0; b.textContent = `🥥 丟椰子 ×${PE.coco}`;
+  $('#pbScore').textContent = `🪵 ${PE.c}`;
+}
+function peSendTaps() { if (PE.taps !== PE.sent) { PE.sent = PE.taps; Net.update(`rooms/${P.pin}/stats/${P.pid}`, { taps: PE.taps }); } }
+function peRowStart(side) {
+  const b = $('#perBtn'); b.className = 'row-btn side-' + side;
+  $('#perArrow').textContent = side === 'L' ? '⬅' : '➡';
+  $('#perSide').textContent = side === 'L' ? '左槳' : '右槳';
+  $('#perCount').textContent = PE.taps;
+  if (!PE.tapIv) PE.tapIv = setInterval(peSendTaps, 250);
+}
+function peRowStop() { if (PE.tapIv) { clearInterval(PE.tapIv); PE.tapIv = null; peSendTaps(); } }
+function peTap(e) {
+  e.preventDefault();
+  if (!P.st || P.st.phase !== 'e-row' || P.st.paused) return;
+  PE.taps++; $('#perCount').textContent = PE.taps;
+  Sound.sfx.paddle();
+}
+function pRenderEsc(st, me) {
+  const side = me.side === 'R' ? 'R' : 'L';
+  const wait = (icon, line) => {
+    peRowStop();
+    $('#pewAv').textContent = icon; $('#pewAv').style.setProperty('--c', me.color);
+    $('#pewLine').textContent = line;
+    const t = $('#pewSide'); t.className = 'side-tag side-' + side; t.textContent = side === 'L' ? '⬅ 左槳隊' : '右槳隊 ➡';
+    show('p-esc-wait');
+  };
+  $('#pbScore').textContent = `🪵 ${PE.c}`;
+  if (st.paused && (st.phase === 'e-collect' || st.phase === 'e-row')) return wait('⏸', '暫停中，看大螢幕');
+  switch (st.phase) {
+    case 'e-intro': peLoad(); return wait(me.avatar, '看大螢幕，聽老師說明');
+    case 'e-collect':
+      peRowStop();
+      peLoad().then(() => {
+        if (!P.st || P.st.phase !== 'e-collect' || P.st.paused) return;
+        if (PE.cur == null) peNext();
+        peHud(); show('p-esc-q');
+      });
+      return;
+    case 'e-built': return wait('🛶', '木筏完成！準備划船');
+    case 'e-rowready': return wait('🛶', '準備划船！');
+    case 'e-row': peLoad().then(() => { if (P.st && P.st.phase === 'e-row' && !P.st.paused) { peRowStart(side); show('p-esc-row'); } }); return;
+    case 'e-clear': return wait('🎉', '過關了！看大螢幕');
+    case 'e-end':
+      peRowStop();
+      peLoad().then(() => {
+        $('#peeIcon').textContent = st.win ? '🎉' : '🗿';
+        $('#peeTitle').textContent = st.win ? '成功逃離！' : '下次再挑戰！';
+        $('#peeStats').innerHTML = `🪵 答對 ${PE.c} 題<br>🥥 丟了 ${PE.thrown} 顆椰子<br>🛶 划了 ${PE.taps} 下`;
+        show('p-esc-end');
+      });
+      return;
+  }
+}
+
 /* =========================================================
    事件綁定
    ========================================================= */
@@ -1008,7 +1695,23 @@ $('#qText').addEventListener('input', () => { localStorage.setItem(LS_Q, $('#qTe
 $('#btnResetQ').onclick = () => { if (confirm('要把題目換回範例題嗎？目前的題目會被覆蓋。')) { $('#qText').value = DEFAULT_QUESTIONS; localStorage.setItem(LS_Q, DEFAULT_QUESTIONS); hostValidate(); } };
 $('#btnCreate').onclick = hostCreate;
 $('#btnResume').onclick = hostResume;
-$('#btnStart').onclick = () => { Host.qIndex = -1; Host.prevRanks = {}; hostNext(); };
+$('#btnStart').onclick = () => { if (Host.settings.mode === 'escape') return escBegin(); Host.qIndex = -1; Host.prevRanks = {}; hostNext(); };
+$('#modePick').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#modePick button').forEach(x => x.classList.toggle('sel', x === b));
+  const escMode = b.dataset.mode === 'escape';
+  document.querySelectorAll('.classic-only').forEach(x => x.hidden = escMode);
+  document.querySelectorAll('.esc-only').forEach(x => x.hidden = !escMode);
+});
+$('#btnEscGo').onclick = () => { if (Esc.on && Esc.phase === 'e-intro') escStartCollect(); };
+$('#escPause').onclick = escPause;
+$('#escSkip').onclick = escSkip;
+$('#escStop').onclick = () => { if (confirm('要直接結束這場遊戲，進到頒獎嗎？')) escEnd(null); };
+$('#btnEscAgain').onclick = hostAgain;
+$('#btnEscClose').onclick = hostClose;
+$('#peqBtns').addEventListener('click', e => { const b = e.target.closest('.pbtn'); if (b) peAnswer(+b.dataset.i); });
+$('#peqCoco').onclick = peThrow;
+$('#perBtn').addEventListener('pointerdown', peTap);
 $('#btnSkip').onclick = hostReveal;
 $('#btnBoard').onclick = hostBoard;
 $('#btnNext').onclick = hostNext;
