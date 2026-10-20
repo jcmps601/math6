@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>601 搶答王</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --ink:#1a1147; --stage1:#4a33c9; --stage2:#2a1b86; --stage3:#150d4d;
+  --a0:#ff4f5e; --a1:#2f8cff; --a2:#ffb21f; --a3:#16b673;
+  --paper:#fff; --soft:#f1eefc; --gold:#ffd23f; --ok:#16b673; --bad:#ff4f5e;
+  --font:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);color:#fff;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+  background:radial-gradient(ellipse 120% 80% at 50% -10%,var(--stage1) 0%,var(--stage2) 45%,var(--stage3) 100%) fixed}
+input,textarea{user-select:text;-webkit-user-select:text}
+[hidden]{display:none!important}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:clamp(12px,2.5vw,36px);gap:clamp(10px,2vh,24px)}
+.screen.active{display:flex}
+
+/* 貼紙風按鈕 */
+.btn{font-family:inherit;font-weight:900;font-size:clamp(18px,2.2vw,30px);color:var(--ink);background:var(--paper);border:4px solid var(--ink);border-radius:18px;padding:.45em 1.2em;box-shadow:0 6px 0 var(--ink);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+.btn.gold{background:var(--gold)}
+.btn.ghost{background:transparent;color:#fff;border-color:#fff;box-shadow:0 6px 0 rgba(255,255,255,.35)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
+.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center}
+
+.logo{font-weight:900;font-size:clamp(44px,7vw,110px);line-height:1;text-shadow:0 .07em 0 var(--ink);transform:rotate(-3deg);white-space:nowrap}
+.logo .tag{display:inline-block;background:var(--gold);color:var(--ink);padding:.02em .18em;border-radius:.15em;border:.05em solid var(--ink);box-shadow:0 .07em 0 var(--ink);margin-right:.1em;text-shadow:none}
+.panel{background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:22px;box-shadow:0 8px 0 var(--ink);padding:clamp(14px,2vw,28px)}
+
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.05;margin:0 .12em;font-size:.82em}
+.frac>span:first-child{border-bottom:.08em solid currentColor;padding:0 .15em .06em}
+.frac>span:last-child{padding:.06em .15em 0}
+
+/* 首頁 */
+#home .row .btn{font-size:clamp(22px,3vw,40px);padding:.6em 1.4em}
+
+/* 老師：設定 */
+#h-setup{justify-content:flex-start;overflow:auto}
+.setup{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:24px;width:min(1200px,100%)}
+.setup textarea{width:100%;height:min(58vh,560px);font:500 20px/1.55 var(--font);color:var(--ink);border:3px solid var(--ink);border-radius:14px;padding:12px 14px;resize:vertical}
+.setup h2{font-size:24px;margin-bottom:8px}
+.hint{font-size:16px;line-height:1.7;color:#4b4373;margin-top:8px}
+.hint code{background:var(--soft);padding:0 .3em;border-radius:6px;font-family:inherit;font-weight:900}
+#qInfo{font-weight:900;font-size:18px;margin-top:8px;white-space:pre-line}
+#qInfo.err{color:#d6283a}
+.set-item{display:flex;justify-content:space-between;align-items:center;font-size:22px;font-weight:700;padding:12px 0;border-bottom:2px dashed #d9d3f3}
+.set-item select{font:900 20px var(--font);border:3px solid var(--ink);border-radius:10px;padding:4px 8px;color:var(--ink)}
+.set-item input[type=checkbox]{width:28px;height:28px;accent-color:var(--ink)}
+.setup .btn{width:100%;margin-top:16px}
+
+/* 老師：大廳 */
+#h-lobby{justify-content:flex-start}
+.lobby-top{display:flex;gap:clamp(16px,3vw,48px);align-items:center;justify-content:center;flex-wrap:wrap}
+.pinbox{text-align:center}
+.pinbox .lbl{font-size:clamp(18px,1.8vw,28px);font-weight:700}
+.pinbox .pin{font-size:clamp(70px,11vw,170px);font-weight:900;letter-spacing:.08em;line-height:1;color:var(--ink)}
+.pinbox .url{font-size:clamp(14px,1.3vw,20px);font-weight:700;color:#4b4373;margin-top:6px;word-break:break-all}
+#qr{background:#fff;padding:10px;border-radius:14px;border:4px solid var(--ink);box-shadow:0 8px 0 var(--ink)}
+#qr img,#qr canvas{display:block;width:clamp(150px,15vw,230px)!important;height:auto!important}
+#lobbyPlayers{flex:1;width:100%;display:flex;flex-wrap:wrap;gap:12px;align-content:flex-start;justify-content:center;overflow:auto;padding:8px}
+.chip{display:inline-flex;align-items:center;gap:.35em;font:900 clamp(18px,1.9vw,30px) var(--font);color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:999px;padding:.15em .7em .15em .2em;box-shadow:0 4px 0 var(--ink);cursor:pointer}
+.chip .av{display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;background:var(--c,#ffd23f);font-size:1.05em}
+.chip.new{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.2)}100%{transform:scale(1)}}
+.empty{font-size:clamp(20px,2.4vw,34px);font-weight:700;opacity:.75;margin-top:4vh}
+.lobby-bottom{display:flex;align-items:center;gap:24px}
+.count{font-size:clamp(22px,2.4vw,36px);font-weight:900}
+.count b{font-size:1.6em;color:var(--gold)}
+.badge{position:fixed;left:16px;bottom:14px;font-size:15px;font-weight:700;background:var(--gold);color:var(--ink);border-radius:10px;padding:4px 10px}
+#btnMusic{position:fixed;bottom:10px;right:10px;z-index:30;font-size:18px;padding:.1em .35em;opacity:.7}
+
+/* 準備倒數 */
+.ready-num{font-size:clamp(34px,5vw,80px);font-weight:900}
+.count-big{font-size:clamp(120px,24vw,360px);font-weight:900;line-height:1;color:var(--gold);text-shadow:0 .05em 0 var(--ink)}
+.count-big.pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+.golden{font-size:clamp(24px,3vw,46px);font-weight:900;background:var(--gold);color:var(--ink);border:4px solid var(--ink);border-radius:999px;padding:.1em .8em;box-shadow:0 5px 0 var(--ink);animation:wob 1s ease-in-out infinite}
+@keyframes wob{50%{transform:rotate(-4deg) scale(1.06)}}
+
+/* 老師：題目 */
+#h-question,#h-reveal{justify-content:space-between}
+.qhead{width:100%;display:flex;justify-content:space-between;align-items:center;font-size:clamp(18px,2vw,30px);font-weight:900;gap:12px}
+.qhead .golden{font-size:clamp(18px,2vw,30px);animation:none}
+.qtext{background:#fff;color:var(--ink);border:4px solid var(--ink);border-radius:22px;box-shadow:0 8px 0 var(--ink);font-size:clamp(28px,4.2vw,68px);font-weight:900;text-align:center;padding:.35em .8em;max-width:100%;line-height:1.3}
+.qmid{display:flex;align-items:center;justify-content:center;gap:4vw;flex:1;width:100%}
+.timer{--p:1;width:clamp(120px,14vw,220px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--gold) calc(var(--p)*360deg),rgba(255,255,255,.18) 0);border:4px solid var(--ink);box-shadow:0 6px 0 var(--ink)}
+.timer span{width:78%;aspect-ratio:1;border-radius:50%;background:var(--ink);display:grid;place-items:center;font-size:clamp(46px,6vw,96px);font-weight:900}
+.timer.hurry{animation:hurry .5s ease-in-out infinite}
+@keyframes hurry{50%{transform:scale(1.08)}}
+.answered{text-align:center;font-weight:900;font-size:clamp(20px,2vw,32px)}
+.answered b{display:block;font-size:2.4em;line-height:1;color:var(--gold)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.4vw,20px);width:100%}
+.opt{position:relative;display:flex;align-items:center;gap:.5em;min-height:clamp(70px,13vh,140px);padding:.25em .6em;border:4px solid var(--ink);border-radius:20px;box-shadow:0 7px 0 var(--ink);font-size:clamp(24px,3.2vw,54px);font-weight:900;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.25);transition:opacity .4s,transform .4s,filter .4s}
+.opt .shape{font-size:1.1em;width:1.4em;text-align:center;flex:none}
+.a0{background:var(--a0)}.a1{background:var(--a1)}.a2{background:var(--a2)}.a3{background:var(--a3)}
+.opt.dim{opacity:.28;filter:grayscale(.7)}
+.opt.right{transform:scale(1.03);outline:6px solid #fff}
+.opt.right::after{content:"✔";position:absolute;right:.4em;font-size:1.2em}
+
+/* 揭曉長條圖 */
+.bars{display:flex;align-items:flex-end;justify-content:center;gap:clamp(14px,3vw,48px);height:clamp(140px,26vh,280px)}
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:clamp(60px,8vw,120px)}
+.bar .n{font-size:clamp(24px,3vw,46px);font-weight:900}
+.bar .col{width:100%;border:4px solid var(--ink);border-bottom:none;border-radius:14px 14px 0 0;min-height:10px;height:0;transition:height .9s cubic-bezier(.2,1.2,.4,1)}
+.bar .s{width:100%;text-align:center;font-size:clamp(24px,2.6vw,40px);border:4px solid var(--ink);border-radius:0 0 14px 14px;padding:.1em 0}
+.bar.dim{opacity:.35}
+.okcount{font-size:clamp(22px,2.4vw,36px);font-weight:900}
+
+/* 排行榜 */
+#h-board{justify-content:flex-start}
+.title{font-size:clamp(36px,5vw,80px);font-weight:900;text-shadow:0 .07em 0 var(--ink)}
+.board{width:min(1100px,100%);display:flex;flex-direction:column;gap:clamp(8px,1.4vh,16px)}
+.brow{display:grid;grid-template-columns:2.2em 2.2em minmax(0,1fr) auto;align-items:center;gap:.5em;font-size:clamp(22px,2.6vw,42px);font-weight:900;background:#fff;color:var(--ink);border:4px solid var(--ink);border-radius:18px;box-shadow:0 6px 0 var(--ink);padding:.2em .5em;position:relative;overflow:hidden;transform:translateX(-120%);transition:transform .5s cubic-bezier(.2,1.2,.4,1)}
+.brow.in{transform:none}
+.brow .fill{position:absolute;inset:0 auto 0 0;background:rgba(255,210,63,.45);z-index:0;width:0;transition:width 1s ease .3s}
+.brow>*:not(.fill){position:relative;z-index:1}
+.brow .rk{text-align:center}
+.brow .av{display:grid;place-items:center;width:1.8em;height:1.8em;border-radius:50%;background:var(--c,#ffd23f)}
+.brow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .nm small{font-size:.6em;color:#e0532f;margin-left:.3em}
+.brow .up{font-size:.55em;color:var(--ok);margin-left:.3em}
+
+/* 頒獎台 */
+#h-end{justify-content:flex-start}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:clamp(10px,2vw,30px);flex:1;width:100%;max-height:70vh}
+.pcol{display:flex;flex-direction:column;align-items:center;width:clamp(150px,20vw,300px);opacity:0;transform:translateY(60px);transition:opacity .5s,transform .6s cubic-bezier(.2,1.4,.4,1)}
+.pcol.show{opacity:1;transform:none}
+.pcol .pav{font-size:clamp(50px,6vw,100px);width:1.5em;height:1.5em;display:grid;place-items:center;border-radius:50%;border:4px solid var(--ink);background:var(--c,#ffd23f);box-shadow:0 6px 0 var(--ink)}
+.pcol .pnm{font-size:clamp(24px,2.8vw,46px);font-weight:900;margin-top:.2em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcol .psc{font-size:clamp(18px,2vw,30px);font-weight:700;opacity:.9}
+.pblock{width:100%;margin-top:.4em;border:4px solid var(--ink);border-bottom:none;border-radius:18px 18px 0 0;display:grid;place-items:start center;padding-top:.2em;font-size:clamp(50px,6vw,100px);font-weight:900;color:var(--ink)}
+.p1 .pblock{height:clamp(140px,30vh,320px);background:var(--gold)}
+.p2 .pblock{height:clamp(100px,21vh,230px);background:#dfe3ee}
+.p3 .pblock{height:clamp(70px,14vh,160px);background:#f0a868}
+.allrank{position:fixed;inset:6vh 10vw;z-index:40;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.allrank .r{display:flex;justify-content:space-between;font-size:26px;font-weight:900;border-bottom:2px dashed #d9d3f3;padding:6px 4px}
+
+/* 學生 */
+#pBar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:8px 14px;font-weight:900;font-size:20px;background:rgba(0,0,0,.25)}
+#pBar .who{display:flex;align-items:center;gap:8px}
+#pBar .who span:first-child{font-size:28px}
+.joinbox{width:min(460px,100%);display:flex;flex-direction:column;gap:14px}
+.field{font:900 28px var(--font);border:4px solid var(--ink);border-radius:14px;padding:.3em .5em;width:100%;text-align:center;color:var(--ink);background:#fff}
+.field::placeholder{color:#b3abd6}
+.avs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.avs button{font-size:30px;aspect-ratio:1;border:3px solid transparent;border-radius:14px;background:var(--soft);cursor:pointer}
+.avs button.sel{border-color:var(--ink);background:var(--gold)}
+#jErr{color:#d6283a;font-weight:900;font-size:18px;min-height:1.4em;text-align:center}
+.big-av{font-size:clamp(90px,26vw,160px);width:1.5em;height:1.5em;display:grid;place-items:center;border-radius:50%;border:5px solid var(--ink);background:var(--c,#ffd23f);box-shadow:0 8px 0 var(--ink);animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-14px) rotate(4deg)}}
+.big-name{font-size:clamp(32px,8vw,56px);font-weight:900}
+.sub{font-size:clamp(20px,5vw,30px);font-weight:700;opacity:.9;text-align:center}
+#p-question{padding-top:60px}
+.pq{font-size:clamp(20px,4.6vw,34px);font-weight:900;text-align:center;line-height:1.35}
+.pbtns{flex:1;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pbtn{font:900 clamp(22px,5.5vw,40px) var(--font);color:#fff;border:4px solid var(--ink);border-radius:22px;box-shadow:0 7px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15em;padding:.3em;text-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer}
+.pbtn .frac{font-size:1.15em}
+.pbtn .shape{font-size:1.6em;line-height:1}
+.pbtn:active{transform:translateY(5px);box-shadow:0 2px 0 var(--ink)}
+.sent-shape{font-size:clamp(90px,28vw,170px);width:1.6em;height:1.6em;display:grid;place-items:center;border:5px solid var(--ink);border-radius:30px;box-shadow:0 8px 0 var(--ink);color:#fff;animation:bob 1.2s ease-in-out infinite}
+#p-result.ok{background:var(--ok)}
+#p-result.bad{background:var(--bad)}
+#p-result.none{background:#6b6590}
+.res-icon{font-size:clamp(110px,30vw,200px);line-height:1;font-weight:900;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+.res-title{font-size:clamp(40px,11vw,72px);font-weight:900;text-shadow:0 4px 0 rgba(0,0,0,.2)}
+.res-gain{font-size:clamp(34px,9vw,60px);font-weight:900;background:rgba(0,0,0,.2);border-radius:16px;padding:.05em .5em}
+.res-line{font-size:clamp(20px,5vw,30px);font-weight:900;text-align:center}
+.rank-big{font-size:clamp(64px,19vw,160px);white-space:nowrap;font-weight:900;line-height:1;color:var(--gold);text-shadow:0 .05em 0 var(--ink)}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60;display:none}
+@media (max-width:820px){.setup{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ 首頁 ============ -->
+<section class="screen" id="home">
+  <div class="logo"><span class="tag">601</span>搶答王</div>
+  <div class="row" style="margin-top:4vh">
+    <button class="btn gold" id="btnGoHost">我是老師</button>
+    <button class="btn" id="btnGoJoin">我要加入</button>
+  </div>
+</section>
+
+<!-- ============ 老師端 ============ -->
+<button class="btn ghost" id="btnMusic" hidden title="音樂開關">🔊</button>
+
+<section class="screen" id="h-setup">
+  <div class="logo" style="font-size:clamp(36px,4.5vw,64px)"><span class="tag">601</span>搶答王</div>
+  <div class="setup">
+    <div class="panel">
+      <h2>題目</h2>
+      <textarea id="qText" spellcheck="false"></textarea>
+      <div class="hint">每題之間空一行，第一行是題目，下面 2～4 行是選項。正確答案前面加 <code>*</code>；題目前面加 <code>★</code> 是分數雙倍的黃金題；分數寫成 <code>{3/4}</code>，帶分數寫成 <code>2{1/3}</code>。</div>
+      <div id="qInfo"></div>
+    </div>
+    <div class="panel">
+      <h2>設定</h2>
+      <label class="set-item">每題秒數
+        <select id="setTime"><option value="10">10 秒</option><option value="20" selected>20 秒</option><option value="30">30 秒</option><option value="60">60 秒</option></select>
+      </label>
+      <label class="set-item">選項自動打亂 <input type="checkbox" id="setShuffle" checked></label>
+      <label class="set-item">背景音樂 <input type="checkbox" id="setMusic" checked></label>
+      <button class="btn gold" id="btnCreate">開房間</button>
+      <button class="btn" id="btnResume" hidden></button>
+      <button class="btn ghost" id="btnResetQ" style="color:var(--ink);border-color:var(--ink);box-shadow:0 6px 0 #c9c2ea">還原範例題目</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="h-lobby">
+  <div class="lobby-top">
+    <div class="panel pinbox">
+      <div class="lbl">遊戲代碼</div>
+      <div class="pin" id="lobbyPin">----</div>
+      <div class="url" id="lobbyUrl"></div>
+    </div>
+    <div id="qr"></div>
+  </div>
+  <div id="lobbyPlayers"></div>
+  <div class="lobby-bottom">
+    <div class="count"><b id="lobbyCount">0</b> 人</div>
+    <button class="btn gold" id="btnStart" data-primary disabled>開始遊戲</button>
+  </div>
+  <div class="badge" id="modeBadge" hidden>本機測試模式：在同一個瀏覽器另開分頁貼上網址加入</div>
+</section>
+
+<section class="screen" id="h-ready">
+  <div class="ready-num" id="hrdNum">第 1 題</div>
+  <div class="golden" id="hrdDouble" hidden>★ 黃金題 分數 ×2</div>
+  <div class="count-big" id="hrdCount">3</div>
+</section>
+
+<section class="screen" id="h-question">
+  <div class="qhead"><span id="hqNum"></span><span class="golden" id="hqDouble" hidden>★ 分數 ×2</span><button class="btn" id="btnSkip" data-primary style="font-size:clamp(16px,1.6vw,24px)">結束作答</button></div>
+  <div class="qtext" id="hqText"></div>
+  <div class="qmid">
+    <div class="timer" id="hqRing"><span id="hqTimer">20</span></div>
+    <div class="answered"><b id="hqAnswered">0</b>已作答</div>
+  </div>
+  <div class="opts" id="hqOptions"></div>
+</section>
+
+<section class="screen" id="h-reveal">
+  <div class="qhead"><span id="hrNum"></span><span class="okcount" id="hrOk"></span><button class="btn gold" id="btnBoard" data-primary style="font-size:clamp(16px,1.6vw,24px)">排行榜</button></div>
+  <div class="qtext" id="hrText"></div>
+  <div class="bars" id="hrBars"></div>
+  <div class="opts" id="hrOptions"></div>
+</section>
+
+<section class="screen" id="h-board">
+  <div class="title">排行榜</div>
+  <div class="board" id="boardList"></div>
+  <div style="flex:1"></div>
+  <button class="btn gold" id="btnNext" data-primary>下一題</button>
+</section>
+
+<section class="screen" id="h-end">
+  <div class="title">頒獎典禮</div>
+  <div class="podium" id="podium"></div>
+  <div class="row" id="endBtns" style="visibility:hidden">
+    <button class="btn" id="btnAll">完整排名</button>
+    <button class="btn gold" id="btnAgain">再玩一次</button>
+    <button class="btn ghost" id="btnClose">關閉房間</button>
+  </div>
+  <div class="panel allrank" id="allRank" hidden></div>
+</section>
+
+<!-- ============ 學生端 ============ -->
+<div id="pBar" hidden><div class="who"><span id="pbAv"></span><span id="pbName"></span></div><div id="pbScore">0 分</div></div>
+
+<section class="screen" id="p-join">
+  <div class="logo" style="font-size:clamp(40px,11vw,70px)"><span class="tag">601</span>搶答王</div>
+  <div class="panel joinbox">
+    <input class="field" id="jPin" inputmode="numeric" maxlength="4" placeholder="遊戲代碼" autocomplete="off">
+    <input class="field" id="jName" maxlength="8" placeholder="你的名字" autocomplete="off">
+    <div class="avs" id="jAvs"></div>
+    <div id="jErr"></div>
+    <button class="btn gold" id="btnJoin">加入</button>
+  </div>
+</section>
+
+<section class="screen" id="p-wait">
+  <div class="big-av" id="pwAv"></div>
+  <div class="big-name" id="pwName"></div>
+  <div class="sub">加入成功！看大螢幕等老師開始</div>
+</section>
+
+<section class="screen" id="p-ready">
+  <div class="ready-num" id="prdNum"></div>
+  <div class="golden" id="prdDouble" hidden>★ 黃金題 分數 ×2</div>
+  <div class="count-big" style="font-size:clamp(70px,22vw,140px)">準備！</div>
+</section>
+
+<section class="screen" id="p-question">
+  <div class="pq" id="pqText"></div>
+  <div class="pbtns" id="pqBtns"></div>
+</section>
+
+<section class="screen" id="p-sent">
+  <div class="sent-shape" id="psShape"></div>
+  <div class="sub" id="psLine"></div>
+</section>
+
+<section class="screen" id="p-result">
+  <div class="res-icon" id="prIcon"></div>
+  <div class="res-title" id="prTitle"></div>
+  <div class="res-gain" id="prGain"></div>
+  <div class="res-line" id="prStreak"></div>
+  <div class="res-line" id="prAns"></div>
+  <div class="res-line" id="prRank"></div>
+</section>
+
+<section class="screen" id="p-rank">
+  <div class="sub">目前排名</div>
+  <div class="rank-big" id="prkRank"></div>
+  <div class="big-name" id="prkScore"></div>
+  <div class="sub" id="prkLine"></div>
+</section>
+
+<section class="screen" id="p-end">
+  <div class="res-icon" id="peIcon"></div>
+  <div class="res-title" id="peTitle"></div>
+  <div class="big-name" id="peScore"></div>
+  <div class="sub" id="peLine"></div>
+</section>
+
+<section class="screen" id="p-msg">
+  <div class="res-title" id="pmTitle"></div>
+  <div class="sub" id="pmSub"></div>
+  <button class="btn gold" id="btnRejoin">重新加入</button>
+</section>
+
+<canvas id="confetti"></canvas>
+
+<script>
+/* =========================================================
+   設定區：把 Firebase 專案設定貼在這裡
+   （databaseURL 留空 = 本機測試模式，只能在同一台電腦的分頁間連線）
+   ========================================================= */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD-frW7ISsXAHsv1DSZpGzvn_ok9t1NJ4U",
+  authDomain: "quiz601.firebaseapp.com",
+  databaseURL: "https://quiz601-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "quiz601",
+  storageBucket: "quiz601.firebasestorage.app",
+  messagingSenderId: "994429474121",
+  appId: "1:994429474121:web:dc20be249385db6a60b698"
+};
+
+const DEFAULT_QUESTIONS = `臺灣最高的山是哪一座？
+*玉山
+雪山
+合歡山
+阿里山
+
+★{3/4} + {1/8} = ？
+*{7/8}
+{4/12}
+{1/2}
+{5/8}
+
+下列哪個成語是形容「非常專心」？
+*聚精會神
+心不在焉
+三心二意
+東張西望
+
+1 公頃等於幾平方公尺？
+*10000 平方公尺
+1000 平方公尺
+100 平方公尺
+100000 平方公尺
+
+一個圓的直徑是 10 公分，半徑是多少？
+*5 公分
+10 公分
+20 公分
+3.14 公分
+
+高雄市的市花是什麼？
+*木棉花
+梅花
+杜鵑花
+櫻花
+
+12 和 18 的最大公因數是多少？
+*6
+3
+2
+36
+
+地球繞太陽一圈大約需要多久？
+*一年
+一天
+一個月
+一星期
+
+★0.25 等於下列哪一個分數？
+*{1/4}
+{1/2}
+{2/5}
+{1/25}
+
+1 公里等於幾公尺？
+*1000 公尺
+100 公尺
+10 公尺
+10000 公尺`;
+
+/* ---------- 小工具 ---------- */
+const $ = s => document.querySelector(s);
+const SHAPES = ['▲','◆','●','■'];
+const AVATARS = ['🐶','🐱','🐼','🦊','🐸','🐵','🐯','🐰','🐨','🐷','🐮','🦁','🐧','🐤','🦄','🐙','🦖','🐳','🐹','🦉'];
+const COLORS = ['#ffd23f','#ff9fb2','#9fd8ff','#b8f2a0','#ffc48a','#d7b8ff','#8ff0e0','#ffe08a'];
+const LS_Q = 'quiz601_questions', LS_HOST = 'quiz601_host';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = s => esc(s).replace(/\{(\d+)\/(\d+)\}/g, '<span class="frac"><span>$1</span><span>$2</span></span>');
+const rand = a => a[Math.random() * a.length | 0];
+const shuffleArr = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const loadJSON = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+function show(id) { document.querySelectorAll('.screen').forEach(e => e.classList.toggle('active', e.id === id)); }
+
+/* ---------- 網路層：Firebase 或本機測試 ---------- */
+const Net = (() => {
+  if (FIREBASE_CONFIG.databaseURL && window.firebase) {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const db = firebase.database();
+    return {
+      mode: 'firebase',
+      set: (p, v) => db.ref(p).set(v),
+      update: (p, v) => db.ref(p).update(v),
+      get: async p => (await db.ref(p).get()).val(),
+      remove: p => db.ref(p).remove(),
+      on: (p, cb) => { const r = db.ref(p); const h = s => cb(s.val()); r.on('value', h); return () => r.off('value', h); }
+    };
+  }
+  const KEY = 'quiz601_localdb';
+  const read = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
+  const listeners = new Set();
+  const getPath = (o, p) => p.split('/').filter(Boolean).reduce((x, k) => (x == null ? undefined : x[k]), o);
+  function setPath(o, p, v) {
+    const ks = p.split('/').filter(Boolean);
+    for (let i = 0; i < ks.length - 1; i++) { if (typeof o[ks[i]] !== 'object' || o[ks[i]] === null) o[ks[i]] = {}; o = o[ks[i]]; }
+    const last = ks[ks.length - 1];
+    if (v === null || v === undefined) delete o[last]; else o[last] = JSON.parse(JSON.stringify(v));
+  }
+  function fire() {
+    const d = read();
+    listeners.forEach(l => {
+      const v = getPath(d, l.p); const s = JSON.stringify(v === undefined ? null : v);
+      if (s !== l.last) { l.last = s; l.cb(JSON.parse(s)); }
+    });
+  }
+  const write = d => { localStorage.setItem(KEY, JSON.stringify(d)); fire(); };
+  window.addEventListener('storage', e => { if (e.key === KEY) fire(); });
+  return {
+    mode: 'local',
+    set: async (p, v) => { const d = read(); setPath(d, p, v); write(d); },
+    update: async (p, obj) => { const d = read(); for (const k in obj) setPath(d, p + '/' + k, obj[k]); write(d); },
+    get: async p => { const v = getPath(read(), p); return v === undefined ? null : JSON.parse(JSON.stringify(v)); },
+    remove: async p => { const d = read(); setPath(d, p, null); write(d); },
+    on: (p, cb) => {
+      const l = { p, cb, last: undefined }; listeners.add(l);
+      setTimeout(() => { const v = getPath(read(), p); l.last = JSON.stringify(v === undefined ? null : v); cb(JSON.parse(l.last)); }, 0);
+      return () => listeners.delete(l);
+    }
+  };
+})();
+
+/* ---------- 音效與音樂（Web Audio 合成） ---------- */
+const Sound = (() => {
+  let ctx = null, master = null, musicGain = null, timer = null, musicOn = true, current = null;
+  const N = n => 440 * Math.pow(2, (n - 69) / 12);
+  function init() {
+    if (ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.6; master.connect(ctx.destination);
+    musicGain = ctx.createGain(); musicGain.gain.value = 0.32; musicGain.connect(master);
+  }
+  function unlock() { init(); if (ctx && ctx.state === 'suspended') ctx.resume(); }
+  function tone(f, dur, o = {}) {
+    if (!ctx) return;
+    const t = ctx.currentTime + (o.when || 0);
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = o.type || 'square'; osc.frequency.setValueAtTime(f, t);
+    if (o.slide) osc.frequency.exponentialRampToValueAtTime(o.slide, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(o.vol || 0.2, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g); g.connect(o.dest || master); osc.start(t); osc.stop(t + dur + 0.05);
+  }
+  function noise(dur, vol, when = 0) {
+    if (!ctx) return;
+    const len = Math.floor(ctx.sampleRate * dur), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = buf; f.type = 'bandpass'; f.frequency.value = 900; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(master); s.start(ctx.currentTime + when);
+  }
+  const sfx = {
+    count: () => tone(N(72), 0.18, { type: 'triangle', vol: 0.3 }),
+    tick: () => tone(1250, 0.05, { vol: 0.1 }),
+    go: () => [72, 76, 79, 84].forEach((n, i) => tone(N(n), 0.2, { when: i * 0.07, vol: 0.16 })),
+    join: () => { tone(N(79), 0.08, { type: 'triangle', vol: 0.25 }); tone(N(86), 0.14, { type: 'triangle', vol: 0.25, when: 0.07 }); },
+    tap: () => tone(N(84), 0.07, { type: 'triangle', vol: 0.25 }),
+    correct: () => [76, 80, 83, 88].forEach((n, i) => tone(N(n), 0.28, { type: 'triangle', when: i * 0.07, vol: 0.3 })),
+    wrong: () => tone(220, 0.4, { type: 'sawtooth', vol: 0.16, slide: 90 }),
+    reveal: () => { [72, 79, 84].forEach((n, i) => tone(N(n), 0.25, { when: i * 0.09, vol: 0.18 })); noise(0.3, 0.25); },
+    swoosh: () => tone(300, 0.3, { type: 'sine', slide: 1400, vol: 0.18 }),
+    drum: (sec) => { const n = Math.floor(sec / 0.05); for (let i = 0; i < n; i++) noise(0.05, 0.08 + 0.35 * i / n, i * 0.05); },
+    cymbal: () => { noise(0.9, 0.5); tone(N(84), 0.5, { type: 'triangle', vol: 0.2 }); },
+    fanfare: () => [[67, 0], [72, .15], [76, .3], [79, .45], [76, .75], [79, .9], [84, 1.05]].forEach(([n, w]) => { tone(N(n), 0.35, { when: w, vol: 0.18 }); tone(N(n - 12), 0.35, { when: w, type: 'triangle', vol: 0.18 }); })
+  };
+  const chord = r => [r, 0, r + 12, 0, r + 7, 0, r + 12, r + 7];
+  const SONGS = {
+    lobby: { bpm: 116, len: 32, voices: [
+      { notes: [...chord(48), ...chord(45), ...chord(41), ...chord(43)], type: 'triangle', vol: 0.35, len: 0.9 },
+      { notes: [72,0,76,0,79,0,76,74, 72,0,69,0,72,0,0,0, 69,0,72,0,77,0,76,74, 71,0,74,0,79,0,0,0], type: 'square', vol: 0.08, len: 0.8 }
+    ]},
+    question: { bpm: 140, len: 16, voices: [
+      { notes: [45,0,45,57, 45,0,45,57, 43,0,43,55, 44,0,44,56], type: 'triangle', vol: 0.4, len: 0.7 },
+      { notes: [81,0,0,81,0,0,81,0, 79,0,0,79,0,0,80,0], type: 'square', vol: 0.05, len: 0.5 }
+    ]}
+  };
+  function stopSong() { clearInterval(timer); timer = null; current = null; }
+  function playSong(name) {
+    stopSong(); current = name;
+    if (!ctx || !musicOn) return;
+    const s = SONGS[name], stepDur = 60 / s.bpm / 2; let step = 0, next = ctx.currentTime + 0.05;
+    timer = setInterval(() => {
+      while (next < ctx.currentTime + 0.25) {
+        s.voices.forEach(v => { const n = v.notes[step % s.len]; if (n) tone(N(n), stepDur * v.len, { type: v.type, vol: v.vol, when: Math.max(0, next - ctx.currentTime), dest: musicGain }); });
+        step++; next += stepDur;
+      }
+    }, 60);
+  }
+  function setMusic(on) { musicOn = on; if (!on) { const c = current; stopSong(); current = c; } else if (current) playSong(current); }
+  return { unlock, sfx, playSong, stopSong, setMusic, get musicOn() { return musicOn; } };
+})();
+
+/* ---------- 彩帶 ---------- */
+function confetti(ms = 4500) {
+  const cv = $('#confetti'), c = cv.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; c.setTransform(dpr, 0, 0, dpr, 0, 0); cv.style.display = 'block';
+  const cols = ['#ff4f5e','#2f8cff','#ffb21f','#16b673','#ffd23f','#ffffff'];
+  const ps = Array.from({ length: 170 }, () => ({ x: Math.random() * innerWidth, y: -20 - Math.random() * innerHeight * 0.6, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, vr: (Math.random() - .5) * .3, w: 8 + Math.random() * 8, h: 5 + Math.random() * 6, col: rand(cols) }));
+  const t0 = performance.now();
+  (function f(t) {
+    c.clearRect(0, 0, innerWidth, innerHeight);
+    ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.r += p.vr; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.col; c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); c.restore(); });
+    if (t - t0 < ms) requestAnimationFrame(f); else { c.clearRect(0, 0, innerWidth, innerHeight); cv.style.display = 'none'; }
+  })(t0);
+}
+
+/* ---------- 題目解析 ---------- */
+function parseQuestions(text) {
+  const blocks = text.replace(/\r/g, '').split(/\n\s*\n/).map(b => b.split('\n').map(l => l.trim()).filter(Boolean)).filter(b => b.length);
+  const qs = [], errors = [];
+  blocks.forEach((b, bi) => {
+    let title = b[0], double = false;
+    if (/^[★☆]/.test(title)) { double = true; title = title.replace(/^[★☆]\s*/, ''); }
+    const lines = b.slice(1), opts = []; let correct = -1, stars = 0;
+    lines.forEach(l => { if (/^[*＊]/.test(l)) { correct = opts.length; stars++; l = l.replace(/^[*＊]\s*/, ''); } opts.push(l); });
+    const n = bi + 1;
+    if (opts.length < 2 || opts.length > 4) errors.push(`第 ${n} 題：選項要 2～4 個（目前 ${opts.length} 個）`);
+    else if (stars === 0) errors.push(`第 ${n} 題：請在正確答案前面加 *`);
+    else if (stars > 1) errors.push(`第 ${n} 題：只能有一個 * 正確答案`);
+    else qs.push({ text: title, double, options: opts, correct });
+  });
+  return { qs, errors };
+}
+function buildGame(qs, shuffle) {
+  return qs.map(q => {
+    let opts = q.options.map((t, i) => ({ t, ok: i === q.correct }));
+    if (shuffle) opts = shuffleArr(opts);
+    return { text: q.text, double: q.double, options: opts.map(o => o.t), correct: opts.findIndex(o => o.ok) };
+  });
+}
+
+/* =========================================================
+   老師端
+   ========================================================= */
+const Host = { pin: null, qs: [], game: [], settings: { time: 20, shuffle: true, music: true }, players: {}, seen: new Set(), qIndex: -1, phase: 'setup', timer: null, unAns: null, unPlayers: null, prevRanks: {}, endTimers: [] };
+
+function hostOpenSetup() {
+  history.replaceState(null, '', location.pathname + '?host');
+  show('h-setup');
+  $('#qText').value = localStorage.getItem(LS_Q) || DEFAULT_QUESTIONS;
+  hostValidate();
+  const s = loadJSON(LS_HOST);
+  $('#btnResume').hidden = true;
+  if (s && s.pin) Net.get(`rooms/${s.pin}/state`).then(st => { if (st) { $('#btnResume').hidden = false; $('#btnResume').textContent = `回到房間 ${s.pin}`; } }).catch(() => {});
+}
+function hostValidate() {
+  const { qs, errors } = parseQuestions($('#qText').value);
+  const info = $('#qInfo');
+  if (errors.length) { info.className = 'err'; info.textContent = errors.join('\n'); }
+  else { info.className = ''; info.textContent = qs.length ? `✔ 共 ${qs.length} 題，黃金題 ${qs.filter(q => q.double).length} 題` : '請輸入題目'; }
+  $('#btnCreate').disabled = !!errors.length || !qs.length;
+  return { qs, errors };
+}
+function saveHost() { localStorage.setItem(LS_HOST, JSON.stringify({ pin: Host.pin, qs: Host.qs, game: Host.game, settings: Host.settings })); }
+
+async function hostCreate() {
+  const { qs, errors } = hostValidate(); if (errors.length || !qs.length) return;
+  Sound.unlock();
+  Host.qs = qs;
+  Host.settings = { time: +$('#setTime').value, shuffle: $('#setShuffle').checked, music: $('#setMusic').checked };
+  Sound.setMusic(Host.settings.music);
+  Host.game = buildGame(qs, Host.settings.shuffle);
+  $('#btnCreate').disabled = true;
+  try {
+    let pin = null;
+    for (let i = 0; i < 30 && !pin; i++) { const p = String(1000 + Math.random() * 9000 | 0); if (!(await Net.get(`rooms/${p}/state`))) pin = p; }
+    Host.pin = pin;
+    await Net.set(`rooms/${pin}`, { meta: { created: Date.now() }, state: { phase: 'lobby', qIndex: -1, total: Host.game.length } });
+    saveHost();
+    Host.players = {}; Host.seen = new Set();
+    hostLobby();
+  } catch (e) { alert('開房間失敗：' + e.message + '\n請檢查 Firebase 設定與資料庫規則。'); }
+  finally { $('#btnCreate').disabled = false; }
+}
+
+function joinUrl() { return location.href.split(/[?#]/)[0] + '?room=' + Host.pin; }
+
+function hostSubscribePlayers() {
+  if (Host.unPlayers) Host.unPlayers();
+  Host.unPlayers = Net.on(`rooms/${Host.pin}/players`, v => {
+    const before = Object.keys(Host.players).length;
+    Host.players = v || {};
+    if (Host.phase === 'lobby') { if (Object.keys(Host.players).length > before) Sound.sfx.join(); hostRenderLobby(); }
+  });
+}
+
+function hostLobby() {
+  Host.phase = 'lobby';
+  show('h-lobby');
+  $('#btnMusic').hidden = false;
+  $('#lobbyPin').textContent = Host.pin;
+  const url = joinUrl();
+  $('#lobbyUrl').textContent = url.replace(/^https?:\/\//, '');
+  $('#qr').innerHTML = '';
+  if (window.QRCode) new QRCode($('#qr'), { text: url, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M }); else $('#qr').hidden = true;
+  $('#modeBadge').hidden = Net.mode !== 'local';
+  hostSubscribePlayers();
+  hostRenderLobby();
+  Sound.playSong('lobby');
+}
+
+function hostRenderLobby() {
+  const list = Object.entries(Host.players).sort((a, b) => (a[1].joined || 0) - (b[1].joined || 0));
+  $('#lobbyCount').textContent = list.length;
+  $('#lobbyPlayers').innerHTML = list.length
+    ? list.map(([pid, p]) => `<button class="chip${Host.seen.has(pid) ? '' : ' new'}" data-pid="${pid}" style="--c:${esc(p.color)}"><span class="av">${esc(p.avatar)}</span>${esc(p.name)}</button>`).join('')
+    : '<div class="empty">用平板掃 QR Code，或到網址輸入代碼加入</div>';
+  list.forEach(([pid]) => Host.seen.add(pid));
+  $('#btnStart').disabled = !list.length;
+}
+
+async function hostNext() {
+  Host.qIndex++;
+  if (Host.qIndex >= Host.game.length) return hostEnd();
+  const q = Host.game[Host.qIndex];
+  Host.phase = 'ready';
+  Sound.stopSong();
+  await Net.update(`rooms/${Host.pin}/state`, { phase: 'ready', qIndex: Host.qIndex, total: Host.game.length, double: !!q.double, q: null, correct: null, dist: null });
+  $('#hrdNum').textContent = `第 ${Host.qIndex + 1} 題`;
+  $('#hrdDouble').hidden = !q.double;
+  show('h-ready');
+  let n = 3; const el = $('#hrdCount');
+  const beat = () => { el.textContent = n; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); Sound.sfx.count(); };
+  beat();
+  const iv = setInterval(() => { n--; if (n <= 0) { clearInterval(iv); hostQuestion(); } else beat(); }, 1000);
+}
+
+function optsHTML(q, cls = i => '') {
+  return q.options.map((o, i) => `<div class="opt a${i} ${cls(i)}"><span class="shape">${SHAPES[i]}</span><span>${fmt(o)}</span></div>`).join('');
+}
+
+async function hostQuestion() {
+  const q = Host.game[Host.qIndex];
+  Host.phase = 'question';
+  $('#hqNum').textContent = `第 ${Host.qIndex + 1} / ${Host.game.length} 題`;
+  $('#hqDouble').hidden = !q.double;
+  $('#hqText').innerHTML = fmt(q.text);
+  $('#hqOptions').innerHTML = optsHTML(q);
+  $('#hqAnswered').textContent = '0';
+  $('#hqRing').classList.remove('hurry');
+  show('h-question');
+  Sound.sfx.go(); Sound.playSong('question');
+  await Net.update(`rooms/${Host.pin}/state`, { phase: 'question', q: { text: q.text, options: q.options, double: !!q.double, time: Host.settings.time } });
+  if (Host.unAns) Host.unAns();
+  Host.unAns = Net.on(`rooms/${Host.pin}/answers/${Host.qIndex}`, v => {
+    const n = v ? Object.keys(v).filter(pid => Host.players[pid]).length : 0;
+    const total = Object.keys(Host.players).length;
+    $('#hqAnswered').textContent = `${n} / ${total}`;
+    if (Host.phase === 'question' && total > 0 && n >= total) setTimeout(hostReveal, 700);
+  });
+  const dur = Host.settings.time * 1000, end = Date.now() + dur; let lastSec = null;
+  clearInterval(Host.timer);
+  Host.timer = setInterval(() => {
+    const rem = Math.max(0, end - Date.now()), sec = Math.ceil(rem / 1000);
+    $('#hqTimer').textContent = sec;
+    $('#hqRing').style.setProperty('--p', rem / dur);
+    if (sec !== lastSec) { lastSec = sec; if (sec <= 5 && sec > 0) { Sound.sfx.tick(); $('#hqRing').classList.add('hurry'); } }
+    if (rem <= 0) hostReveal();
+  }, 100);
+}
+
+async function hostReveal() {
+  if (Host.phase !== 'question') return;
+  Host.phase = 'reveal';
+  clearInterval(Host.timer);
+  if (Host.unAns) { Host.unAns(); Host.unAns = null; }
+  Sound.stopSong();
+  const q = Host.game[Host.qIndex];
+  const ans = (await Net.get(`rooms/${Host.pin}/answers/${Host.qIndex}`)) || {};
+  const timeMs = Host.settings.time * 1000, dist = q.options.map(() => 0), next = {}, players = Host.players;
+  Host.prevRanks = {};
+  for (const [pid, p] of Object.entries(players)) {
+    Host.prevRanks[pid] = p.rank || 0;
+    const a = ans[pid];
+    const answered = !!a && typeof a.c === 'number' && a.c >= 0 && a.c < q.options.length;
+    if (answered) dist[a.c]++;
+    const ok = answered && a.c === q.correct;
+    let streak = p.streak || 0, gain = 0;
+    if (ok) {
+      const ms = Math.min(Math.max(+a.ms || 0, 0), timeMs);
+      gain = Math.round(500 + 500 * (1 - ms / timeMs));
+      streak++;
+      gain += Math.min(streak - 1, 5) * 100;
+      if (q.double) gain *= 2;
+    } else streak = 0;
+    next[pid] = { score: (p.score || 0) + gain, streak, gain, ok, answered };
+  }
+  const order = Object.keys(next).sort((a, b) => next[b].score - next[a].score);
+  order.forEach((pid, i) => {
+    const n = next[pid];
+    n.rank = (i > 0 && next[order[i - 1]].score === n.score) ? next[order[i - 1]].rank : i + 1;
+    const above = order.slice(0, i).reverse().find(o => next[o].score > n.score);
+    n.behind = above ? next[above].score - n.score : 0;
+    n.aheadName = above ? players[above].name : '';
+  });
+  const upd = {};
+  for (const pid in next) {
+    const n = next[pid], b = `players/${pid}/`;
+    Object.assign(upd, { [b + 'score']: n.score, [b + 'streak']: n.streak, [b + 'gain']: n.gain, [b + 'ok']: n.ok, [b + 'answered']: n.answered, [b + 'rank']: n.rank, [b + 'behind']: n.behind, [b + 'aheadName']: n.aheadName, [b + 'resQ']: Host.qIndex });
+  }
+  upd['state/phase'] = 'reveal'; upd['state/correct'] = q.correct; upd['state/dist'] = dist; upd['state/nPlayers'] = order.length;
+  await Net.update(`rooms/${Host.pin}`, upd);
+
+  // 畫面
+  $('#hrNum').textContent = `第 ${Host.qIndex + 1} / ${Host.game.length} 題`;
+  $('#hrOk').textContent = `答對 ${order.filter(p => next[p].ok).length} 人`;
+  $('#hrText').innerHTML = fmt(q.text);
+  $('#hrOptions').innerHTML = optsHTML(q, i => i === q.correct ? 'right' : 'dim');
+  const max = Math.max(1, ...dist);
+  $('#hrBars').innerHTML = dist.map((n, i) => `<div class="bar ${i === q.correct ? '' : 'dim'}"><div class="n">${n}</div><div class="col a${i}" data-h="${n / max * 100}"></div><div class="s a${i}">${SHAPES[i]}${i === q.correct ? '✔' : ''}</div></div>`).join('');
+  show('h-reveal');
+  Sound.sfx.reveal();
+  requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('#hrBars .col').forEach(c => c.style.height = `calc(${c.dataset.h}% - 3.2em)`)));
+}
+
+function sortedPlayers() { return Object.entries(Host.players).sort((a, b) => (b[1].score || 0) - (a[1].score || 0)); }
+
+async function hostBoard() {
+  Host.phase = 'board';
+  await Net.update(`rooms/${Host.pin}/state`, { phase: 'board' });
+  const list = sortedPlayers().slice(0, 5), max = Math.max(1, list[0] ? list[0][1].score || 0 : 1);
+  $('#boardList').innerHTML = list.map(([pid, p]) => {
+    const prev = Host.prevRanks[pid], up = prev && p.rank < prev ? `<span class="up">▲${prev - p.rank}</span>` : '';
+    const fire = (p.streak || 0) >= 2 ? `<small>🔥${p.streak}</small>` : '';
+    return `<div class="brow" style="--c:${esc(p.color)}"><div class="fill" data-w="${(p.score || 0) / max * 100}"></div><span class="rk">${p.rank || '-'}</span><span class="av">${esc(p.avatar)}</span><span class="nm">${esc(p.name)}${fire}${up}</span><span>${p.score || 0}</span></div>`;
+  }).join('') || '<div class="empty">還沒有玩家</div>';
+  $('#btnNext').textContent = Host.qIndex + 1 >= Host.game.length ? '頒獎典禮' : '下一題';
+  show('h-board');
+  Sound.sfx.swoosh();
+  document.querySelectorAll('#boardList .brow').forEach((r, i) => setTimeout(() => { r.classList.add('in'); r.querySelector('.fill').style.width = r.querySelector('.fill').dataset.w + '%'; }, 120 * i + 50));
+}
+
+async function hostEnd() {
+  Host.phase = 'end';
+  Sound.stopSong();
+  await Net.update(`rooms/${Host.pin}/state`, { phase: 'end' });
+  Host.endTimers.forEach(clearTimeout); Host.endTimers = [];
+  const list = sortedPlayers(), top = [list[1], list[0], list[2]], cls = ['p2', 'p1', 'p3'], medal = ['2', '1', '3'];
+  $('#podium').innerHTML = top.map((e, i) => e ? `<div class="pcol ${cls[i]}" style="--c:${esc(e[1].color)}"><div class="pav">${esc(e[1].avatar)}</div><div class="pnm">${esc(e[1].name)}</div><div class="psc">${e[1].score || 0} 分</div><div class="pblock">${medal[i]}</div></div>` : `<div class="pcol ${cls[i]}" style="visibility:hidden"></div>`).join('');
+  $('#allRank').hidden = true;
+  $('#endBtns').style.visibility = 'hidden';
+  show('h-end');
+  Sound.sfx.drum(2.4);
+  const T = (ms, f) => Host.endTimers.push(setTimeout(f, ms));
+  T(2400, () => { $('#podium .p3')?.classList.add('show'); Sound.sfx.cymbal(); });
+  T(3700, () => { $('#podium .p2')?.classList.add('show'); Sound.sfx.cymbal(); });
+  T(5200, () => { $('#podium .p1')?.classList.add('show'); Sound.sfx.fanfare(); confetti(5000); });
+  T(6800, () => { $('#endBtns').style.visibility = 'visible'; });
+}
+
+function hostShowAll() {
+  const box = $('#allRank');
+  if (!box.hidden) { box.hidden = true; return; }
+  box.innerHTML = '<div class="title" style="color:var(--ink);text-shadow:none;font-size:40px">完整排名</div>' +
+    sortedPlayers().map(([, p]) => `<div class="r"><span>${p.rank || '-'}. ${esc(p.avatar)} ${esc(p.name)}</span><span>${p.score || 0} 分</span></div>`).join('') +
+    '<button class="btn gold" onclick="this.parentNode.hidden=true">關閉</button>';
+  box.hidden = false;
+}
+
+async function hostAgain() {
+  Host.endTimers.forEach(clearTimeout);
+  Host.game = buildGame(Host.qs, Host.settings.shuffle);
+  Host.qIndex = -1; Host.prevRanks = {};
+  const upd = { answers: null, state: { phase: 'lobby', qIndex: -1, total: Host.game.length } };
+  for (const pid in Host.players) {
+    const b = `players/${pid}/`;
+    Object.assign(upd, { [b + 'score']: 0, [b + 'streak']: 0, [b + 'gain']: 0, [b + 'rank']: 0, [b + 'ok']: null, [b + 'answered']: null, [b + 'behind']: null, [b + 'aheadName']: null, [b + 'resQ']: null });
+  }
+  await Net.update(`rooms/${Host.pin}`, upd);
+  saveHost();
+  Host.seen = new Set(Object.keys(Host.players));
+  hostLobby();
+}
+
+async function hostClose() {
+  if (!confirm('要關閉房間嗎？學生會被登出，分數也會清除。')) return;
+  Host.endTimers.forEach(clearTimeout);
+  clearInterval(Host.timer);
+  if (Host.unPlayers) { Host.unPlayers(); Host.unPlayers = null; }
+  if (Host.unAns) { Host.unAns(); Host.unAns = null; }
+  Sound.stopSong();
+  await Net.remove(`rooms/${Host.pin}`);
+  localStorage.removeItem(LS_HOST);
+  Host.pin = null; Host.players = {};
+  $('#btnMusic').hidden = true;
+  hostOpenSetup();
+}
+
+async function hostResume() {
+  const s = loadJSON(LS_HOST); if (!s) return;
+  Sound.unlock();
+  Object.assign(Host, { pin: s.pin, qs: s.qs, game: s.game, settings: s.settings });
+  Sound.setMusic(Host.settings.music);
+  const st = await Net.get(`rooms/${Host.pin}/state`);
+  if (!st) { alert('這個房間已經不存在了'); return hostOpenSetup(); }
+  Host.players = (await Net.get(`rooms/${Host.pin}/players`)) || {};
+  Host.seen = new Set(Object.keys(Host.players));
+  hostSubscribePlayers();
+  $('#btnMusic').hidden = false;
+  if (st.phase === 'lobby') return hostLobby();
+  Host.qIndex = st.qIndex;
+  if (st.phase === 'end') return hostEnd();
+  if (st.phase === 'question' || st.phase === 'ready') { Host.phase = 'question'; return hostReveal(); }
+  return hostBoard();
+}
+
+/* =========================================================
+   學生端
+   ========================================================= */
+const P = { pin: null, pid: null, st: undefined, me: undefined, avatar: rand(AVATARS), answered: {}, qKey: null, soundQ: -1, endShown: false, endTimer: null, lines: {} };
+
+// 記住自己的玩家編號（重新整理可接回）；本機測試模式只記在分頁裡，避免同一瀏覽器的分頁互相搶身分
+function pidGet(pin) { const k = 'quiz601_pid_' + pin; return sessionStorage.getItem(k) || (Net.mode === 'firebase' ? localStorage.getItem(k) : null); }
+function pidSet(pin, pid) {
+  const k = 'quiz601_pid_' + pin;
+  if (pid) { sessionStorage.setItem(k, pid); if (Net.mode === 'firebase') localStorage.setItem(k, pid); }
+  else { sessionStorage.removeItem(k); localStorage.removeItem(k); }
+}
+
+function pOpenJoin(pin) {
+  show('p-join');
+  if (pin) $('#jPin').value = pin;
+  $('#jAvs').innerHTML = AVATARS.map(a => `<button type="button" class="${a === P.avatar ? 'sel' : ''}">${a}</button>`).join('');
+  setTimeout(() => (pin ? $('#jName') : $('#jPin')).focus(), 100);
+}
+
+async function pJoin() {
+  const pin = $('#jPin').value.trim(), name = $('#jName').value.trim(), err = m => { $('#jErr').textContent = m; };
+  if (!/^\d{4}$/.test(pin)) return err('請輸入 4 位數的遊戲代碼');
+  if (!name) return err('請輸入你的名字');
+  Sound.unlock();
+  $('#btnJoin').disabled = true; err('');
+  try {
+    const st = await Net.get(`rooms/${pin}/state`);
+    if (!st) return err('找不到這個房間，請確認代碼');
+    const players = (await Net.get(`rooms/${pin}/players`)) || {};
+    let pid = pidGet(pin);
+    if (!(pid && players[pid])) {
+      if (Object.values(players).some(p => p.name === name)) return err('這個名字已經有人用了，換一個吧');
+      pid = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      await Net.set(`rooms/${pin}/players/${pid}`, { name, avatar: P.avatar, color: rand(COLORS), score: 0, streak: 0, gain: 0, rank: 0, joined: Date.now() });
+      pidSet(pin, pid);
+    }
+    P.pin = pin; P.pid = pid;
+    history.replaceState(null, '', location.pathname + '?room=' + pin);
+    Sound.sfx.join();
+    Net.on(`rooms/${pin}/state`, v => { P.st = v; pRender(); });
+    Net.on(`rooms/${pin}/players/${pid}`, v => { P.me = v; pRender(); });
+  } catch (e) { err('連線失敗：' + e.message); }
+  finally { $('#btnJoin').disabled = false; }
+}
+
+function pMsg(title, sub) {
+  $('#pBar').hidden = true;
+  $('#pmTitle').textContent = title; $('#pmSub').textContent = sub;
+  show('p-msg');
+}
+
+function pRender() {
+  if (P.st === undefined || P.me === undefined) return;
+  if (!P.st) return pMsg('房間已經關閉', '謝謝參加！');
+  if (!P.me) { pidSet(P.pin, null); return pMsg('你已經離開房間', '可以重新加入'); }
+  const st = P.st, me = P.me;
+  $('#pBar').hidden = false;
+  $('#pbAv').textContent = me.avatar; $('#pbName').textContent = me.name; $('#pbScore').textContent = `${me.score || 0} 分`;
+  switch (st.phase) {
+    case 'lobby':
+      P.answered = {}; P.qKey = null; P.soundQ = -1; P.endShown = false; clearTimeout(P.endTimer); P.endTimer = null;
+      $('#pwAv').textContent = me.avatar; $('#pwAv').style.setProperty('--c', me.color); $('#pwName').textContent = me.name;
+      show('p-wait'); break;
+    case 'ready':
+      $('#prdNum').textContent = `第 ${st.qIndex + 1} 題`; $('#prdDouble').hidden = !st.double;
+      show('p-ready'); break;
+    case 'question':
+      if (!st.q) return;
+      if (P.answered[st.qIndex] != null) return pShowSent(st.qIndex);
+      if (P.qKey !== st.qIndex) {
+        P.qKey = st.qIndex;
+        $('#pqText').innerHTML = fmt(st.q.text);
+        $('#pqBtns').innerHTML = st.q.options.map((o, i) => `<button class="pbtn a${i}" data-i="${i}"><span class="shape">${SHAPES[i]}</span><span>${fmt(o)}</span></button>`).join('');
+        P.shownAt = performance.now();
+      }
+      show('p-question'); break;
+    case 'reveal': pRenderResult(st, me); break;
+    case 'board': pRenderRank(st, me); break;
+    case 'end': pRenderEnd(st, me); break;
+  }
+}
+
+function pAnswer(i) {
+  const st = P.st; if (!st || st.phase !== 'question') return;
+  const qi = st.qIndex; if (P.answered[qi] != null) return;
+  P.answered[qi] = i;
+  Sound.sfx.tap();
+  Net.set(`rooms/${P.pin}/answers/${qi}/${P.pid}`, { c: i, ms: Math.round(performance.now() - P.shownAt) });
+  pShowSent(qi);
+}
+
+function pShowSent(qi) {
+  const i = P.answered[qi];
+  const el = $('#psShape'); el.className = `sent-shape a${i}`; el.textContent = SHAPES[i];
+  if (!P.lines[qi]) P.lines[qi] = rand(['答案送出！看大螢幕 👀', '手速不錯 ⚡ 等其他人中…', '送出囉，不能改了 😆', '答案已經飛到大螢幕 🚀']);
+  $('#psLine').textContent = P.lines[qi];
+  show('p-sent');
+}
+
+function pRenderResult(st, me) {
+  const box = $('#p-result');
+  if (me.resQ !== st.qIndex) { box.className = 'screen active none'; $('#prIcon').textContent = '⏳'; $('#prTitle').textContent = '計分中…'; ['#prGain', '#prStreak', '#prAns', '#prRank'].forEach(s => $(s).textContent = ''); show('p-result'); return; }
+  const ok = !!me.ok, answered = !!me.answered;
+  show('p-result');
+  box.className = 'screen active ' + (ok ? 'ok' : answered ? 'bad' : 'none');
+  $('#prIcon').textContent = ok ? '✔' : answered ? '✘' : '💤';
+  $('#prTitle').textContent = ok ? '答對了！' : answered ? '答錯了' : '沒有作答';
+  $('#prGain').textContent = `+${me.gain || 0}`;
+  $('#prStreak').textContent = ok && st.q && st.q.double ? '★ 黃金題 分數 ×2！' : ok && me.streak >= 2 ? `🔥 ${me.streak} 連勝！` : '';
+  $('#prAns').innerHTML = !ok && st.q && st.correct != null ? `正確答案：${SHAPES[st.correct]} ${fmt(st.q.options[st.correct])}` : '';
+  $('#prRank').textContent = `目前第 ${me.rank} 名`;
+  if (P.soundQ !== st.qIndex) { P.soundQ = st.qIndex; ok ? Sound.sfx.correct() : Sound.sfx.wrong(); }
+}
+
+function pRenderRank(st, me) {
+  $('#prkRank').textContent = `第 ${me.rank || '-'} 名`;
+  $('#prkScore').textContent = `${me.score || 0} 分`;
+  $('#prkLine').textContent = me.rank === 1 ? '你是第一名！守住寶座 👑' : me.behind ? `再 ${me.behind} 分就能超越 ${me.aheadName}` : '加油！';
+  show('p-rank');
+}
+
+function pRenderEnd(st, me) {
+  if (!P.endShown) {
+    $('#peIcon').textContent = '🥁'; $('#peTitle').textContent = '頒獎典禮'; $('#peScore').textContent = ''; $('#peLine').textContent = '看大螢幕！';
+    show('p-end');
+    if (!P.endTimer) P.endTimer = setTimeout(() => { P.endShown = true; pRender(); if (P.me && P.me.rank <= 3) { confetti(4000); Sound.sfx.fanfare(); } else Sound.sfx.correct(); }, 6500);
+    return;
+  }
+  const r = me.rank;
+  $('#peIcon').textContent = r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : '🎉';
+  $('#peTitle').textContent = `第 ${r} 名`;
+  $('#peScore').textContent = `${me.score || 0} 分`;
+  $('#peLine').textContent = r <= 3 ? '太厲害了！' : '辛苦了，下次再挑戰！';
+  show('p-end');
+}
+
+/* =========================================================
+   事件綁定
+   ========================================================= */
+$('#btnGoHost').onclick = hostOpenSetup;
+$('#btnGoJoin').onclick = () => pOpenJoin('');
+$('#qText').addEventListener('input', () => { localStorage.setItem(LS_Q, $('#qText').value); hostValidate(); });
+$('#btnResetQ').onclick = () => { if (confirm('要把題目換回範例題嗎？目前的題目會被覆蓋。')) { $('#qText').value = DEFAULT_QUESTIONS; localStorage.setItem(LS_Q, DEFAULT_QUESTIONS); hostValidate(); } };
+$('#btnCreate').onclick = hostCreate;
+$('#btnResume').onclick = hostResume;
+$('#btnStart').onclick = () => { Host.qIndex = -1; Host.prevRanks = {}; hostNext(); };
+$('#btnSkip').onclick = hostReveal;
+$('#btnBoard').onclick = hostBoard;
+$('#btnNext').onclick = hostNext;
+$('#btnAll').onclick = hostShowAll;
+$('#btnAgain').onclick = hostAgain;
+$('#btnClose').onclick = hostClose;
+$('#btnMusic').onclick = () => { Sound.unlock(); Sound.setMusic(!Sound.musicOn); $('#btnMusic').textContent = Sound.musicOn ? '🔊' : '🔇'; };
+$('#lobbyPlayers').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  const p = Host.players[chip.dataset.pid];
+  if (p && confirm(`要把「${p.name}」移出房間嗎？`)) Net.remove(`rooms/${Host.pin}/players/${chip.dataset.pid}`);
+});
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') {
+    const b = document.querySelector('.screen.active [data-primary]');
+    if (b && !b.disabled) { e.preventDefault(); b.click(); }
+  }
+});
+$('#jAvs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  P.avatar = b.textContent;
+  document.querySelectorAll('#jAvs button').forEach(x => x.classList.toggle('sel', x === b));
+  Sound.unlock(); Sound.sfx.tap();
+});
+$('#jPin').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
+$('#jName').addEventListener('keydown', e => { if (e.key === 'Enter') pJoin(); });
+$('#btnJoin').onclick = pJoin;
+$('#pqBtns').addEventListener('click', e => { const b = e.target.closest('.pbtn'); if (b) pAnswer(+b.dataset.i); });
+$('#btnRejoin').onclick = () => { location.href = location.pathname + (P.pin ? '?room=' + P.pin : ''); };
+
+/* 入口 */
+(() => {
+  const q = new URLSearchParams(location.search);
+  if (q.has('room')) pOpenJoin(q.get('room'));
+  else if (q.has('host')) hostOpenSetup();
+  else show('home');
+})();
+</script>
+</body>
+</html>
