@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>六上數學 第1～4單元 複習練習</title>
+<style>
+:root{--g:#22b573;--gd:#0c8a50;--o:#ff922b;--bg:#fff9f0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);font-family:'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif;color:#333;overflow:hidden;user-select:none}
+#app{display:grid;grid-template-columns:12.5rem 1fr;height:100%}
+nav{background:#fff;border-right:3px solid #f1e3cf;display:flex;flex-direction:column;gap:.5rem;padding:.7rem .6rem}
+.tt{font-size:1rem;font-weight:900;color:#999;padding:.1rem .4rem .2rem}.tt b{display:block;font-size:1.4rem;color:var(--g);line-height:1.25}
+.lv{border:4px solid #eee;border-radius:18px;padding:.45rem .65rem;cursor:pointer;background:#fff}
+.lv .n{font-size:1.45rem;font-weight:900;color:#555}.lv .s{font-size:1rem;color:#888;font-weight:800;line-height:1.25}
+.lv .bar{height:.5rem;border-radius:9px;background:#f1f3f5;margin-top:.3rem;overflow:hidden}.lv .bar i{display:block;height:100%;width:0;transition:width .3s;background:var(--c)}
+.lv .c{font-size:.95rem;color:#888;font-weight:800;margin-top:.15rem;min-height:1.1em}
+.lv.on{border-color:var(--c);background:var(--cb)}.lv.on .n{color:var(--c)}
+.lv.u0{--c:#22b573;--cb:#e6fcf5}.lv.u1{--c:#1c7ed6;--cb:#e7f5ff}.lv.u2{--c:#f76707;--cb:#fff4e6}.lv.u3{--c:#d6336c;--cb:#fff0f6}
+.lv.u4{--c:#7048e8;--cb:#e5dbff;background:linear-gradient(135deg,#fff,#f3f0ff)}
+.sp{flex:1}
+#fs{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1rem;font-weight:900;color:#888;padding:.4rem}
+main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .8rem .7rem;gap:.55rem}
+#top{display:flex;align-items:center;gap:.6rem}
+#qno{flex:none;background:var(--g);color:#fff;font-weight:900;font-size:1.4rem;border-radius:14px;padding:.25rem .8rem}
+#utag{flex:none;font-weight:900;font-size:1.1rem;border-radius:12px;padding:.2rem .6rem;border:3px solid currentColor}
+#dots{display:flex;gap:.3rem;margin-left:auto}#dots i{width:1.1rem;height:1.1rem;border-radius:50%;background:#e9ecef}
+#dots i.cur{outline:3px solid var(--o);outline-offset:2px}#dots i.ok{background:var(--g)}#dots i.ok2{background:#94d82d}#dots i.no{background:#ffa8a8}
+#q{font-size:1.9rem;font-weight:900;line-height:1.5;background:#fff;border-radius:20px;padding:.45rem 1rem;box-shadow:0 4px 0 #f1e3cf}
+#q .num{color:#1c7ed6}
+#body{flex:1;min-height:0;display:grid;grid-template-columns:1fr 24rem;gap:.7rem}
+.card{background:#fff;border-radius:22px;box-shadow:0 4px 0 #f1e3cf;min-height:0}
+#figc{display:flex;flex-direction:column;padding:.5rem;overflow:auto}
+#fig{flex:1;min-height:0;width:100%}
+#bigc{flex:1;min-height:5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem}
+#figc.solv #bigc{flex:none;min-height:0;padding:.3rem 0}
+#figc.solv .bx{font-size:2.6rem}#figc.solv .bx.s{font-size:1.7rem}
+.bx{font-size:4.2rem;font-weight:900;color:#333;text-align:center;line-height:1.35}
+.bx.s{font-size:2.3rem;color:#555}.bx:not(.s){white-space:nowrap}
+.cq{color:var(--o)}
+#steps{display:flex;flex-direction:column;gap:.25rem;padding:0 .6rem .3rem}
+#steps>div{font-size:1.55rem;font-weight:900;animation:fade .3s;line-height:1.55}
+#steps .fr{font-size:.92em}#steps .h{color:#7048e8}#steps .sol{color:#2b8a3e}
+/* 直式分數 */
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .1em;line-height:1.1;font-size:.82em}
+.fr i{font-style:normal;padding:0 .18em}.fr i:first-child{border-bottom:.09em solid currentColor}
+/* 短除法 */
+.sd{border-collapse:collapse;margin:.2rem 0 .2rem 1rem;font-size:1.55rem;font-weight:900;color:#333}
+.sd td{padding:.05rem .55rem;text-align:center;min-width:2.2em}
+.sd td.p{color:#e8590c;text-align:right;min-width:1.4em}
+.sd tr:not(:last-child) td.p{border-right:3px solid #333}
+.sd tr:not(:last-child) td.n{border-bottom:3px solid #333}
+/* 作答 */
+#ansc{display:flex;flex-direction:column;gap:.55rem;padding:.8rem;min-height:0}
+#ansline{display:flex;align-items:center;gap:.5rem;font-size:1.7rem;font-weight:900;color:#555;justify-content:center;white-space:nowrap}
+#unit{flex:none}#ansline .pre{color:#888}
+.ib{min-width:0;height:1.8em;border:4px solid #dee2e6;border-radius:16px;background:#fff8ef;display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#d9480f;font-family:'Avenir Next','Helvetica Neue',Arial,sans-serif}
+#box{flex:1;max-width:9em;border-color:var(--o)}
+#fbx{display:none;align-items:center;gap:.4rem}
+#fbx .ib{width:3.4em;height:1.45em;font-size:2rem;cursor:pointer}
+#fbx .stk{display:flex;flex-direction:column;align-items:center;gap:.25rem}
+#fbx .stk hr{width:100%;border:0;border-top:5px solid #555;margin:0}
+#fbx .ib.act{border-color:var(--o);box-shadow:0 0 0 .25rem rgba(255,146,43,.25)}
+#bw{width:2.4em!important}
+.frmode #fbx{display:flex}.frmode #box{display:none}
+.ib.ok{border-color:#37b24d!important;background:#d3f9d8;color:#2b8a3e}
+.ib.no,#fbx.no .ib{border-color:#fa5252;background:#ffe3e3;animation:shake .4s}
+#rev{display:none;font-size:2.4rem;font-weight:900;color:#2b8a3e;background:#d3f9d8;border:4px solid #37b24d;border-radius:16px;padding:.1rem .8rem}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+#fb{min-height:2.4rem;font-size:1.4rem;font-weight:900;text-align:center;line-height:1.3}
+#fb.good{color:#2b8a3e}#fb.bad{color:#e03131}
+#pad{display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem;flex:1;min-height:0}
+#pad button{border:0;border-radius:14px;background:#f1f3f5;font:900 1.9rem 'Avenir Next','Helvetica Neue',Arial,sans-serif;color:#444;box-shadow:0 4px 0 #dee2e6;min-height:2.6rem}
+#pad button:active{transform:translateY(3px);box-shadow:0 1px 0 #dee2e6}
+#pad .del{background:#fff0f0;color:#e03131}
+#pad .nx{background:#fff4e6;color:#e8590c;font-family:inherit;font-size:1.35rem}
+#pad .ck{grid-column:span 2;background:var(--g);color:#fff;box-shadow:0 4px 0 var(--gd);font-family:inherit;font-size:1.7rem}
+#opts{display:none;flex:1;min-height:0;flex-direction:column;gap:.6rem;justify-content:center}
+#opts.row{flex-direction:row}
+#opts button{flex:1;max-height:6rem;border:4px solid #e9ecef;background:#fff;border-radius:18px;font:900 2rem 'PingFang TC','Microsoft JhengHei',sans-serif;color:#444;box-shadow:0 4px 0 #dee2e6;padding:.3rem}
+#opts.row{align-items:center}#opts.row button{font-size:3rem;max-height:9rem;height:100%;min-height:5rem}
+#opts button.no{border-color:#ffa8a8;background:#fff5f5;color:#e03131;opacity:.6}
+#opts button.ok{border-color:#37b24d;background:#d3f9d8;color:#2b8a3e}
+.chmode #opts{display:flex}.chmode #pad,.chmode #ansline{display:none}
+#acts{display:flex;gap:.5rem}
+#acts button{flex:1;border:4px solid #e9ecef;background:#fff;border-radius:16px;font:900 1.4rem 'PingFang TC','Microsoft JhengHei',sans-serif;color:#666;padding:.35rem}
+#acts .hint{border-color:#d0bfff;color:#7048e8}#acts .hint.pulse{animation:pl 1s infinite}
+@keyframes pl{50%{box-shadow:0 0 0 .4rem rgba(112,72,232,.25)}}
+#acts .next{background:var(--o);border-color:var(--o);color:#fff;box-shadow:0 4px 0 #e8590c}
+#acts button:disabled{opacity:.35}
+#acts .hide{display:none}
+/* 結算 */
+#end{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:5;padding:1rem}
+#end.on{display:flex}
+#end .box{background:#fff;border-radius:28px;padding:1.4rem 2rem;text-align:center;min-width:min(26rem,100%);animation:fade .3s}
+#end h2{margin:.2rem 0 .5rem;font-size:2.3rem}
+#end .big{font-size:4rem;font-weight:900;color:var(--g)}
+#end .st{font-size:2.6rem;color:#f59f00;letter-spacing:.15em}
+#end .sub{font-size:1.35rem;color:#777;font-weight:800;margin:.3rem 0 1rem}
+#end button{border:0;border-radius:18px;font:900 1.5rem 'PingFang TC','Microsoft JhengHei',sans-serif;padding:.5rem 1.2rem;margin:.3rem;background:#f1f3f5;color:#555}
+#end button.go{background:var(--o);color:#fff;box-shadow:0 4px 0 #e8590c}
+svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-linejoin:round}
+@media (max-width:1100px){#body{grid-template-columns:1fr 20rem}#rev{font-size:2rem}#q{font-size:1.65rem}#steps>div{font-size:1.35rem}.bx{font-size:3.4rem}}
+@media (max-width:900px),(orientation:portrait){html,body{overflow:visible;height:auto;min-height:100%}#app{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;min-height:100%}
+ nav{flex-direction:row;border-right:0;border-bottom:3px solid #f1e3cf;padding:.4rem;gap:.3rem;position:sticky;top:0;z-index:3}.tt,.sp,#fs,.lv .s{display:none}
+ .lv{flex:1;padding:.3rem .2rem;text-align:center;border-width:3px;border-radius:14px}.lv .n{font-size:1.1rem}.lv .c{font-size:.75rem}.lv .bar{margin-top:.2rem}
+ main{padding:.5rem}#body{grid-template-columns:1fr;grid-template-rows:auto auto}#figc{min-height:0;overflow:visible}#bigc{min-height:7rem;padding:.6rem 0}#fig{height:min(42vh,22rem);flex:none}
+ #pad{min-height:13.5rem}#opts{min-height:11rem}#q{font-size:1.4rem;padding:.4rem .7rem}#qno{font-size:1.1rem}#utag{font-size:.9rem}#dots i{width:.75rem;height:.75rem}
+ .bx{font-size:2.4rem}.bx.s{font-size:1.5rem}#steps>div{font-size:1.2rem}.sd{font-size:1.25rem}#opts button{font-size:1.5rem}#opts.row button{font-size:2.4rem;min-height:4rem}
+ #figc.solv .bx{font-size:2rem}#figc.solv .bx.s{font-size:1.3rem}}
+
+/* 答錯時的例題教學 */
+#teach{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:6;padding:.8rem}
+#teach.on{display:flex}
+#teach .tbox{background:#fff;border-radius:26px;padding:1rem 1.4rem 1.1rem;width:min(56rem,100%);max-height:94vh;overflow:auto;display:flex;flex-direction:column;gap:.5rem;animation:fade .3s;border:5px solid #d0bfff}
+.ttag{align-self:flex-start;background:#7048e8;color:#fff;font-weight:900;font-size:1.4rem;border-radius:14px;padding:.2rem .9rem}
+#tmsg{font-size:1.45rem;font-weight:900;color:#e03131;min-height:0}#tmsg:empty{display:none}
+#tq{font-size:1.75rem;font-weight:900;line-height:1.5;background:#f8f9fa;border-radius:16px;padding:.4rem .8rem}#tq .num{color:#7048e8}
+#tfig{width:100%;height:min(30vh,15rem)}
+#tbig .bx{font-size:3rem}#tbig .bx.s{font-size:1.8rem}#tbig:empty{display:none}
+#tsol{display:flex;flex-direction:column;gap:.3rem;min-height:2rem}
+#tsol>div{font-size:1.7rem;font-weight:900;color:#2b8a3e;line-height:1.55;animation:fade .35s}
+#tsol .fr{font-size:.92em}#tsol .ans{color:#7048e8;border-top:3px dashed #d0bfff;padding-top:.3rem}
+#tbtn{align-self:flex-end;border:0;border-radius:18px;background:#7048e8;color:#fff;font-size:1.6rem;font-weight:900;padding:.5rem 1.4rem;box-shadow:0 4px 0 #5f3dc4}
+#tbtn.go{background:var(--o);box-shadow:0 4px 0 #e8590c}
+@media (max-width:900px),(orientation:portrait){#tq{font-size:1.3rem}#tsol>div{font-size:1.25rem}#tbig .bx{font-size:2.2rem}#tbtn{font-size:1.3rem}.ttag{font-size:1.1rem}}
+</style></head><body>
+<div id="app">
+<nav id="nav"><div class="tt">六上數學<b>第1～4單元<br>複習練習</b></div></nav>
+<main>
+ <div id="top"><span id="qno">第 1 題</span><span id="utag"></span><span id="dots"></span></div>
+ <div id="q"></div>
+ <div id="body">
+  <div class="card" id="figc"><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
+  <div class="card" id="ansc">
+   <div id="ansline"><span class="pre" id="pre"></span><span id="box" class="ib"></span>
+    <span id="fbx"><span class="ib" id="bw" data-k="w"></span><span class="stk"><span class="ib" id="bn" data-k="n"></span><hr><span class="ib" id="bd" data-k="d"></span></span></span>
+    <span id="rev"></span><span id="unit"></span></div>
+   <div id="fb"></div>
+   <div id="pad"></div>
+   <div id="opts"></div>
+   <div id="acts"><button class="hint" id="hint">💡 提示</button><button id="show" class="hide">看解答</button><button class="next" id="next" disabled>下一題 ▶</button></div>
+  </div>
+ </div>
+</main>
+</div>
+<div id="teach"><div class="tbox">
+ <div class="ttag">📖 看一題例子</div><div id="tmsg"></div>
+ <div id="tq"></div><svg id="tfig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="tbig"></div>
+ <div id="tsol"></div>
+ <button id="tbtn">下一步 ▶</button>
+</div></div>
+<div id="end"><div class="box"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
+<script>
+const NS='http://www.w3.org/2000/svg',$=s=>document.querySelector(s);
+function mk(p,t,a={},s){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(s!=null)e.textContent=s;if(p)p.appendChild(e);return e}
+function tx(p,x,y,s,o={}){return mk(p,'text',Object.assign({x,y,'text-anchor':'middle','font-size':40,fill:'#333'},o),s)}
+const f=x=>String(+(+x).toFixed(4));
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const ev=(a,b)=>ri(a/2,b/2)*2;
+const PI='3.14';
+const B='#1c7ed6',O='#f76707',R='#e03131',P='#7048e8',FILL='#d0ebff',SH='#ffd8a8';
+
+const F={
+ circle(g,{show,lab,per}){const cx=400,cy=255,r=200;mk(g,'circle',{cx,cy,r,fill:FILL,stroke:per?O:B,'stroke-width':per?10:5});mk(g,'circle',{cx,cy,r:7,fill:'#333'});
+  if(show==='r'){mk(g,'line',{x1:cx,y1:cy,x2:cx+r,y2:cy,stroke:R,'stroke-width':7,'stroke-linecap':'round'});tx(g,cx+r/2,cy-20,lab,{fill:R})}
+  if(show==='d'){mk(g,'line',{x1:cx-r,y1:cy,x2:cx+r,y2:cy,stroke:P,'stroke-width':7,'stroke-linecap':'round'});tx(g,cx,cy-20,lab,{fill:P})}
+  if(show==='rq'){mk(g,'line',{x1:cx,y1:cy,x2:cx+r*.7,y2:cy-r*.7,stroke:'#8d5524','stroke-width':6,'stroke-dasharray':'12 8'});tx(g,cx+r*.42,cy-r*.42-18,'？',{fill:'#8d5524'})}
+  if(per)tx(g,cx,cy+r+48>515?510:cy+r+48,per,{fill:O,'font-size':38})},
+ ring(g,{R0,r0}){const cx=400,cy=260,K=220/R0,a=K*R0,b=K*r0;mk(g,'circle',{cx,cy,r:a,fill:SH,stroke:'#adb5bd','stroke-width':4});mk(g,'circle',{cx,cy,r:b,fill:'#fff',stroke:'#adb5bd','stroke-width':4});mk(g,'circle',{cx,cy,r:6,fill:'#333'});
+  mk(g,'line',{x1:cx,y1:cy,x2:cx+a,y2:cy,stroke:R,'stroke-width':6});tx(g,cx+a+10,cy+14,`${R0} 公分`,{fill:R,'text-anchor':'start','font-size':34});
+  const ang=-135*Math.PI/180;mk(g,'line',{x1:cx,y1:cy,x2:cx+b*Math.cos(ang),y2:cy+b*Math.sin(ang),stroke:P,'stroke-width':6});tx(g,cx+b*Math.cos(ang)-8,cy+b*Math.sin(ang)-14,`${r0} 公分`,{fill:P,'text-anchor':'end','font-size':34})},
+ sqc(g,{a,circle}){const s=400,x=200,y=36;mk(g,'rect',{x,y,width:s,height:s,fill:circle?'#fff':SH,stroke:'#555','stroke-width':4});mk(g,'circle',{cx:x+s/2,cy:y+s/2,r:s/2,fill:circle?FILL:'#fff',stroke:circle?B:'#555','stroke-width':4});
+  mk(g,'line',{x1:x,y1:y+s+24,x2:x+s,y2:y+s+24,stroke:'#555','stroke-width':4});tx(g,x+s/2,y+s+66,`${a} 公分`,{fill:'#333','font-size':36})},
+ cirsq(g,{r}){const cx=400,cy=255,R0=215;mk(g,'circle',{cx,cy,r:R0,fill:SH,stroke:'#555','stroke-width':4});mk(g,'path',{d:`M${cx} ${cy-R0}L${cx+R0} ${cy}L${cx} ${cy+R0}L${cx-R0} ${cy}Z`,fill:'#fff',stroke:'#555','stroke-width':4});
+  mk(g,'line',{x1:cx-R0,y1:cy,x2:cx+R0,y2:cy,stroke:'#adb5bd','stroke-width':3,'stroke-dasharray':'8 6'});mk(g,'line',{x1:cx,y1:cy-R0,x2:cx,y2:cy+R0,stroke:'#adb5bd','stroke-width':3,'stroke-dasharray':'8 6'});
+  mk(g,'line',{x1:cx,y1:cy,x2:cx+R0,y2:cy,stroke:R,'stroke-width':6});mk(g,'circle',{cx,cy,r:6,fill:'#333'});tx(g,cx+R0/2,cy+46,`${r} 公分`,{fill:R,'font-size':34})},
+ rect2(g,{r}){const u=170,x=60,y=80,w=4*u,h=2*u;mk(g,'rect',{x,y,width:w,height:h,fill:SH,stroke:'#555','stroke-width':4});
+  [x+u,x+3*u].forEach(cx=>{mk(g,'circle',{cx,cy:y+u,r:u,fill:'#fff',stroke:'#555','stroke-width':4})});mk(g,'circle',{cx:x+u,cy:y+u,r:6,fill:'#333'});
+  mk(g,'line',{x1:x+u,y1:y+u,x2:x+2*u,y2:y+u,stroke:R,'stroke-width':6});tx(g,x+1.5*u,y+u-16,`${r} 公分`,{fill:R,'font-size':34})},
+ two(g,{a,b,la,lb,show}){const k=Math.min(105/a,200/b),A=a*k,Bb=b*k,cy=250;const xa=60+A,xb=xa+A+60+Bb;
+  [[xa,A,la],[xb,Bb,lb]].forEach(([cx,r,l],i)=>{mk(g,'circle',{cx,cy,r,fill:i?SH:FILL,stroke:i?O:B,'stroke-width':5});mk(g,'circle',{cx,cy,r:6,fill:'#333'});
+    if(show==='d'){mk(g,'line',{x1:cx-r,y1:cy,x2:cx+r,y2:cy,stroke:P,'stroke-width':6})}else mk(g,'line',{x1:cx,y1:cy,x2:cx+r,y2:cy,stroke:R,'stroke-width':6});
+    tx(g,cx,cy+r+46,l,{fill:i?O:B,'font-size':34})})},
+ insq(g,{S}){const cx=400,cy=255,R0=215;mk(g,'circle',{cx,cy,r:R0,fill:SH,stroke:O,'stroke-width':5});mk(g,'path',{d:`M${cx} ${cy-R0}L${cx+R0} ${cy}L${cx} ${cy+R0}L${cx-R0} ${cy}Z`,fill:FILL,stroke:B,'stroke-width':5});
+  tx(g,cx,cy-8,'正方形',{fill:B,'font-size':34});tx(g,cx,cy+40,`面積 ${S}`,{fill:B,'font-size':38})},
+ sqin(g,{S}){const s=420,x=190,y=40;mk(g,'rect',{x,y,width:s,height:s,fill:FILL,stroke:B,'stroke-width':5});mk(g,'circle',{cx:x+s/2,cy:y+s/2,r:s/2,fill:SH,stroke:O,'stroke-width':5});
+  tx(g,x+s/2,y+s/2+14,'？',{fill:O,'font-size':60});tx(g,x+s/2,y+s+50,`正方形面積 ${S}`,{fill:B,'font-size':36})},
+ areaC(g,{A}){const cx=400,cy=250,r=210;mk(g,'circle',{cx,cy,r,fill:FILL,stroke:B,'stroke-width':5});mk(g,'circle',{cx,cy,r:7,fill:'#333'});
+  mk(g,'line',{x1:cx,y1:cy,x2:cx+r,y2:cy,stroke:R,'stroke-width':6,'stroke-dasharray':'12 8'});tx(g,cx+r/2,cy-16,'？',{fill:R,'font-size':44});tx(g,cx,cy+90,`面積 ${A}`,{fill:B,'font-size':38})},
+ grow(g,{r,k}){const cx=400,cy=255,K=220/(r+k),a=r*K,b=(r+k)*K;mk(g,'circle',{cx,cy,r:b,fill:'none',stroke:O,'stroke-width':6,'stroke-dasharray':'14 8'});mk(g,'circle',{cx,cy,r:a,fill:FILL,stroke:B,'stroke-width':5});mk(g,'circle',{cx,cy,r:6,fill:'#333'});
+  mk(g,'line',{x1:cx,y1:cy,x2:cx+a,y2:cy,stroke:R,'stroke-width':6});mk(g,'line',{x1:cx+a,y1:cy,x2:cx+b,y2:cy,stroke:O,'stroke-width':8});
+  tx(g,cx+a/2,cy-14,`${r}`,{fill:R,'font-size':34});tx(g,cx+(a+b)/2,cy-14,`+${k}`,{fill:O,'font-size':34})},
+ wire(g,{L}){mk(g,'circle',{cx:210,cy:250,r:170,fill:SH,stroke:O,'stroke-width':6});const s=2*Math.PI*170/4;mk(g,'rect',{x:600-s/2,y:250-s/2,width:s,height:s,fill:FILL,stroke:B,'stroke-width':6});
+  tx(g,400,60,`鐵絲 ${L} 公分`,{fill:'#555','font-size':38});tx(g,400,262,'或',{fill:'#aaa','font-size':36})},
+ lanes(g,{d,w}){const x0=200,x1=480,cy=255,r=120,o=r+46;mk(g,'path',{d:`M${x0} ${cy-o}H${x1}A${o} ${o} 0 0 1 ${x1} ${cy+o}H${x0}A${o} ${o} 0 0 1 ${x0} ${cy-o}Z`,fill:'#ffc9c9',stroke:R,'stroke-width':6});
+  mk(g,'path',{d:`M${x0} ${cy-r}H${x1}A${r} ${r} 0 0 1 ${x1} ${cy+r}H${x0}A${r} ${r} 0 0 1 ${x0} ${cy-r}Z`,fill:'#b2f2bb',stroke:B,'stroke-width':6});
+  mk(g,'line',{x1:x1,y1:cy-r,x2:x1,y2:cy+r,stroke:P,'stroke-width':5});tx(g,x1-14,cy+12,`${d} 公尺`,{fill:P,'font-size':32,'text-anchor':'end'});
+  mk(g,'line',{x1:x1+r,y1:cy,x2:x1+o,y2:cy,stroke:'#333','stroke-width':5});tx(g,x1+o+10,cy+12,`寬 ${w} 公尺`,{fill:'#333','font-size':30,'text-anchor':'start'})},
+ rowc(g,{n,d}){const cx=400,cy=250,R0=220,r=R0/n;mk(g,'circle',{cx,cy,r:R0,fill:SH,stroke:O,'stroke-width':5});
+  for(let i=0;i<n;i++){mk(g,'circle',{cx:cx-R0+r+2*r*i,cy,r,fill:FILL,stroke:B,'stroke-width':4})}
+  mk(g,'line',{x1:cx-R0,y1:cy,x2:cx-R0+2*r,y2:cy,stroke:P,'stroke-width':5});tx(g,cx-R0+r,cy-16,`${d}`,{fill:P,'font-size':32})},
+ pizza(g,{D,d}){const K=Math.min(300/D,700/(D+2*d)),A=D/2*K,a=d/2*K;const pz=(cx,cy,r,l)=>{mk(g,'circle',{cx,cy,r,fill:'#ffd43b',stroke:'#e67700','stroke-width':8});for(let i=0;i<5;i++){const t=i*1.3;mk(g,'circle',{cx:cx+r*.5*Math.cos(t),cy:cy+r*.5*Math.sin(t),r:r*.12,fill:'#e03131'})}tx(g,cx,cy+r+44,l,{fill:'#333','font-size':34})};
+  const x1=40+A,x2=x1+A+40+a,x3=x2+2*a+18;pz(x1,230,A,`${D} 吋`);pz(x2,230,a,`${d} 吋`);pz(x3,230,a,`${d} 吋`)},
+ gears(g,{D,d}){const K=170/(D/2),A=D/2*K,a=d/2*K,x1=230,x2=600,cy=260;mk(g,'path',{d:`M${x1} ${cy-A}L${x2} ${cy-a}M${x1} ${cy+A}L${x2} ${cy+a}`,stroke:'#495057','stroke-width':5});
+  [[x1,A,`直徑 ${D} 公分`,O],[x2,a,`直徑 ${d} 公分`,B]].forEach(([x,r,l,c])=>{mk(g,'circle',{cx:x,cy,r,fill:'#f1f3f5',stroke:c,'stroke-width':7});mk(g,'circle',{cx:x,cy,r:8,fill:'#333'});mk(g,'line',{x1:x,y1:cy,x2:x,y2:cy-r+10,stroke:R,'stroke-width':6});tx(g,x,cy+A+50,l,{fill:c,'font-size':32})})},
+ wheel(g,{d,n,back}){const cx=230,cy=250,r=150;mk(g,'line',{x1:40,y1:cy+r,x2:780,y2:cy+r,stroke:'#868e96','stroke-width':6});
+  mk(g,'circle',{cx,cy,r,fill:'#495057'});mk(g,'circle',{cx,cy,r:r-26,fill:'#dee2e6'});for(let k=0;k<6;k++){const a=k*Math.PI/3;mk(g,'line',{x1:cx,y1:cy,x2:cx+(r-26)*Math.cos(a),y2:cy+(r-26)*Math.sin(a),stroke:'#868e96','stroke-width':6})}
+  mk(g,'circle',{cx,cy,r:14,fill:'#495057'});mk(g,'line',{x1:cx-r,y1:cy-r-24,x2:cx+r,y2:cy-r-24,stroke:P,'stroke-width':5});tx(g,cx,cy-r-40,`直徑 ${d} 公分`,{fill:P,'font-size':34});
+  mk(g,'path',{d:`M${cx+r+30} ${cy+r-40}H740`,stroke:O,'stroke-width':7,fill:'none'});mk(g,'path',{d:`M740 ${cy+r-40}l-26 -16v32z`,fill:O});
+  tx(g,(cx+r+770)/2,cy+r-62,back||`轉 ${n} 圈`,{fill:O,'font-size':36})},
+ track(g,{L,d}){const x0=230,x1=570,cy=260,r=150;mk(g,'path',{d:`M${x0} ${cy-r}H${x1}A${r} ${r} 0 0 1 ${x1} ${cy+r}H${x0}A${r} ${r} 0 0 1 ${x0} ${cy-r}Z`,fill:'#b2f2bb',stroke:O,'stroke-width':8});
+  mk(g,'line',{x1:x0,y1:cy-r,x2:x0,y2:cy+r,stroke:'#555','stroke-width':3,'stroke-dasharray':'10 8'});mk(g,'line',{x1:x1,y1:cy-r,x2:x1,y2:cy+r,stroke:'#555','stroke-width':3,'stroke-dasharray':'10 8'});
+  tx(g,(x0+x1)/2,cy-r-20,`${L} 公尺`,{fill:'#333','font-size':36});mk(g,'line',{x1:x1,y1:cy-r,x2:x1,y2:cy+r,stroke:P,'stroke-width':6});tx(g,x1-16,cy+12,`${d} 公尺`,{fill:P,'font-size':34,'text-anchor':'end'})}
+};
+
+const T={
+ /* 基礎 */
+ b_dC(){const d=ri(3,20),a=d*3.14;return {text:`直徑 ${d} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'公分',
+   hints:['圓周長 ＝ 直徑 × 圓周率',`${d} × ${PI}`],sol:[`${d} × ${PI} ＝ ${f(a)}`],traps:[[d*d*3.14,'這是面積的算法喔'],[d/2*3.14,'直徑不用再除以 2']]}},
+ b_rC(){const r=ri(3,15),a=r*2*3.14;return {text:`半徑 ${r} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'公分',
+   hints:['圓周長 ＝ 直徑 × 圓周率','直徑 ＝ 半徑 × 2',`${r} × 2 × ${PI}`],sol:[`${r} × 2 × ${PI} ＝ ${f(a)}`],traps:[[r*3.14,'半徑要先 × 2 變成直徑'],[r*r*3.14,'這是面積的算法喔']]}},
+ b_rA(){const r=ri(3,15),a=r*r*3.14;return {text:`半徑 ${r} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'平方公分',
+   hints:['圓面積 ＝ 半徑 × 半徑 × 圓周率',`${r} × ${r} × ${PI}`],sol:[`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[r*2*3.14,'這是圓周長喔'],[r*3.14,'半徑要乘兩次'],[2*r*2*r*3.14,'要用半徑，不是直徑']]}},
+ b_dA(){const d=ev(6,24),r=d/2,a=r*r*3.14;return {text:`直徑 ${d} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'平方公分',
+   hints:['先算半徑：直徑 ÷ 2',`${d} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI}`],sol:[`半徑 ${d} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[d*d*3.14,'要用半徑，不是直徑'],[d*3.14,'這是圓周長喔']]}},
+ b_Cd(){const d=ri(3,25),C=d*3.14;return {text:`圓周長 ${f(C)} 公分的圓，直徑是幾公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:d,unit:'公分',pre:'',
+   hints:['直徑 × 圓周率 ＝ 圓周長','直徑 ＝ 圓周長 ÷ 圓周率',`${f(C)} ÷ ${PI}`],sol:[`${f(C)} ÷ ${PI} ＝ ${d}`],traps:[[C*3.14,'要用除的'],[d/2,'這是半徑，題目問直徑']]}},
+ /* 進階 */
+ a_Cr(){const dog=Math.random()<.5,u=dog?'公尺':'公分',r=ri(2,dog?9:15),C=r*2*3.14;return {text:dog?`小狗拉直牽繩繞著木樁走 1 圈，共走了 ${f(C)} 公尺，牽繩大約長幾公尺？`:`圓周長 ${f(C)} 公分的圓，半徑是幾公分？`,fig:['circle',{per:dog?`1 圈 ${f(C)} 公尺`:`圓周長 ${f(C)} 公分`,show:dog?'rq':''}],ans:r,unit:u,pre:'',
+   hints:dog?['牽繩的長 ＝ 圓的半徑','直徑 ＝ 圓周長 ÷ 圓周率','半徑 ＝ 直徑 ÷ 2']:['直徑 ＝ 圓周長 ÷ 圓周率','半徑 ＝ 直徑 ÷ 2'],sol:[`直徑 ${f(C)} ÷ ${PI} ＝ ${2*r}`,`半徑 ${2*r} ÷ 2 ＝ ${r}`],traps:[[2*r,'這是直徑，還要 ÷ 2']]}},
+ a_CA(){const r=ri(2,10),C=r*2*3.14,a=r*r*3.14;return {text:`圓周長 ${f(C)} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:a,unit:'平方公分',
+   hints:['① 直徑 ＝ 圓周長 ÷ 圓周率','② 半徑 ＝ 直徑 ÷ 2','③ 面積 ＝ 半徑 × 半徑 × 圓周率'],sol:[`直徑 ${f(C)} ÷ ${PI} ＝ ${2*r}，半徑 ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[4*r*r*3.14,'要用半徑，不是直徑'],[2*r,'這是直徑，還要算面積'],[r,'這是半徑，還要算面積']]}},
+ a_double(){const d=pick([4,5,6,8,10,12,15,20]),k=pick([2,3]),a=d*k*3.14;return {text:`小圓形花圃直徑 ${d} 公尺，大花圃的直徑是小花圃的 ${k} 倍。大花圃的圓周長大約是幾公尺？`,fig:['two',{a:d,b:d*k,la:`小 ${d} 公尺`,lb:`大 ？`,show:'d'}],ans:a,unit:'公尺',
+   hints:['先算大花圃的直徑',`${d} × ${k} ＝ ${d*k}`,`${d*k} × ${PI}`],sol:[`大花圃直徑 ${d} × ${k} ＝ ${d*k}`,`${d*k} × ${PI} ＝ ${f(a)}`],traps:[[d*3.14,'這是小花圃的圓周長'],[d*k*d*k*3.14,'題目問圓周長，不是面積']]}},
+ a_card(){const a0=ev(6,24),r=a0/2,a=r*r*3.14;return {text:`在邊長 ${a0} 公分的正方形卡片上，畫一個最大的圓，圓面積大約是幾平方公分？`,fig:['sqc',{a:a0,circle:1}],ans:a,unit:'平方公分',
+   hints:['最大的圓：直徑 ＝ 正方形的邊長',`半徑 ＝ ${a0} ÷ 2 ＝ ${r}`],sol:[`半徑 ${a0} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[a0*a0*3.14,'要用半徑，不是邊長'],[a0*a0,'這是正方形的面積'],[a0*3.14,'這是圓周長']]}},
+ a_wheel(){const d=pick([40,50,60,70,80]),n=ri(2,9),a=d*3.14*n;return {text:`直徑 ${d} 公分的輪子滾了 ${n} 圈，大約前進了幾公分？`,fig:['wheel',{d,n}],ans:a,unit:'公分',
+   hints:['滾 1 圈 ＝ 1 個圓周長',`${d} × ${PI} × ${n}`],sol:[`1 圈：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(d*3.14)} × ${n} ＝ ${f(a)}`],traps:[[d*3.14,`這是 1 圈，要滾 ${n} 圈`]]}},
+ /* 挑戰 */
+ c_sqc(){const a0=ev(4,20),r=a0/2,a=a0*a0-r*r*3.14;return {text:`正方形邊長 ${a0} 公分，裡面畫一個最大的圓，橘色部分大約是幾平方公分？`,fig:['sqc',{a:a0}],ans:a,unit:'平方公分',
+   hints:['橘色 ＝ 正方形面積 － 圓面積','圓的直徑 ＝ 正方形的邊長'],sol:[`正方形 ${a0} × ${a0} ＝ ${a0*a0}`,`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`${a0*a0} － ${f(r*r*3.14)} ＝ ${f(a)}`],traps:[[r*r*3.14,'這是圓的面積，還要用正方形減掉'],[a0*a0-a0*a0*3.14<0?-1:a0*a0-a0*a0*3.14,'圓的半徑是邊長的一半']]}},
+ c_ring(){const R0=ri(5,12),r0=ri(2,R0-2),a=R0*R0*3.14-r0*r0*3.14;return {text:`大圓半徑 ${R0} 公分、小圓半徑 ${r0} 公分（同一個圓心），橘色部分大約是幾平方公分？`,fig:['ring',{R0,r0}],ans:a,unit:'平方公分',
+   hints:['橘色 ＝ 大圓面積 － 小圓面積'],sol:[`大圓 ${R0} × ${R0} × ${PI} ＝ ${f(R0*R0*3.14)}`,`小圓 ${r0} × ${r0} × ${PI} ＝ ${f(r0*r0*3.14)}`,`${f(R0*R0*3.14)} － ${f(r0*r0*3.14)} ＝ ${f(a)}`],traps:[[(R0-r0)*(R0-r0)*3.14,'不能先把半徑相減，要大圓面積減小圓面積']]}},
+ c_cirsq(){const r=ri(3,12),a=r*r*3.14-r*r*2;return {text:`圓的半徑 ${r} 公分，圓裡面有一個白色正方形，橘色部分大約是幾平方公分？`,fig:['cirsq',{r}],ans:a,unit:'平方公分',
+   hints:['橘色 ＝ 圓面積 － 正方形面積','正方形可以切成 4 個三角形，底和高都是半徑'],sol:[`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`4 個三角形 ${r} × ${r} ÷ 2 × 4 ＝ ${r*r*2}`,`${f(r*r*3.14)} － ${r*r*2} ＝ ${f(a)}`],traps:[[r*r*3.14,'這是整個圓，還要減掉白色正方形'],[r*r*3.14-r*r,'正方形是 4 個三角形，面積是 半徑×半徑×2'],[r*r*3.14-4*r*r,'正方形的邊不是直徑，要用 4 個三角形來算']]}},
+ c_rect2(){const r=ri(2,10),a=8*r*r-2*r*r*3.14;return {text:`長方形裡挖掉 2 個一樣大的圓，圓的半徑 ${r} 公分。橘色部分大約是幾平方公分？`,fig:['rect2',{r}],ans:a,unit:'平方公分',
+   hints:['長方形的長 ＝ 4 個半徑，寬 ＝ 2 個半徑','橘色 ＝ 長方形 － 2 個圓'],sol:[`長方形 ${4*r} × ${2*r} ＝ ${8*r*r}`,`2 個圓 ${r} × ${r} × ${PI} × 2 ＝ ${f(2*r*r*3.14)}`,`${8*r*r} － ${f(2*r*r*3.14)} ＝ ${f(a)}`],traps:[[8*r*r-r*r*3.14,'有 2 個圓喔'],[2*r*r*3.14,'這是 2 個圓，還要用長方形減']]}},
+ c_ratio(){const r=ri(2,6),k=pick([2,3]),a=k*k;return {text:`乙圓的半徑是甲圓的 ${k} 倍。甲圓半徑 ${r} 公分，乙圓的面積是甲圓的幾倍？`,fig:['two',{a:r,b:r*k,la:`甲 ${r} 公分`,lb:`乙`}],ans:a,unit:'倍',pre:'',
+   hints:['分別算出甲、乙的面積',`乙的半徑 ${r} × ${k} ＝ ${r*k}`,'乙面積 ÷ 甲面積'],sol:[`甲 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`乙 ${r*k} × ${r*k} × ${PI} ＝ ${f(r*k*r*k*3.14)}`,`${f(r*k*r*k*3.14)} ÷ ${f(r*r*3.14)} ＝ ${a}`],traps:[[k,`半徑 ${k} 倍，面積不是 ${k} 倍喔，算算看`]]}},
+ c_turns(){const d=pick([40,50,60,70,80]),n=ri(3,12),L=d*3.14*n;return {text:`直徑 ${d} 公分的輪子，滾了 ${f(L)} 公分，轉了幾圈？`,fig:['wheel',{d,back:`${f(L)} 公分`}],ans:n,unit:'圈',pre:'',
+   hints:['1 圈 ＝ 1 個圓周長','圈數 ＝ 總長 ÷ 1 圈的長'],sol:[`1 圈：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(L)} ÷ ${f(d*3.14)} ＝ ${n}`],traps:[]}},
+ c_trackP(){const L=pick([40,50,60,70,80,90,100]),d=pick([20,30,40,50]),a=2*L+d*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場一圈大約是幾公尺？`,fig:['track',{L,d}],ans:a,unit:'公尺',
+   hints:['兩個半圓 ＝ 一個圓','一圈 ＝ 圓周長 ＋ 2 條直線'],sol:[`兩個半圓：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(d*3.14)} ＋ ${L} ＋ ${L} ＝ ${f(a)}`],traps:[[L+d*3.14,'直線有上下 2 條'],[2*L+d*3.14/2,'兩個半圓合起來是一整個圓'],[2*L+2*d+d*3.14,'虛線不是操場的邊，不用算']]}},
+ c_trackA(){const L=pick([40,50,60,70,80]),d=pick([20,30,40]),r=d/2,a=L*d+r*r*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場的面積大約是幾平方公尺？`,fig:['track',{L,d}],ans:a,unit:'平方公尺',
+   hints:['面積 ＝ 長方形 ＋ 兩個半圓（一個圓）','圓的半徑 ＝ 直徑 ÷ 2'],sol:[`長方形 ${L} × ${d} ＝ ${L*d}`,`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`${L*d} ＋ ${f(r*r*3.14)} ＝ ${f(a)}`],traps:[[L*d+d*d*3.14,'圓要用半徑，不是直徑'],[L*d,'別忘了兩邊的半圓']]}},
+};
+/* ================= 共用:分數、小數 ================= */
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
+const lcm=(a,b)=>a/gcd(a,b)*b;
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const Fr=(n,d)=>{if(d<0){n=-n;d=-d}const g=gcd(n,d)||1;return {n:n/g,d:d/g}};
+const fr=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;               // 直式分數
+const mx=(n,d)=>{const q=Fr(n,d);if(q.d===1)return String(q.n);if(q.n>q.d)return `${Math.floor(q.n/q.d)}${fr(q.n%q.d,q.d)}`;return fr(q.n,q.d)}; // 最簡,假分數寫成帶分數
+const eq=(n,d)=>fr(n,d)+((gcd(n,d)>1||n>d)?' ＝ '+mx(n,d):'');
+const mxRaw=(w,n,d)=>w?`${w}${fr(n,d)}`:fr(n,d);
+const ds=x=>String(+(+x).toFixed(6));                                             // 小數字串
+const isPrime=n=>{if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i===0)return false;return true};
+const divs=n=>{const r=[];for(let i=1;i<=n;i++)if(n%i===0)r.push(i);return r};
+const pfac=n=>{const r=[];let m=n;for(let p=2;m>1;p++)while(m%p===0){r.push(p);m/=p}return r};
+/* 短除法(兩數):回傳除數列與最後的商 */
+function sdiv(a,b){const ps=[];let x=a,y=b;for(let p=2;p<=Math.min(x,y);){if(x%p===0&&y%p===0){ps.push(p);x/=p;y/=p}else p++}return {ps,x,y}}
+const sdivHtml=(a,b)=>{const {ps,x,y}=sdiv(a,b);let h='<table class="sd">';let u=a,v=b;ps.forEach(p=>{h+=`<tr><td class="p">${p}</td><td class="n">${u}</td><td class="n">${v}</td></tr>`;u/=p;v/=p});h+=`<tr><td></td><td class="n">${x}</td><td class="n">${y}</td></tr></table>`;return h};
+
+/* ================= 第1單元 質因數分解和短除法 ================= */
+const U1={
+ prime(){const pool=[2,3,5,7,11,13,17,19,1,9,15,21,25,27,33,35,39,49,51,57,63,65,69,77,85,87,91,95,22,26,34,38,46,58,68,75];const n=pick(pool);
+  const a=n===1?'都不是':isPrime(n)?'質數':'合數';const d=divs(n);
+  return {type:'mc',opts:['質數','合數','都不是'],text:`${n} 是質數還是合數？`,big:`<div class="bx">${n}</div>`,ans:a,
+   hints:['質數：只有 1 和自己兩個因數','合數：除了 1 和自己，還有別的因數',`找找看 ${n} 的因數`],
+   sol:[`${n} 的因數：${d.join('、')}`,n===1?'1 只有一個因數，不是質數也不是合數':`共 ${d.length} 個因數，所以是${a}`]}},
+ pf(){let n,fs;do{fs=Array.from({length:ri(2,4)},()=>pick([2,2,2,3,3,3,5,5,7,11,13])).sort((x,y)=>x-y);n=fs.reduce((t,x)=>t*x,1)}while(n<20||n>200);
+  const ok=fs.join(' × ');const opts=new Set([ok]);
+  /* 錯誤選項:有合數、乘起來不對、少一個 */
+  let tries=0;while(opts.size<4&&tries++<50){const k=ri(0,2);let w;
+    if(k===0&&fs.length>=2){const i=ri(0,fs.length-2);const g=fs.slice();g.splice(i,2,g[i]*g[i+1]);w=g.join(' × ')}
+    else if(k===1){const g=fs.slice();const i=ri(0,g.length-1);g[i]=pick([2,3,5,7].filter(p=>p!==g[i]));g.sort((x,y)=>x-y);if(g.reduce((t,x)=>t*x,1)!==n)w=g.join(' × ')}
+    else if(fs.length>=3){const g=fs.slice();g.splice(ri(0,g.length-1),1);w=g.join(' × ')}
+    if(w&&w!==ok)opts.add(w)}
+  const steps=[];let m=n;fs.forEach(p=>{steps.push(`${m} ÷ ${p} ＝ ${m/p}`);m/=p});
+  return {type:'mc',opts:shuf([...opts]),text:`把 ${n} 做質因數分解，哪一個正確？`,big:`<div class="bx">${n} ＝ ？</div>`,ans:ok,
+   hints:['用短除法，除數都要用質數','一直除到商是質數為止','乘數都要是質數，乘起來要等於 '+n],sol:[...steps.slice(0,-1),`${n} ＝ ${ok}`]}},
+ coprime(){const yes=pick([[8,15],[9,10],[14,25],[24,25],[16,27],[21,22],[10,21],[19,11],[35,12],[9,28]]);const nos=[];
+  while(nos.length<3){const g=pick([2,3,5,7]);const a=g*ri(2,9),b=g*ri(2,9);if(a!==b&&!nos.some(p=>p[0]===a&&p[1]===b))nos.push([a,b])}
+  const all=shuf([yes,...nos]).map(p=>`${p[0]}、${p[1]}`);const ans=`${yes[0]}、${yes[1]}`;
+  return {type:'mc',opts:all,text:'下面哪一組數互質？',big:'<div class="bx s">最大公因數是 1<br>→ 互質</div>',ans,
+   hints:['互質：兩個數的最大公因數是 1','兩個數都不是質數，也可能互質'],sol:[`${yes[0]} 和 ${yes[1]} 的公因數只有 1，所以互質`,...nos.map(p=>`${p[0]} 和 ${p[1]} 都能被 ${gcd(p[0],p[1])} 整除`)]}},
+ gcd(){let a,b,g;do{g=ri(2,15);const m=ri(1,8),k=ri(2,9);a=g*m;b=g*k}while(a===b||gcd(a/g,b/g)!==1||a>120||b>120||a<8);
+  if(Math.random()<.5)[a,b]=[b,a];
+  return {type:'num',text:`${a} 和 ${b} 的最大公因數是多少？`,big:`<div class="bx">${a}、${b}</div>`,ans:g,unit:'',pre:'',
+   hints:['用短除法：找兩個數共同的質因數','一直除到兩個商互質','把左邊的除數全部乘起來'],
+   sol:[`__HTML__${sdivHtml(a,b)}`,`${sdiv(a,b).ps.join(' × ')||'1'} ＝ ${g}`],traps:[[lcm(a,b),'這是最小公倍數喔'],[a*b,'最大公因數要用短除法找，不是相乘']]}},
+ lcm(){let a,b;do{a=ri(4,30);b=ri(4,30)}while(a===b||lcm(a,b)>300);const L=lcm(a,b),{ps,x,y}=sdiv(a,b);
+  return {type:'num',text:`${a} 和 ${b} 的最小公倍數是多少？`,big:`<div class="bx">${a}、${b}</div>`,ans:L,unit:'',pre:'',
+   hints:['用短除法：除到兩個商互質','最小公倍數 ＝ 左邊的除數 × 下面的商（L 形）'],
+   sol:[`__HTML__${sdivHtml(a,b)}`,`${[...ps,x,y].join(' × ')} ＝ ${L}`],traps:[[gcd(a,b),'這是最大公因數喔'],...(gcd(a,b)>1?[[a*b,'兩數不互質，不能直接相乘']]:[])]}},
+ appG(){const k=ri(0,2);
+  if(k===0){let L,W,g;do{g=pick([2,3,4,5,6]);L=g*ri(3,8);W=g*ri(2,6)}while(L<=W||gcd(L/g,W/g)!==1);
+   return {type:'num',text:`一塊長 ${L} 公尺、寬 ${W} 公尺的長方形土地，要分割成大小相同、邊長是整公尺的正方形，正方形最大的邊長是幾公尺？`,big:`<div class="bx s">長 ${L}，寬 ${W}<br>→ 最大的正方形</div>`,ans:g,unit:'公尺',pre:'',
+    hints:['正方形的邊長要能整除長，也要能整除寬','最大的邊長 → 找最大公因數'],sol:[`__HTML__${sdivHtml(L,W)}`,`${sdiv(L,W).ps.join(' × ')} ＝ ${g}，最大公因數是 ${g}`],traps:[[lcm(L,W),'切成小正方形，要找最大公因數']]}}
+  if(k===1){let a,b,g;do{g=pick([4,6,8,12]);a=g*ri(3,9);b=g*ri(3,9)}while(a===b||gcd(a/g,b/g)!==1);
+   return {type:'num',text:`夏令營有 ${a} 個男生和 ${b} 個女生，男女混合分組，每組男生一樣多、女生也一樣多，全部分完，最多可以分成幾組？`,big:`<div class="bx s">男 ${a}、女 ${b}<br>→ 最多幾組</div>`,ans:g,unit:'組',pre:'',
+    hints:['組數要能整除男生人數，也要能整除女生人數','最多幾組 → 找最大公因數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${sdiv(a,b).ps.join(' × ')} ＝ ${g}，最多分成 ${g} 組`],traps:[[lcm(a,b),'分組要找最大公因數']]}}
+  let a,b,g;do{g=pick([6,8,12,24]);a=g*ri(2,6);b=g*ri(2,6)}while(a===b||gcd(a/g,b/g)!==1);
+  return {type:'num',text:`老師把 ${a} 枝筆和 ${b} 本筆記本全部裝袋，每袋的筆一樣多，筆記本也一樣多，最多可以裝幾袋？`,big:`<div class="bx s">筆 ${a}、筆記本 ${b}<br>→ 最多幾袋</div>`,ans:g,unit:'袋',pre:'',
+   hints:['袋數要能整除兩種數量','最多 → 最大公因數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${sdiv(a,b).ps.join(' × ')} ＝ ${g}，最多裝 ${g} 袋`],traps:[[lcm(a,b),'裝袋分完要找最大公因數']]}},
+ appL(){const k=ri(0,3);
+  if(k===0){const [a,b]=pick([[8,12],[6,9],[10,15],[4,6],[12,18],[9,12]]);const L=lcm(a,b);
+   return {type:'num',text:`用長 ${b} 公分、寬 ${a} 公分的長方形紙片排成正方形，最小的正方形邊長是幾公分？`,big:`<div class="bx s">${b} 和 ${a}<br>→ 最小的正方形</div>`,ans:L,unit:'公分',pre:'',
+    hints:['正方形的邊長要是 '+a+' 的倍數，也要是 '+b+' 的倍數','最小 → 找最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'排成大正方形要找最小公倍數']]}}
+  if(k===1){const [a,b]=pick([[12,15],[8,12],[10,12],[6,15],[9,12]]);const L=lcm(a,b);
+   return {type:'num',text:`一批餅乾每 ${a} 個裝一盒，或每 ${b} 個裝一盒，都剛好裝完。這批餅乾最少有幾個？`,big:`<div class="bx s">${a} 個一盒、${b} 個一盒<br>→ 最少幾個</div>`,ans:L,unit:'個',pre:'',
+    hints:['數量要是 '+a+' 和 '+b+' 的公倍數','最少 → 最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'要找最小公倍數'],[a*b,'不互質不能直接相乘']]}}
+  if(k===2){const [a,b]=pick([[25,15],[20,30],[12,18],[10,25],[15,20]]);const L=lcm(a,b);
+   return {type:'num',text:`大水池每 ${a} 分鐘噴水一次，小水池每 ${b} 分鐘噴水一次。兩個水池同時噴水後，最少再過幾分鐘會再同時噴水？`,big:`<div class="bx s">每 ${a} 分、每 ${b} 分<br>→ 再同時噴水</div>`,ans:L,unit:'分鐘',pre:'',
+    hints:['同時噴水的時間是兩個數的公倍數','最少 → 最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'要找最小公倍數']]}}
+  const [a,b]=pick([[6,8],[4,6],[6,9],[8,12],[5,6]]),r=pick([1,2,3,4].filter(x=>x<Math.min(a,b)));const L=lcm(a,b);
+  return {type:'num',text:`把學員每 ${a} 人分一組，或每 ${b} 人分一組，都會多出 ${r} 人。學員最少有幾人？`,big:`<div class="bx s">每 ${a} 人、每 ${b} 人<br>都多 ${r} 人</div>`,ans:L+r,unit:'人',pre:'',
+   hints:['先把多出的 '+r+' 人拿走，就剛好分完',`先找 ${a} 和 ${b} 的最小公倍數，再加 ${r}`],sol:[`${a} 和 ${b} 的最小公倍數是 ${L}`,`${L} ＋ ${r} ＝ ${L+r}`],traps:[[L,`別忘了加上多出的 ${r} 人`],[L-r,'多出的人要加上去，不是減掉']]}}
+};
+
+/* ================= 第2單元 分數的除法 ================= */
+const fq=(a,b)=>({n:a,d:b});
+const U2={
+ simp(){let n,d,g;do{g=ri(2,9);const p=ri(1,12),q=ri(2,12);if(gcd(p,q)!==1||p>=q)continue;n=p*g;d=q*g}while(!n||n>=d||d>90);const w=Math.random()<.3?ri(1,4):0;const a=Fr(n,d);
+  return {type:'frac',text:`把 ${w?w:''}${fr(n,d)} 約分成最簡分數。`,big:`<div class="bx">${mxRaw(w,n,d)} ＝ ？</div>`,ans:{n:a.n+w*a.d,d:a.d},
+   hints:[`找出 ${n} 和 ${d} 的最大公因數`,'分子、分母同除以最大公因數'],sol:[`${n} 和 ${d} 的最大公因數是 ${gcd(n,d)}`,`${mxRaw(w,n,d)} ＝ ${mxRaw(w,a.n,a.d)}`],reduce:true}},
+ same(){const d=ri(5,19);let a,b;do{a=ri(1,d*2);b=ri(1,d)}while(a===b||b>=d||gcd(a,d)!==1&&gcd(b,d)!==1);const A=Fr(a,b);
+  return {type:'frac',text:`算算看：${fr(a,d)} ÷ ${fr(b,d)}`,big:`<div class="bx">${fr(a,d)} ÷ ${fr(b,d)} ＝ ？</div>`,ans:A,
+   hints:['分母一樣，直接用分子相除',`${a} ÷ ${b}`],sol:[`${fr(a,d)} ÷ ${fr(b,d)} ＝ ${a} ÷ ${b}`,`＝ ${eq(a,b)}`],traps:[[a*b/(d*d),'同分母相除，分子除以分子就好']]}},
+ diff(){const k=ri(0,3);let a,b,c,d,w1=0,txt,big,num,den,steps;
+  if(k===0){/* 整數 ÷ 分數 */do{c=ri(1,8);d=ri(2,9)}while(gcd(c,d)!==1||c===d);a=ri(2,12);
+   txt=`算算看：${a} ÷ ${fr(c,d)}`;big=`${a} ÷ ${fr(c,d)}`;num=a*d;den=c;steps=[`${a} ÷ ${fr(c,d)} ＝ ${a} × ${fr(d,c)}`,`＝ ${eq(num,den)}`]}
+  else if(k===1){/* 分數 ÷ 整數 */do{a=ri(1,15);b=ri(2,9)}while(gcd(a,b)!==1);c=ri(2,6);
+   txt=`算算看：${fr(a,b)} ÷ ${c}`;big=`${fr(a,b)} ÷ ${c}`;num=a;den=b*c;steps=[`${fr(a,b)} ÷ ${c} ＝ ${fr(a,b)} × ${fr(1,c)}`,`＝ ${eq(num,den)}`]}
+  else{/* 分數 ÷ 分數(可含帶分數) */do{a=ri(1,9);b=ri(2,9);c=ri(1,9);d=ri(2,9)}while(gcd(a,b)!==1||gcd(c,d)!==1||b===d||a>=b||c>=d);
+   if(k===3){w1=ri(1,3)}const A=w1*b+a;
+   txt=`算算看：${mxRaw(w1,a,b)} ÷ ${fr(c,d)}`;big=`${mxRaw(w1,a,b)} ÷ ${fr(c,d)}`;num=A*d;den=b*c;
+   steps=[...(w1?[`${mxRaw(w1,a,b)} ＝ ${fr(A,b)}`]:[]),`${fr(A,b)} ÷ ${fr(c,d)} ＝ ${fr(A,b)} × ${fr(d,c)}`,`＝ ${eq(num,den)}`]}
+  const ans=Fr(num,den);
+  return {type:'frac',text:txt,big:`<div class="bx">${big} ＝ ？</div>`,ans,hints:['把除數的分子、分母顛倒，再和被除數相乘','帶分數先化成假分數','最後約成最簡分數'],sol:steps,
+   trapsF:[[k===0?Fr(a*c,d):k===1?Fr(a*c,b):Fr((w1*b+a)*c,b*d),'除法要把除數顛倒再相乘，不是直接相乘']]}},
+ app(){const k=ri(0,4);
+  if(k===0){const n=ri(2,6);let a,b;do{a=ri(2,20);b=ri(2,9)}while(gcd(a,b)!==1||a<=b);const ans=Fr(a,b*n);
+   return {type:'frac',text:`${n} 罐椰奶重 ${fr(a,b)} 公斤，1 罐椰奶重幾公斤？`,big:`<div class="bx">${fr(a,b)} ÷ ${n}</div>`,ans,unit:'公斤',
+    hints:[`${n} 罐的重量 ÷ ${n} ＝ 1 罐`],sol:[`${fr(a,b)} ÷ ${n} ＝ ${fr(a,b)} × ${fr(1,n)} ＝ ${eq(a,b*n)}`],trapsF:[[Fr(a*n,b),'1 罐比較輕，要用除的']]}}
+  if(k===1){/* 注水:B ÷ A,答案整數 */const A=pick([[1,1,4],[1,1,2],[2,1,2],[1,1,3],[2,2,3]]);const Aim=Fr(A[0]*A[2]+A[1],A[2]);const t=ri(3,12);const Bv=Fr(Aim.n*t,Aim.d);
+   const Bw=Math.floor(Bv.n/Bv.d),Bn=Bv.n%Bv.d;
+   return {type:'frac',text:`水管 1 分鐘可注水 ${mxRaw(A[0],A[1],A[2])} 公升，要注滿 ${Bn?mxRaw(Bw,Bn,Bv.d):Bw} 公升的桶子，需要幾分鐘？`,big:`<div class="bx">${Bn?mxRaw(Bw,Bn,Bv.d):Bw} ÷ ${mxRaw(A[0],A[1],A[2])}</div>`,ans:{n:t,d:1},unit:'分鐘',
+    hints:['總量 ÷ 1 分鐘注的量 ＝ 幾分鐘','帶分數先化成假分數'],sol:[`${Bn?mxRaw(Bw,Bn,Bv.d):Bw} ÷ ${mxRaw(A[0],A[1],A[2])} ＝ ${fr(Bv.n,Bv.d)} × ${fr(Aim.d,Aim.n)} ＝ ${t}`]}}
+  if(k===2){/* 長方形 長 = 面積 ÷ 寬 */const W=pick([[1,1,2],[1,1,4],[2,1,2],[1,2,3]]);const Wi=Fr(W[0]*W[2]+W[1],W[2]);let Ln,Ld;do{Ln=ri(3,15);Ld=ri(2,5)}while(gcd(Ln,Ld)!==1);
+   const S=Fr(Wi.n*Ln,Wi.d*Ld);const Sw=Math.floor(S.n/S.d),Sn=S.n%S.d;const Sh=Sn?mxRaw(Sw,Sn,S.d):String(Sw);
+   return {type:'frac',text:`長方形花園的面積是 ${Sh} 平方公尺，寬是 ${mxRaw(W[0],W[1],W[2])} 公尺，長是幾公尺？`,big:`<div class="bx">${Sh} ÷ ${mxRaw(W[0],W[1],W[2])}</div>`,ans:Fr(Ln,Ld),unit:'公尺',
+    hints:['長 ＝ 面積 ÷ 寬','帶分數先化成假分數，再把除數顛倒相乘'],sol:[`${Sh} ÷ ${mxRaw(W[0],W[1],W[2])} ＝ ${fr(S.n,S.d)} × ${fr(Wi.d,Wi.n)} ＝ ${mx(Ln,Ld)}`]}}
+  if(k===3){/* p/q 公斤 M 元 → 1 公斤 */let p,q;do{p=ri(1,4);q=ri(2,7)}while(gcd(p,q)!==1||p>=q);const per=pick([60,80,90,100,120,150]);const M=per*p/q;if(M!==Math.floor(M))return U2.app();
+   return {type:'num',text:`媽媽買 ${fr(p,q)} 公斤的水果花了 ${M} 元，1 公斤賣幾元？`,big:`<div class="bx">${M} ÷ ${fr(p,q)}</div>`,ans:per,unit:'元',pre:'',
+    hints:['總價 ÷ 公斤數 ＝ 1 公斤的價錢','除以分數：把除數顛倒再相乘'],sol:[`${M} ÷ ${fr(p,q)} ＝ ${M} × ${fr(q,p)} ＝ ${per}`],traps:[[M*p/q,'要用除的，1 公斤比較貴']]}}
+  /* 菜園占農地 a/b,菜園面積 c/d → 農地 */let a,b;do{a=ri(1,5);b=ri(3,12)}while(gcd(a,b)!==1||a>=b);let fn,fd;do{fn=ri(1,6);fd=ri(1,4)}while(gcd(fn,fd)!==1);
+  const C=Fr(a*fn,b*fd);
+  return {type:'frac',text:`阿土伯的農地中，菜園占了 ${fr(a,b)}，菜園的面積是 ${mx(C.n,C.d)} 公頃，農地的面積有幾公頃？`,big:`<div class="bx">${mx(C.n,C.d)} ÷ ${fr(a,b)}</div>`,ans:Fr(fn,fd),unit:'公頃',
+   hints:[`農地 × ${fr(a,b)} ＝ 菜園`,`所以 農地 ＝ 菜園 ÷ ${fr(a,b)}`],sol:[`${fr(C.n,C.d)} ÷ ${fr(a,b)} ＝ ${fr(C.n,C.d)} × ${fr(b,a)} ＝ ${mx(fn,fd)}`],trapsF:[[Fr(C.n*a,C.d*b),'菜園是農地的一部分，農地比較大，要用除的']]}},
+ cmp(){let a,b;do{a=ri(1,9);b=ri(2,9)}while(gcd(a,b)!==1);const k=ri(0,2);let c,d,w=0;
+  if(k===0){do{c=ri(1,8);d=ri(2,9)}while(gcd(c,d)!==1||c>=d)}else if(k===1){c=1;d=1}else{do{c=ri(1,8);d=ri(2,9)}while(gcd(c,d)!==1||c>=d);w=ri(1,2)}
+  const ds_=k===1?'1':mxRaw(w,c,d);const ans=k===0?'＞':k===1?'＝':'＜';
+  return {type:'cmp',text:`在 ◯ 裡填入 ＞、＜ 或 ＝`,big:`<div class="bx">${fr(a,b)} ÷ ${ds_} <span class="cq">◯</span> ${fr(a,b)}</div>`,ans,
+   hints:['看除數：比 1 小、等於 1、還是比 1 大？','除數小於 1，商大於被除數；除數大於 1，商小於被除數'],sol:[`除數 ${ds_} ${k===0?'小於':k===1?'等於':'大於'} 1`,`所以 ${fr(a,b)} ÷ ${ds_} ${ans} ${fr(a,b)}`]}}
+};
+
+/* ================= 第3單元 小數的除法 ================= */
+/* 用整數做運算:v 是整數,p 是小數位數 */
+const D=(v,p)=>({v,p});const dstr=x=>ds(x.v/Math.pow(10,x.p));
+const U3={
+ intdec(){/* 整數 ÷ 小數,商剛好 */let a,dv,dp,q;
+  for(;;){dp=pick([1,1,2]);dv=dp===1?ri(2,48):pick([2,4,5,8,12,15,16,20,24,25,32,40,48,75,125,128,175,192,225,250,875]);if(dv%10===0&&dp===1)continue;if(dp===2&&dv%10===0&&Math.random()<.7)continue;
+   a=ri(2,60);const num=a*Math.pow(10,dp)*100;if(num%dv)continue;q=num/dv/100;if(q>300||q<0.2)continue;break}
+  const d=dstr(D(dv,dp)),k=Math.pow(10,dp);
+  return {type:'num',text:`算算看：${a} ÷ ${d}`,big:`<div class="bx">${a} ÷ ${d} ＝ ？</div>`,ans:q,unit:'',pre:'',
+   hints:['先把除數變成整數',`除數和被除數同乘以 ${k}（小數點都往右移 ${dp} 位）`,`變成 ${a*k} ÷ ${dv}`],sol:[`${a} ÷ ${d} ＝ ${a*k} ÷ ${dv}`,`＝ ${ds(q)}`],traps:[[a/dv,`被除數也要乘以 ${k}`]]}},
+ decdec(){let dv,dp,qv,qp,av,ap;
+  for(;;){dp=pick([1,2]);dv=dp===1?ri(2,49):ri(12,249);if(dv%10===0)continue;qp=pick([0,0,1]);qv=qp?ri(11,99):ri(2,25);if(qp&&qv%10===0)continue;
+   av=dv*qv;ap=dp+qp;if(av%10===0)continue;if(av/Math.pow(10,ap)>200)continue;break}
+  const a=dstr(D(av,ap)),d=dstr(D(dv,dp)),q=qv/Math.pow(10,qp),k=Math.pow(10,dp);
+  return {type:'num',text:`算算看：${a} ÷ ${d}`,big:`<div class="bx">${a} ÷ ${d} ＝ ？</div>`,ans:q,unit:'',pre:'',
+   hints:['先把除數變成整數',`除數的小數點往右移 ${dp} 位，被除數也往右移 ${dp} 位`,`變成 ${ds(av/Math.pow(10,ap)*k)} ÷ ${dv}`,'商的小數點要和被除數新的小數點對齊'],
+   sol:[`${a} ÷ ${d} ＝ ${ds(av/Math.pow(10,ap)*k)} ÷ ${dv}`,`＝ ${ds(q)}`],traps:[[q*10,'小數點的位置要再檢查'],[q/10,'小數點的位置要再檢查']]}},
+ cmp(){const av=ri(11,999),ap=pick([1,2]);const a=dstr(D(av,ap));const k=ri(0,2);
+  const d=k===1?'1':k===0?pick(['0.5','0.25','0.8','0.12','0.46','0.9']):pick(['1.25','2.9','4.7','1.5','3.2']);const ans=k===0?'＞':k===1?'＝':'＜';
+  return {type:'cmp',text:'在 ◯ 裡填入 ＞、＜ 或 ＝',big:`<div class="bx">${a} ÷ ${d} <span class="cq">◯</span> ${a}</div>`,ans,
+   hints:['看除數：比 1 小、等於 1、還是比 1 大？','除數小於 1，商大於被除數；除數大於 1，商小於被除數'],sol:[`除數 ${d} ${k===0?'小於':k===1?'等於':'大於'} 1`,`所以 ${a} ÷ ${d} ${ans} ${a}`]}},
+ round(){/* 求商的概數 */const k=ri(0,2);const place=['個位','小數點後第一位','小數點後第二位'][k];let av,ap,bv,bp,N,R;
+  for(;;){ap=pick([0,1,1,2]);av=ap===0?ri(50,9999):ri(100,9999);bp=pick([1,1,2]);bv=bp===1?ri(12,399):ri(105,999);if(bv%10===0)continue;
+   /* q = (av/10^ap)/(bv/10^bp) = av*10^bp / (bv*10^ap) */const num=av*Math.pow(10,bp),den=bv*Math.pow(10,ap);
+   N=Math.floor(num*Math.pow(10,k+1)/den);if(num*Math.pow(10,k+1)%den===0&&Math.random()<.8)continue;const q=num/den;if(q<1||q>[999,300,80][k]||N%10===0)continue;R=Math.floor((N+5)/10);break}
+  const a=dstr(D(av,ap)),b=dstr(D(bv,bp)),ans=R/Math.pow(10,k),tr=N/Math.pow(10,k+1);
+  return {type:'num',text:`算算看：${a} ÷ ${b}，用四捨五入法求商到${place}。`,big:`<div class="bx">${a} ÷ ${b} ≈ ？</div><div class="bx s">求到${place}</div>`,ans,unit:'',pre:'約',
+   hints:['先把除數變成整數再算',`求到${place}，要多算一位再四捨五入`],sol:[`${a} ÷ ${b} ＝ ${tr.toFixed(k+1)}……`,`四捨五入到${place} ≈ ${ans.toFixed(k)}`],traps:[[tr,'要四捨五入取到'+place]]}},
+ app(){const k=ri(0,3);
+  if(k===0){const per=pick([0.36,0.25,0.45,0.15,0.75]),n=ri(20,250);const tot=+(per*n).toFixed(4);
+   return {type:'num',text:`有 ${ds(tot)} 公斤的杏仁糖，每 ${ds(per)} 公斤裝 1 桶，共可裝幾桶？`,big:`<div class="bx">${ds(tot)} ÷ ${ds(per)}</div>`,ans:n,unit:'桶',pre:'',
+    hints:['總重 ÷ 每桶的重量 ＝ 桶數','除數變成整數再算'],sol:[`${ds(tot)} ÷ ${ds(per)} ＝ ${ds(tot*100)} ÷ ${ds(per*100)} ＝ ${n}`]}}
+  if(k===1){const part=pick([0.6,0.4,0.8,0.5,0.25,0.75]),one=pick([2.25,1.5,3.2,2.4,1.8,4.5]);const w=+(part*one).toFixed(4);
+   return {type:'num',text:`${ds(part)} 包鬆餅粉重 ${ds(w)} 公斤，同樣的鬆餅粉 1 包重幾公斤？`,big:`<div class="bx">${ds(w)} ÷ ${ds(part)}</div>`,ans:one,unit:'公斤',pre:'',
+    hints:[`1 包 × ${ds(part)} ＝ ${ds(w)}`,`所以 1 包 ＝ ${ds(w)} ÷ ${ds(part)}`],sol:[`${ds(w)} ÷ ${ds(part)} ＝ ${ds(one)}`],traps:[[+(w*part).toFixed(4),'1 包比較重，要用除的']]}}
+  if(k===2){const t=pick([0.75,0.8,0.9,1.2,1.25]),h=pick([120,140,150,160,180]);const me=+(h*t).toFixed(4);
+   return {type:'num',text:`晨翔的身高是 ${ds(me)} 公分，是宏正身高的 ${ds(t)} 倍，宏正的身高是幾公分？`,big:`<div class="bx">${ds(me)} ÷ ${ds(t)}</div>`,ans:h,unit:'公分',pre:'',
+    hints:[`宏正 × ${ds(t)} ＝ 晨翔`,`所以 宏正 ＝ ${ds(me)} ÷ ${ds(t)}`],sol:[`${ds(me)} ÷ ${ds(t)} ＝ ${h}`],traps:[[+(me*t).toFixed(4),'要用除的']]}}
+  const W=pick([2.08,1.6,2.5,1.25,3.2]),L=pick([7.5,6,8,12,4.5]);const S=+(W*L).toFixed(4);
+  return {type:'num',text:`長方形花圃的面積是 ${ds(S)} 平方公尺，寬是 ${ds(W)} 公尺，長是幾公尺？`,big:`<div class="bx">${ds(S)} ÷ ${ds(W)}</div>`,ans:L,unit:'公尺',pre:'',
+   hints:['長 ＝ 面積 ÷ 寬'],sol:[`${ds(S)} ÷ ${ds(W)} ＝ ${ds(L)}`]}}
+};
+
+
+/* ================= 單元設定 ================= */
+const UNITS=[
+ {name:'單元 1',sub:'質因數分解和短除法',short:'單元1',g:U1,types:['prime','pf','coprime','gcd','gcd','lcm','lcm','appG','appG','appL','appL']},
+ {name:'單元 2',sub:'分數的除法',short:'單元2',g:U2,types:['simp','same','diff','diff','diff','app','app','app','cmp','simp']},
+ {name:'單元 3',sub:'小數的除法',short:'單元3',g:U3,types:['intdec','intdec','decdec','decdec','cmp','round','round','app','app','app']},
+ {name:'單元 4',sub:'圓周長和圓面積',short:'單元4',g:T,types:['b_dC','b_rC','b_rA','b_dA','b_Cd','a_Cr','a_CA','a_double','a_card','a_wheel','c_ring','c_trackP']},
+ {name:'★ 綜合',sub:'1～4 單元混合',short:'綜合',mix:true}];
+const UCOL=['#22b573','#1c7ed6','#f76707','#d6336c'];
+const N=10;
+function genQ(u,t){const q=UNITS[u].g[t]();q.u=u;q.t=t;if(!q.type)q.type='num';if(q.type==='cmp'){q.type='mc';q.opts=['＞','＜','＝'];q.row=true}
+  if(q.pre==null)q.pre=q.fig?'約':'';if(q.unit==null)q.unit='';return q}
+
+/* ================= 狀態 ================= */
+let lvl=0,round=null,cur=0,tries=0,solved=false,hintK=0;
+let val='',fv={w:'',n:'',d:''},act='n';
+let best=[0,0,0,0,0];try{const b=JSON.parse(localStorage.getItem('rv14_best'));if(b)b.forEach((v,i)=>best[i]=v)}catch(e){}
+function listFor(types,n){let L=[];while(L.length<n)L.push(...shuf(types));L=shuf(L.slice(0,n));
+  for(let i=1;i<L.length;i++)if(L[i]===L[i-1]){const j=L.findIndex((t,k)=>k>i&&t!==L[i]&&t!==L[i-1]);if(j>0)[L[i],L[j]]=[L[j],L[i]]}return L}
+function newRound(){let qs;
+  if(UNITS[lvl].mix){const cnt=shuf([3,3,2,2]);let items=[];cnt.forEach((c,u)=>shuf([...new Set(UNITS[u].types)]).slice(0,c).forEach(t=>items.push([u,t])));
+    items=shuf(items);for(let i=1;i<items.length;i++)if(items[i][0]===items[i-1][0]){const j=items.findIndex((x,k)=>k>i&&x[0]!==items[i-1][0]);if(j>0)[items[i],items[j]]=[items[j],items[i]]}
+    qs=items.map(([u,t])=>genQ(u,t))}
+  else qs=listFor(UNITS[lvl].types,N).map(t=>genQ(lvl,t));
+  round={qs,res:Array(N).fill(null)};cur=0;show()}
+
+/* ================= 左側選單 ================= */
+const nav=$('#nav');
+UNITS.forEach((U,i)=>{const d=document.createElement('div');d.className='lv u'+i;d.innerHTML=`<div class="n">${U.name}</div><div class="s">${U.sub}</div><div class="bar"><i></i></div><div class="c"></div>`;
+  d.addEventListener('pointerdown',e=>{e.preventDefault();lvl=i;newRound()});nav.appendChild(d)});
+nav.appendChild(Object.assign(document.createElement('div'),{className:'sp'}));
+const fsb=Object.assign(document.createElement('button'),{id:'fs',textContent:'⛶ 全螢幕'});fsb.addEventListener('pointerdown',e=>{e.preventDefault();document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})});nav.appendChild(fsb);
+function paintNav(){const port=matchMedia('(max-width:900px),(orientation:portrait)').matches;
+  document.querySelectorAll('.lv').forEach((d,i)=>{d.classList.toggle('on',i===lvl);const done=i===lvl&&round?round.res.filter(x=>x).length:0;
+  d.querySelector('.bar i').style.width=(i===lvl&&round?done/N*100:0)+'%';
+  d.querySelector('.c').textContent=port?(best[i]?`最佳 ${best[i]}`:''):(i===lvl&&round?`${done} / ${N}`:'')+(best[i]?`　最佳 ${best[i]}`:'')})}
+function paintDots(){const D=$('#dots');D.innerHTML='';round.res.forEach((r,i)=>{const e=document.createElement('i');if(r)e.className=r;if(i===cur)e.classList.add('cur');D.appendChild(e)})}
+
+/* ================= 鍵盤 ================= */
+const pad=$('#pad');
+function buildPad(fracMode){pad.innerHTML='';const keys=['7','8','9','⌫','4','5','6','C','1','2','3',fracMode?'下一格':'.','0','檢查'];
+  keys.forEach(k=>{const b=document.createElement('button');b.textContent=k;if(k==='⌫'||k==='C')b.className='del';if(k==='檢查')b.className='ck';if(k==='下一格')b.className='nx';
+   b.addEventListener('pointerdown',e=>{e.preventDefault();key(k)});pad.appendChild(b)})}
+['bw','bn','bd'].forEach(id=>$('#'+id).addEventListener('pointerdown',e=>{e.preventDefault();if(solved)return;act=e.currentTarget.dataset.k;paintF()}));
+function paintF(){['w','n','d'].forEach(k=>{const e=$('#b'+k);e.textContent=fv[k];e.classList.toggle('act',k===act&&!solved)})}
+function key(k){if(solved)return;const q=round.qs[cur];if(q.type==='mc')return;if(k==='檢查')return check();
+  if(q.type==='frac'){$('#fbx').classList.remove('no');
+    if(k==='下一格'){act={w:'n',n:'d',d:'w'}[act];return paintF()}
+    let v=fv[act];if(k==='⌫')v=v.slice(0,-1);else if(k==='C')v='';else if(/\d/.test(k)&&v.length<4)v=(v==='0'?'':v)+k;fv[act]=v;paintF();return}
+  if(k==='⌫')val=val.slice(0,-1);else if(k==='C')val='';else if(k==='.'){if(!val.includes('.')&&val.length<9)val+=val?'.':'0.'}else if(val.length<9)val=(val==='0'?'':val)+k;
+  $('#box').textContent=val;$('#box').className='ib'}
+document.addEventListener('keydown',e=>{if($('#end').classList.contains('on'))return;if($('#teach').classList.contains('on')){if(e.key==='Enter'||e.key===' '){e.preventDefault();tNext()}return}
+  if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&round.qs[cur].type==='frac'?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
+  else if(e.key==='Tab'||e.key==='/'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
+
+/* ================= 顯示一題 ================= */
+const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
+function show(){const q=round.qs[cur];$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;
+  $('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=UNITS[q.u].short;ut.style.color=UCOL[q.u];
+  $('#q').innerHTML=hl(q.text);
+  const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none'}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=q.big||''}
+  $('#figc').classList.remove('solv');$('#steps').innerHTML='';fitBig();
+  const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac');A.classList.toggle('chmode',q.type==='mc');
+  $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';$('#rev').style.display='none';$('#rev').innerHTML='';
+  $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
+  if(q.type==='mc'){const O=$('#opts');O.innerHTML='';O.className=q.row?'row':'';q.opts.forEach(o=>{const b=document.createElement('button');b.textContent=o;
+    b.addEventListener('pointerdown',e=>{e.preventDefault();choose(b,o)});O.appendChild(b)})}
+  else buildPad(q.type==='frac');
+  paintF();
+  $('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
+  paintDots();paintNav();window.scrollTo&&window.scrollTo(0,0)}
+function fitBig(){const c=$('#bigc');c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;while(b.scrollWidth>c.clientWidth-8&&k++<30){fs*=.93;b.style.fontSize=fs+'px'}})}
+addEventListener('resize',()=>{if(round)fitBig()});
+function addStep(s,cls){const d=document.createElement('div');d.className=cls;if(s.startsWith('__HTML__'))d.innerHTML=s.slice(8);else d.innerHTML=s;$('#steps').appendChild(d);return d}
+$('#hint').addEventListener('pointerdown',e=>{e.preventDefault();const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;$('#figc').classList.add('solv');fitBig();addStep('💡 '+q.hints[hintK++],'h');$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)$('#hint').disabled=true});
+$('#show').addEventListener('pointerdown',e=>{e.preventDefault();if(solved)return;round.res[cur]='no';finish(round.qs[cur],false)});
+$('#next').addEventListener('pointerdown',e=>{e.preventDefault();nextQ()});
+
+/* ================= 檢查 ================= */
+const near=(a,b)=>Math.abs(a-b)<1e-6;
+function wrong(msg){tries++;const q=round.qs[cur],fb=$('#fb');fb.className='bad';
+  if(tries>=2){round.res[cur]='no';finish(q,false);return}
+  fb.innerHTML=msg||'再算一次看看';$('#hint').classList.add('pulse');showTeach(q,msg)}
+/* ===== 答錯一次：用同一題型、不同數字的例題，一步一步教 ===== */
+let tSteps=[],tK=0;
+function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t),k=x=>x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
+function ansHtml(e){const a=e.type==='frac'?mx(e.ans.n,e.ans.d):e.type==='mc'?e.ans:f(e.ans);return `答案：${e.pre?e.pre+' ':''}${a}${e.unit?' '+e.unit:''}`}
+function showTeach(q,msg){const e=makeExample(q);$('#tmsg').innerHTML=msg?'💡 '+msg:'';
+  if(!e){tSteps=q.hints.map(h=>'💡 '+h);$('#tq').innerHTML='';$('#tfig').style.display='none';$('#tbig').innerHTML=''}
+  else{$('#tq').innerHTML='例題：'+hl(e.text);const sv=$('#tfig');sv.innerHTML='';
+    if(e.fig){sv.style.display='';F[e.fig[0]](sv,e.fig[1]);$('#tbig').innerHTML=''}else{sv.style.display='none';$('#tbig').innerHTML=e.big||''}
+    tSteps=[...e.sol,'__ANS__'+ansHtml(e)]}
+  $('#tsol').innerHTML='';tK=0;tNext();$('#teach').classList.add('on')}
+function tNext(){if(tK>=tSteps.length){$('#teach').classList.remove('on');return}
+  const s=tSteps[tK++],d=document.createElement('div');
+  if(s.startsWith('__ANS__')){d.className='ans';d.innerHTML=s.slice(7)}else d.innerHTML=s.startsWith('__HTML__')?s.slice(8):s;
+  $('#tsol').appendChild(d);const b=$('#tbtn');if(tK>=tSteps.length){b.textContent='懂了，回去再算一次 ▶';b.className='go'}else{b.textContent='下一步 ▶';b.className=''}
+  d.scrollIntoView&&d.scrollIntoView({block:'nearest'})}
+$('#tbtn').addEventListener('pointerdown',e=>{e.preventDefault();tNext()});
+function right(q){round.res[cur]=tries===0?'ok':'ok2';const fb=$('#fb');fb.className='good';fb.textContent=tries===0?'答對了！':'答對了！再接再厲';finish(q,true)}
+function trapMsg(q,v){const t=(q.traps||[]).find(([x])=>x>=0&&near(v,x));if(t)return t[1];const tf=(q.trapsF||[]).find(([x])=>near(v,x.n/x.d));return tf?tf[1]:null}
+function check(){const q=round.qs[cur];
+  if(q.type==='frac'){const w=fv.w===''?0:+fv.w,hasF=fv.n!==''||fv.d!=='';
+    if(!hasF&&fv.w==='')return;
+    if(hasF&&(fv.n===''||fv.d==='')){$('#fb').className='bad';$('#fb').textContent='分子、分母都要填喔';act=fv.n===''?'n':'d';paintF();return}
+    const n=hasF?+fv.n:0,d=hasF?+fv.d:1;if(d===0){$('#fb').className='bad';$('#fb').textContent='分母不能是 0';return}
+    const v=w+n/d,a=q.ans.n/q.ans.d,F2=$('#fbx');
+    if(near(v,a)){
+      if(hasF&&n!==0&&gcd(n,d)>1){F2.className='';void F2.offsetWidth;F2.className='no';$('#fb').className='bad';$('#fb').textContent='數值對了！還要約成最簡分數';return}
+      if(hasF&&fv.w!==''&&n>=d){F2.className='';void F2.offsetWidth;F2.className='no';$('#fb').className='bad';$('#fb').textContent='帶分數的分數部分要比 1 小';return}
+      ['bw','bn','bd'].forEach(id=>$('#'+id).classList.add('ok'));right(q);return}
+    F2.className='';void F2.offsetWidth;F2.className='no';wrong(trapMsg(q,v));return}
+  if(val===''||val==='.')return;const v=+val,box=$('#box');
+  if(near(v,q.ans)){box.className='ib ok';right(q);return}
+  box.className='ib';void box.offsetWidth;box.className='ib no';wrong(trapMsg(q,v))}
+function choose(b,o){if(solved||b.classList.contains('no'))return;const q=round.qs[cur];
+  if(o===q.ans){b.classList.add('ok');right(q);return}
+  b.classList.add('no');wrong(q.trapsMC&&q.trapsMC[o]);
+  const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(!solved&&left<=1){round.res[cur]='no';finish(q,false)}}
+function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
+  $('#figc').classList.add('solv');fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
+  if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent='正確答案在這裡，看懂算式再下一題';
+    if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.textContent===q.ans)b.classList.add('ok')})}
+    else{$('#box').style.display='';const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):f(q.ans);r.style.display='inline-block';$('#box').className='ib';$('#box').style.display='none';$('#fbx').style.display='none'}}
+  $('#next').disabled=false;$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintNav();
+  setTimeout(()=>{const s=$('#steps').lastElementChild;if(s&&s.scrollIntoView)s.scrollIntoView({block:'nearest'})},50)}
+function nextQ(){if(!solved)return;$('#box').style.display='';$('#fbx').style.display='';if(cur<N-1){cur++;show()}else end()}
+function end(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length;
+  if(first>best[lvl]){best[lvl]=first;try{localStorage.setItem('rv14_best',JSON.stringify(best))}catch(e){}}
+  $('#endt').textContent=`${UNITS[lvl].mix?'綜合複習':UNITS[lvl].sub}　完成！`;$('#ends').textContent=first>=9?'⭐⭐⭐':first>=7?'⭐⭐':first>=5?'⭐':'💪';
+  $('#endn').textContent=`${first} / ${N}`;$('#endsub').textContent=`一次就答對 ${first} 題，全部答對 ${all} 題`;
+  const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=document.createElement('button');b.textContent=t;if(c)b.className=c;b.addEventListener('pointerdown',e=>{e.preventDefault();$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
+  mb('再練一回',()=>newRound());if(lvl<4)mb(`${UNITS[lvl+1].name.replace('★ ','')} ▶`,()=>{lvl++;newRound()},'go');
+  $('#end').classList.add('on');paintNav()}
+newRound();
+</script>
+</body></html>
