@@ -2200,6 +2200,10 @@ renderHome();
 (function(){
   let L=null; try{ L=window.parent!==window&&window.parent.__learn601; }catch(e){}
   if(!L) return;
+  /* 平台裡:鎖右鍵、長按選單、雙指縮放 */
+  document.addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('gesturestart',e=>e.preventDefault());
+  document.addEventListener('selectstart',e=>e.preventDefault());document.addEventListener('dragstart',e=>e.preventDefault());
+  document.documentElement.style.webkitTouchCallout='none';
   const st=document.createElement('style');
   st.textContent=`.gcard[data-game="melon"],.gcard[data-game="g2048"]{display:none!important}
 #tkChip{position:fixed;left:14px;bottom:12px;z-index:60;background:#fff;border-radius:999px;padding:6px 18px;font-weight:900;font-size:24px;color:#e8590c;box-shadow:0 4px 0 rgba(0,0,0,.18)}

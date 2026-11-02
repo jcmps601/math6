@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#fff9f0">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="601學習">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png"><meta name="theme-color" content="#fff9f0">
 <title>601 學習平台</title>
 <style>
 :root{--g:#22b573;--gd:#0c8a50;--o:#ff922b;--bg:#fff9f0;--line:#f1e3cf}
@@ -256,10 +257,74 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #tbtn.go{background:var(--o);box-shadow:0 4px 0 #e8590c}
 @media (max-width:900px),(orientation:portrait){#tq{font-size:1.3rem}#tsol>div{font-size:1.25rem}#tbig .bx{font-size:2.2rem}#tbtn{font-size:1.3rem}.ttag{font-size:1.1rem}}
 .br em{font-style:normal;font-size:1.05rem;color:#888;width:5.5rem;text-align:center}
+
+/* ===================== 可愛主題 ===================== */
+html{touch-action:manipulation;-webkit-touch-callout:none}
+body{background:
+  radial-gradient(circle at 6% 12%,#ffe3e3 0 3.2rem,transparent 3.3rem),
+  radial-gradient(circle at 94% 8%,#d0ebff 0 4.2rem,transparent 4.3rem),
+  radial-gradient(circle at 92% 92%,#e5dbff 0 5rem,transparent 5.1rem),
+  radial-gradient(circle at 4% 88%,#d3f9d8 0 3.8rem,transparent 3.9rem),
+  radial-gradient(circle at 50% -10%,#fff3bf 0 9rem,transparent 9.1rem),
+  #fff8ec;background-attachment:fixed}
+.mascot{display:inline-block;font-size:2.6rem;animation:bob 2.4s ease-in-out infinite;transform-origin:50% 90%}
+.mascot.big{font-size:4.2rem}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+.bubble{position:relative;display:inline-block;background:#fff;border:3px solid #ffe066;border-radius:18px;padding:.35rem .9rem;font-size:1.15rem;font-weight:900;color:#e67700;box-shadow:0 4px 0 #ffec99}
+/* 登入 */
+.lmascot{display:flex;align-items:center;gap:.6rem}
+#login h1{font-size:3.2rem;background:linear-gradient(90deg,#22b573,#1c7ed6,#d6336c);-webkit-background-clip:text;background-clip:text;color:transparent}
+#seats .sg button{background:#e7f5ff;color:#1864ab;box-shadow:0 5px 0 #a5d8ff;transition:transform .08s}
+#seats .girl button{background:#fff0f6;color:#c2255c;box-shadow:0 5px 0 #fcc2d7}
+#seats .sg button:active{transform:translateY(4px) scale(.96);box-shadow:0 1px 0 #a5d8ff}
+#seats .girl button:active{box-shadow:0 1px 0 #fcc2d7}
+.fsb{border:3px solid #ffd8a8;background:#fff;border-radius:14px;color:#e8590c;font-size:1.05rem;font-weight:900;padding:.35rem .7rem}
+#login .fsb{position:absolute;top:.8rem;right:.8rem}
+#login{position:relative}
+#pinbox .box{border:5px solid #d0ebff}
+#pinpad button:active{transform:translateY(3px);box-shadow:0 1px 0 #dee2e6}
+/* 側欄 */
+#side{background:rgba(255,255,255,.88);backdrop-filter:blur(4px)}
+#me .av{background:linear-gradient(135deg,#51cf66,#22b573);box-shadow:0 4px 0 #2b8a3e}
+.nv{background:#fff;box-shadow:0 3px 0 #f1e3cf;transition:transform .08s}
+.nv b{background:var(--cb,#f1f3f5);border:3px solid var(--c,#adb5bd);font-size:1.25rem}
+.nv.on{background:var(--cb,#fff);transform:translateX(4px)}
+.nv:active{transform:scale(.96)}
+.sidebtns{display:flex;gap:.35rem}.sidebtns button{flex:1;padding:.3rem .2rem;font-size:.9rem}
+#sndBtn{border:3px solid #d0ebff;background:#fff;border-radius:14px;color:#1c7ed6;font-weight:900}
+/* 首頁 */
+.hello{display:flex;align-items:center;gap:.8rem;margin:.1rem 0 .9rem}
+.hello .hi{font-size:2rem;font-weight:900;margin-bottom:.3rem}
+.cd{border-radius:26px;box-shadow:0 6px 0 #f1e3cf,0 10px 24px rgba(240,180,100,.12)}
+#today{background:linear-gradient(135deg,#fff,#fff9db)}
+#fire{background:linear-gradient(135deg,#fff,#fff4e6)}
+.uc{position:relative;overflow:hidden;border-radius:24px;transition:transform .1s}
+.uc .ui{position:absolute;right:.4rem;bottom:-.2rem;font-size:3.4rem;opacity:.9}
+.uc .b{padding-right:2.6rem}
+.uc:active{transform:scale(.97)}
+.go{background:linear-gradient(180deg,#ffa94d,#ff922b);border-radius:22px}
+.go:hover{filter:brightness(1.05)}
+/* 練習 */
+#q{border:3px solid #fff3bf}
+#fb.pop{animation:popin .45s}
+@keyframes popin{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+#pad button{transition:transform .06s}
+#end .box{border:6px solid #ffe066;border-radius:32px}
+#end .st{animation:popin .6s}
+/* 彩帶 */
+.cf{position:fixed;top:-12px;width:10px;height:14px;z-index:20;pointer-events:none;animation:cffall linear forwards}
+@keyframes cffall{to{transform:translateY(105vh) rotate(720deg)}}
+.bs{position:fixed;width:9px;height:9px;border-radius:50%;z-index:20;pointer-events:none;animation:bsfly .7s ease-out forwards}
+@keyframes bsfly{from{transform:translate(-50%,-50%)}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3);opacity:0}}
+#toast{top:3vh;z-index:30}
+.tkc small{display:block;margin-top:.1rem}
+@media (max-width:900px),(orientation:portrait){.mascot.big{font-size:3rem}.hello .hi{font-size:1.4rem}.bubble{font-size:.95rem}#login .fsb{top:.4rem;right:.4rem;font-size:.9rem}.uc .ui{font-size:2.6rem}.sidebtns{flex:none;flex-direction:column;gap:.2rem}.sidebtns button{font-size:.75rem;padding:.15rem .35rem}}
 </style>
 </head><body>
 
 <section class="scr" id="login">
+ <button class="fsb" id="fsLogin">⛶ 全螢幕</button>
+ <div class="lmascot"><span class="mascot big">🦉</span><span class="bubble">點自己的座號，開始練習！</span></div>
  <h1><small>六年一班</small>601 學習平台</h1>
  <div id="seats"></div>
 </section>
@@ -274,6 +339,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
   <div id="navs"></div>
   <div class="sp"></div>
   <div id="sync"></div>
+  <div class="sidebtns"><button class="fsb" id="fsBtn">⛶ 全螢幕</button><button id="sndBtn">🔊 音效</button></div>
   <button id="logout">登出</button>
  </aside>
  <div id="pane"></div>
@@ -633,20 +699,20 @@ const TEST_SEAT=99;                 // 老師測試用帳號(密碼 0000):不上
 const GOAL=10, ROOT='learn';
 /* 單元:practice 有 g 才有練習;tools 是教具;tt 是「題型 → 對應教具」 */
 const UN=[
- {key:'u1',no:'1',name:'質因數分解和短除法',nav:'質因數分解',c:'#22b573',cb:'#e6fcf5',g:U1,
+ {key:'u1',no:'1',ic:'🧩',name:'質因數分解和短除法',nav:'質因數分解',c:'#22b573',cb:'#e6fcf5',g:U1,
   types:['prime','pf','coprime','gcd','gcd','lcm','lcm','appG','appG','appL','appL'],
   tools:[{id:'1-all',i:'🧱',k:'整理',n:'因數與倍數',f:'t/1-all.html'},{id:'1-4',i:'🔍',k:'1-4',n:'最大公因數',f:'t/1-4.html'},{id:'1-4b',i:'👫',k:'1-4',n:'混合分組、分開編組',f:'t/1-4b.html'},
          {id:'1-5',i:'🧮',k:'1-5',n:'最小公倍數',f:'t/1-5.html'},{id:'1-5b',i:'⏰',k:'1-5',n:'最小公倍數的應用',f:'t/1-5b.html'}],
   tt:{prime:'1-all',pf:'1-all',coprime:'1-all',gcd:'1-4',appG:'1-4',lcm:'1-5',appL:'1-5b'}},
- {key:'u2',no:'2',name:'分數的除法',nav:'分數除法',c:'#1c7ed6',cb:'#e7f5ff',g:U2,
+ {key:'u2',no:'2',ic:'🍰',name:'分數的除法',nav:'分數除法',c:'#1c7ed6',cb:'#e7f5ff',g:U2,
   types:['simp','same','diff','diff','diff','app','app','app','cmp','simp'],
   tools:[{id:'2-2',i:'🍰',k:'2-2',n:'同分母分數的除法',f:'t/2-2.html'},{id:'2-4',i:'🧃',k:'2-4',n:'分數除法的應用',f:'t/2-4.html'}],
   tt:{same:'2-2',app:'2-4'}},
- {key:'u3',no:'3',name:'小數的除法',nav:'小數除法',c:'#f76707',cb:'#fff4e6',g:U3,
+ {key:'u3',no:'3',ic:'🔢',name:'小數的除法',nav:'小數除法',c:'#f76707',cb:'#fff4e6',g:U3,
   types:['intdec','intdec','decdec','decdec','cmp','round','round','app','app','app'],
   tools:[{id:'3-1',i:'🔢',k:'3-1、3-2',n:'小數點怎麼放',f:'t/3-1.html'},{id:'3-3',i:'⚖️',k:'3-3',n:'商怎麼變',f:'t/3-3.html'}],
   tt:{intdec:'3-1',decdec:'3-1',round:'3-1',app:'3-1',cmp:'3-3'}},
- {key:'u4',no:'4',name:'圓周長和圓面積',nav:'圓',c:'#d6336c',cb:'#fff0f6',g:T,
+ {key:'u4',no:'4',ic:'⭕',name:'圓周長和圓面積',nav:'圓',c:'#d6336c',cb:'#fff0f6',g:T,
   types:['b_dC','b_rC','b_rA','b_dA','b_Cd','a_Cr','a_CA','a_double','a_card','a_wheel','c_ring','c_trackP'],
   tools:[{id:'4-all',i:'⭕',k:'自學',n:'圓周長和圓面積',f:'unit4.html'},{id:'4-1',i:'📏',k:'4-1',n:'圓周率的發現',f:'t/4-1.html'},{id:'4-1b',i:'🛞',k:'4-1、4-2',n:'圓周長',f:'t/4-1b.html'},
          {id:'4-pi',i:'📜',k:'故事',n:'圓周率的故事 割圓術',f:'t/4-pi.html'},{id:'4-3',i:'🍕',k:'4-3',n:'圓面積 切割拼合',f:'t/4-3.html'},{id:'4-3b',i:'🧩',k:'4-3',n:'圓面積公式',f:'t/4-3b.html'},
@@ -655,8 +721,8 @@ const UN=[
  {key:'u5',no:'5',name:'比和比值',nav:'比和比值',c:'#7048e8',cb:'#f3f0ff',
   tools:[{id:'5-all',i:'⚖️',k:'自學',n:'比和比值',f:'t/5.html'}]}
 ];
-const MIX={key:'mix',no:'★',name:'1～4 單元綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db',sub:'1～4 單元混合'};
-const GM={key:'game',no:'🎮',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
+const MIX={key:'mix',no:'★',ic:'🌟',name:'1～4 單元綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db',sub:'1～4 單元混合'};
+const GM={key:'game',no:'🎮',ic:'🎮',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
 const TK_EVERY=10, TK_NEED=8;      // 每做 10 題(不分單元、可以分好幾次做),答對 8 題以上(含看完例題後第二次答對)拿 1 張遊戲券
 /* 601 挑戰樂園的遊戲:[代號, 圖示, 名稱, 單位, 越小越好] */
 const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/ 5'],['flappy','🐤','小雞跳跳','關'],['hunt','🗺️','尋寶','★'],['num','🔢','數字快手','秒',1],['simon','🎹','記憶燈光','個燈'],
@@ -666,7 +732,7 @@ const GDIFF=[['easy','🌱','簡單'],['normal','⭐','普通'],['hard','🔥','
 const GAME_TOOL={id:'game',i:'🎮',k:'遊戲',n:'601 挑戰樂園',f:'game.html'};
 const PU=[0,1,2,3];               // 有練習題的單元
 let N=10;                       // 一回的題數(錯題再練可能少於 10)
-const WB={key:'wb',no:'📕',name:'錯題再練',nav:'錯題',c:'#c92a2a',cb:'#fff5f5'};
+const WB={key:'wb',no:'📕',ic:'📕',name:'錯題再練',nav:'錯題',c:'#c92a2a',cb:'#fff5f5'};
 const WB_MAX=40;
 
 /* ===================== 小工具 ===================== */
@@ -755,13 +821,51 @@ async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.r
 tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
+/* ===================== 介面:全螢幕、鎖右鍵、音效、彩帶 ===================== */
+const CHEER=['每天練一點，就會越來越厲害！','先練 10 題，再去玩遊戲吧！','錯了沒關係，看例題就會懂','今天的你也很棒！'];
+const CHEER_DONE=['太厲害了，任務完成！','繼續練，還能拿更多遊戲券','記得去錯題本複習喔'];
+const PRAISE=['答對了！','太棒了！','好厲害！','完全正確！','你真行！'];
+/* 全螢幕(iPad、Android、電腦);不支援時提示「加入主畫面」 */
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const fsOK=!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
+const standalone=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone;
+function toggleFS(){const d=document.documentElement;
+  if(!fsOK){toast('📲 用瀏覽器的「分享 → 加入主畫面」，就能全螢幕使用');return}
+  if(fsEl())(document.exitFullscreen||document.webkitExitFullscreen).call(document);
+  else{const r=(d.requestFullscreen||d.webkitRequestFullscreen).call(d);if(r&&r.catch)r.catch(()=>{})}}
+function paintFS(){document.querySelectorAll('.fsb').forEach(b=>{b.style.display=standalone?'none':'';b.textContent=fsEl()?'↙ 離開全螢幕':'⛶ 全螢幕'})}
+document.querySelectorAll('.fsb').forEach(b=>b.addEventListener('click',toggleFS));
+['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,paintFS));
+/* 鎖右鍵、長按選單、選字、拖曳、雙指縮放(老師頁的文字框例外) */
+const allowSel=t=>t&&(t.closest&&(t.closest('#setup')||t.closest('textarea,input')));
+document.addEventListener('contextmenu',e=>{if(!allowSel(e.target))e.preventDefault()});
+document.addEventListener('selectstart',e=>{if(!allowSel(e.target))e.preventDefault()});
+document.addEventListener('dragstart',e=>e.preventDefault());
+document.addEventListener('gesturestart',e=>e.preventDefault());
+/* 音效(可關) */
+let sndOn=LS.get('learn601_snd',true),AC=null;
+function tone(f,d,type,v,at){if(!sndOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+(at||0),o=AC.createOscillator(),g=AC.createGain();
+  o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v||.08,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+const sfx={ok(){tone(784,.12,'triangle',.09);tone(1175,.18,'triangle',.08,.09)},no(){tone(220,.18,'sine',.07);tone(180,.22,'sine',.06,.1)},
+  ticket(){[659,784,988,1319].forEach((f,i)=>tone(f,.16,'triangle',.08,i*.08))},win(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.08,i*.1))},done(){tone(659,.15,'triangle',.07);tone(880,.2,'triangle',.07,.12)}};
+function paintSnd(){const b=document.getElementById('sndBtn');if(b)b.textContent=sndOn?'🔊 音效':'🔇 音效'}
+{const b=document.getElementById('sndBtn');if(b)tap(b,()=>{sndOn=!sndOn;LS.set('learn601_snd',sndOn);paintSnd();if(sndOn)sfx.ok()})}
+/* 彩帶 */
+const CCOL=['#ff6b6b','#ffd43b','#51cf66','#339af0','#cc5de8','#ff922b'];
+function confetti(n){for(let i=0;i<n;i++){const e=document.createElement('i');e.className='cf';e.style.left=Math.random()*100+'vw';e.style.background=CCOL[i%CCOL.length];
+  e.style.animationDuration=(1.8+Math.random()*1.6)+'s';e.style.animationDelay=Math.random()*.5+'s';if(Math.random()<.4)e.style.borderRadius='50%';document.body.appendChild(e);setTimeout(()=>e.remove(),4200)}}
+function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<n;i++){const e=document.createElement('i');e.className='bs';const a=Math.random()*Math.PI*2,d=50+Math.random()*70;
+    e.style.left=cx+'px';e.style.top=cy+'px';e.style.setProperty('--dx',Math.cos(a)*d+'px');e.style.setProperty('--dy',Math.sin(a)*d+'px');e.style.background=CCOL[i%CCOL.length];
+    document.body.appendChild(e);setTimeout(()=>e.remove(),800)}}
+
 /* ===================== 首頁 ===================== */
 let view='home';
 function enterHome(){show$('home');const isT=user.seat===TEST_SEAT;document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
-  const items=[{key:'home',no:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g),MIX,WB,GM];
-  items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
+  const items=[{key:'home',no:'🏠',ic:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g),MIX,WB,GM];
+  items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.ic||u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);b.style.setProperty('--cb',u.cb||'#f1f3f5');tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
   N2.style.display='contents'}
 function todayN(){return sum.days[dkey()]||0}
 function streak(){let n=0;const d=new Date();if((sum.days[dkey(d)]||0)<GOAL)d.setDate(d.getDate()-1);
@@ -775,7 +879,7 @@ function render(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='game')return renderGame(P);
   const u=UN.find(x=>x.key===view);renderUnit(P,u,UN.indexOf(u))}
 function renderHome(P){const n=todayN(),done=n>=GOAL;
-  P.appendChild(el('div','h1',`👋 ${user.seat===TEST_SEAT?'測試帳號':user.seat+' 號'}，${done?'今天的任務完成了！':'今天也來練習吧'}`));
+  P.appendChild(el('div','hello',`<span class="mascot">🦉</span><div><div class="hi">${user.seat===TEST_SEAT?'測試帳號':user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div>`));
   const g=el('div','grid2');
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div><div class="t1">今天的任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const gb=el('button','go',done?'再練一回 ▶':'開始練習 ▶');tap(gb,()=>startPractice('mix'));t.lastChild.appendChild(gb);
@@ -786,7 +890,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
   f.appendChild(W);g.appendChild(f);P.appendChild(g);
   P.appendChild(el('div','sec','各單元'));const G=el('div');G.id='ucards';
-  [...UN.filter(u=>u.g),MIX,...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<div class="a">${u===MIX?'★':u===WB?'📕':'單元 '+u.no}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||u===MIX?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
+  [...UN.filter(u=>u.g),MIX,...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.ic||''}</span><div class="a">${u===MIX?'★ 綜合':u===WB?'📕 錯題':'單元 '+u.no}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||u===MIX?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});G.appendChild(b)});P.appendChild(G);
   const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
@@ -907,7 +1011,7 @@ function paintP(){const done=round.res.filter(x=>x).length;document.querySelecto
   const t=document.getElementById('ptk');if(t)t.innerHTML=`🎟️ × ${sum.tk||0}<small>這輪 ${sum.tc||0}/10・答對 ${sum.tco||0}</small>`}
 const tkLeft=()=>TK_EVERY-(sum.tc||0);
 const tkInfo=()=>`這輪做了 ${sum.tc||0}/10 題，答對 ${sum.tco||0} 題`;
-function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.remove('on');void e.offsetWidth;e.classList.add('on')}
+function toast(t){if(/🎟️ 答對/.test(t)){sfx.ticket();confetti(40)}const e=document.getElementById('toast');e.textContent=t;e.classList.remove('on');void e.offsetWidth;e.classList.add('on')}
 function paintDots(){const D=document.getElementById('dots');D.innerHTML='';round.res.forEach((r,i)=>{const e=el('i',r||'');if(i===cur)e.classList.add('cur');D.appendChild(e)})}
 function logRound(partial){if(!round||round.logged)return;const n=round.res.filter(x=>x).length;if(!n)return;round.logged=true;
   const first=round.res.filter(x=>x==='ok').length,all=round.res.filter(x=>x==='ok'||x==='ok2').length;
@@ -951,7 +1055,7 @@ tap($('#next'),()=>nextQ());
 const near=(a,b)=>Math.abs(a-b)<1e-6;
 function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]+>/g,''):'');const q=round.qs[cur],fb=$('#fb');fb.className='bad';
   if(tries>=2){round.res[cur]='no';finish(q,false);return}
-  fb.innerHTML=msg||'再算一次看看';$('#hint').classList.add('pulse');showTeach(q,msg)}
+  sfx.no();fb.innerHTML=msg||pick(['再想想看','差一點點！','沒關係，再試一次']);$('#hint').classList.add('pulse');showTeach(q,msg)}
 /* ===== 答錯一次：用同一題型、不同數字的例題，一步一步教 ===== */
 let tSteps=[],tK=0;
 function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t,true),k=x=>x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
@@ -968,7 +1072,7 @@ function tNext(){if(tK>=tSteps.length){$('#teach').classList.remove('on');return
   $('#tsol').appendChild(d);const b=$('#tbtn');if(tK>=tSteps.length){b.textContent='懂了，回去再算一次 ▶';b.className='go'}else{b.textContent='下一步 ▶';b.className=''}
   d.scrollIntoView&&d.scrollIntoView({block:'nearest'})}
 tap($('#tbtn'),()=>tNext());
-function right(q){round.res[cur]=tries===0?'ok':'ok2';const fb=$('#fb');fb.className='good';fb.textContent=tries===0?'答對了！':'答對了！再接再厲';finish(q,true)}
+function right(q){round.res[cur]=tries===0?'ok':'ok2';const fb=$('#fb');fb.className='good pop';fb.textContent=tries===0?'🎉 '+pick(PRAISE):'👍 答對了！再接再厲';sfx.ok();burst(fb,tries===0?18:10);finish(q,true)}
 function trapMsg(q,v){const t=(q.traps||[]).find(([x])=>x>=0&&near(v,x));if(t)return t[1];const tf=(q.trapsF||[]).find(([x])=>near(v,x.n/x.d));return tf?tf[1]:null}
 function check(){const q=round.qs[cur];
   if(q.type==='frac'){const w=fv.w===''?0:+fv.w,hasF=fv.n!==''||fv.d!=='';
@@ -1012,7 +1116,7 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0)mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
   else mb('再練一回 ▶',()=>newRound(),'go');
-  $('#end').classList.add('on')}
+  $('#end').classList.add('on');if(first>=8){sfx.win();confetti(70)}else sfx.done()}
 
 /* ===================== 老師設定 ===================== */
 function openSetup(){show$('setup');$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
@@ -1090,6 +1194,7 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
   $('#tab').innerHTML=h;$('#tabmsg').textContent=`更新時間 ${new Date().toLocaleTimeString()}`});
 
 /* ===================== 啟動 ===================== */
+paintFS();paintSnd();
 /* 離線也能用:讓平板把平台存起來 */
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 addEventListener('hashchange',()=>{if(location.hash==='#setup')openSetup()});
