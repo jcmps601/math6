@@ -256,6 +256,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #tbtn{align-self:flex-end;border:0;border-radius:18px;background:#7048e8;color:#fff;font-size:1.6rem;font-weight:900;padding:.5rem 1.4rem;box-shadow:0 4px 0 #5f3dc4}
 #tbtn.go{background:var(--o);box-shadow:0 4px 0 #e8590c}
 @media (max-width:900px),(orientation:portrait){#tq{font-size:1.3rem}#tsol>div{font-size:1.25rem}#tbig .bx{font-size:2.2rem}#tbtn{font-size:1.3rem}.ttag{font-size:1.1rem}}
+.br em.nk{color:#bbb}.br em small{font-size:.75rem}
 .br em{font-style:normal;font-size:1.05rem;color:#888;width:5.5rem;text-align:center}
 
 /* ===================== 可愛主題 ===================== */
@@ -931,26 +932,32 @@ const playLeft=()=>sum&&sum.se?Math.max(0,sum.se-Date.now()):0;
 const mmss=ms=>{const t=Math.ceil(ms/1000);return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
 const DIDX={easy:0,normal:1,hard:2,boss:3};
 /* 一個遊戲只有一個榜:先比難度(魔王最高),同難度再比分數 */
-function gBetter(g,a,b){if(!a)return false;if(!b)return true;if(a.d!==b.d)return a.d>b.d;const lo=!!(gOf(g)||[])[4];return lo?a.s<b.s:a.s>b.s}
+/* 每個遊戲「1 顆星」的門檻(簡單/普通/困難/魔王),和挑戰樂園裡的星星一致 */
+const STAR1={tower:[12,10,8,6],flappy:[6,8,8,7],simon:[4,5,5,4],color:[12,12,10,8],spot:[6,7,6,5],bridge:[8,7,6,5],cups:[3,3,3,3],hunt:[4,4,4,4],num:[12,25,40,65],react:[550,500,550,750]};
+/* 有沒有在這個難度拿到 1 顆星 */
+function starred(g,r){const T=STAR1[g];if(!T||!r)return false;const lo=!!(gOf(g)||[])[4];return lo?r.s<=T[r.d]:r.s>=T[r.d]}
+/* 排名:先比「拿到 1 顆星的最高難度」,都沒拿到星的排在後面;同一級再比成績 */
+const tier=(g,r)=>starred(g,r)?r.d:-1;
+function gBetter(g,a,b){if(!a)return false;if(!b)return true;const ta=tier(g,a),tb=tier(g,b);if(ta!==tb)return ta>tb;const lo=!!(gOf(g)||[])[4];if(a.s!==b.s)return lo?a.s<b.s:a.s>b.s;return a.d>b.d}
 const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;if(g==='cups')return `${v} / 5`;if(g==='hunt')return `${v} ★`;return `${v} ${G[3]}`};
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
   const can=left>0||(sum.tk||0)>0;const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
-  P.appendChild(el('div','sec','🏆 全班排行榜（先比難度，再比成績）'));
+  P.appendChild(el('div','sec','🏆 全班排行榜（先比拿到 1 顆星的最高難度，再比成績）'));
   const gc=el('div');gc.id='bgames';GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bg=k;render()});gc.appendChild(x)});P.appendChild(gc);
   const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(L);loadBoard(L)}
 /* 讀全班排行:回傳 {g:[{seat,d,s,rank}]} 已排好 */
 async function lbAll(){await fbReady;if(!db||!online)return null;const v=(await timeout(db.ref(`${ROOT}/lb`).get(),8000)).val()||{};const out={};
   for(const g in v){const arr=Object.entries(v[g]||{}).filter(([,o])=>o&&typeof o.s==='number'&&typeof o.d==='number').map(([s,o])=>({seat:+s,d:o.d,s:o.s})).filter(r=>r.seat!==TEST_SEAT);
-    arr.sort((a,b)=>gBetter(g,a,b)?-1:gBetter(g,b,a)?1:0);arr.forEach(r=>{r.rank=1+arr.filter(x=>gBetter(g,x,r)).length});out[g]=arr}return out}
+    arr.sort((a,b)=>gBetter(g,a,b)?-1:gBetter(g,b,a)?1:0);arr.forEach(r=>{r.rank=1+arr.filter(x=>gBetter(g,x,r)).length;r.k=starred(g,r)});out[g]=arr}return out}
 async function loadBoard(L){const g=bg;let all;
   try{all=await lbAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(g!==bg)return;if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   const arr=all[g]||[];if(!arr.length){L.innerHTML='<div class="ld">還沒有人上榜，搶第一名！</div>';return}
   let h='';arr.forEach((r,i)=>{const me=r.seat===user.seat;if(i>=10&&!me)return;
-    h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${me?'（我）':''}</span><em>${dTxt(r.d)}</em><i>${gFmt(g,r.s)}</i></div>`});
+    h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${me?'（我）':''}</span><em class="${r.k?'':'nk'}">${r.k?dTxt(r.d)+' ★':dTxt(r.d)+'<br><small>未達 1 星</small>'}</em><i>${gFmt(g,r.s)}</i></div>`});
   L.innerHTML=h}
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */
 window.__learn601={

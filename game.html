@@ -2196,7 +2196,7 @@ renderHome();
    只有在「601 學習平台」裡面開啟時才會啟動（直接開這個檔案、上課用大螢幕時完全不受影響）：
    ・一張遊戲券 = 5 分鐘：時間內任何遊戲想玩幾局都可以；時間到，正在玩的那局玩完就結束（搭橋小英雄直接結算）
    ・合成大西瓜、2048 先不放
-   ・全班排行榜：一個遊戲一個榜，先比難度（魔王最高）、同難度再比成績；選難度畫面就看得到 */
+   ・全班排行榜：一個遊戲一個榜，先比「拿到 1 顆星的最高難度」（魔王最高），同一級再比成績；選難度畫面就看得到 */
 (function(){
   let L=null; try{ L=window.parent!==window&&window.parent.__learn601; }catch(e){}
   if(!L) return;
@@ -2245,7 +2245,7 @@ renderHome();
   setInterval(tick,250); tick();
   /* 排行榜 */
   const DI=['🌱','⭐','🔥','👑'], DK=['easy','normal','hard','boss'];
-  const fmt=(g,r)=>`<small>${DI[r.d]}</small>${gInfo(g,DK[r.d]).txt(r.s)}`;
+  const fmt=(g,r)=>`<small>${DI[r.d]}${r.k?'★':''}</small>${gInfo(g,DK[r.d]).txt(r.s)}${r.k?'':'<small>（未達 1 星）</small>'}`;
   const box=document.createElement('div'); box.id='lbBox'; $('#diff').appendChild(box);
   async function showBoard(g){
     box.innerHTML='<div class="h">🏆 全班排行</div><div class="rows"><span class="r">讀取中…</span></div>';
@@ -2255,7 +2255,7 @@ renderHome();
     if(!arr.length){ box.innerHTML='<div class="h">🏆 全班排行</div><div class="rows"><span class="r">還沒有人上榜，搶第一名！</span></div>'; return; }
     let h=''; arr.forEach((r,i)=>{ const isMe=r.seat===me; if(i>=5&&!isMe) return;
       h+=`<span class="r${isMe?' me':''}">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank+'.'} ${r.seat}號 ${fmt(g,r)}</span>`; });
-    box.innerHTML=`<div class="h">🏆 全班排行（先比難度，再比成績）</div><div class="rows">${h}</div>`;
+    box.innerHTML=`<div class="h">🏆 全班排行（先比拿到 1 顆星的最高難度，再比成績）</div><div class="rows">${h}</div>`;
   }
   async function showHomeRanks(){
     const all=await L.board(); if(!all) return; const me=L.seat();
