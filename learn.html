@@ -798,9 +798,12 @@ window.__learn601={
   board:()=>lbAll().catch(()=>null),
   async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;
     const cand={d:DIDX[dk],s};logPush({k:'gs',game:g,diff:dk,score:s});sum.gb2=sum.gb2||{};
+    let all=null;try{all=await lbAll()}catch(e){}
+    /* 先以雲端上自己的紀錄為準(換平板、清過資料時不會用比較差的成績蓋掉) */
+    const rm=all&&(all[g]||[]).find(r=>r.seat===user.seat);if(rm&&gBetter(g,{d:rm.d,s:rm.s},sum.gb2[g]))sum.gb2[g]={d:rm.d,s:rm.s};
     if(s>0&&gBetter(g,cand,sum.gb2[g])){sum.gb2[g]=cand;saveSum(true);enqueue(`${ROOT}/lb/${g}/${user.seat}`,{d:cand.d,s,t:Date.now()},true)}
-    const mine=sum.gb2[g];if(!mine)return null;
-    try{const all=await lbAll();if(!all)return {best:mine};const others=(all[g]||[]).filter(r=>r.seat!==user.seat);return {rank:1+others.filter(x=>gBetter(g,x,mine)).length,best:mine}}catch(e){return {best:mine}}}
+    const mine=sum.gb2[g];if(!mine)return null;if(!all)return {best:mine};
+    const others=(all[g]||[]).filter(r=>r.seat!==user.seat);return {rank:1+others.filter(x=>gBetter(g,x,mine)).length,best:mine}}
 };
 
 /* ===================== 教具檢視 ===================== */
