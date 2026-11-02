@@ -654,20 +654,28 @@ const toolById=id=>{for(const u of UN)for(const t of u.tools)if(t.id===id)return
 function show$(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo&&window.scrollTo(0,0)}
 
 /* ===================== 雲端(Firebase)＋離線佇列 ===================== */
-let db=null,online=false,flushing=false;
+let db=null,fauth=null,online=false,flushing=false,boundKey='';
 const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
 const fbReady=(async()=>{try{
   await timeout(loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js'),15000);
   await timeout(loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js'),15000);
-  firebase.initializeApp(FIREBASE_CONFIG);db=firebase.database();
+  await timeout(loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js'),15000);
+  firebase.initializeApp(FIREBASE_CONFIG);db=firebase.database();fauth=firebase.auth();
+  fauth.signInAnonymously().catch(()=>{});
   db.ref('.info/connected').on('value',s=>{online=!!s.val();paintSync();if(online)flush()});
  }catch(e){db=null}paintSync();return !!db})();
 let Q=LS.get('learn601_q',[]);
 function enqueue(p,v,replace){if(replace)Q=Q.filter(x=>x.p!==p);Q.push({p,v});LS.set('learn601_q',Q);paintSync();flush()}
+/* 排行榜防改成績:用 Firebase 匿名登入,讓雲端知道「這台平板＝幾號」(用生日密碼證明),排行榜只准寫自己那一格 */
+async function ensureBind(){if(!user||!db||!fauth)return false;
+  try{if(!fauth.currentUser)await timeout(fauth.signInAnonymously(),10000);const u=fauth.currentUser;if(!u)return false;
+    const k=u.uid+'|'+user.seat+'|'+user.pin;if(boundKey===k)return true;
+    await timeout(db.ref(`${ROOT}/bind/${u.uid}`).set({s:String(user.seat),p:String(user.pin)}),10000);boundKey=k;return true}catch(e){return false}}
 async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true;
-  while(Q.length&&online){const it=Q[0];
+  while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/');
+    if(isLb&&!(await ensureBind()))break;
     try{await timeout(db.ref(it.p).set(it.v),12000);Q.shift();LS.set('learn601_q',Q)}
-    catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){Q.shift();LS.set('learn601_q',Q);continue}break}}
+    catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}Q.shift();LS.set('learn601_q',Q);continue}break}}
   flushing=false;paintSync()}
 addEventListener('online',()=>flush());
 function paintSync(){const s=document.getElementById('sync');if(!s)return;
@@ -701,7 +709,7 @@ async function pinKey(k){if(pinBusy)return;
   if(k==='⌫'){pinVal=pinVal.slice(0,-1);paintPin();return}
   if(pinVal.length>=4)return;pinVal+=k;paintPin();if(pinVal.length<4)return;
   pinBusy=true;pinMsg('檢查中…');const r=await verify(pinSeat,pinVal);pinBusy=false;
-  if(r.ok){user={seat:pinSeat,pin:pinVal};LS.set('learn601_user',user);loadSum();mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
+  if(r.ok){user={seat:pinSeat,pin:pinVal};boundKey='';LS.set('learn601_user',user);loadSum();mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
   const D=document.getElementById('pindots');D.classList.remove('no');void D.offsetWidth;D.classList.add('no');
   pinMsg(r.why==='bad'?'密碼不對，再試一次':r.why==='rules'?'平台還沒開通，請告訴老師':'連不上網路，第一次登入要有網路',true);pinVal='';setTimeout(paintPin,350)}
 async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'};
@@ -715,7 +723,7 @@ let logoutT=0;function confirmLogout(){const b=document.getElementById('logout')
 /* ===================== 首頁 ===================== */
 let view='home';
 function enterHome(){show$('home');document.getElementById('meav').textContent=user.seat;document.getElementById('menm').innerHTML=`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
-  verify(user.seat,user.pin).then(r=>{if(r.ok){mergeSum(r.val);saveSum(true);render()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
+  verify(user.seat,user.pin).then(r=>{if(r.ok){mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
   const items=[{key:'home',no:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g),MIX,GM];
   items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
