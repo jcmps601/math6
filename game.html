@@ -2194,35 +2194,51 @@ renderHome();
 <script>
 /* ═════════════ 601 學習平台模式 ═════════════
    只有在「601 學習平台」裡面開啟時才會啟動（直接開這個檔案、上課用大螢幕時完全不受影響）：
-   ・開一局要用 1 張遊戲券
-   ・全班排行榜：一個遊戲一個榜，先比難度（魔王最高）、同難度再比成績；選難度畫面就看得到
-   ・合成大西瓜、2048 這種不限時的遊戲，在平台裡每局最多 3 分鐘 */
+   ・一張遊戲券 = 5 分鐘：時間內任何遊戲想玩幾局都可以；時間到，正在玩的那局玩完就結束（搭橋小英雄直接結算）
+   ・合成大西瓜、2048 先不放
+   ・全班排行榜：一個遊戲一個榜，先比難度（魔王最高）、同難度再比成績；選難度畫面就看得到 */
 (function(){
   let L=null; try{ L=window.parent!==window&&window.parent.__learn601; }catch(e){}
   if(!L) return;
-  const LIMIT={melon:180,g2048:180};                 // 秒
-  window.__playLimit=LIMIT;
   const st=document.createElement('style');
-  st.textContent=`#tkChip{position:fixed;left:14px;bottom:12px;z-index:60;background:#fff;border-radius:999px;padding:6px 18px;font-weight:900;font-size:24px;color:#e8590c;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+  st.textContent=`.gcard[data-game="melon"],.gcard[data-game="g2048"]{display:none!important}
+#tkChip{position:fixed;left:14px;bottom:12px;z-index:60;background:#fff;border-radius:999px;padding:6px 18px;font-weight:900;font-size:24px;color:#e8590c;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+#tLeft{position:fixed;right:14px;bottom:12px;z-index:60;background:#fff;border-radius:999px;padding:6px 18px;font-weight:900;font-size:26px;color:#1c7ed6;box-shadow:0 4px 0 rgba(0,0,0,.18);display:none}
+#tLeft.on{display:block}#tLeft.warn{color:#e03131;animation:tlb 1s infinite}@keyframes tlb{50%{transform:scale(1.08)}}
 #tkMsg{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center}#tkMsg.on{display:flex}
 #tkMsg .bx{background:#fff;border-radius:28px;padding:28px 40px;text-align:center;max-width:90vw}#tkMsg .i{font-size:64px}#tkMsg .t{font-size:34px;font-weight:900;margin:6px 0}
 #tkMsg .s{font-size:22px;color:#777;font-weight:800;margin-bottom:16px}#tkMsg button{border:0;border-radius:18px;background:#ff922b;color:#fff;font-size:26px;font-weight:900;padding:10px 34px;box-shadow:0 4px 0 #e8590c}
+#tkToast{position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:65;background:#fff;border:5px solid #ffd8a8;color:#e8590c;font-size:30px;font-weight:900;border-radius:24px;padding:10px 28px;opacity:0;pointer-events:none;white-space:nowrap}
+#tkToast.on{animation:tkt 2.4s ease forwards}@keyframes tkt{0%{opacity:0}12%{opacity:1}80%{opacity:1}100%{opacity:0}}
 .rrank{font-size:24px;font-weight:900;color:#e8590c;margin-top:4px;min-height:1.2em}
 #lbBox{background:rgba(255,255,255,.95);border-radius:22px;padding:10px 18px;min-width:min(760px,92vw);max-width:92vw;box-shadow:0 5px 0 #0002}
 #lbBox .h{font-size:22px;font-weight:900;color:#e8590c;margin-bottom:6px}
 #lbBox .rows{display:flex;flex-wrap:wrap;gap:6px 18px}
 #lbBox .r{font-size:21px;font-weight:900;color:#444;white-space:nowrap}#lbBox .r.me{color:#e8590c}
 #lbBox .r small{font-size:16px;color:#888;margin:0 4px}
-.lbme{display:block;margin-top:4px;font-size:15px;font-weight:900;color:#ffe14d}
-#tLeft{position:fixed;right:14px;bottom:12px;z-index:60;background:#fff;border-radius:999px;padding:6px 18px;font-weight:900;font-size:24px;color:#1c7ed6;box-shadow:0 4px 0 rgba(0,0,0,.18);display:none}
-#tLeft.on{display:block}#tLeft.warn{color:#e03131}`;
+.lbme{display:block;margin-top:4px;font-size:15px;font-weight:900;color:#ffe14d}`;
   document.head.appendChild(st);
-  /* 遊戲券 */
-  const chip=document.createElement('div'); chip.id='tkChip'; document.body.appendChild(chip);
-  const paint=()=>{ chip.textContent='🎟️ × '+L.tickets(); };
-  const msg=document.createElement('div'); msg.id='tkMsg';
-  msg.innerHTML='<div class="bx"><div class="i">🎟️</div><div class="t">遊戲券用完了</div><div class="s">回平台練習 10 題，就能再拿 1 張！</div><button>知道了</button></div>';
-  document.body.appendChild(msg); msg.querySelector('button').onclick=()=>msg.classList.remove('on');
+  const mk=(id,html)=>{ const e=document.createElement('div'); e.id=id; if(html) e.innerHTML=html; document.body.appendChild(e); return e; };
+  const chip=mk('tkChip'), tl=mk('tLeft'), toast=mk('tkToast');
+  const msg=mk('tkMsg','<div class="bx"><div class="i" id="tkI"></div><div class="t" id="tkT"></div><div class="s">回平台練習 10 題，就能再拿 1 張遊戲券！</div><button>知道了</button></div>');
+  msg.querySelector('button').onclick=()=>msg.classList.remove('on');
+  const showMsg=(i,t)=>{ $('#tkI').textContent=i; $('#tkT').textContent=t; msg.classList.add('on'); };
+  const mmss=ms=>{ const t=Math.ceil(ms/1000); return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`; };
+  const inGame=()=>$('#game').classList.contains('on')&&!$('#result').classList.contains('on');
+  /* 計時：每 0.25 秒更新；時間到時，搭橋直接結算，其他遊戲這局玩完就結束 */
+  let wasOn=false, upPending=false;
+  function tick(){
+    chip.textContent='🎟️ × '+L.tickets();
+    const left=L.left();
+    if(left>0){ tl.textContent='⏱ '+mmss(left); tl.classList.add('on'); tl.classList.toggle('warn',left<=30000); wasOn=true; return; }
+    tl.classList.remove('on','warn');
+    if(wasOn){ wasOn=false; upPending=true;
+      if(inGame()&&curGame==='bridge'&&br.phase!=='end'&&br.phase!=='ready'){ br.phase='end'; bgmStop(); bigMsg('時間到！'); later(()=>showResult('bridge',br.score),1600); }
+      else if(inGame()) bigMsg('時間到！這局玩完就結束',2500);
+    }
+    if(upPending&&!inGame()){ upPending=false; setTimeout(()=>showMsg('⏰','5 分鐘到了！'),$('#result').classList.contains('on')?2600:0); }
+  }
+  setInterval(tick,250); tick();
   /* 排行榜 */
   const DI=['🌱','⭐','🔥','👑'], DK=['easy','normal','hard','boss'];
   const fmt=(g,r)=>`<small>${DI[r.d]}</small>${gInfo(g,DK[r.d]).txt(r.s)}`;
@@ -2244,25 +2260,18 @@ renderHome();
   }
   const _goDiff=goDiff; goDiff=function(){ _goDiff(); showBoard(curGame); };
   const _goHome=goHome; goHome=function(){ _goHome(); showHomeRanks(); };
-  /* 開局：用遊戲券；不限時的遊戲加 3 分鐘倒數 */
-  const tl=document.createElement('div'); tl.id='tLeft'; document.body.appendChild(tl);
-  let tTimer=0;
-  function stopLimit(){ clearInterval(tTimer); tTimer=0; tl.classList.remove('on','warn'); }
-  function startLimit(g){ stopLimit(); if(!LIMIT[g]) return; let t0=0;
-    tTimer=setInterval(()=>{ const ph=g==='melon'?mel.phase:g2.phase;
-      if(ph!=='play'&&t0){ stopLimit(); return; } if(ph!=='play') return; if(!t0) t0=performance.now();
-      const left=Math.max(0,LIMIT[g]-Math.floor((performance.now()-t0)/1000));
-      tl.textContent=`⏱ ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`; tl.classList.add('on'); tl.classList.toggle('warn',left<=20);
-      if(left<=0){ stopLimit(); g==='melon'?melEnd('quit'):g2End('quit'); } },250); }
+  /* 開局：5 分鐘內直接玩；時間用完才扣 1 張券 */
   const _start=startGame;
-  startGame=function(){ if(!L.useTicket(curGame,curDiff)){ paint(); goDiff(); msg.classList.add('on'); return; } paint(); _start(); startLimit(curGame); };
-  const _stop=stopGame; stopGame=function(){ stopLimit(); _stop(); };
+  startGame=function(){ const r=L.startPlay(curGame,curDiff);
+    if(!r.ok){ goDiff(); showMsg('🎟️','遊戲券用完了'); return; }
+    if(r.fresh){ toast.textContent='🎟️ 用 1 張券，可以玩 5 分鐘！'; toast.classList.remove('on'); void toast.offsetWidth; toast.classList.add('on'); }
+    tick(); _start(); };
   /* 結果：上傳成績、顯示全班名次 */
   const rk=document.createElement('div'); rk.className='rrank'; const nx=$('#rNext'); nx.parentNode.insertBefore(rk,nx.nextSibling);
   const _res=showResult;
   showResult=function(g,score){ _res(g,score); rk.textContent=''; const d=curDiff;
     Promise.resolve(L.score(g,d,score)).then(r=>{ if(r&&r.best) rk.textContent=(r.rank?`🏆 全班第 ${r.rank} 名　`:'')+`我的最佳：${DI[r.best.d]} ${gInfo(g,DK[r.best.d]).txt(r.best.s)}`; }).catch(()=>{}); };
-  paint(); setInterval(paint,1500); showHomeRanks();
+  showHomeRanks();
 })();
 </script>
 </body>

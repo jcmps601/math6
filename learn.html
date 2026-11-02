@@ -635,7 +635,8 @@ const GM={key:'game',no:'🎮',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
 const TK_EVERY=10;                  // 每完成 10 題(不分單元、可以分好幾次做)拿 1 張遊戲券
 /* 601 挑戰樂園的遊戲:[代號, 圖示, 名稱, 單位, 越小越好] */
 const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/ 5'],['flappy','🐤','小雞跳跳','關'],['hunt','🗺️','尋寶','★'],['num','🔢','數字快手','秒',1],['simon','🎹','記憶燈光','個燈'],
- ['color','🎨','顏色陷阱','題'],['react','⚡','反應王','毫秒',1],['spot','👀','找不同','個'],['bridge','🌉','搭橋小英雄','分'],['melon','🍉','合成大西瓜','分'],['g2048','🟧','2048','分']];
+ ['color','🎨','顏色陷阱','題'],['react','⚡','反應王','毫秒',1],['spot','👀','找不同','個'],['bridge','🌉','搭橋小英雄','分']];   // 合成大西瓜、2048 先不放
+const PLAY_MS=5*60*1000;           // 一張券 = 5 分鐘遊戲時間
 const GDIFF=[['easy','🌱','簡單'],['normal','⭐','普通'],['hard','🔥','困難'],['boss','👑','魔王']];
 const GAME_TOOL={id:'game',i:'🎮',k:'遊戲',n:'601 挑戰樂園',f:'game.html'};
 const PU=[0,1,2,3];               // 有練習題的單元
@@ -682,7 +683,7 @@ function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();LS.set('learn
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
-  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0}   // 遊戲券以最後更新的那台為準
+  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}}
 function logPush(v){if(!user)return;enqueue(`${base()}/log/${uid()}`,Object.assign({d:dkey(),ts:Date.now()},v))}
 
@@ -761,6 +762,8 @@ const TX={};function toolExists(f){if(location.protocol==='file:')return Promise
 /* ===================== 遊戲＋排行榜 ===================== */
 let bg='tower';
 const gOf=g=>GLIST.find(x=>x[0]===g);
+const playLeft=()=>sum&&sum.se?Math.max(0,sum.se-Date.now()):0;
+const mmss=ms=>{const t=Math.ceil(ms/1000);return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
 const DIDX={easy:0,normal:1,hard:2,boss:3};
 /* 一個遊戲只有一個榜:先比難度(魔王最高),同難度再比分數 */
 function gBetter(g,a,b){if(!a)return false;if(!b)return true;if(a.d!==b.d)return a.d>b.d;const lo=!!(gOf(g)||[])[4];return lo?a.s<b.s:a.s>b.s}
@@ -768,8 +771,8 @@ const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;i
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
-  c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩一局）</div><div class="s">練習 10 題拿 1 張，再 ${tkLeft()} 題拿下一張</div></div>`;
-  const b=el('button','go',(sum.tk||0)>0?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>(sum.tk||0)>0?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
+  const left=playLeft();c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`練習 10 題拿 1 張，再 ${tkLeft()} 題拿下一張`}</div></div>`;
+  const can=left>0||(sum.tk||0)>0;const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
   P.appendChild(el('div','sec','🏆 全班排行榜（先比難度，再比成績）'));
   const gc=el('div');gc.id='bgames';GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bg=k;render()});gc.appendChild(x)});P.appendChild(gc);
   const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(L);loadBoard(L)}
@@ -788,7 +791,10 @@ async function loadBoard(L){const g=bg;let all;
 window.__learn601={
   seat:()=>user?user.seat:null,
   tickets:()=>sum?(sum.tk||0):0,
-  useTicket(g,d){if(!user||!sum||!((sum.tk||0)>0))return false;sum.tk--;saveSum(true);logPush({k:'g',game:g,diff:d});return true},
+  left:()=>playLeft(),
+  /* 開一局:5 分鐘還沒用完就直接玩;用完了才扣 1 張券、重新給 5 分鐘 */
+  startPlay(g,d){if(!user||!sum)return {ok:false};if(playLeft()>0)return {ok:true};
+    if(!((sum.tk||0)>0))return {ok:false};sum.tk--;sum.se=Date.now()+PLAY_MS;saveSum(true);logPush({k:'g',game:g,diff:d});return {ok:true,fresh:true}},
   board:()=>lbAll().catch(()=>null),
   async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;
     const cand={d:DIDX[dk],s};logPush({k:'gs',game:g,diff:dk,score:s});sum.gb2=sum.gb2||{};
