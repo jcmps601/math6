@@ -2191,5 +2191,33 @@ function g2End(why){
 renderHome();
 
 </script>
+<script>
+/* ═════════════ 601 學習平台模式 ═════════════
+   只有在「601 學習平台」裡面開啟時才會啟動（直接開這個檔案、上課用大螢幕時完全不受影響）：
+   開一局要用 1 張遊戲券；結束時成績上傳全班排行榜，結果畫面顯示全班第幾名。 */
+(function(){
+  let L=null; try{ L=window.parent!==window&&window.parent.__learn601; }catch(e){}
+  if(!L) return;
+  const st=document.createElement('style');
+  st.textContent=`#tkChip{position:fixed;left:14px;bottom:12px;z-index:60;background:#fff;border-radius:999px;padding:6px 18px;font-weight:900;font-size:24px;color:#e8590c;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+#tkMsg{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center}#tkMsg.on{display:flex}
+#tkMsg .bx{background:#fff;border-radius:28px;padding:28px 40px;text-align:center;max-width:90vw}#tkMsg .i{font-size:64px}#tkMsg .t{font-size:34px;font-weight:900;margin:6px 0}
+#tkMsg .s{font-size:22px;color:#777;font-weight:800;margin-bottom:16px}#tkMsg button{border:0;border-radius:18px;background:#ff922b;color:#fff;font-size:26px;font-weight:900;padding:10px 34px;box-shadow:0 4px 0 #e8590c}
+.rrank{font-size:26px;font-weight:900;color:#e8590c;margin-top:4px;min-height:1.2em}`;
+  document.head.appendChild(st);
+  const chip=document.createElement('div'); chip.id='tkChip'; document.body.appendChild(chip);
+  const paint=()=>{ chip.textContent='🎟️ × '+L.tickets(); };
+  const msg=document.createElement('div'); msg.id='tkMsg';
+  msg.innerHTML='<div class="bx"><div class="i">🎟️</div><div class="t">遊戲券用完了</div><div class="s">回平台練習 10 題，就能再拿 1 張！</div><button>知道了</button></div>';
+  document.body.appendChild(msg); msg.querySelector('button').onclick=()=>msg.classList.remove('on');
+  const rk=document.createElement('div'); rk.className='rrank'; const nx=$('#rNext'); nx.parentNode.insertBefore(rk,nx.nextSibling);
+  const _start=startGame;
+  startGame=function(){ if(!L.useTicket(curGame,curDiff)){ paint(); goDiff(); msg.classList.add('on'); return; } paint(); _start(); };
+  const _res=showResult;
+  showResult=function(g,score){ _res(g,score); rk.textContent=''; const d=curDiff;
+    Promise.resolve(L.score(g,d,score,!!gInfo(g,d).low)).then(r=>{ if(r&&r.rank) rk.textContent=`🏆 全班第 ${r.rank} 名（我的最佳：${gInfo(g,d).txt(r.best)}）`; }).catch(()=>{}); };
+  paint(); setInterval(paint,1500);
+})();
+</script>
 </body>
 </html>
