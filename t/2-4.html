@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>2-4 分數除法的應用</title>
+<style>
+:root{
+  --bg:#FFF8EE; --ink:#2d3436; --sub:#8a8172; --line:#e8e0d2;
+  --o:#FF9F43; --od:#d9730d; --ob:#fff1e0;     /* 被除數 */
+  --b:#54A0FF; --bd:#2f6fce; --bb:#e8f2ff;     /* 除數 */
+  --g:#22b573; --gd:#138a55; --gb:#e6f7ee;     /* 答案 */
+  --p:#8e6cc0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{height:100vh;height:100dvh;display:flex;background:var(--bg);color:var(--ink);
+  font-family:'PingFang TC','Heiti TC','Microsoft JhengHei',sans-serif;overflow:hidden;
+  user-select:none;-webkit-user-select:none}
+[hidden]{display:none!important}
+
+aside{width:200px;flex-shrink:0;background:#fff;box-shadow:3px 0 12px rgba(0,0,0,.08);
+  display:flex;flex-direction:column;gap:8px;overflow-y:auto;padding:12px 10px 16px;z-index:5}
+.brand{text-align:center}
+.brand .bg{background:var(--ink);color:#fff;border-radius:12px;padding:3px 14px;font-size:17px;font-weight:bold}
+.brand .t{font-size:17px;font-weight:bold;margin-top:6px}
+.rule{height:3px;background:var(--line);border-radius:2px;margin:2px}
+#nav{display:flex;flex-direction:column;gap:8px}
+.nav{min-height:56px;border:none;border-radius:15px;cursor:pointer;font-family:inherit;color:#fff;
+  background:var(--p);line-height:1.2;padding:6px 12px;text-align:left;opacity:.4;transition:all .15s;
+  box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.nav b{display:block;font-size:20px}
+.nav small{display:block;font-size:13px;opacity:.9}
+.nav.on{opacity:1}
+.nav:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+
+main{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;
+  justify-content:safe center;padding:12px 18px}
+
+/* 題目 */
+.qrow{display:flex;align-items:center;gap:14px;width:100%;max-width:1060px;flex-wrap:wrap;justify-content:center}
+.qcard{flex:1 1 600px;background:#fff;border-radius:22px;box-shadow:0 4px 14px rgba(0,0,0,.07);
+  padding:12px 20px;font-size:27px;font-weight:bold;line-height:1.9}
+.chip{display:inline-flex;align-items:center;border-radius:12px;padding:0 10px;margin:0 3px;
+  border:4px solid;vertical-align:middle;line-height:1.15;transition:all .2s}
+.chip.o{border-color:var(--o);background:var(--ob);color:var(--od)}
+.chip.b{border-color:var(--b);background:var(--bb);color:var(--bd)}
+.chip.easy{border-style:dashed}
+.seg{display:flex;background:#fff;border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.07);padding:5px}
+.seg button{border:none;background:none;font-family:inherit;font-size:20px;font-weight:bold;
+  color:var(--sub);padding:10px 18px;border-radius:14px;cursor:pointer}
+.seg button.on{background:var(--ink);color:#fff}
+
+/* 分數 */
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.02;margin:0 2px}
+.frac .n{border-bottom:3px solid currentColor;padding:0 5px}
+.frac .d{padding:0 5px}
+.frac.sm{font-size:.7em}
+.frac.sm .n{border-bottom-width:2px}
+.mix{display:inline-flex;align-items:center}
+
+/* 圖 */
+.vis{background:#fff;border-radius:22px;box-shadow:0 4px 14px rgba(0,0,0,.07);padding:14px 20px;
+  width:100%;max-width:1060px;margin-top:12px;display:flex;flex-direction:column;align-items:center;min-height:210px;justify-content:center}
+.ug{display:grid;gap:0;align-items:end}
+.brk{font-size:22px;font-weight:bold;text-align:center;padding:2px 4px 6px;white-space:nowrap}
+.brk.top{border-bottom:5px solid var(--o);color:var(--od);border-radius:0 0 4px 4px;margin-bottom:6px}
+.brk.bot{border-top:5px solid var(--g);color:var(--gd);margin-top:6px;padding:6px 4px 2px}
+.brk.ghost{visibility:hidden}
+.cell{height:62px;border:3px solid #cfc7b6;border-right-width:0;background:#fff;display:flex;
+  align-items:center;justify-content:center;font-size:17px;font-weight:bold;color:#b9ae98;transition:all .2s}
+.cell.last{border-right-width:3px}
+.cell.known{background:#ffe3c4;border-color:var(--o);color:var(--od)}
+.cell.one{background:var(--b);color:#fff;border-color:var(--bd)}
+.cell.tgt{box-shadow:inset 0 -8px 0 var(--g)}
+.steps{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:10px}
+.stp{font-size:28px;font-weight:bold;display:flex;align-items:center;gap:8px}
+.stp.s1{color:var(--bd)} .stp.s2{color:var(--gd)}
+
+.chunks{display:flex}
+.chk{height:64px;border:3px solid #9fc5f5;border-right-width:0;background:#fff;display:flex;
+  align-items:center;justify-content:center;font-size:17px;font-weight:bold;color:#9fb4d0;transition:all .2s}
+.chk.last{border-right-width:3px}
+.chk.fill{background:var(--b);color:#fff;border-color:var(--bd)}
+.cnt{font-size:30px;font-weight:bold;color:var(--bd);margin-top:8px;min-height:40px}
+
+.gwrap{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:6px 10px;align-items:center}
+.glen{grid-column:2;text-align:center;font-size:26px;font-weight:bold;color:var(--gd)}
+.gwid{grid-row:2;font-size:26px;font-weight:bold;color:var(--bd);text-align:right}
+.grect{grid-row:2;grid-column:2;display:grid;border:5px solid var(--ink);position:relative;background:#fff5e8}
+.gc{border:1.5px solid transparent}
+.grect.show .gc{border-color:#e7c9a0}
+.garea{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:bold;color:var(--od);background:rgba(255,245,232,.75)}
+.grect.show .garea{background:transparent}
+
+/* 算式 */
+.eqs{width:100%;max-width:1060px;display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:12px}
+.eq{display:flex;align-items:center;gap:10px;font-size:34px;font-weight:bold;border-radius:18px;
+  padding:4px 20px;transition:all .2s}
+.eq .lab{font-size:16px;font-weight:bold;color:#fff;background:var(--sub);border-radius:10px;padding:3px 10px;min-width:74px;text-align:center}
+.eq.cur{background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.07)}
+.eq.cur .lab{background:var(--ink)}
+.eq.dim{opacity:.35;font-size:26px}
+.eq.mul{font-size:24px;color:var(--sub)}
+.o{color:var(--od)} .b{color:var(--bd)} .g{color:var(--gd)}
+.ans{display:none;background:var(--g);color:#fff;border-radius:22px;padding:6px 34px;font-size:36px;
+  font-weight:bold;align-items:center;gap:8px;box-shadow:0 5px 14px rgba(19,138,85,.3);margin-top:6px}
+.ans.show{display:flex;animation:pop .35s}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+.btns{display:flex;gap:12px;justify-content:center;padding:10px 0 2px}
+.btn{min-height:54px;min-width:120px;border:none;border-radius:30px;cursor:pointer;color:#fff;font-size:21px;
+  font-weight:bold;font-family:inherit;padding:8px 26px;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.btn:disabled{opacity:.3}
+.btn.gray{background:#7f8c9b} .btn.go{background:var(--p)}
+
+@media (max-width:1100px){ aside{width:160px} .nav b{font-size:17px} .qcard{font-size:23px} }
+@media (max-height:860px){
+  main{padding:8px 14px} .qcard{font-size:24px;padding:8px 16px;line-height:1.75}
+  .vis{padding:10px 14px;min-height:180px;margin-top:8px} .cell{height:52px} .chk{height:54px}
+  .eq{font-size:29px} .eq.dim{font-size:23px} .stp{font-size:24px} .ans{font-size:30px}
+  .eqs{margin-top:8px} .brk{font-size:19px}
+}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><span class="bg">2-4</span><div class="t">分數除法的應用</div></div>
+  <div class="rule"></div>
+  <div id="nav"></div>
+</aside>
+<main>
+  <div class="qrow">
+    <div class="qcard" id="q"></div>
+    <div class="seg"><button id="mF" class="on">原題</button><button id="mE">簡單的數</button></div>
+  </div>
+  <div class="vis" id="vis"></div>
+  <div class="eqs" id="eqs"></div>
+  <div class="ans" id="ans"></div>
+  <div class="btns">
+    <button class="btn gray" id="reset">復原</button>
+    <button class="btn go" id="next">下一步 ▶</button>
+  </div>
+</main>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+function F(n,d,m){d=d||1;const g=gcd(n,d);return {n:n/g,d:d/g,m:m};}   /* m===false → 保持假分數（照課本寫法） */
+const mul=(a,b)=>F(a.n*b.n,a.d*b.d), div=(a,b)=>F(a.n*b.d,a.d*b.n);
+function fr(n,d,sm){return '<span class="frac'+(sm?' sm':'')+'"><span class="n">'+n+'</span><span class="d">'+d+'</span></span>';}
+function H(f,sm){                                   /* 帶分數顯示 */
+  if(f.d===1)return String(f.n);
+  if(f.n>f.d&&f.m!==false)return '<span class="mix">'+Math.floor(f.n/f.d)+fr(f.n%f.d,f.d,sm)+'</span>';
+  return fr(f.n,f.d,sm);
+}
+
+/* ─── 六道題 ─── */
+const P=[
+ {nav:'❶ 椰奶',pg:'P30',vis:'unit',
+  f:{o:F(8,5,false),b:F(4)}, e:{o:F(8),b:F(4)},
+  text:(O,B)=>B+' 罐椰奶重 '+O+' 公斤，1 罐重幾公斤？',
+  bU:' 罐',oU:' 公斤',aU:'公斤',cell:()=> '1 罐',whole:'1 罐'},
+ {nav:'❷ 注水',pg:'P30',vis:'chunk',
+  f:{o:F(25,2),b:F(5,4)}, e:{o:F(10),b:F(2)},
+  text:(O,B)=>'水管 1 分鐘注水 '+B+' 公升，桶子 '+O+' 公升，要幾分鐘？',
+  oU:' 公升',aU:'分鐘'},
+ {nav:'❸ 花園',pg:'P30',vis:'grid',
+  f:{o:F(15,4),b:F(3,2),u:F(1,2)}, e:{o:F(12),b:F(3),u:F(1)},
+  text:(O,B)=>'長方形花園面積 '+O+' 平方公尺，寬 '+B+' 公尺，長是幾公尺？',
+  aU:'公尺', mulRow:(o,b)=>'長 × <span class="b">'+b+'</span> ＝ <span class="o">'+o+'</span>'},
+ {nav:'❹ 火龍果',pg:'P31',vis:'unit',
+  f:{o:F(48),b:F(2,5)}, e:{o:F(48),b:F(2)},
+  text:(O,B)=>'買 '+B+' 公斤的火龍果花了 '+O+' 元，1 公斤賣幾元？',
+  bU:' 公斤',oU:' 元',aU:'元',cell:N=>N===1?'1 公斤':fr(1,N,1),whole:'1 公斤'},
+ {nav:'❺ 鐵條',pg:'P31',vis:'unit',
+  f:{o:F(16,9,false),b:F(8,5)}, e:{o:F(6),b:F(2)},
+  text:(O,B)=>B+' 公尺的鐵條重 '+O+' 公斤，1 公尺重幾公斤？',
+  bU:' 公尺',oU:' 公斤',aU:'公斤',cell:N=>N===1?'1 公尺':fr(1,N,1),whole:'1 公尺',
+  mulRow:(o,b)=>'（　）× <span class="b">'+b+'</span> ＝ <span class="o">'+o+'</span>'},
+ {nav:'❻ 農地',pg:'P31',vis:'unit',
+  f:{o:F(3,4),b:F(5,12)}, e:{o:F(3),b:F(1,2)},
+  text:(O,B)=>'菜園占農地的 '+B+'，菜園面積 '+O+' 公頃，農地有幾公頃？',
+  bU:'',oU:' 公頃',aU:'公頃',cell:N=>fr(1,N,1),whole:'農地',knownName:'菜園',
+  mulRow:(o,b)=>'農地 × <span class="b">'+b+'</span> ＝ <span class="o">'+o+'</span>'}
+];
+let cur=0, mode='f';
+const st=P.map(()=>({f:0,e:0}));        /* 各題各模式的步驟 */
+
+function stepsOf(p,m){
+  const d=p[m];
+  if(p.vis==='unit')return d.b.d>1?2:1;          /* 1 格 → N 格 */
+  if(p.vis==='chunk'){const c=div(d.o,d.b);return c.n;}
+  return 1;                                       /* grid */
+}
+
+/* 左側導覽 */
+$('#nav').innerHTML=P.map((p,i)=>'<button class="nav'+(i?'':' on')+'" data-i="'+i+'"><b>'+p.nav+'</b><small>'+p.pg+'</small></button>').join('');
+document.querySelectorAll('.nav').forEach(b=>b.addEventListener('pointerdown',()=>{
+  cur=+b.dataset.i;mode='f';
+  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('on',x===b));
+  draw();
+}));
+$('#mF').addEventListener('pointerdown',()=>{mode='f';draw();});
+$('#mE').addEventListener('pointerdown',()=>{mode='e';draw();});
+$('#next').addEventListener('pointerdown',()=>{const p=P[cur];if(st[cur][mode]<stepsOf(p,mode))st[cur][mode]++;draw();});
+$('#reset').addEventListener('pointerdown',()=>{st[cur][mode]=0;draw();});
+
+/* ─── 圖：格子推理（❶❹❺❻） ─── */
+function visUnit(p,d,s){
+  const k=d.b.n, N=d.b.d, cells=Math.max(k,N);
+  const W=Math.max(54,Math.min(110,Math.floor(900/cells)));
+  const one=div(d.o,F(k)), ans=div(d.o,d.b);
+  let h='<div class="ug" style="grid-template-columns:repeat('+cells+','+W+'px)">';
+  h+='<div class="brk top" style="grid-column:1/span '+k+'">'+(p.knownName?p.knownName+' ':'')+
+     H(d.b,1)+(p.bU||'')+' ＝ '+H(d.o,1)+p.oU+'</div>';
+  if(k<cells)h+='<div style="grid-column:'+(k+1)+'/span '+(cells-k)+'"></div>';
+  for(let i=0;i<cells;i++){
+    let c='cell'+(i===cells-1?' last':'');
+    if(i<k)c+=' known';
+    if(s>=1&&i===0)c+=' one';
+    if(s>=2&&i<N)c+=' tgt';
+    h+='<div class="'+c+'">'+(s>=1&&i===0?H(one,1):p.cell(N))+'</div>';
+  }
+  h+='<div class="brk bot'+(s>=(N>1?2:1)?'':'')+'" style="grid-column:1/span '+N+'">'+p.whole+' ＝ '+
+     (s>=(N>1?2:1)?H(ans,1)+p.oU:'？')+'</div>';
+  h+='</div><div class="steps">';
+  if(s>=1)h+='<div class="stp s1">1 格 ＝ '+H(d.o)+' ÷ '+k+' ＝ '+H(one)+'</div>';
+  if(s>=2)h+='<div class="stp s2">'+N+' 格 ＝ '+H(one)+' × '+N+' ＝ '+H(ans)+'</div>';
+  return h+'</div>';
+}
+/* ─── 圖：一次一次注水（❷） ─── */
+function visChunk(p,d,s){
+  const n=div(d.o,d.b).n, W=Math.max(34,Math.min(96,Math.floor(900/n)));
+  let h='<div class="brk top" style="width:'+(n*W)+'px">桶子 '+H(d.o,1)+p.oU+'</div><div class="chunks">';
+  for(let i=0;i<n;i++)h+='<div class="chk'+(i<s?' fill':'')+(i===n-1?' last':'')+'" style="width:'+W+'px">'+H(d.b,1)+'</div>';
+  return h+'</div><div class="cnt">'+(s?s+' 分鐘':'')+'</div>';
+}
+/* ─── 圖：長方形（❸） ─── */
+function visGrid(p,d,s){
+  const rows=div(d.b,d.u).n, ans=div(d.o,d.b), cols=div(ans,d.u).n, C=58;
+  let cells='';for(let i=0;i<rows*cols;i++)cells+='<div class="gc"></div>';
+  return '<div class="gwrap"><div class="glen">長 '+(s?H(ans,1)+' 公尺':'？')+'</div>'+
+    '<div class="gwid">寬<br>'+H(d.b,1)+'</div>'+
+    '<div class="grect'+(s?' show':'')+'" style="grid-template-columns:repeat('+cols+','+C+'px);grid-template-rows:repeat('+rows+','+C+'px)">'+
+    cells+'<div class="garea">面積 '+H(d.o,1)+'</div></div></div>';
+}
+
+function draw(){
+  const p=P[cur], d=p[mode], s=st[cur][mode], S=stepsOf(p,mode), done=(s>=S);
+  $('#mF').classList.toggle('on',mode==='f'); $('#mE').classList.toggle('on',mode==='e');
+  const ez=mode==='e'?' easy':'';
+  $('#q').innerHTML=p.text('<span class="chip o'+ez+'">'+H(d.o,1)+'</span>','<span class="chip b'+ez+'">'+H(d.b,1)+'</span>');
+  $('#vis').innerHTML = p.vis==='unit'?visUnit(p,d,s) : p.vis==='chunk'?visChunk(p,d,s) : visGrid(p,d,s);
+  /* 算式：簡單的數在上、原題在下；目前模式亮起 */
+  let h='';
+  if(p.mulRow)h+='<div class="eq mul">'+p.mulRow(H(d.o),H(d.b))+'</div>';
+  ['e','f'].forEach(m=>{
+    const dm=p[m], dn=st[cur][m]>=stepsOf(p,m);
+    h+='<div class="eq '+(m===mode?'cur':'dim')+'"><span class="lab">'+(m==='e'?'簡單的數':'原題')+'</span>'+
+       '<span class="o">'+H(dm.o)+'</span> ÷ <span class="b">'+H(dm.b)+'</span> ＝ '+
+       (dn?'<span class="g">'+H(div(dm.o,dm.b))+'</span>':'？')+'</div>';
+  });
+  $('#eqs').innerHTML=h;
+  if(done){$('#ans').innerHTML=H(div(d.o,d.b))+' '+p.aU;$('#ans').classList.add('show');}
+  else $('#ans').classList.remove('show');
+  $('#next').disabled=done;
+  $('#next').textContent=p.vis==='chunk'?'注一次 ▶':'下一步 ▶';
+}
+draw();
+})();
+</script>
+</body>
+</html>

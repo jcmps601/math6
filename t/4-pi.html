@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>圓周率的故事 割圓術</title>
+<style>
+:root{--bg:#FFF8EE;--g:#22b573;--gd:#138a52;--gl:#e3f6ea;--o:#FF9F43;--od:#d9822e;--p:#7048e8;--pl:#f3f0ff;--b:#1c7ed6;--bl:#e7f5ff;--boy:#1c7ed6;--boyl:#d0ebff;--girl:#d6336c;--girll:#ffdeeb;--ink:#333}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:clamp(12px,min(1.25vw,2.15vh),30px)}
+body{margin:0;height:100vh;height:100dvh;display:grid;grid-template-columns:6.4rem 1fr;background:var(--bg);color:var(--ink);
+  font-family:'PingFang TC','Heiti TC','Microsoft JhengHei',sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer}
+.kai{font-family:'BiauKai','Kaiti TC','STKaiti','DFKai-SB','標楷體',serif}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bad{animation:shake .4s}
+/* 左側目錄 */
+aside{background:#fff;border-right:3px solid #f1e4cf;display:flex;flex-direction:column;padding:.4rem .3rem;gap:.12rem;overflow-y:auto}
+.unit{text-align:center;padding-bottom:0}
+.unit b{display:inline-block;font-size:.9rem;color:#fff;background:var(--g);border-radius:12px;padding:.2rem .5rem}
+.grp{font-size:.85rem;font-weight:900;text-align:center;margin-top:.15rem;border-top:3px dotted #e9dcc6;padding-top:.15rem}
+.grp.a{color:var(--b)}.grp.b{color:var(--gd)}.grp.c{color:#d9480f}
+.nav{display:flex;flex-direction:column;align-items:center;gap:0;border:3px solid transparent;background:transparent;border-radius:14px;padding:.08rem .1rem;font-size:.85rem;line-height:1.1;color:#555;font-weight:800;white-space:nowrap}
+.nav .ic{flex:none;width:1.45rem;height:1.45rem;border-radius:50%;background:#f1f3f5;display:grid;place-items:center;font-size:1.1rem}
+.nav.on{border-color:var(--g);background:var(--gl);color:#1f3d2b}
+.nav.on .ic{background:var(--g)}
+.fs{margin-top:auto;flex:none;border:0;background:#f3f3f3;border-radius:12px;font-size:1.1rem;padding:.2rem;color:#666}
+/* 主畫面 */
+main{display:flex;flex-direction:column;padding:.55rem .9rem .8rem;gap:.55rem;min-width:0;min-height:0}
+header{display:flex;align-items:center;gap:.6rem}
+.banner{display:flex;align-items:stretch;flex:1;min-width:0}
+.banner b{background:var(--g);color:#fff;font-size:1.6rem;font-weight:900;padding:.2rem 1.4rem .2rem .9rem;border-radius:14px 0 0 14px;clip-path:polygon(0 0,86% 0,100% 50%,86% 100%,0 100%);white-space:nowrap}
+.banner span{flex:1;margin-left:-.6rem;padding:.2rem 1.4rem;font-size:1.5rem;font-weight:900;color:#1f3d2b;background:linear-gradient(90deg,#c9eed6,#eaf8ef 70%,rgba(234,248,239,0));display:flex;align-items:center;white-space:nowrap;overflow:hidden}
+.reset{flex:none;width:2.6rem;height:2.6rem;border-radius:50%;border:0;background:#fff;box-shadow:0 3px 0 #eadbc4;font-size:1.6rem;color:#777}
+/* 抽籤列 */
+.who{flex:none;display:flex;align-items:center;gap:.4rem;border:0;background:#fff;border-radius:999px;padding:.15rem .9rem .15rem .2rem;box-shadow:0 3px 0 #eadbc4;font-size:1.3rem;font-weight:900;color:#555}
+.who .wb{width:2.6rem;height:2.6rem;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:1.45rem;background:radial-gradient(circle at 35% 30%,#ffe8a3,#fcc419 60%,#e67700)}
+.who .wb.boy{background:radial-gradient(circle at 35% 30%,#a5d8ff,#339af0 60%,#1864ab)}
+.who .wb.girl{background:radial-gradient(circle at 35% 30%,#ffc9de,#f06595 60%,#a61e4d)}
+.hbtn{flex:none;border:0;border-radius:999px;font-size:1.3rem;font-weight:900;padding:.4rem .9rem;color:#fff;background:var(--g);box-shadow:0 4px 0 var(--gd)}
+.hbtn.m{background:#e9ecef;color:#666;box-shadow:0 4px 0 #ced4da;padding:.4rem .6rem}
+.hbtn.t{background:#fff;color:#c45f00;box-shadow:0 3px 0 #eadbc4}
+.hbtn:disabled{opacity:.35;pointer-events:none}
+.hbtn:active{transform:translateY(2px)}
+.plusfx{position:fixed;z-index:60;font-size:3rem;font-weight:900;color:#f08c00;pointer-events:none;animation:up 1s forwards;text-shadow:0 3px 0 #fff}
+@keyframes up{to{transform:translateY(-3rem);opacity:0}}
+/* 抽籤動畫 */
+#drawov{position:fixed;inset:0;z-index:70;background:rgba(255,248,238,.82);display:grid;place-items:center;transition:opacity .35s}
+#drawov.out{opacity:0}
+#drawov .bb{width:min(42vh,26rem);height:min(42vh,26rem);border-radius:50%;display:grid;place-items:center;font-size:min(20vh,12rem);font-weight:900;color:#fff;background:radial-gradient(circle at 35% 30%,#ffe8a3,#fcc419 60%,#e67700);box-shadow:inset -18px -24px 0 rgba(0,0,0,.12),0 14px 0 #f0dfc6}
+#drawov .bb.boy{background:radial-gradient(circle at 35% 30%,#a5d8ff,#339af0 60%,#1864ab)}
+#drawov .bb.girl{background:radial-gradient(circle at 35% 30%,#ffc9de,#f06595 60%,#a61e4d)}
+#drawov .bb.roll{animation:wob .12s infinite}
+#drawov .bb.land{animation:pop .5s}
+@keyframes wob{50%{transform:rotate(8deg) scale(1.04)}}
+/* 加分板 */
+#board{position:fixed;inset:0;z-index:65;background:rgba(40,30,10,.35);display:flex;align-items:center;justify-content:center}
+#board .bd{width:min(94vw,64rem);max-height:94vh;background:#fff;border-radius:28px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:.8rem;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+#board .bh{display:flex;align-items:center;gap:.6rem;font-size:1.8rem;font-weight:900;color:var(--gd)}
+#board .bh .sp{flex:1}
+#board .bh button{border:0;border-radius:12px;font-size:1.15rem;font-weight:900;padding:.35rem .8rem;background:#f1f3f5;color:#555}
+#board .bh button.on{background:#ffe3e3;color:#c92a2a}
+#board .bh .left{font-size:1.1rem;color:#888}
+.btiles{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem}
+.bt{border-radius:16px;padding:.35rem 0;display:flex;flex-direction:column;align-items:center;border:4px solid transparent;cursor:pointer}
+.bt .n{font-size:2.1rem;font-weight:900;line-height:1.1}
+.bt .s{font-size:1.15rem;font-weight:900;min-height:1.5rem}
+.bt.b{background:var(--boyl);color:var(--boy)}.bt.g{background:var(--girll);color:var(--girl)}
+.bt.used{opacity:.5}.bt.cur{border-color:var(--o);opacity:1}
+.bt.off{background:#f1f3f5;color:#adb5bd;opacity:1;text-decoration:line-through}
+.bt.top1{box-shadow:0 0 0 3px #fcc419}
+.confirm{color:#c92a2a!important;background:#ffe3e3!important}
+
+.page{flex:1;min-height:0;display:flex;flex-direction:column;gap:.7rem}
+.card{background:#fff;border-radius:24px;box-shadow:0 4px 0 #f0dfc6,0 8px 24px rgba(160,120,60,.08);min-height:0;min-width:0}
+.big-btn{border:0;background:var(--o);color:#fff;border-radius:18px;font-size:1.5rem;font-weight:900;padding:.45rem 1.2rem;box-shadow:0 5px 0 var(--od)}
+.big-btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--od)}
+.big-btn.g{background:var(--g);box-shadow:0 5px 0 var(--gd)}
+.big-btn.p{background:var(--p);box-shadow:0 5px 0 #5235c0}
+.big-btn.gray{background:#e9ecef;color:#666;box-shadow:0 5px 0 #ced4da}
+.big-btn:disabled{opacity:.35;pointer-events:none}
+.qtop{display:flex;align-items:center;gap:.7rem}
+.qno{font-size:1.7rem;font-weight:900;color:#5c3a1e}
+.qsec{font-size:1.2rem;font-weight:900;background:var(--gl);color:var(--gd);border-radius:999px;padding:.15rem .8rem}
+.qtop .sp{flex:1}
+.qgrid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.15fr;gap:.9rem}
+.figc{display:flex;align-items:center;justify-content:center;padding:.6rem}
+.fig{width:100%;height:100%;max-height:100%}
+.qc{display:flex;flex-direction:column;gap:.7rem;padding:1rem 1.3rem;overflow:hidden}
+.qc>*{flex-shrink:0}
+.qq{font-size:2.7rem;font-weight:700;line-height:1.45;color:#1d3557}
+.qarea{display:flex;flex-direction:column;gap:.6rem}
+.disp{display:flex;align-items:center;gap:.6rem;border:4px solid #d0bfff;border-radius:18px;background:#f8f7ff;padding:.2rem 1rem;min-height:4.4rem}
+.disp .v{flex:1;font-size:3.2rem;font-weight:900;color:#3b2a7a;text-align:right;font-family:Arial,sans-serif;letter-spacing:.02em}
+.disp .u{font-size:1.8rem;font-weight:900;color:#888}
+.disp.ok{border-color:#37b24d;background:#ebfbee}.disp.no{border-color:#fa5252;background:#fff5f5}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem}
+.pk{border:0;border-radius:14px;background:#f1f3f5;font-size:2.2rem;font-weight:900;padding:.25rem 0;color:#333;box-shadow:0 4px 0 #dee2e6;font-family:Arial,sans-serif}
+.pk.fn{background:#ffe3e3;color:#c92a2a}.pk.z{grid-column:span 2}
+.pk:active{transform:translateY(2px);box-shadow:0 2px 0 #dee2e6}
+.qarea.done .pad{display:none}
+.opts{display:flex;flex-direction:column;gap:.55rem}
+.opt{border:4px solid #e9dcc6;background:#fffaf0;border-radius:18px;font-size:2.3rem;padding:.3rem .8rem;color:#333;box-shadow:0 4px 0 #e9dcc6;text-align:left}
+.opt.sel{border-color:var(--o);background:#fff3e3}
+.opt.ok{border-color:#37b24d;background:#d3f9d8;color:#2b8a3e}.opt.no{border-color:#fa5252;background:#ffe3e3;color:#c92a2a}
+.qbtns{display:flex;gap:.7rem;flex-wrap:wrap}
+.res{font-size:2rem;font-weight:900;min-height:0}
+.res.ok{color:#2b8a3e;animation:pop .35s}.res.no{color:#c92a2a}.res b{font-size:1.2em}
+.qsteps{display:none;flex-direction:column;gap:.4rem;background:#fff9db;border-radius:18px;padding:.6rem 1rem;border:3px dashed #fcc419}
+.qsteps.on{display:flex}
+.st{font-size:2.6rem;font-weight:700;line-height:1.35;color:#5c3a1e;animation:fade .35s}
+.st.eq{white-space:nowrap}
+
+/* 古人 */
+.tl{display:grid;grid-template-columns:repeat(6,1fr);gap:.7rem}
+.hc{background:#fff;border-radius:22px;box-shadow:0 4px 0 #f0dfc6;padding:.6rem .4rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;cursor:pointer;border:4px solid transparent;text-align:center}
+.hc .ic{font-size:2.8rem;line-height:1.1}
+.hc .who{font-size:min(1.9rem,1.7vw);font-weight:900;color:#5c3a1e;line-height:1.2;white-space:nowrap}
+.hc .when{font-size:min(1.05rem,.95vw);white-space:nowrap;font-weight:800;color:#999}
+.hc .val{font-size:2.1rem;font-weight:900;color:transparent;background:#f1f3f5;border-radius:12px;padding:0 .4rem;min-width:70%;line-height:1.35;font-family:Arial,sans-serif;white-space:nowrap}
+.hc .how{font-size:min(1.35rem,1.2vw);white-space:nowrap;font-weight:800;color:transparent}
+.hc.open{border-color:#8ce99a}.hc.open .val{color:#1c7ed6;background:#e7f5ff;animation:pop .35s}.hc.open .how{color:#2b8a3e}
+.hc .val{font-size:min(2.1rem,1.9vw)}
+.nl{flex:1;display:flex;flex-direction:column;padding:.6rem 1rem;min-height:0}
+.nlbar{display:flex;align-items:center;gap:.8rem}
+.nlhint{font-size:1.3rem;font-weight:800;color:#999}
+.nlbar .pill{font-size:1.5rem;padding:.3rem 1.1rem;border-color:var(--o);color:#c45f00;background:#fff3e3}
+.nlbox{flex:1;min-height:0;display:flex}
+.nlsvg{width:100%;height:100%}
+.popin{animation:pop .45s;transform-box:fill-box;transform-origin:center}
+/* 割圓術 */
+.cutg{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.05fr;gap:.9rem}
+.cutL{position:relative;display:flex;align-items:center;justify-content:center;padding:.6rem;overflow:hidden}
+.cmain{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.csvg{height:100%;max-width:100%}
+.popin2{animation:fadeIn .4s}@keyframes fadeIn{from{opacity:.2}to{opacity:1}}
+.czoom{position:absolute;right:.6rem;bottom:.6rem;width:34%;aspect-ratio:1/.62;background:#fff;border:4px solid #e03131;border-radius:14px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.zlab{position:absolute;left:.3rem;top:.15rem;z-index:1;font-size:1.1rem;font-weight:900;color:#e03131;background:rgba(255,255,255,.85);border-radius:8px;padding:0 .3rem}
+.zin,.zsvg{width:100%;height:100%;display:block}
+.cutR{display:flex;flex-direction:column;gap:.6rem;padding:.9rem 1.2rem;overflow:hidden}
+.cutR>*{flex-shrink:0}
+.ctop{display:flex;gap:.5rem;flex-wrap:wrap}
+.pill.on{border-color:var(--o);background:#fff3e3;color:#c45f00}
+.cbig{display:flex;flex-direction:column;align-items:center;gap:.2rem;background:#f8f9fa;border-radius:20px;padding:.5rem}
+.cn{display:flex;align-items:baseline;gap:.4rem;color:#5c3a1e}.cn b{font-size:3.6rem;color:#1864ab;font-family:Arial,sans-serif}.cn .lab{font-size:1.8rem;font-weight:900}
+.cv{font-size:3.4rem;font-family:Arial,sans-serif;letter-spacing:.03em}
+.cv b,.crow .v b{font-weight:900;color:#adb5bd}.cv b.ok,.crow .v b.ok{color:#2b8a3e}
+.cmk{font-size:1.5rem;font-weight:900;color:#fff;background:#e8590c;border-radius:999px;padding:.1rem .9rem;animation:pop .35s}
+.ctab{display:flex;flex-direction:column;gap:.25rem}
+.crow{display:flex;align-items:center;gap:.8rem;font-size:1.7rem;padding:.1rem .5rem;border-radius:10px}
+.crow.cur{background:#fff3bf}
+.crow .n{width:6.5em;font-weight:900;color:#5c3a1e;font-size:.85em}
+.crow .v{font-family:Arial,sans-serif}
+.crow .m{margin-left:auto;font-size:.65em;font-weight:900;color:#e8590c;border:2px solid #ffc078;border-radius:999px;padding:0 .5rem;white-space:nowrap}
+.cbtns{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:auto}
+.gbig{font-size:2rem!important;padding:.5rem 1.6rem!important}
+.qov{position:fixed;inset:0;z-index:70;background:rgba(40,25,10,.55);display:flex;align-items:center;justify-content:center}
+.qcard{width:min(90vw,58rem);background:linear-gradient(#fffaf0,#fff3d6);border:.5rem solid #8d5a2b;border-radius:24px;padding:2rem 2.4rem;font-size:3.6rem;line-height:1.6;color:#3b2314;text-align:center;animation:pop .35s}
+.qsrc{font-size:1.8rem;color:#8d5a2b;text-align:right;margin-top:.6rem}
+.qplain{font-size:2.1rem;color:#2b8a3e;margin-top:1rem;line-height:1.5}
+/* 祖沖之 */
+.zuw{flex:1;min-height:0;display:flex;flex-direction:column;gap:.8rem}
+.zuh{display:flex;align-items:center;gap:1.2rem;padding:.8rem 1.4rem;flex-wrap:wrap}
+.zuL{display:flex;align-items:center;gap:.7rem;font-size:1.6rem;font-weight:900;color:#8a6a4a}
+.tag{background:#e8590c;color:#fff;border-radius:12px;padding:.1rem .7rem;font-size:1.6rem;font-weight:900}
+.zurange{font-size:3rem;font-weight:900;color:#5c3a1e;font-family:Arial,sans-serif}
+.zurow{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem}
+.zuc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;padding:.8rem}
+.zuc>*{flex-shrink:0}
+.zunm{display:flex;align-items:center;gap:.6rem}.zunm .who{font-size:1.5rem;font-weight:900;color:#888}
+.frac{display:flex;flex-direction:column;align-items:center;font-family:Arial,sans-serif;font-weight:900;font-size:4.4rem;line-height:1.1;color:#1864ab}
+.frac .bar{width:1.8em;height:.09em;background:#1864ab;margin:.12em 0}
+.zuout{font-size:2.6rem;font-family:Arial,sans-serif;min-height:3.4rem;color:#ccc;letter-spacing:.02em}
+.zuout b{font-weight:900;color:#adb5bd}.zuout b.ok{color:#2b8a3e}
+.zucnt{font-size:1.6rem;font-weight:900;color:#2b8a3e;min-height:2.2rem}.zucnt b{font-size:1.4em}
+.zupi{display:flex;align-items:center;justify-content:center;gap:1rem;padding:.7rem}
+.zupi .lab{font-size:1.6rem;font-weight:900;color:#e03131}.zupi .pv{font-size:2.8rem;font-family:Arial,sans-serif}.zupi .pv b{color:#2b8a3e;font-weight:900}
+/* 考考你 */
+.qc{flex:1;display:flex;flex-direction:column;gap:.8rem;padding:1rem 1.6rem;overflow:hidden}
+.qc>*{flex-shrink:0}
+.why{font-size:.8em;color:#5c3a1e;margin-top:.3rem;font-weight:700}
+
+/* 怎麼算 */
+.howg{flex:1;min-height:0;display:grid;grid-template-columns:.95fr 1.1fr;gap:.9rem}
+.howL{display:flex;align-items:center;justify-content:center;padding:.5rem;overflow:hidden}
+.hsvg{width:100%;height:100%}
+.howR{display:flex;flex-direction:column;gap:.8rem;padding:1rem 1.4rem;overflow:hidden}
+.howR>*{flex-shrink:0}
+.hdots{display:flex;gap:.4rem;flex-wrap:wrap}
+.hd{width:2.6rem;height:2.6rem;border-radius:50%;border:3px solid #e9dcc6;background:#fff;font-size:1.2rem;font-weight:900;color:#aaa}
+.hd.past{background:#d3f9d8;border-color:#8ce99a;color:#2b8a3e}.hd.on{background:var(--o);border-color:var(--o);color:#fff}
+.htitle{font-size:3rem;font-weight:900;color:#5c3a1e;line-height:1.3;display:flex;align-items:center;gap:.7rem}
+.htitle .no{flex:none;width:1.4em;height:1.4em;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-size:.7em}
+.hbody{display:flex;flex-direction:column;gap:.6rem}
+.hl{font-size:2.6rem;font-weight:800;line-height:1.4;color:#333;animation:fade .45s both}
+.hl b{font-family:inherit}.hl .g{color:#2b8a3e}.hl .b{color:#e8590c}.hl .r{color:#e03131}
+.htab{display:flex;flex-direction:column;gap:.2rem;font-size:2.4rem}
+.hr{display:grid;grid-template-columns:.9fr 1.1fr 1.3fr 1.5fr;gap:.4rem;padding:.2rem .5rem;border-radius:10px;font-family:Arial,sans-serif;font-weight:800}
+.hr.hh{font-size:.75em;color:#8a6a4a;background:#fff3bf;font-family:inherit}
+.hr:not(.hh):nth-child(odd){background:#f8f9fa}
+.hr b{color:#adb5bd}.hr b.ok{color:#2b8a3e}
+.hnote{font-size:1.5rem;font-weight:800;color:#8a6a4a}
+.hnav{display:flex;gap:.8rem;margin-top:auto}
+.grow{animation:grow .35s both;transform-box:fill-box;transform-origin:left center}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+</style>
+</head>
+<body>
+<aside id="nav"></aside>
+<main>
+  <header>
+    <div class="banner"><b id="ptitle">古人的圓周率</b><span id="psub">圓周率的故事</span></div>
+    <button class="who" id="who" title="抽籤"><span class="wb" id="wb">🎲</span><span id="wt">抽籤</span></button>
+    <button class="hbtn" id="plus">⭕ +1</button>
+    <button class="hbtn m" id="minus">−1</button>
+    <button class="hbtn t" id="boardBtn">🏆</button>
+    <button class="reset" id="reset" title="重來">↺</button>
+  </header>
+  <div class="page" id="page"></div>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+function E(tag,cls,html,parent){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;if(parent)parent.appendChild(e);return e}
+function tap(e,f){e.addEventListener('pointerdown',ev=>{if(ev.button>0)return;ev.preventDefault();f(ev)})}
+function shake(e){e.classList.remove('bad');void e.offsetWidth;e.classList.add('bad')}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const pick1=a=>a[Math.floor(Math.random()*a.length)];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const REM=()=>parseFloat(getComputedStyle(document.documentElement).fontSize);
+function over(box){const cs=getComputedStyle(box);const kids=[...box.children].filter(k=>getComputedStyle(k).position!=='absolute');
+  const h=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom)+kids.reduce((t,k)=>t+k.getBoundingClientRect().height,0)+(parseFloat(cs.rowGap)||0)*Math.max(0,kids.length-1);
+  return h>box.clientHeight+1||box.scrollHeight>box.clientHeight+1}
+function overSelf(el){return el.scrollHeight>el.clientHeight+1}
+/* 等比例縮小 els,直到 boxes 都放得下(最小 minRem) */
+function fit(els,boxes,minRem,test){els=els.filter(Boolean);if(!els.length)return;els.forEach(e=>e.style.fontSize='');const rem=REM();
+  const base=els.map(e=>parseFloat(getComputedStyle(e).fontSize));let k=1;test=test||over;boxes=boxes.filter(Boolean);
+  while(boxes.some(test)&&Math.min(...base)*k>minRem*rem){k*=.95;els.forEach((e,i)=>e.style.fontSize=base[i]*k+'px')}}
+
+/* ================= 狀態 ================= */
+const CLASS=[...Array.from({length:15},(_,i)=>i+1),...Array.from({length:13},(_,i)=>i+21)];
+let S=store.get('m4',null)||{};
+['score','done','hl','best'].forEach(k=>S[k]=S[k]||{});['off','used'].forEach(k=>S[k]=S[k]||[]);
+const save=()=>store.set('m4',S);
+
+/* ================= 抽籤與加分(每一頁都能用) ================= */
+const isBoy=n=>n<=15;
+function pool(){return CLASS.filter(n=>!S.off.includes(n)&&!S.used.includes(n))}
+/* 多個分頁同時開著時,每次動作前先讀回最新紀錄,避免某分頁的舊名單蓋掉已抽過的人 */
+function sync(){const f=store.get('m4',null);if(!f)return;Object.assign(S,f);['score','done','hl','best'].forEach(k=>S[k]=S[k]||{});['off','used'].forEach(k=>S[k]=S[k]||[])}
+window.addEventListener('storage',e=>{if(e.key==='m4'){sync();paintWho()}});
+/* 這一輪還沒抽到的人;全班抽完才開新一輪,且新一輪第一位不會是剛剛最後抽到的人 */
+function nextPool(){sync();let p=pool();if(!p.length){S.used=[];p=pool();if(p.length>1&&S.cur)p=p.filter(n=>n!==S.cur)}return p}
+function takeOne(){const p=nextPool();if(!p.length)return null;const n=pick1(p);S.used.push(n);S.cur=n;save();return n}
+function paintWho(){const wb=$('#wb'),wt=$('#wt');
+  if(S.cur){wb.className='wb '+(isBoy(S.cur)?'boy':'girl');wb.textContent=S.cur;wt.textContent=`${S.cur} 號`}else{wb.className='wb';wb.textContent='🎲';wt.textContent='抽籤'}
+  $('#plus').disabled=$('#minus').disabled=!S.cur;if($('#board'))paintBoard()}
+let rolling=false;
+function doDraw(after){if(rolling)return;const p=nextPool();if(!p.length)return;rolling=true;
+  const ov=E('div',null,null,document.body);ov.id='drawov';const bb=E('div','bb roll','?',ov);const n=pick1(p);let k=0;
+  const iv=setInterval(()=>{const r=pick1(p);bb.className='bb roll '+(isBoy(r)?'boy':'girl');bb.textContent=r;
+    if(++k>=16){clearInterval(iv);bb.className='bb land '+(isBoy(n)?'boy':'girl');bb.textContent=n;S.used.push(n);S.cur=n;save();paintWho();
+      const close=()=>{if(!ov.parentNode)return;ov.classList.add('out');setTimeout(()=>ov.remove(),350);rolling=false;after&&after(n)};
+      tap(ov,close);setTimeout(close,1300)}},70)}
+function addScore(n,d,fromEl){if(!n)return;sync();S.score[n]=Math.max(0,(S.score[n]||0)+d);save();paintWho();
+  if(d>0){const r=(fromEl||$('#plus')).getBoundingClientRect();const fx=E('div','plusfx',`+${d}`,document.body);fx.style.left=(r.left+r.width/2-20)+'px';fx.style.top=(r.top-10)+'px';setTimeout(()=>fx.remove(),1000)}}
+tap($('#who'),()=>doDraw());
+tap($('#plus'),()=>addScore(S.cur,1));
+tap($('#minus'),()=>addScore(S.cur,-1,$('#minus')));
+let offMode=false,clrArm=0;
+function openBoard(){if($('#board'))return;const ov=E('div',null,null,document.body);ov.id='board';const bd=E('div','bd',null,ov);
+  const h=E('div','bh',null,bd);E('span',null,'🏆 加分板',h);E('span','left',null,h);E('span','sp',null,h);
+  const off=E('button',null,'請假',h),nr=E('button',null,'新一輪',h),clr=E('button',null,'清除分數',h),x=E('button',null,'✕',h);
+  const g=E('div','btiles',null,bd);
+  CLASS.forEach(n=>{const t=E('div','bt '+(isBoy(n)?'b':'g'),`<span class="n">${n}</span><span class="s"></span>`,g);t.dataset.n=n;
+    tap(t,()=>{sync();if(offMode){const i=S.off.indexOf(n);i>=0?S.off.splice(i,1):S.off.push(n)}else{S.cur=n}save();paintWho()})});
+  tap(off,()=>{offMode=!offMode;off.classList.toggle('on',offMode);off.textContent=offMode?'完成':'請假'});
+  tap(nr,()=>{sync();S.used=[];save();paintBoard()});
+  tap(clr,()=>{if(Date.now()-clrArm<2500){sync();S.score={};save();paintWho();clr.textContent='清除分數';clr.classList.remove('confirm');return}
+    clrArm=Date.now();clr.textContent='再按一次';clr.classList.add('confirm');setTimeout(()=>{clr.textContent='清除分數';clr.classList.remove('confirm')},2500)});
+  tap(x,()=>{offMode=false;ov.remove()});tap(ov,e=>{if(e.target===ov){offMode=false;ov.remove()}});
+  paintBoard()}
+function paintBoard(){const ov=$('#board');if(!ov)return;const mx=Math.max(0,...Object.values(S.score));
+  ov.querySelectorAll('.bt').forEach(t=>{const n=+t.dataset.n,s=S.score[n]||0;t.querySelector('.s').textContent=s?(s<=4?'⭐'.repeat(s):'⭐×'+s):'';
+    t.classList.toggle('off',S.off.includes(n));t.classList.toggle('used',S.used.includes(n));t.classList.toggle('cur',S.cur===n);t.classList.toggle('top1',mx>0&&s===mx)});
+  ov.querySelector('.left').textContent=`還有 ${pool().length} 位沒抽到`}
+tap($('#boardBtn'),openBoard);
+
+/* ================= 圓周率的故事 ================= */
+const PI_S='3.14159265358979';
+const NS='http://www.w3.org/2000/svg';
+function sv(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function tx(p,x,y,t,a={}){const e=sv('text',Object.assign({x,y,'text-anchor':'middle','font-size':34,'font-weight':900,fill:'#333','paint-order':'stroke',stroke:'#fff','stroke-width':8,'stroke-linejoin':'round'},a),p);e.textContent=t;return e}
+/* 數字和 π 比對:相同的位數標綠色 */
+function digits(v,n){const s=typeof v==='string'?v:v.toFixed(n);let out='',ok=true;
+  for(let i=0;i<s.length;i++){if(ok&&s[i]===PI_S[i])out+=`<b class="ok">${s[i]}</b>`;else{ok=false;out+=`<b>${s[i]}</b>`}}return out}
+function okCount(s){let k=0;for(let i=0;i<s.length;i++){if(s[i]===PI_S[i])k++;else break}return Math.max(0,k-2)}
+
+/* 歷史資料 */
+const HIST=[
+ {id:'bab',ic:'🏺',who:'古巴比倫',when:'約 4000 年前',v:3.125,show:'3.125',how:'3 又 1/8'},
+ {id:'egy',ic:'📜',who:'古埃及',when:'約公元前 1650 年',v:3.1605,show:'3.16',how:'紙草書'},
+ {id:'chn',ic:'📖',who:'古代中國',when:'《周髀算經》',v:3,show:'3',how:'徑一而周三'},
+ {id:'arc',ic:'🏛️',who:'阿基米德',when:'約公元前 250 年',v:3.1419,lo:3.1408,hi:3.1429,show:'3.1408～3.1429',how:'正 96 邊形'},
+ {id:'liu',ic:'✂️',who:'劉徽',when:'公元 263 年',v:3.14,show:'3.14',how:'割圓術'},
+ {id:'zu',ic:'🌟',who:'祖沖之',when:'約公元 480 年',v:3.14159265,show:'3.1415926～3.1415927',how:'小數點後 7 位'}];
+let seen=store.get('pi_seen',{});
+
+const PAGES={time:['古人的圓周率','🕰️','古人',pgTime],how:['圓周率怎麼算？','💡','怎麼算',pgHow],cut:['劉徽割圓術','✂️','割圓術',pgCut],zu:['祖沖之的密率','🌟','祖沖之',pgZu],quiz:['考考你','🎯','考考你',pgQuiz]};
+const NAV=$('#nav');E('div','unit','<b>圓周率</b>',NAV);const navs={};
+Object.entries(PAGES).forEach(([k,[t,ic,lab]])=>{const b=E('button','nav',`<span class="ic">${ic}</span>${lab}`,NAV);navs[k]=b;tap(b,()=>go(k))});
+const fsb=E('button','fs','⛶',NAV);tap(fsb,()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}});
+let cur='time',cleanup=null;const PG=$('#page');
+function go(k){if(cleanup){cleanup();cleanup=null}cur=k;store.set('pi_page',k);PG.innerHTML='';PG.className='page';window.onresize=null;
+  Object.entries(navs).forEach(([kk,b])=>b.classList.toggle('on',kk===k));$('#ptitle').textContent=PAGES[k][0];$('#psub').textContent='圓周率的故事';PAGES[k][3]()}
+tap($('#reset'),()=>{if(cur==='time'){seen={};store.set('pi_seen',seen)}go(cur)});
+
+/* ---------- 1 古人的圓周率 ---------- */
+let zoomLv=0;
+function pgTime(){const cards=E('div','tl',null,PG);const lineC=E('div','card nl',null,PG);
+  const bar=E('div','nlbar',null,lineC);const zb=E('button','pill','🔍 放大看',bar);const sp=E('span','nlhint',null,bar);
+  const box=E('div','nlbox',null,lineC);
+  HIST.forEach(h=>{const c=E('div','hc'+(seen[h.id]?' open':''),`<div class="ic">${h.ic}</div><div class="who kai">${h.who}</div><div class="when">${h.when}</div><div class="val">${h.show}</div><div class="how kai">${h.how}</div>`,cards);
+    tap(c,()=>{if(c.classList.contains('open'))return;c.classList.add('open');seen[h.id]=1;store.set('pi_seen',seen);draw(h.id)})});
+  tap(zb,()=>{zoomLv=1-zoomLv;zb.textContent=zoomLv?'↩ 縮小':'🔍 放大看';draw()});
+  function draw(fresh){box.innerHTML='';const R=zoomLv?[3.138,3.144]:[2.98,3.18];const W=1000,H=340,x0=50,x1=950,X=v=>x0+(v-R[0])/(R[1]-R[0])*(x1-x0);
+    sp.textContent=zoomLv?'3.138 ～ 3.144':'2.98 ～ 3.18';
+    const s=sv('svg',{viewBox:`0 0 ${W} ${H}`,class:'nlsvg'},box);
+    sv('line',{x1:x0,y1:240,x2:x1,y2:240,stroke:'#555','stroke-width':5},s);
+    const step=zoomLv?.001:.02;for(let v=Math.ceil(R[0]/step)*step;v<=R[1]+1e-9;v+=step){const x=X(v);const big=Math.abs(v*100-Math.round(v*100))<1e-6&&!zoomLv||zoomLv&&Math.abs(v*1000-Math.round(v*1000))<1e-6&&Math.round(v*1000)%2===0;
+      sv('line',{x1:x,y1:232,x2:x,y2:248,stroke:'#999','stroke-width':2},s);if(big)tx(s,x,282,v.toFixed(zoomLv?3:2),{'font-size':24,fill:'#888','font-weight':700})}
+    const px=X(Math.PI);sv('line',{x1:px,y1:20,x2:px,y2:255,stroke:'#e03131','stroke-width':4,'stroke-dasharray':'10 8'},s);tx(s,px,325,'真正的圓周率 3.14159…',{'font-size':26,fill:'#e03131'});
+    const placed=[];HIST.forEach(h=>{if(!seen[h.id])return;const inR=h.lo?(h.hi>R[0]&&h.lo<R[1]):(h.v>=R[0]&&h.v<=R[1]);if(!inR)return;
+      const g=sv('g',{class:h.id===fresh?'popin':''},s);const lab=`${h.ic} ${h.who}`;const lw=(lab.length-1)*23+34;
+      let lx=h.lo?(Math.max(X(h.lo),x0)+Math.min(X(h.hi),x1))/2:X(h.v);const cx=lx;lx=Math.min(Math.max(lx,lw/2+5),W-lw/2-5);
+      let row=0;while(placed.some(p=>p.row===row&&Math.abs(p.x-lx)<(p.w+lw)/2+6))row++;placed.push({row,x:lx,w:lw});const y=205-row*40;
+      if(h.lo){const a=Math.max(X(h.lo),x0),b=Math.min(X(h.hi),x1);sv('rect',{x:a,y:228,width:b-a,height:24,rx:12,fill:'#ffd8a8',stroke:'#e8590c','stroke-width':2,opacity:.9},g)}
+      sv('line',{x1:cx,y1:y+6,x2:cx,y2:240,stroke:'#adb5bd','stroke-width':2},g);
+      if(!h.lo)sv('circle',{cx,cy:240,r:11,fill:'#1c7ed6',stroke:'#fff','stroke-width':3},g);
+      tx(g,lx,y,lab,{'font-size':23})})}
+  draw()}
+
+/* ---------- 怎麼算?(一步一步) ---------- */
+/* 半徑 10 公分、直徑 20 公分。2n 邊形的邊長由 n 邊形邊長求得(劉徽用勾股定理) */
+const SIDES=(()=>{const r=10,a=[[6,10]];for(let i=0;i<4;i++){const [n,s]=a[a.length-1];a.push([n*2,Math.sqrt(2*r*r-r*Math.sqrt(4*r*r-s*s))])}return a})();
+const f2=v=>(Math.round(v*100)/100).toFixed(2);
+let howStep=store.get('pi_how',0);
+const HOW=[
+ {t:'圓周是彎的，不好量',lines:['直的線，用尺就能量','彎的線，很難量準'],fig:{n:0,arc:1}},
+ {t:'在圓裡畫正六邊形',lines:['連圓心，切成 6 個正三角形','每一邊 ＝ <b class="g">半徑</b>'],fig:{n:6,tri:1,lab:1}},
+ {t:'把 6 條邊拉直',lines:['6 條邊 ＝ 6 個半徑','　　　 ＝ <b class="b">3 個直徑</b>'],fig:{n:6,bars:6,cmp:3}},
+ {t:'圓周長比六邊形長一點',lines:['直線最短，彎的比較長','圓周長 ＞ 3 個直徑','所以圓周率 <b class="r">比 3 大一點</b>'],fig:{n:6,gap:1}},
+ {t:'邊數變 2 倍：12 邊形',lines:[`半徑 10 公分，每一邊約 <b>${f2(SIDES[1][1])}</b> 公分`,`周長：${f2(SIDES[1][1])} × 12 ＝ <b>${f2(SIDES[1][1]*12)}</b>`,`÷ 直徑 20 ＝ <b class="r">${(SIDES[1][1]*12/20).toFixed(2)}</b>`],fig:{n:12,bars:12,cmp:3}},
+ {t:'一直加倍，越來越接近',table:1,fig:{n:96}},
+ {t:'圓周率 ≈ 3.14',lines:['邊數越多，多邊形越像圓','多邊形周長 ÷ 直徑','就越來越接近 <b class="r">3.14</b>'],fig:{n:192,end:1}}];
+function pgHow(){const G=E('div','howg',null,PG);const L=E('div','card howL',null,G);const R=E('div','card howR',null,G);
+  const dots=E('div','hdots',null,R);const ttl=E('div','htitle',null,R);const body=E('div','hbody',null,R);
+  const nav=E('div','hnav',null,R);const pv=E('button','big-btn gray','◀ 上一步',nav);const nx=E('button','big-btn g gbig','下一步 ▶',nav);
+  HOW.forEach((_,i)=>{const d=E('button','hd',i+1,dots);tap(d,()=>{howStep=i;draw()})});
+  tap(pv,()=>{if(howStep>0){howStep--;draw()}});tap(nx,()=>{if(howStep<HOW.length-1){howStep++;draw()}});
+  function draw(){const st=HOW[howStep];store.set('pi_how',howStep);
+    dots.querySelectorAll('.hd').forEach((d,i)=>{d.classList.toggle('on',i===howStep);d.classList.toggle('past',i<howStep)});
+    pv.disabled=howStep===0;nx.disabled=howStep===HOW.length-1;
+    ttl.innerHTML=`<span class="no">${howStep+1}</span>${st.t}`;body.innerHTML='';
+    if(st.table){const tb=E('div','htab',null,body);E('div','hr hh','<span>邊數</span><span>每邊</span><span>周長</span><span>÷ 直徑</span>',tb);
+      SIDES.forEach(([n,s])=>E('div','hr',`<span>${n}</span><span>${f2(s)}</span><span>${f2(s*n)}</span><span>${digits((s*n/20).toFixed(4))}</span>`,tb));
+      E('div','hnote','每一邊多長，劉徽用直角三角形的邊長關係算出來',body)}
+    else st.lines.forEach((l,i)=>{const e=E('div','hl',l,body);e.style.animationDelay=(i*.25)+'s'});
+    figure(L,st.fig);requestAnimationFrame(()=>fit([ttl,...body.children],[R],1.2))}
+  window.onresize=draw;draw()}
+function figure(box,f){box.innerHTML='';const hasBars=!!f.bars;const s=sv('svg',{viewBox:hasBars?'0 0 600 640':'0 0 600 520',class:'hsvg'},box);
+  const cx=300,cy=hasBars?235:275,r=hasBars?195:200;
+  sv('circle',{cx,cy,r,fill:f.gap?'#ffa94d':'#f8f9fa',stroke:'#333','stroke-width':4},s);
+  if(f.arc){sv('circle',{cx,cy,r,fill:'none',stroke:'#f08c00','stroke-width':12,'stroke-dasharray':'2 0'},s);tx(s,cx,cy-r-18,'彎的',{fill:'#f08c00'});
+    sv('line',{x1:cx-r*.75,y1:cy+r*.35,x2:cx+r*.75,y2:cy+r*.35,stroke:'#1c7ed6','stroke-width':8},s);tx(s,cx,cy+r*.35+48,'直的',{fill:'#1c7ed6'})}
+  if(f.n){const n=f.n,pts=[];for(let k=0;k<n;k++){const a=-Math.PI/2+Math.PI/n+k*2*Math.PI/n;pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)])}
+    const d='M'+pts.map(p=>p.map(v=>v.toFixed(2)).join(' ')).join('L')+'Z';
+    sv('path',{d,fill:'#a5d8ff',stroke:'#1864ab','stroke-width':n<=12?5:n<=96?2:1},s);
+    if(f.tri||f.lab)pts.forEach(p=>sv('line',{x1:cx,y1:cy,x2:p[0],y2:p[1],stroke:'#2b8a3e','stroke-width':3},s));
+    if(f.lab){const p1=pts[1],p2=pts[2];sv('line',{x1:cx,y1:cy,x2:p1[0],y2:p1[1],stroke:'#2b8a3e','stroke-width':9},s);sv('line',{x1:p1[0],y1:p1[1],x2:p2[0],y2:p2[1],stroke:'#1864ab','stroke-width':9},s);tx(s,(cx+p1[0])/2,cy-16,'半徑',{fill:'#2b8a3e','font-size':30});
+      const m=r*1.16;tx(s,cx+m*Math.cos(Math.PI/6),cy+m*Math.sin(Math.PI/6)+10,'半徑',{fill:'#1864ab','font-size':30})}
+    sv('circle',{cx,cy,r,fill:'none',stroke:'#333','stroke-width':4},s);
+    if(f.gap){tx(s,cx,cy-r-16,'多出來的橘色部分',{fill:'#e8590c','font-size':30})}
+    if(f.end)tx(s,cx,cy+10,'≈ 圓',{'font-size':54,fill:'#1864ab'})}
+  sv('circle',{cx,cy,r:6,fill:'#222'},s);
+  if(hasBars){/* 拉直的邊 vs 直徑 */const n=f.bars,side=n===6?r:2*r*Math.sin(Math.PI/n),sc=540/(3.2*2*r),x0=30,y1=500,y2=580;
+    for(let k=0;k<n;k++){const g=sv('rect',{x:x0+k*side*sc,y:y1-14,width:side*sc,height:28,fill:k%2?'#4dabf7':'#1864ab',class:'grow'},s);g.style.animationDelay=(k*.08)+'s'}
+    tx(s,x0-2,y1-26,`${n} 條邊拉直`,{'text-anchor':'start','font-size':26,fill:'#1864ab'});
+    for(let k=0;k<f.cmp;k++){sv('rect',{x:x0+k*2*r*sc,y:y2-14,width:2*r*sc-3,height:28,fill:'#ffd8a8',stroke:'#e8590c','stroke-width':2},s);tx(s,x0+(k+.5)*2*r*sc,y2+8,'直徑',{'font-size':20,fill:'#e8590c',stroke:'none'})}
+    const extra=n*side*sc-f.cmp*2*r*sc;if(extra>1){sv('rect',{x:x0+f.cmp*2*r*sc,y:y2-14,width:extra,height:28,fill:'#e03131'},s);tx(s,Math.min(x0+f.cmp*2*r*sc+extra/2,540),y2+46,'↑ 多一點',{'font-size':24,fill:'#e03131'})}}
+}
+
+/* ---------- 2 劉徽割圓術 ---------- */
+let cutN=6,cutMode='p',cutRows=[6];
+const MARK={6:'周三徑一',192:'劉徽 3.14',3072:'劉徽 3.1416',24576:'祖沖之'};
+const mk=n=>n===6&&cutMode!=='p'?'':MARK[n];
+const ratio=n=>cutMode==='p'?n*Math.sin(Math.PI/n):n/2*Math.sin(2*Math.PI/n);
+function polyD(n,cx,cy,r){let d='';for(let k=0;k<n;k++){const a=-Math.PI/2+Math.PI/n+k*2*Math.PI/n;d+=(k?'L':'M')+(cx+r*Math.cos(a)).toFixed(3)+' '+(cy+r*Math.sin(a)).toFixed(3)}return d+'Z'}
+function pgCut(){const G=E('div','cutg',null,PG);const L=E('div','card cutL',null,G);const R=E('div','card cutR',null,G);
+  const main=E('div','cmain',null,L);const zoomBox=E('div','czoom',null,L);const zl=E('div','zlab','🔍 放大',zoomBox);const zin=E('div','zin',null,zoomBox);
+  const top=E('div','ctop',null,R);
+  [['p','周長 ÷ 直徑'],['a','面積 ÷ (半徑×半徑)']].forEach(([k,t])=>{const b=E('button','pill'+(cutMode===k?' on':''),t,top);b.dataset.m=k;tap(b,()=>{cutMode=k;top.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));paint()})});
+  const big=E('div','cbig',null,R);
+  const tb=E('div','ctab',null,R);
+  const bt=E('div','cbtns',null,R);const cut=E('button','big-btn gbig','✂️ 再割一次',bt);const rs=E('button','big-btn gray','↺ 六邊形',bt);const qb=E('button','big-btn p','📜 劉徽說',bt);
+  tap(cut,()=>{if(cutN>=24576)return;cutN*=2;cutRows.push(cutN);paint(true)});
+  tap(rs,()=>{cutN=6;cutRows=[6];paint()});
+  tap(qb,()=>{const ov=E('div','qov',null,document.body);const c=E('div','qcard kai','割之彌細，所失彌少；<br>割之又割，以至於不可割，<br>則與圓周合體而無所失矣。',ov);
+    E('div','qsrc','—— 劉徽《九章算術注》',c);E('div','qplain','切得越細，少掉的就越少；一直切下去，就和圓完全一樣了。',c);tap(ov,()=>ov.remove())});
+  function paint(anim){
+    /* 大圓 */
+    main.innerHTML='';const s=sv('svg',{viewBox:'0 0 500 500',class:'csvg'},main);const cx=250,cy=250,r=220;
+    sv('circle',{cx,cy,r,fill:'#ffa94d',stroke:'none'},s);
+    sv('path',{d:polyD(cutN,cx,cy,r),fill:'#a5d8ff',stroke:cutN<=96?'#1864ab':'none','stroke-width':cutN<=24?3:1.5},s);
+    sv('circle',{cx,cy,r,fill:'none',stroke:'#333','stroke-width':3},s);
+    if(cutN<=24){for(let k=0;k<cutN;k++){const a=-Math.PI/2+Math.PI/cutN+k*2*Math.PI/cutN;sv('line',{x1:cx,y1:cy,x2:cx+r*Math.cos(a),y2:cy+r*Math.sin(a),stroke:'#1864ab','stroke-width':1.5,opacity:.5},s)}}
+    sv('circle',{cx,cy,r:5,fill:'#222'},s);
+    const zw=2*r*Math.sin(Math.PI/cutN)*2.4,zh=zw*.62;zoomBox.style.display=cutN>=24?'':'none';if(cutN>=24)sv('rect',{x:cx-zw/2,y:cy-r-zh*.35,width:zw,height:zh,fill:'none',stroke:'#e03131','stroke-width':Math.max(.8,zw/60)},s);
+    /* 放大框 */
+    zl.textContent=`🔍 放大 ${Math.round(500/zw).toLocaleString()} 倍`;
+    zin.innerHTML='';const z=sv('svg',{viewBox:`${cx-zw/2} ${cy-r-zh*.35} ${zw} ${zh}`,class:'zsvg',preserveAspectRatio:'xMidYMid slice'},zin);
+    sv('circle',{cx,cy,r,fill:'#ffa94d'},z);sv('path',{d:polyD(cutN,cx,cy,r),fill:'#a5d8ff',stroke:'#1864ab','stroke-width':zw/120},z);sv('circle',{cx,cy,r,fill:'none',stroke:'#333','stroke-width':zw/100},z);
+    /* 數字 */
+    const v=ratio(cutN);const str=v.toFixed(8);
+    big.innerHTML=`<div class="cn"><span class="lab">正</span><b>${cutN}</b><span class="lab">邊形</span></div><div class="cv">${digits(str)}</div>`+(mk(cutN)?`<div class="cmk">${mk(cutN)}</div>`:'');
+    tb.innerHTML='';cutRows.slice(-6).forEach(n=>{const vv=ratio(n).toFixed(8);E('div','crow'+(n===cutN?' cur':''),`<span class="n">${n} 邊</span><span class="v">${digits(vv)}</span>${mk(n)?`<span class="m">${mk(n)}</span>`:''}`,tb)});
+    cut.disabled=cutN>=24576;requestAnimationFrame(()=>fit([...R.querySelectorAll('.cv,.crow')],[R],1.2))}
+  paint();window.onresize=()=>paint()}
+
+/* ---------- 3 祖沖之 ---------- */
+function pgZu(){const W0=E('div','zuw',null,PG);
+  const head=E('div','card zuh',null,W0);head.innerHTML=`<div class="zuL"><span class="tag">祖沖之</span><span class="kai">約公元 480 年</span></div><div class="zurange">3.1415926 ＜ 圓周率 ＜ 3.1415927</div>`;
+  const row=E('div','zurow',null,W0);
+  [['徽率','劉徽',157,50],['約率','祖沖之',22,7],['密率','祖沖之',355,113]].forEach(([nm,who,a,b])=>{const c=E('div','card zuc',null,row);
+    E('div','zunm',`<span class="tag">${nm}</span><span class="who">${who}</span>`,c);E('div','frac',`<span class="t">${a}</span><span class="bar"></span><span class="b">${b}</span>`,c);
+    const out=E('div','zuout','？',c);const cnt=E('div','zucnt',null,c);const btn=E('button','big-btn','➗ 算算看',c);
+    tap(btn,()=>{btn.remove();const full=(a/b).toFixed(9).replace(/0+$/,'');let i=0;const iv=setInterval(()=>{i++;out.innerHTML=digits(full.slice(0,i));if(i>=full.length){clearInterval(iv);const k=okCount(full);cnt.innerHTML=k?`前 <b>${k}</b> 位小數都對！`:''}},140);cleanup=()=>clearInterval(iv)})});
+  const pi=E('div','card zupi',`<span class="lab">真正的圓周率</span><span class="pv">${digits(PI_S)}…</span>`,W0)}
+
+/* ---------- 4 考考你 ---------- */
+const QZ=[
+ ['劉徽用什麼方法求圓周率？',['割圓術','用繩子量','猜猜看'],'在圓裡畫正多邊形，邊數一直加倍'],
+ ['割圓術是在圓裡面畫什麼？',['正多邊形','正方形格子','很多小圓'],'從正六邊形開始，一直割成更多邊'],
+ ['正多邊形的邊數越多，會越像什麼？',['圓','正方形','三角形'],'割之又割，就和圓周合體'],
+ ['圓裡面的正六邊形，周長是直徑的幾倍？',['3 倍','3.14 倍','6 倍'],'6 條邊都等於半徑 → 3 個直徑，就是「周三徑一」'],
+ ['正多邊形的周長，和圓周長比起來？',['短一點','長一點','一樣長'],'兩點之間直線最短，所以每條邊都比那一段圓弧短'],
+ ['課本用的圓周率 3.14，和誰算出的一樣？',['劉徽','祖沖之','阿基米德'],'劉徽的「徽率」就是 3.14'],
+ ['祖沖之把圓周率算到小數點後第幾位？',['第 7 位','第 2 位','第 4 位'],'3.1415926 ＜ 圓周率 ＜ 3.1415927'],
+ ['祖沖之的「密率」是哪一個？',['355／113','22／7','157／50'],'355 ÷ 113 ＝ 3.14159292…，前 6 位小數都對'],
+ ['阿基米德在圓裡外各畫了幾邊形？',['96 邊形','6 邊形','1000 邊形'],'他算出圓周率在 3.1408 和 3.1429 之間'],
+ ['「徑一而周三」的意思是圓周率大約是多少？',['3','3.14','4'],'直徑 1，圓周大約 3']];
+let qd=[],qi=-1;
+function pgQuiz(){const C=E('div','card qc',null,PG);
+  const top=E('div','qtop',null,C);const no=E('span','qno',null,top);E('span','sp',null,top);const db=E('button','big-btn','🎲 抽人回答',top);tap(db,()=>doDraw());const nb=E('button','big-btn g','下一題 ▶',top);
+  const qq=E('div','qq kai',null,C);const os=E('div','opts',null,C);const res=E('div','res',null,C);const bt=E('div','qbtns',null,C);
+  function next(){if(!qd.length||qi>=qd.length-1){qd=shuffle(QZ.map((_,i)=>i));qi=-1}qi++;show()}
+  function show(){const [q,opts,why]=QZ[qd[qi]];no.textContent=`第 ${qi+1} / ${QZ.length} 題`;qq.textContent=q;os.innerHTML='';res.className='res';res.innerHTML='';bt.innerHTML='';
+    let sel=null;const ck=E('button','big-btn p','✔ 對答案',bt);ck.disabled=true;
+    shuffle(opts).forEach(o=>{const b=E('button','opt kai',o,os);tap(b,()=>{if(ck.parentNode!==bt)return;os.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b));sel=o;ck.disabled=false})});
+    tap(ck,()=>{const ok=sel===opts[0];os.querySelectorAll('.opt').forEach(x=>{if(x.textContent===opts[0])x.classList.add('ok');else if(x.textContent===sel)x.classList.add('no')});
+      res.className='res '+(ok?'ok':'no');res.innerHTML=(ok?'⭕ 答對了！':'❌ 答案是「'+opts[0]+'」')+`<div class="why kai">${why}</div>`;ck.remove();
+      if(ok&&S.cur){const a=E('button','big-btn g',`⭐ 給 ${S.cur} 號 +1`,bt);tap(a,()=>{addScore(S.cur,1,a);a.disabled=true;a.textContent=`✔ ${S.cur} 號 +1`})}
+      requestAnimationFrame(()=>fit([qq,res,...os.children],[C],1.4))});
+    requestAnimationFrame(()=>fit([qq,...os.children],[C],1.4))}
+  tap(nb,next);next()}
+
+paintWho();
+const p0=store.get('pi_page','time');go(PAGES[p0]?p0:'time');
+
+})();
+</script>
+</body>
+</html>

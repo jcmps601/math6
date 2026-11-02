@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>圓面積公式 老師講解</title>
+<style>
+:root{--b:#1c7ed6;--bl:#a5d8ff;--o:#f08c00;--ol:#ffd8a8;--r:#e03131;--p:#7048e8;--g:#2b8a3e;--bg:#fff9f0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);font-family:'PingFang TC','Microsoft JhengHei','Noto Sans TC','Heiti TC',sans-serif;color:#333;overflow:hidden;user-select:none}
+#app{display:grid;grid-template-columns:11rem 1fr;height:100%}
+nav{background:#fff;border-right:3px solid #f1e3cf;display:flex;flex-direction:column;gap:.5rem;padding:.8rem .6rem}
+nav .tt{font-size:1.1rem;font-weight:900;color:#999;padding:.2rem .4rem .5rem}
+nav .tt b{display:block;font-size:1.6rem;color:#22b573}
+.it{display:flex;align-items:center;gap:.5rem;border:3px solid transparent;border-radius:16px;padding:.55rem .6rem;font-size:1.45rem;font-weight:900;color:#666;cursor:pointer}
+.it i{font-style:normal;width:2rem;height:2rem;border-radius:50%;background:#f1f3f5;display:grid;place-items:center;font-size:1.1rem;flex:none}
+.it.on{border-color:#22b573;background:#e6fcf5;color:#087f5b}.it.on i{background:#22b573;color:#fff}
+nav .sp{flex:1}
+#fs{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1.1rem;font-weight:900;color:#888;padding:.4rem}
+main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .8rem .7rem}
+#stagebox{flex:1;min-height:0;background:#fff;border-radius:24px;box-shadow:0 4px 0 #f1e3cf;position:relative}
+#stage{width:100%;height:100%;display:block}
+#bar{display:flex;gap:.7rem;align-items:center;justify-content:center;flex-wrap:wrap;padding-top:.7rem;min-height:4.6rem}
+.bt{border:4px solid #dee2e6;background:#fff;border-radius:18px;font:900 1.7rem 'PingFang TC','Microsoft JhengHei',sans-serif;padding:.3rem 1.1rem;color:#555;box-shadow:0 4px 0 #e9ecef;cursor:pointer}
+.bt.on{border-color:var(--b);background:#e7f5ff;color:#1864ab}
+.bt.go{background:#ff922b;border-color:#ff922b;color:#fff;box-shadow:0 5px 0 #e8590c;padding:.3rem 1.6rem}
+.bt:disabled{opacity:.35}
+.bt:active{transform:translateY(3px)}
+.gap{width:1.4rem}
+svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-linejoin:round}
+.pop{animation:pop .4s}
+@keyframes pop{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+.pop{transform-box:fill-box;transform-origin:center}
+.glow{animation:glow 1s ease-in-out 3}
+@keyframes glow{50%{opacity:.25}}
+@media (max-width:900px),(orientation:portrait){#app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+ nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:3px solid #f1e3cf;padding:.4rem}nav .tt,nav .sp,#fs{display:none}.it{white-space:nowrap;font-size:1.2rem}}
+</style></head><body>
+<div id="app">
+<nav id="nav"><div class="tt">第4單元<b>圓面積</b></div></nav>
+<main><div id="stagebox"><svg id="stage" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet"></svg></div><div id="bar"></div></main>
+</div>
+<script>
+const NS='http://www.w3.org/2000/svg';const $=s=>document.querySelector(s);
+const B='#1c7ed6',BL='#a5d8ff',O='#e8590c',OL='#ffd8a8',R='#e03131',P='#7048e8',G='#2b8a3e',GR='#868e96';
+let svg=$('#stage'),gen=0;
+function mk(p,t,a={},s){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(s!=null)e.textContent=s;if(p)p.appendChild(e);return e}
+function txt(p,x,y,s,o={}){return mk(p,'text',Object.assign({x,y,'text-anchor':'middle','font-size':48,fill:'#333'},o),s)}
+function later(ms,f){const g0=gen;setTimeout(()=>{if(g0===gen)f()},ms)}
+function tween(ms,f,done){const g0=gen,t0=performance.now();(function st(now){if(g0!==gen)return;let t=Math.min(1,(now-t0)/ms);const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;f(e);if(t<1)requestAnimationFrame(st);else done&&done()})(t0)}
+const D=Math.PI/180;
+/* 小數:以整數運算避免誤差 */
+function mul(...xs){let s=1,dp=0;xs.forEach(x=>{const [i,f='']=String(x).split('.');s*=+(i+f);dp+=f.length});let r=String(s);if(dp){r=r.padStart(dp+1,'0');r=r.slice(0,-dp)+'.'+r.slice(-dp);r=r.replace(/0+$/,'').replace(/\.$/,'')}return r}
+
+/* ---------- 扇形 ---------- */
+function secPath(r,h){return `M0 0L${r*Math.cos(-h)} ${r*Math.sin(-h)}A${r} ${r} 0 0 1 ${r*Math.cos(h)} ${r*Math.sin(h)}Z`}
+function arcPath(r,h){return `M${r*Math.cos(-h)} ${r*Math.sin(-h)}A${r} ${r} 0 0 1 ${r*Math.cos(h)} ${r*Math.sin(h)}`}
+/* n 等分:上半圓藍、下半圓橘;每片記住在圓上的位置和排好後的位置 */
+function sectors(g,{n,r,cx,cy,x0,yb}){const a=2*Math.PI/n,h=a/2,s=2*r*Math.sin(h),half=n/2;const L=[];
+  for(let k=0;k<n;k++){const th=-Math.PI+(k+.5)*a;const up=k<half;
+    const G=mk(g,'g');const fill=up?(k%2?'#d0ebff':BL):(k%2?'#ffe8cc':OL);
+    mk(G,'path',{d:secPath(r,h),fill,stroke:n>=128?fill:'#fff','stroke-width':n>=128?.8:n>32?1.2:2.5,'stroke-linejoin':'round'});
+    const arc=mk(G,'path',{d:arcPath(r,h),fill:'none',stroke:up?B:O,'stroke-width':7,'stroke-linecap':n>32?'butt':'round'});
+    let tx,ty,ta;if(up){const i=k;tx=x0+i*s;ty=yb;ta=-90}else{const j=n-1-k;tx=x0+j*s+s/2;ty=yb-r*Math.cos(h);ta=90}
+    const it={G,arc,up,from:[cx,cy,th/D],to:[tx,ty,ta]};L.push(it);put(it,0)}
+  return {L,s,h,a,
+    move(toward,ms,stag,done){const order=L.map((_,i)=>i);if(!toward)order.reverse();let left=L.length;
+      order.forEach((idx,q)=>later(q*stag,()=>{const it=L[idx];const t0=it.t||0,t1=toward?1:0;tween(ms,e=>put(it,t0+(t1-t0)*e),()=>{if(--left===0&&done)done()})}))},
+    set(t){L.forEach(it=>put(it,t))}}}
+function put(it,t){it.t=t;const [x0,y0,a0]=it.from,[x1,y1,a1]=it.to;let da=((a1-a0)%360+540)%360-180;
+  it.G.setAttribute('transform',`translate(${x0+(x1-x0)*t} ${y0+(y1-y0)*t}) rotate(${a0+da*t})`)}
+/* 括號 */
+function brace(g,x1,x2,y,col,up){const d=up?-34:34,m=(x1+x2)/2,q=Math.min(30,(x2-x1)/6),h=d/2;
+  return mk(g,'path',{d:`M${x1} ${y}Q${x1} ${y+h} ${x1+q} ${y+h}L${m-q} ${y+h}Q${m} ${y+h} ${m} ${y+d}Q${m} ${y+h} ${m+q} ${y+h}L${x2-q} ${y+h}Q${x2} ${y+h} ${x2} ${y}`,fill:'none',stroke:col,'stroke-width':6,'stroke-linecap':'round','stroke-linejoin':'round'})}
+/* 一行彩色文字:tokens = [[文字,顏色,{框}], ...] */
+function line(g,x,y,tokens,fs=56,anchor='start'){const T=mk(g,'text',{x,y,'font-size':fs,'text-anchor':anchor,fill:'#333'});
+  tokens.forEach(t=>{const [s,c]=Array.isArray(t)?t:[t,'#333'];mk(T,'tspan',{fill:c},s)});return T}
+
+/* ---------- 控制列 ---------- */
+const bar=$('#bar');let stepFn=null;
+function btn(lab,f,cls=''){const b=document.createElement('button');b.className='bt '+cls;b.textContent=lab;b.addEventListener('pointerdown',e=>{e.preventDefault();if(!b.disabled)f(b)});bar.appendChild(b);return b}
+function group(labels,cur,f){const bs=labels.map(([lab,v])=>btn(lab,()=>f(v)));bs.forEach((b,i)=>b.classList.toggle('on',labels[i][1]===cur));return bs}
+function gap(){const d=document.createElement('span');d.className='gap';bar.appendChild(d)}
+function stepper(steps,{onReset}={}){let k=0;const go=btn('下一步 ▶',()=>next(),'go');const back=btn('↺ 重來',()=>{onReset&&onReset()});
+  function next(){if(k>=steps.length)return;steps[k++]();if(k>=steps.length)go.disabled=true}
+  stepFn=next;return {next,go}}
+function clearStage(){gen++;const n=svg.cloneNode(false);svg.replaceWith(n);svg=n;bar.innerHTML='';stepFn=null}
+
+/* ================== 頁面 ================== */
+const PAGES=[
+/* 1 切一切 */
+{t:'切一切',build(){let n=8;const cx=520,cy=450,r=330;
+  const draw=()=>{clearStage();
+    const g=mk(svg,'g');const a=2*Math.PI/n;
+    for(let k=0;k<n;k++){const th=-Math.PI+(k+.5)*a,up=k<n/2;const S=mk(g,'g',{transform:`translate(${cx} ${cy}) rotate(${th/D})`});
+      mk(S,'path',{d:secPath(r,a/2),fill:up?(k%2?'#d0ebff':BL):(k%2?'#ffe8cc':OL)});mk(S,'path',{d:arcPath(r,a/2),fill:'none',stroke:up?B:O,'stroke-width':8})}
+    /* 刀痕 */
+    for(let k=0;k<n;k++){const th=-Math.PI+k*a;const ln=mk(svg,'line',{x1:cx,y1:cy,x2:cx,y2:cy,stroke:'#fff','stroke-width':n>32?2:4,'stroke-linecap':'round'});
+      later(k*(900/n),()=>tween(260,e=>{ln.setAttribute('x2',cx+r*Math.cos(th)*e);ln.setAttribute('y2',cy+r*Math.sin(th)*e)}))}
+    mk(svg,'circle',{cx,cy,r:7,fill:'#333'});
+    txt(svg,1200,180,`${n} 等分`,{'font-size':76,fill:P});
+    /* 放大一片 */
+    later(1100,()=>{const h=a/2,R0=380,px=1200,py=650;const S=mk(mk(svg,'g',{class:'pop'}),'g',{transform:`translate(${px} ${py}) rotate(-90)`});
+      mk(S,'path',{d:secPath(R0,h),fill:BL,stroke:'#fff','stroke-width':3});mk(S,'path',{d:arcPath(R0,h),fill:'none',stroke:B,'stroke-width':8});
+      const hh=h;mk(svg,'line',{x1:px,y1:py,x2:px+R0*Math.sin(hh),y2:py-R0*Math.cos(hh),stroke:R,'stroke-width':7,'stroke-linecap':'round',class:'pop'});
+      txt(svg,px+R0*Math.sin(hh)/2+70,py-R0*Math.cos(hh)/2+20,'半徑',{'font-size':48,fill:R,class:'pop'})});
+    group([['4 等分',4],['8 等分',8],['16 等分',16],['32 等分',32]],n,v=>{n=v;draw()})};
+  draw()}},
+/* 2 拼一拼 */
+{t:'拼一拼',build(){let n=8,on=false;const cx=330,cy=440,r=240,x0=760,yb=560;
+  const draw=()=>{clearStage();on=false;
+    mk(svg,'circle',{cx,cy,r,fill:'none',stroke:'#ced4da','stroke-width':4,'stroke-dasharray':'12 10'});
+    const f=sectors(mk(svg,'g'),{n,r,cx,cy,x0,yb});const lab=txt(svg,1130,200,`${n} 等分`,{'font-size':64,fill:P});
+    let rect=null;
+    group([['8',8],['16',16],['32',32],['64',64],['128',128],['256',256]],n,v=>{n=v;draw()});gap();
+    const go=btn('拼起來 ▶',()=>{if(go.disabled)return;go.disabled=true;
+      if(!on){f.move(true,700,Math.max(5,1400/n),()=>{on=true;go.textContent='◀ 放回圓';go.disabled=false;rb.disabled=false})}
+      else{if(rect){rect.remove();rect=null}rb.disabled=true;f.move(false,600,Math.max(4,1000/n),()=>{on=false;go.textContent='拼起來 ▶';go.disabled=false})}},'go');
+    const rb=btn('像什麼形狀？',()=>{if(rect){rect.remove();rect=null;return}
+      const s=f.s,h=f.h,L=x0-s/4,W=n/2*s,top=yb-r,bot=yb+r*(1-Math.cos(h));
+      rect=mk(svg,'rect',{x:L,y:top,width:W,height:bot-top,fill:'none',stroke:G,'stroke-width':6,'stroke-dasharray':'16 10',rx:4,class:'pop'})});rb.disabled=true;
+    stepFn=()=>go.dispatchEvent(new PointerEvent('pointerdown'))};
+  draw()}},
+/* 3 長和寬 */
+{t:'長和寬',build(){const n=32,cx=300,cy=450,r=230,x0=700,yb=565;
+  const reset=()=>{clearStage();
+    const cg=mk(svg,'g');const f=sectors(cg,{n,r,cx,cy,x0,yb});
+    /* 圓的副本留在左邊 */
+    const ghost=mk(svg,'g');
+    for(let k=0;k<n;k++){const a=2*Math.PI/n,th=-Math.PI+(k+.5)*a,up=k<n/2;const S=mk(ghost,'g',{transform:`translate(${cx} ${cy}) rotate(${th/D})`});
+      mk(S,'path',{d:secPath(r,a/2),fill:up?(k%2?'#d0ebff':BL):(k%2?'#ffe8cc':OL),stroke:'#fff','stroke-width':1.5})}
+    const upArc=mk(svg,'path',{d:`M${cx-r} ${cy}A${r} ${r} 0 0 1 ${cx+r} ${cy}`,fill:'none',stroke:B,'stroke-width':9});
+    const dnArc=mk(svg,'path',{d:`M${cx+r} ${cy}A${r} ${r} 0 0 1 ${cx-r} ${cy}`,fill:'none',stroke:O,'stroke-width':9});
+    f.set(1);
+    const s=f.s,h=f.h,Lx=x0-s/2,Rx=x0+n/2*s,top=yb-r,bot=yb-r*Math.cos(h)+r;
+    stepper([
+      ()=>{upArc.setAttribute('stroke-width',16);upArc.classList.add('glow');f.L.filter(i=>i.up).forEach(i=>{i.arc.setAttribute('stroke-width',12);i.arc.classList.add('glow')});
+        const g=mk(svg,'g',{class:'pop'});brace(g,Lx+6,Rx-s/2,top-14,B,true);txt(g,(Lx+Rx-s/2)/2,top-66,'圓周長的一半',{'font-size':52,fill:B});
+        txt(svg,cx,cy-r-30,'圓周長的一半',{'font-size':44,fill:B,class:'pop'})},
+      ()=>{dnArc.setAttribute('stroke-width',16);dnArc.classList.add('glow');f.L.filter(i=>!i.up).forEach(i=>{i.arc.setAttribute('stroke-width',12);i.arc.classList.add('glow')});
+        const g=mk(svg,'g',{class:'pop'});brace(g,x0+6,Rx-6,bot+14,O,false);txt(g,(x0+Rx)/2,bot+100,'圓周長的一半',{'font-size':52,fill:O});
+        txt(svg,cx,cy+r+64,'圓周長的一半',{'font-size':44,fill:O,class:'pop'})},
+      ()=>{mk(svg,'line',{x1:cx,y1:cy,x2:cx,y2:cy-r,stroke:R,'stroke-width':9,'stroke-linecap':'round',class:'pop'});mk(svg,'circle',{cx,cy,r:8,fill:'#333'});
+        txt(svg,cx+56,cy-r/2+16,'半徑',{'font-size':44,fill:R,class:'pop'});
+        const ex=x0-r*Math.sin(h),ey=yb-r*Math.cos(h);mk(svg,'line',{x1:x0,y1:yb,x2:ex,y2:ey,stroke:R,'stroke-width':9,'stroke-linecap':'round',class:'pop'});
+        txt(svg,x0-70,(yb+ey)/2+16,'半徑',{'font-size':52,fill:R,class:'pop'})},
+      ()=>{mk(svg,'rect',{x:x0-s/4,y:top,width:n/2*s,height:bot-top,fill:'none',stroke:G,'stroke-width':6,'stroke-dasharray':'16 10',class:'pop'});
+        const g=mk(svg,'g',{class:'pop'});line(g,(x0+Rx)/2,800,[['長 ＝ ','#333'],['圓周長的一半',B],'　　',['寬 ＝ ','#333'],['半徑',R]],52,'middle')}
+    ],{onReset:reset})};
+  reset()}},
+/* 4 推公式 */
+{t:'推公式',build(){
+  const reset=()=>{clearStage();
+    /* 左:長方形示意 */
+    const rx=70,ry=170,rw=500,rh=230;mk(svg,'rect',{x:rx,y:ry,width:rw,height:rh,fill:'#f3f0ff',stroke:'#adb5bd','stroke-width':4,rx:6});
+    mk(svg,'line',{x1:rx,y1:ry,x2:rx+rw,y2:ry,stroke:B,'stroke-width':10,'stroke-linecap':'round'});mk(svg,'line',{x1:rx,y1:ry,x2:rx,y2:ry+rh,stroke:R,'stroke-width':10,'stroke-linecap':'round'});
+    txt(svg,rx+rw/2,ry-28,'圓周長的一半',{'font-size':46,fill:B});txt(svg,rx+60,ry+rh/2+16,'半徑',{'font-size':46,fill:R,'text-anchor':'start'});
+    const note=(y,tk)=>{const g=mk(svg,'g',{class:'pop'});mk(g,'rect',{x:50,y:y-56,width:560,height:82,rx:20,fill:'#fff9db',stroke:'#fcc419','stroke-width':4});line(g,330,y,tk,42,'middle');return g};
+    const X=680,Y0=105,DY=108,fs=56;let y=Y0;const L=(tk,box)=>{const g=mk(svg,'g',{class:'pop'});if(box){mk(g,'rect',{x:X-20,y:y-66,width:870,height:92,rx:22,fill:'#d3f9d8',stroke:G,'stroke-width':4})}line(g,X,y,tk,fs);y+=DY;return g};
+    L([['圓面積','#333']]);
+    stepper([
+      ()=>L(['＝ 長方形面積']),
+      ()=>L(['＝ ',['長',B],' × ',['寬',R]]),
+      ()=>L(['＝ ',['圓周長的一半',B],' × ',['半徑',R]]),
+      ()=>{note(540,['圓周長 ＝ 直徑 × 圓周率']);L(['＝ ',['直徑',P],' × 圓周率 ',['÷ 2',P],' × ',['半徑',R]])},
+      ()=>{note(650,[['直徑 ÷ 2',P],' ＝ ',['半徑',P]]);L(['＝ ',['半徑',P],' × 圓周率 × ',['半徑',R]])},
+      ()=>L(['＝ ',['半徑 × 半徑 × 圓周率',G]],true)
+    ],{onReset:reset})};
+  reset()}},
+/* 5 算算看 */
+{t:'算算看',build(){const Q=[{r:6},{r:10},{d:8},{r:3},{d:10}];let qi=0;
+  const draw=()=>{clearStage();const q=Q[qi],rr=q.r||q.d/2;
+    const cx=330,cy=450,R0=250;mk(svg,'circle',{cx,cy,r:R0,fill:'#e7f5ff',stroke:B,'stroke-width':6});mk(svg,'circle',{cx,cy,r:8,fill:'#333'});
+    if(q.r){mk(svg,'line',{x1:cx,y1:cy,x2:cx+R0,y2:cy,stroke:R,'stroke-width':8,'stroke-linecap':'round'});txt(svg,cx+R0/2,cy-22,`${q.r} 公分`,{'font-size':48,fill:R});txt(svg,cx+R0/2,cy+62,'半徑',{'font-size':38,fill:R})}
+    else{mk(svg,'line',{x1:cx-R0,y1:cy,x2:cx+R0,y2:cy,stroke:P,'stroke-width':8,'stroke-linecap':'round'});txt(svg,cx,cy-22,`${q.d} 公分`,{'font-size':48,fill:P});txt(svg,cx,cy+62,'直徑',{'font-size':38,fill:P})}
+    const X=720;let y=190;const L=(tk,o={})=>{const g=mk(svg,'g',{class:'pop'});if(o.box)mk(g,'rect',{x:X-24,y:y-72,width:800,height:100,rx:24,fill:'#d3f9d8',stroke:G,'stroke-width':4});line(g,X,y,tk,o.fs||60);y+=o.dy||120;return g};
+    const steps=[()=>L([['半徑',R],' × ',['半徑',R],' × ',['圓周率',G]],{fs:54})];
+    if(q.d)steps.push(()=>L([['直徑 ',P],q.d+' ÷ 2 ＝ ',['半徑 ',R],['' +rr,R]],{fs:52}));
+    steps.push(()=>L([[''+rr,R],' × ',[''+rr,R],' × ',['3.14',G]]));
+    steps.push(()=>L(['＝ ',[mul(rr,rr,3.14),'#c92a2a']],{dy:110}));steps.push(()=>L(['約 ',[mul(rr,rr,3.14),'#c92a2a'],' 平方公分'],{box:true,fs:56}));
+    stepper(steps,{onReset:draw});gap();
+    btn('換一題',()=>{qi=(qi+1)%Q.length;draw()})};
+  draw()}},
+/* 6 別搞混 */
+{t:'別搞混',build(){
+  const reset=()=>{clearStage();const r=6;
+    const P1={x:400},P2={x:1200},cy=300,R0=170;
+    txt(svg,P1.x,90,'圓周長',{'font-size':60,fill:O});txt(svg,P2.x,90,'圓面積',{'font-size':60,fill:B});
+    mk(svg,'line',{x1:800,y1:60,x2:800,y2:860,stroke:'#e9ecef','stroke-width':4});
+    const c1=mk(svg,'circle',{cx:P1.x,cy,r:R0,fill:'none',stroke:'#dee2e6','stroke-width':6});const c2=mk(svg,'circle',{cx:P2.x,cy,r:R0,fill:'none',stroke:'#dee2e6','stroke-width':6});
+    const sub=(x,y,tk,fs=50)=>line(mk(svg,'g',{class:'pop'}),x,y,tk,fs,'middle');
+    stepper([
+      ()=>{const C=2*Math.PI*R0;const ring=mk(svg,'circle',{cx:P1.x,cy,r:R0,fill:'none',stroke:O,'stroke-width':14,'stroke-dasharray':`0 ${C}`,transform:`rotate(-90 ${P1.x} ${cy})`,'stroke-linecap':'round'});
+        tween(1200,e=>ring.setAttribute('stroke-dasharray',`${C*e} ${C}`));later(1200,()=>sub(P1.x,590,['外面一圈的',['長度',O]]))},
+      ()=>{const disk=mk(svg,'circle',{cx:P2.x,cy,r:0,fill:BL,stroke:B,'stroke-width':6});tween(1200,e=>disk.setAttribute('r',R0*e));later(1200,()=>sub(P2.x,590,['裡面的',['大小',B]]))},
+      ()=>{sub(P1.x,700,[['直徑',P],' × 圓周率'],54);sub(P2.x,700,[['半徑',R],' × ',['半徑',R],' × 圓周率'],54)},
+      ()=>{sub(P1.x,810,['單位：',['公分',O]],50);sub(P2.x,810,['單位：',['平方公分',B]],50)}
+    ],{onReset:reset})};
+  reset()}}
+];
+
+/* ---------- 導覽 ---------- */
+const nav=$('#nav');let cur=0;
+PAGES.forEach((pg,i)=>{const d=document.createElement('div');d.className='it';d.dataset.i=i;d.innerHTML=`<i>${i+1}</i>${pg.t}`;d.addEventListener('pointerdown',e=>{e.preventDefault();show(i)});nav.appendChild(d)});
+nav.appendChild(Object.assign(document.createElement('div'),{className:'sp'}));
+const fsb=Object.assign(document.createElement('button'),{id:'fs',textContent:'⛶ 全螢幕'});fsb.addEventListener('pointerdown',e=>{e.preventDefault();document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})});nav.appendChild(fsb);
+function show(i){cur=i;document.querySelectorAll('.it').forEach(x=>x.classList.toggle('on',+x.dataset.i===i));PAGES[i].build();try{localStorage.setItem('ca_pg',i)}catch(e){}}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter'){e.preventDefault();stepFn&&stepFn()}
+  else if(e.key==='ArrowDown'||e.key==='PageDown'){e.preventDefault();show(Math.min(PAGES.length-1,cur+1))}
+  else if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();show(Math.max(0,cur-1))}});
+let start=0;try{start=+localStorage.getItem('ca_pg')||0}catch(e){}show(Math.min(start,PAGES.length-1));
+</script>
+</body></html>
