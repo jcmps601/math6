@@ -183,6 +183,22 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #setmsg,#tabmsg,#hmsg{color:#1c7ed6;font-weight:900}
 .hrow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}.hrow input{width:4em;font-size:1.2rem;padding:.2rem;border:2px solid #dee2e6;border-radius:8px}.hrow select{font-size:1.1rem;padding:.2rem}
 #hout{font:1.1rem monospace;width:min(20rem,100%);border:2px solid #dee2e6;border-radius:10px;padding:.4rem}
+/* 學習分析 */
+#amsg{color:#1c7ed6;font-weight:900}
+#aout h3{font-size:1.45rem;margin:1rem 0 .4rem;color:#333}#aout h3 small{font-size:1rem;color:#999;font-weight:800;margin-left:.5rem}
+.at{border-collapse:collapse;font-size:1.1rem;font-weight:800}
+.at th,.at td{padding:.35rem .55rem;text-align:center;border-bottom:2px solid #f1f3f5}.at th{color:#888;font-size:1rem}
+.at td.c{min-width:5.2rem}.at td.c b{display:block;font-size:1.3rem}.at td.c small{color:#888;font-size:.85rem}
+.at td.g{background:#d3f9d8}.at td.y{background:#fff3bf}.at td.r{background:#ffe3e3}.at td.n{color:#ccc}
+.at tr.st{cursor:pointer}.at tr.st:hover td{outline:2px solid #ffd8a8}.at tr.sel td{box-shadow:inset 0 0 0 3px #ff922b}
+.at td.l{text-align:left}.ubadge{font-size:.85rem;color:#fff;border-radius:8px;padding:.05rem .45rem;margin-right:.4rem}
+.abar{display:inline-block;height:.7rem;border-radius:6px;background:#ff8787;vertical-align:middle;margin-left:.4rem}
+#adet{margin-top:.6rem;padding:.8rem;border:3px solid #ffd8a8;border-radius:16px;background:#fff9f0}
+/* 錯題本 */
+#wblist{display:flex;flex-direction:column;gap:.45rem}
+.wbi{display:flex;align-items:center;gap:.7rem;font-size:1.25rem;font-weight:800;padding:.35rem .2rem;border-bottom:2px dashed #f1f3f5}
+.wbi .wu{flex:none;font-size:1rem;font-weight:900;color:#fff;background:var(--c);border-radius:10px;padding:.1rem .5rem}
+.wbi .wq{flex:1;min-width:0;line-height:1.5}.wbi .wn{flex:none;color:#c92a2a;font-size:1.05rem}
 /* 遊戲 */
 .tkc{display:block;margin-top:.6rem;border:3px solid #ffd8a8;background:#fff4e6;color:#e8590c;border-radius:14px;font-size:1.2rem;font-weight:900;padding:.3rem .8rem}
 .tkget{margin-top:.6rem;font-size:1.5rem;color:#e8590c;font-weight:900}
@@ -302,8 +318,13 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
   <button id="tabload">重新整理</button><div id="tabmsg"></div>
   <table id="tab"></table>
  </div>
+ <div class="cd" id="ana">
+  <div>③ 學習分析</div>
+  <div class="hrow"><select id="aper"><option value="7">最近 7 天</option><option value="30">最近 30 天</option><option value="0">全部</option></select><button id="aload">分析</button><span id="amsg"></span></div>
+  <div id="aout"></div>
+ </div>
  <div class="cd">
-  <div>③ 榮譽卡加點（看完成每日任務的天數）</div>
+  <div>④ 榮譽卡加點（看完成每日任務的天數）</div>
   <div class="hrow">每完成 1 天 ＋<input id="hpd" type="number" value="1" min="0" max="10"> 點，每週最多 <input id="hcap" type="number" value="5" min="0" max="50"> 點
    <select id="hwk"><option value="1">上週</option><option value="0">本週</option></select></div>
   <button id="hcalc">計算</button><div id="hmsg"></div>
@@ -387,31 +408,31 @@ const F={
 
 const T={
  /* 基礎 */
- b_dC(){const d=ri(3,20),a=d*3.14;return {text:`直徑 ${d} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'公分',
+ b_dC(){const d=ri(2,40),a=d*3.14;return {text:`直徑 ${d} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'公分',
    hints:['圓周長 ＝ 直徑 × 圓周率',`${d} × ${PI}`],sol:[`${d} × ${PI} ＝ ${f(a)}`],traps:[[d*d*3.14,'這是面積的算法喔'],[d/2*3.14,'直徑不用再除以 2']]}},
- b_rC(){const r=ri(3,15),a=r*2*3.14;return {text:`半徑 ${r} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'公分',
+ b_rC(){const r=ri(3,30),a=r*2*3.14;return {text:`半徑 ${r} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'公分',
    hints:['圓周長 ＝ 直徑 × 圓周率','直徑 ＝ 半徑 × 2',`${r} × 2 × ${PI}`],sol:[`${r} × 2 × ${PI} ＝ ${f(a)}`],traps:[[r*3.14,'半徑要先 × 2 變成直徑'],[r*r*3.14,'這是面積的算法喔']]}},
- b_rA(){const r=ri(3,15),a=r*r*3.14;return {text:`半徑 ${r} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'平方公分',
+ b_rA(){const r=ri(3,20),a=r*r*3.14;return {text:`半徑 ${r} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'平方公分',
    hints:['圓面積 ＝ 半徑 × 半徑 × 圓周率',`${r} × ${r} × ${PI}`],sol:[`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[r*2*3.14,'這是圓周長喔'],[r*3.14,'半徑要乘兩次'],[2*r*2*r*3.14,'要用半徑，不是直徑']]}},
- b_dA(){const d=ev(6,24),r=d/2,a=r*r*3.14;return {text:`直徑 ${d} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'平方公分',
+ b_dA(){const d=ev(6,40),r=d/2,a=r*r*3.14;return {text:`直徑 ${d} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'平方公分',
    hints:['先算半徑：直徑 ÷ 2',`${d} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI}`],sol:[`半徑 ${d} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[d*d*3.14,'要用半徑，不是直徑'],[d*3.14,'這是圓周長喔']]}},
- b_Cd(){const d=ri(3,25),C=d*3.14;return {text:`圓周長 ${f(C)} 公分的圓，直徑是幾公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:d,unit:'公分',pre:'',
+ b_Cd(){const d=ri(2,40),C=d*3.14;return {text:`圓周長 ${f(C)} 公分的圓，直徑是幾公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:d,unit:'公分',pre:'',
    hints:['直徑 × 圓周率 ＝ 圓周長','直徑 ＝ 圓周長 ÷ 圓周率',`${f(C)} ÷ ${PI}`],sol:[`${f(C)} ÷ ${PI} ＝ ${d}`],traps:[[C*3.14,'要用除的'],[d/2,'這是半徑，題目問直徑']]}},
  /* 進階 */
- a_Cr(){const dog=Math.random()<.5,u=dog?'公尺':'公分',r=ri(2,dog?9:15),C=r*2*3.14;return {text:dog?`小狗拉直牽繩繞著木樁走 1 圈，共走了 ${f(C)} 公尺，牽繩大約長幾公尺？`:`圓周長 ${f(C)} 公分的圓，半徑是幾公分？`,fig:['circle',{per:dog?`1 圈 ${f(C)} 公尺`:`圓周長 ${f(C)} 公分`,show:dog?'rq':''}],ans:r,unit:u,pre:'',
+ a_Cr(){const dog=Math.random()<.5,u=dog?'公尺':'公分',r=ri(3,dog?20:30),C=r*2*3.14;return {text:dog?`小狗拉直牽繩繞著木樁走 1 圈，共走了 ${f(C)} 公尺，牽繩大約長幾公尺？`:`圓周長 ${f(C)} 公分的圓，半徑是幾公分？`,fig:['circle',{per:dog?`1 圈 ${f(C)} 公尺`:`圓周長 ${f(C)} 公分`,show:dog?'rq':''}],ans:r,unit:u,pre:'',
    hints:dog?['牽繩的長 ＝ 圓的半徑','直徑 ＝ 圓周長 ÷ 圓周率','半徑 ＝ 直徑 ÷ 2']:['直徑 ＝ 圓周長 ÷ 圓周率','半徑 ＝ 直徑 ÷ 2'],sol:[`直徑 ${f(C)} ÷ ${PI} ＝ ${2*r}`,`半徑 ${2*r} ÷ 2 ＝ ${r}`],traps:[[2*r,'這是直徑，還要 ÷ 2']]}},
- a_CA(){const r=ri(2,10),C=r*2*3.14,a=r*r*3.14;return {text:`圓周長 ${f(C)} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:a,unit:'平方公分',
+ a_CA(){const r=ri(3,15),C=r*2*3.14,a=r*r*3.14;return {text:`圓周長 ${f(C)} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:a,unit:'平方公分',
    hints:['① 直徑 ＝ 圓周長 ÷ 圓周率','② 半徑 ＝ 直徑 ÷ 2','③ 面積 ＝ 半徑 × 半徑 × 圓周率'],sol:[`直徑 ${f(C)} ÷ ${PI} ＝ ${2*r}，半徑 ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[4*r*r*3.14,'要用半徑，不是直徑'],[2*r,'這是直徑，還要算面積'],[r,'這是半徑，還要算面積']]}},
- a_double(){const d=pick([4,5,6,8,10,12,15,20]),k=pick([2,3]),a=d*k*3.14;return {text:`小圓形花圃直徑 ${d} 公尺，大花圃的直徑是小花圃的 ${k} 倍。大花圃的圓周長大約是幾公尺？`,fig:['two',{a:d,b:d*k,la:`小 ${d} 公尺`,lb:`大 ？`,show:'d'}],ans:a,unit:'公尺',
+ a_double(){const d=ri(3,25),k=pick([2,3,4]),a=d*k*3.14;return {text:`小圓形花圃直徑 ${d} 公尺，大花圃的直徑是小花圃的 ${k} 倍。大花圃的圓周長大約是幾公尺？`,fig:['two',{a:d,b:d*k,la:`小 ${d} 公尺`,lb:`大 ？`,show:'d'}],ans:a,unit:'公尺',
    hints:['先算大花圃的直徑',`${d} × ${k} ＝ ${d*k}`,`${d*k} × ${PI}`],sol:[`大花圃直徑 ${d} × ${k} ＝ ${d*k}`,`${d*k} × ${PI} ＝ ${f(a)}`],traps:[[d*3.14,'這是小花圃的圓周長'],[d*k*d*k*3.14,'題目問圓周長，不是面積']]}},
- a_card(){const a0=ev(6,24),r=a0/2,a=r*r*3.14;return {text:`在邊長 ${a0} 公分的正方形卡片上，畫一個最大的圓，圓面積大約是幾平方公分？`,fig:['sqc',{a:a0,circle:1}],ans:a,unit:'平方公分',
+ a_card(){const a0=ev(6,40),r=a0/2,a=r*r*3.14;return {text:`在邊長 ${a0} 公分的正方形卡片上，畫一個最大的圓，圓面積大約是幾平方公分？`,fig:['sqc',{a:a0,circle:1}],ans:a,unit:'平方公分',
    hints:['最大的圓：直徑 ＝ 正方形的邊長',`半徑 ＝ ${a0} ÷ 2 ＝ ${r}`],sol:[`半徑 ${a0} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[a0*a0*3.14,'要用半徑，不是邊長'],[a0*a0,'這是正方形的面積'],[a0*3.14,'這是圓周長']]}},
- a_wheel(){const d=pick([40,50,60,70,80]),n=ri(2,9),a=d*3.14*n;return {text:`直徑 ${d} 公分的輪子滾了 ${n} 圈，大約前進了幾公分？`,fig:['wheel',{d,n}],ans:a,unit:'公分',
+ a_wheel(){const d=pick([30,35,40,45,50,55,60,65,70,75,80,90]),n=ri(2,12),a=d*3.14*n;return {text:`直徑 ${d} 公分的輪子滾了 ${n} 圈，大約前進了幾公分？`,fig:['wheel',{d,n}],ans:a,unit:'公分',
    hints:['滾 1 圈 ＝ 1 個圓周長',`${d} × ${PI} × ${n}`],sol:[`1 圈：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(d*3.14)} × ${n} ＝ ${f(a)}`],traps:[[d*3.14,`這是 1 圈，要滾 ${n} 圈`]]}},
  /* 挑戰 */
  c_sqc(){const a0=ev(4,20),r=a0/2,a=a0*a0-r*r*3.14;return {text:`正方形邊長 ${a0} 公分，裡面畫一個最大的圓，橘色部分大約是幾平方公分？`,fig:['sqc',{a:a0}],ans:a,unit:'平方公分',
    hints:['橘色 ＝ 正方形面積 － 圓面積','圓的直徑 ＝ 正方形的邊長'],sol:[`正方形 ${a0} × ${a0} ＝ ${a0*a0}`,`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`${a0*a0} － ${f(r*r*3.14)} ＝ ${f(a)}`],traps:[[r*r*3.14,'這是圓的面積，還要用正方形減掉'],[a0*a0-a0*a0*3.14<0?-1:a0*a0-a0*a0*3.14,'圓的半徑是邊長的一半']]}},
- c_ring(){const R0=ri(5,12),r0=ri(2,R0-2),a=R0*R0*3.14-r0*r0*3.14;return {text:`大圓半徑 ${R0} 公分、小圓半徑 ${r0} 公分（同一個圓心），橘色部分大約是幾平方公分？`,fig:['ring',{R0,r0}],ans:a,unit:'平方公分',
+ c_ring(){const R0=ri(4,20),r0=ri(2,R0-2),a=R0*R0*3.14-r0*r0*3.14;return {text:`大圓半徑 ${R0} 公分、小圓半徑 ${r0} 公分（同一個圓心），橘色部分大約是幾平方公分？`,fig:['ring',{R0,r0}],ans:a,unit:'平方公分',
    hints:['橘色 ＝ 大圓面積 － 小圓面積'],sol:[`大圓 ${R0} × ${R0} × ${PI} ＝ ${f(R0*R0*3.14)}`,`小圓 ${r0} × ${r0} × ${PI} ＝ ${f(r0*r0*3.14)}`,`${f(R0*R0*3.14)} － ${f(r0*r0*3.14)} ＝ ${f(a)}`],traps:[[(R0-r0)*(R0-r0)*3.14,'不能先把半徑相減，要大圓面積減小圓面積']]}},
  c_cirsq(){const r=ri(3,12),a=r*r*3.14-r*r*2;return {text:`圓的半徑 ${r} 公分，圓裡面有一個白色正方形，橘色部分大約是幾平方公分？`,fig:['cirsq',{r}],ans:a,unit:'平方公分',
    hints:['橘色 ＝ 圓面積 － 正方形面積','正方形可以切成 4 個三角形，底和高都是半徑'],sol:[`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`4 個三角形 ${r} × ${r} ÷ 2 × 4 ＝ ${r*r*2}`,`${f(r*r*3.14)} － ${r*r*2} ＝ ${f(a)}`],traps:[[r*r*3.14,'這是整個圓，還要減掉白色正方形'],[r*r*3.14-r*r,'正方形是 4 個三角形，面積是 半徑×半徑×2'],[r*r*3.14-4*r*r,'正方形的邊不是直徑，要用 4 個三角形來算']]}},
@@ -421,7 +442,7 @@ const T={
    hints:['分別算出甲、乙的面積',`乙的半徑 ${r} × ${k} ＝ ${r*k}`,'乙面積 ÷ 甲面積'],sol:[`甲 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`乙 ${r*k} × ${r*k} × ${PI} ＝ ${f(r*k*r*k*3.14)}`,`${f(r*k*r*k*3.14)} ÷ ${f(r*r*3.14)} ＝ ${a}`],traps:[[k,`半徑 ${k} 倍，面積不是 ${k} 倍喔，算算看`]]}},
  c_turns(){const d=pick([40,50,60,70,80]),n=ri(3,12),L=d*3.14*n;return {text:`直徑 ${d} 公分的輪子，滾了 ${f(L)} 公分，轉了幾圈？`,fig:['wheel',{d,back:`${f(L)} 公分`}],ans:n,unit:'圈',pre:'',
    hints:['1 圈 ＝ 1 個圓周長','圈數 ＝ 總長 ÷ 1 圈的長'],sol:[`1 圈：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(L)} ÷ ${f(d*3.14)} ＝ ${n}`],traps:[]}},
- c_trackP(){const L=pick([40,50,60,70,80,90,100]),d=pick([20,30,40,50]),a=2*L+d*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場一圈大約是幾公尺？`,fig:['track',{L,d}],ans:a,unit:'公尺',
+ c_trackP(){const L=ri(3,12)*10,d=ri(2,6)*10,a=2*L+d*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場一圈大約是幾公尺？`,fig:['track',{L,d}],ans:a,unit:'公尺',
    hints:['兩個半圓 ＝ 一個圓','一圈 ＝ 圓周長 ＋ 2 條直線'],sol:[`兩個半圓：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(d*3.14)} ＋ ${L} ＋ ${L} ＝ ${f(a)}`],traps:[[L+d*3.14,'直線有上下 2 條'],[2*L+d*3.14/2,'兩個半圓合起來是一整個圓'],[2*L+2*d+d*3.14,'虛線不是操場的邊，不用算']]}},
  c_trackA(){const L=pick([40,50,60,70,80]),d=pick([20,30,40]),r=d/2,a=L*d+r*r*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場的面積大約是幾平方公尺？`,fig:['track',{L,d}],ans:a,unit:'平方公尺',
    hints:['面積 ＝ 長方形 ＋ 兩個半圓（一個圓）','圓的半徑 ＝ 直徑 ÷ 2'],sol:[`長方形 ${L} × ${d} ＝ ${L*d}`,`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`${L*d} ＋ ${f(r*r*3.14)} ＝ ${f(a)}`],traps:[[L*d+d*d*3.14,'圓要用半徑，不是直徑'],[L*d,'別忘了兩邊的半圓']]}},
@@ -445,7 +466,8 @@ const sdivHtml=(a,b)=>{const {ps,x,y}=sdiv(a,b);let h='<table class="sd">';let u
 
 /* ================= 第1單元 質因數分解和短除法 ================= */
 const U1={
- prime(){const pool=[2,3,5,7,11,13,17,19,1,9,15,21,25,27,33,35,39,49,51,57,63,65,69,77,85,87,91,95,22,26,34,38,46,58,68,75];const n=pick(pool);
+ prime(){/* 1、質數(50 以內)、合數(100 以內)各占一些 */const P=[2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];const k=Math.random();
+  let n;if(k<.06)n=1;else if(k<.45)n=pick(P);else{do{n=ri(4,99)}while(isPrime(n)||(n%2===0&&Math.random()<.6))}
   const a=n===1?'都不是':isPrime(n)?'質數':'合數';const d=divs(n);
   return {type:'mc',opts:['質數','合數','都不是'],text:`${n} 是質數還是合數？`,big:`<div class="bx">${n}</div>`,ans:a,
    hints:['質數：只有 1 和自己兩個因數','合數：除了 1 和自己，還有別的因數',`找找看 ${n} 的因數`],
@@ -486,16 +508,16 @@ const U1={
   return {type:'num',text:`老師把 ${a} 枝筆和 ${b} 本筆記本全部裝袋，每袋的筆一樣多，筆記本也一樣多，最多可以裝幾袋？`,big:`<div class="bx s">筆 ${a}、筆記本 ${b}<br>→ 最多幾袋</div>`,ans:g,unit:'袋',pre:'',
    hints:['袋數要能整除兩種數量','最多 → 最大公因數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${sdiv(a,b).ps.join(' × ')} ＝ ${g}，最多裝 ${g} 袋`],traps:[[lcm(a,b),'裝袋分完要找最大公因數']]}},
  appL(){const k=ri(0,3);
-  if(k===0){const [a,b]=pick([[8,12],[6,9],[10,15],[4,6],[12,18],[9,12]]);const L=lcm(a,b);
+  if(k===0){let a,b;do{a=ri(3,15);b=ri(3,15)}while(a===b||gcd(a,b)===1||lcm(a,b)>60||a%b===0||b%a===0);if(a<b)[a,b]=[b,a];const L=lcm(a,b);
    return {type:'num',text:`用長 ${b} 公分、寬 ${a} 公分的長方形紙片排成正方形，最小的正方形邊長是幾公分？`,big:`<div class="bx s">${b} 和 ${a}<br>→ 最小的正方形</div>`,ans:L,unit:'公分',pre:'',
     hints:['正方形的邊長要是 '+a+' 的倍數，也要是 '+b+' 的倍數','最小 → 找最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'排成大正方形要找最小公倍數']]}}
-  if(k===1){const [a,b]=pick([[12,15],[8,12],[10,12],[6,15],[9,12]]);const L=lcm(a,b);
+  if(k===1){let a,b;do{a=ri(4,20);b=ri(4,20)}while(a===b||gcd(a,b)===1||lcm(a,b)>150||a%b===0||b%a===0);const L=lcm(a,b);
    return {type:'num',text:`一批餅乾每 ${a} 個裝一盒，或每 ${b} 個裝一盒，都剛好裝完。這批餅乾最少有幾個？`,big:`<div class="bx s">${a} 個一盒、${b} 個一盒<br>→ 最少幾個</div>`,ans:L,unit:'個',pre:'',
     hints:['數量要是 '+a+' 和 '+b+' 的公倍數','最少 → 最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'要找最小公倍數'],[a*b,'不互質不能直接相乘']]}}
-  if(k===2){const [a,b]=pick([[25,15],[20,30],[12,18],[10,25],[15,20]]);const L=lcm(a,b);
+  if(k===2){let a,b;do{a=ri(2,8)*5;b=ri(2,8)*5}while(a===b||lcm(a,b)>200||a%b===0||b%a===0);const L=lcm(a,b);
    return {type:'num',text:`大水池每 ${a} 分鐘噴水一次，小水池每 ${b} 分鐘噴水一次。兩個水池同時噴水後，最少再過幾分鐘會再同時噴水？`,big:`<div class="bx s">每 ${a} 分、每 ${b} 分<br>→ 再同時噴水</div>`,ans:L,unit:'分鐘',pre:'',
     hints:['同時噴水的時間是兩個數的公倍數','最少 → 最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'要找最小公倍數']]}}
-  const [a,b]=pick([[6,8],[4,6],[6,9],[8,12],[5,6]]),r=pick([1,2,3,4].filter(x=>x<Math.min(a,b)));const L=lcm(a,b);
+  let a,b;do{a=ri(3,12);b=ri(3,12)}while(a===b||lcm(a,b)>80||a%b===0||b%a===0);const r=ri(1,Math.min(a,b)-1);const L=lcm(a,b);
   return {type:'num',text:`把學員每 ${a} 人分一組，或每 ${b} 人分一組，都會多出 ${r} 人。學員最少有幾人？`,big:`<div class="bx s">每 ${a} 人、每 ${b} 人<br>都多 ${r} 人</div>`,ans:L+r,unit:'人',pre:'',
    hints:['先把多出的 '+r+' 人拿走，就剛好分完',`先找 ${a} 和 ${b} 的最小公倍數，再加 ${r}`],sol:[`${a} 和 ${b} 的最小公倍數是 ${L}`,`${L} ＋ ${r} ＝ ${L+r}`],traps:[[L,`別忘了加上多出的 ${r} 人`],[L-r,'多出的人要加上去，不是減掉']]}}
 };
@@ -640,7 +662,9 @@ const PLAY_MS=5*60*1000;           // 一張券 = 5 分鐘遊戲時間
 const GDIFF=[['easy','🌱','簡單'],['normal','⭐','普通'],['hard','🔥','困難'],['boss','👑','魔王']];
 const GAME_TOOL={id:'game',i:'🎮',k:'遊戲',n:'601 挑戰樂園',f:'game.html'};
 const PU=[0,1,2,3];               // 有練習題的單元
-const N=10;
+let N=10;                       // 一回的題數(錯題再練可能少於 10)
+const WB={key:'wb',no:'📕',name:'錯題再練',nav:'錯題',c:'#c92a2a',cb:'#fff5f5'};
+const WB_MAX=40;
 
 /* ===================== 小工具 ===================== */
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
@@ -674,8 +698,10 @@ async function ensureBind(){if(!user||!db||!fauth)return false;
 async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true;
   while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/');
     if(isLb&&!(await ensureBind()))break;
-    try{await timeout(db.ref(it.p).set(it.v),12000);Q.shift();LS.set('learn601_q',Q)}
-    catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}Q.shift();LS.set('learn601_q',Q);continue}break}}
+    /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
+    const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
+    try{await timeout(db.ref(it.p).set(it.v),12000);drop()}
+    catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
   flushing=false;paintSync()}
 addEventListener('online',()=>flush());
 function paintSync(){const s=document.getElementById('sync');if(!s)return;
@@ -725,7 +751,7 @@ let view='home';
 function enterHome(){show$('home');document.getElementById('meav').textContent=user.seat;document.getElementById('menm').innerHTML=`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
-  const items=[{key:'home',no:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g),MIX,GM];
+  const items=[{key:'home',no:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g),MIX,WB,GM];
   items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
   N2.style.display='contents'}
 function todayN(){return sum.days[dkey()]||0}
@@ -736,6 +762,7 @@ function ringSVG(p){const r=52,C=2*Math.PI*r;return `<svg id="ring" viewBox="0 0
 function render(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='home')return renderHome(P);
   if(view==='mix')return renderUnit(P,MIX,null);
+  if(view==='wb')return renderWB(P);
   if(view==='game')return renderGame(P);
   const u=UN.find(x=>x.key===view);renderUnit(P,u,UN.indexOf(u))}
 function renderHome(P){const n=todayN(),done=n>=GOAL;
@@ -750,7 +777,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
   f.appendChild(W);g.appendChild(f);P.appendChild(g);
   P.appendChild(el('div','sec','各單元'));const G=el('div');G.id='ucards';
-  [...UN.filter(u=>u.g),MIX].forEach(u=>{const b=el('button','uc',`<div class="a">${u===MIX?'★':'單元 '+u.no}</div><div class="b">${u.name}</div><div class="s">${u.g||u===MIX?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
+  [...UN.filter(u=>u.g),MIX,...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<div class="a">${u===MIX?'★':u===WB?'📕':'單元 '+u.no}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||u===MIX?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});G.appendChild(b)});P.appendChild(G);
   const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
@@ -766,6 +793,23 @@ function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${u===MIX?'
     b.style.setProperty('--c',u.c);tap(b,()=>openTool(t));G.appendChild(b);toolExists(t.f).then(ok=>{if(!ok){b.remove();if(!G.children.length)SH.remove()}})});P.appendChild(G)}
 /* 教具檔案還沒上傳(404)就先不顯示;離線時照常顯示 */
 const TX={};function toolExists(f){if(location.protocol==='file:')return Promise.resolve(true);if(!(f in TX))TX[f]=fetch(f,{method:'HEAD',cache:'no-store'}).then(r=>r.status!==404).catch(()=>true);return TX[f]}
+
+/* ===================== 錯題本 =====================
+   答錯(看解答)或第二次才答對的題目會存起來;在「錯題再練」一次就答對,才會從錯題本拿掉。 */
+const wbKey=()=>'learn601_wb_'+user.seat;
+function wbLoad(){return user?LS.get(wbKey(),[]):[]}
+function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,t:x.q.t,n:x.n,d:x.d})),true)}
+function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
+  if(res==='ok'){if(i>=0){W.splice(i,1);wbSave(W);if(pu==='wb')toast('📕 這題練會了！')}return}
+  if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();W.push(x)}
+  else{const c=JSON.parse(JSON.stringify(q));W.push({k,q:c,n:1,d:dkey()})}
+  if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
+function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題再練`);h.style.setProperty('--c',WB.c);P.appendChild(h);
+  const W=wbLoad();const c=el('div','cd');c.id='practice';c.style.setProperty('--c',WB.c);
+  c.innerHTML=W.length?`<div class="bi">📕</div><div><div class="t">錯題本有 ${W.length} 題</div><div class="s">一次就答對，就會從錯題本拿掉</div></div>`:`<div class="bi">🎉</div><div><div class="t">錯題本是空的</div><div class="s">答錯的題目會自動存到這裡</div></div>`;
+  if(W.length){const g=el('button','go',`再練 ${Math.min(10,W.length)} 題 ▶`);tap(g,()=>startPractice('wb'));c.appendChild(g)}P.appendChild(c);
+  if(!W.length)return;P.appendChild(el('div','sec','錯過的題目'));const L=el('div','cd');L.id='wblist';
+  W.slice().reverse().forEach(x=>{const U=UN[x.q.u];L.appendChild(el('div','wbi',`<span class="wu" style="--c:${U.c}">單元${U.no}</span><span class="wq">${x.q.text}</span><span class="wn">錯 ${x.n} 次</span>`))});P.appendChild(L)}
 
 /* ===================== 遊戲＋排行榜 ===================== */
 let bg='tower';
@@ -828,19 +872,27 @@ addEventListener('popstate',()=>{if(vt)return closeTool();if(document.getElement
 /* ===================== 練習 ===================== */
 let pu=0,round=null,cur=0,tries=0,solved=false,hintK=0,qStart=0;
 let val='',fv={w:'',n:'',d:''},act='n';
-const unitOf=k=>k==='mix'?MIX:UN[k];
-function genQ(u,t){const q=UN[u].g[t]();q.u=u;q.t=t;if(!q.type)q.type='num';if(q.type==='cmp'){q.type='mc';q.opts=['＞','＜','＝'];q.row=true}
+const unitOf=k=>k==='mix'?MIX:k==='wb'?WB:UN[k];
+function mkQ(u,t){const q=UN[u].g[t]();q.u=u;q.t=t;if(!q.type)q.type='num';if(q.type==='cmp'){q.type='mc';q.opts=['＞','＜','＝'];q.row=true}
   if(q.pre==null)q.pre=q.fig?'約':'';if(q.unit==null)q.unit='';return q}
+/* 題目指紋:同一題(數字、圖都一樣)會得到一樣的指紋 */
+const qKey=q=>{const s=q.text+'|'+(q.big||'')+'|'+JSON.stringify(q.fig||'')+'|'+JSON.stringify(q.opts||'');let h=5381;for(let i=0;i<s.length;i++)h=(h*33+s.charCodeAt(i))|0;return (h>>>0).toString(36)};
+/* 出題:最近 100 題出過的盡量不再出;例題(ex)不記錄 */
+let SEEN=LS.get('learn601_seen',[]);
+function genQ(u,t,ex){let q;for(let i=0;i<20;i++){q=mkQ(u,t);if(ex||!SEEN.includes(qKey(q)))break}
+  if(!ex){SEEN.push(qKey(q));if(SEEN.length>100)SEEN=SEEN.slice(-100);LS.set('learn601_seen',SEEN)}return q}
 function listFor(types,n){let L=[];while(L.length<n)L.push(...shuf(types));L=shuf(L.slice(0,n));
   for(let i=1;i<L.length;i++)if(L[i]===L[i-1]){const j=L.findIndex((t,k)=>k>i&&t!==L[i]&&t!==L[i-1]);if(j>0)[L[i],L[j]]=[L[j],L[i]]}return L}
 function startPractice(k){pu=k;const U=unitOf(k);const PN=document.getElementById('prac');PN.style.setProperty('--c',U.c);PN.style.setProperty('--cb',U.cb);
-  document.getElementById('pua').textContent=k==='mix'?'★ 綜合':'單元 '+U.no;document.getElementById('pub').textContent=U.name;
+  document.getElementById('pua').textContent=k==='mix'?'★ 綜合':k==='wb'?'📕 錯題':'單元 '+U.no;document.getElementById('pub').textContent=U.name;
   show$('prac');history.pushState({p:1},'');newRound()}
 function newRound(){let qs;
   if(pu==='mix'){const cnt=shuf([3,3,2,2]);let items=[];cnt.forEach((c,u)=>shuf([...new Set(UN[u].types)]).slice(0,c).forEach(t=>items.push([u,t])));
     items=shuf(items);for(let i=1;i<items.length;i++)if(items[i][0]===items[i-1][0]){const j=items.findIndex((x,k)=>k>i&&x[0]!==items[i-1][0]);if(j>0)[items[i],items[j]]=[items[j],items[i]]}
     qs=items.map(([u,t])=>genQ(u,t))}
-  else qs=listFor(UN[pu].types,N).map(t=>genQ(pu,t));
+  else if(pu==='wb'){const W=wbLoad();qs=W.slice(0,10).map(x=>JSON.parse(JSON.stringify(x.q)))}
+  else qs=listFor(UN[pu].types,10).map(t=>genQ(pu,t));
+  N=qs.length;
   round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false};cur=0;showQ()}
 function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
   const t=document.getElementById('ptk');if(t)t.innerHTML=`🎟️ × ${sum.tk||0}<small>這輪 ${sum.tc||0}/10・答對 ${sum.tco||0}</small>`}
@@ -850,7 +902,7 @@ function toast(t){const e=document.getElementById('toast');e.textContent=t;e.cla
 function paintDots(){const D=document.getElementById('dots');D.innerHTML='';round.res.forEach((r,i)=>{const e=el('i',r||'');if(i===cur)e.classList.add('cur');D.appendChild(e)})}
 function logRound(partial){if(!round||round.logged)return;const n=round.res.filter(x=>x).length;if(!n)return;round.logged=true;
   const first=round.res.filter(x=>x==='ok').length,all=round.res.filter(x=>x==='ok'||x==='ok2').length;
-  logPush({k:'p',unit:pu==='mix'?'mix':UN[pu].key,n,first,all,sec:Math.round((Date.now()-round.t0)/1000),part:partial?1:0,q:round.det.filter((d,i)=>round.res[i]).map((d,i)=>Object.assign({r:round.res[i]},d))});
+  logPush({k:'p',unit:pu==='mix'||pu==='wb'?pu:UN[pu].key,n,first,all,sec:Math.round((Date.now()-round.t0)/1000),part:partial?1:0,q:round.det.filter((d,i)=>round.res[i]).map((d,i)=>Object.assign({r:round.res[i]},d))});
   saveSum(true)}
 function leavePractice(){$('#teach').classList.remove('on');logRound(true);if(!user)return show$('login');document.getElementById('end').classList.remove('on');enterHome()}
 tap(document.getElementById('pback'),()=>history.back());
@@ -893,7 +945,7 @@ function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]
   fb.innerHTML=msg||'再算一次看看';$('#hint').classList.add('pulse');showTeach(q,msg)}
 /* ===== 答錯一次：用同一題型、不同數字的例題，一步一步教 ===== */
 let tSteps=[],tK=0;
-function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t),k=x=>x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
+function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t,true),k=x=>x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
 function ansHtml(e){const a=e.type==='frac'?mx(e.ans.n,e.ans.d):e.type==='mc'?e.ans:f(e.ans);return `答案：${e.pre?e.pre+' ':''}${a}${e.unit?' '+e.unit:''}`}
 function showTeach(q,msg){const e=makeExample(q);$('#tmsg').innerHTML=msg?'💡 '+msg:'';
   if(!e){tSteps=q.hints.map(h=>'💡 '+h);$('#tq').innerHTML='';$('#tfig').style.display='none';$('#tbig').innerHTML=''}
@@ -934,7 +986,7 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
   if(sum.tc>=TK_EVERY){const n=sum.tco||0;sum.tc=0;sum.tco=0;round.last10=n;
     if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 答對 ${n} 題，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
     else{round.miss=(round.miss||0)+1;toast(`這 10 題答對 ${n} 題，要答對 ${TK_NEED} 題才有券`)}}
-  saveSum(round.got>0);
+  saveSum(round.got>0);wbUpdate(q,round.res[cur]);
   $('#figc').classList.add('solv');fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent='正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.textContent===q.ans)b.classList.add('ok')})}
@@ -942,14 +994,15 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
   $('#next').disabled=false;$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintP();
   setTimeout(()=>{const s=$('#steps').lastElementChild;if(s&&s.scrollIntoView)s.scrollIntoView({block:'nearest'})},50)}
 function nextQ(){if(!solved)return;if(cur<N-1){cur++;showQ()}else endRound()}
-function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length,bk=pu==='mix'?'mix':UN[pu].key;
-  if(first>(sum.best[bk]||0))sum.best[bk]=first;
+function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length,bk=pu==='mix'||pu==='wb'?pu:UN[pu].key;
+  if(pu!=='wb'&&first>(sum.best[bk]||0))sum.best[bk]=first;
   const got=round.got||0;
   logRound(false);
   const U=unitOf(pu);$('#endt').textContent=`${U.name}　完成！`;$('#ends').textContent=stars(first)||'💪';
   $('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`;
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
-  mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0)mb('🎮 去玩遊戲',()=>{view='game';history.back()});mb('再練一回 ▶',()=>newRound(),'go');
+  mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0)mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
+  else mb('再練一回 ▶',()=>newRound(),'go');
   $('#end').classList.add('on')}
 
 /* ===================== 老師設定 ===================== */
@@ -970,6 +1023,49 @@ async function fetchAll(msgEl){const pins=LS.get('learn601_pins',null);if(!pins)
   msgEl.textContent='讀取中…';await fbReady;if(!db){msgEl.textContent='連不上 Firebase';return null}
   return Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),10000)).val();return [s,v]}catch(e){return [s,'err']}}))}
 const weekKeys=back=>{const mon=new Date();mon.setDate(mon.getDate()-((mon.getDay()+6)%7)-7*back);const wk=[];for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);wk.push(dkey(d))}return wk};
+/* ===== 學習分析:讀每位學生的作答紀錄,統計各單元、各題型、常見錯誤 ===== */
+const TNAME=[{prime:'判斷質數、合數',pf:'質因數分解',coprime:'互質',gcd:'最大公因數',lcm:'最小公倍數',appG:'最大公因數應用題',appL:'最小公倍數應用題'},
+ {simp:'約成最簡分數',same:'同分母分數除法',diff:'異分母分數除法',app:'分數除法應用題',cmp:'商和被除數比大小'},
+ {intdec:'整數 ÷ 小數',decdec:'小數 ÷ 小數',cmp:'商和被除數比大小',round:'商的概數（四捨五入）',app:'小數除法應用題'},
+ {b_dC:'直徑求圓周長',b_rC:'半徑求圓周長',b_rA:'半徑求圓面積',b_dA:'直徑求圓面積',b_Cd:'圓周長求直徑',a_Cr:'圓周長求半徑（應用）',a_CA:'圓周長求圓面積',a_double:'直徑變幾倍的圓周長',a_card:'正方形剪最大的圓',a_wheel:'車輪滾動的距離',c_ring:'環形面積',c_trackP:'跑道一圈的長度'}];
+const tName=(u,t)=>(TNAME[u]&&TNAME[u][t])||t;
+const uBadge=u=>`<span class="ubadge" style="background:${UN[u].c}">單元${UN[u].no}</span>`;
+const pc=(a,b)=>b?Math.round(a/b*100):null;
+const cls=p=>p==null?'n':p>=80?'g':p>=60?'y':'r';
+let ANA=null;
+tap($('#aload'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#amsg');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+  M.textContent='讀取中…（全班的作答紀錄，可能要十幾秒）';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
+  const days=+$('#aper').value,since=days?dkey(new Date(Date.now()-(days-1)*864e5)):'';
+  const rows=await Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/log`).get(),20000)).val()||{};return [s,Object.values(v)]}catch(e){return [s,null]}}));
+  const stu={},typ={},err={};let fail=0,total=0;
+  rows.forEach(([s,logs])=>{if(!logs){fail++;return}const S=stu[s]={u:[0,1,2,3].map(()=>({n:0,ok1:0})),t:{}};
+    logs.filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).forEach(q=>{if(q.u==null||!UN[q.u])return;total++;
+      const ok1=q.r==='ok'?1:0,rev=q.r==='no'?1:0,key=q.u+'|'+q.t;
+      S.u[q.u].n++;S.u[q.u].ok1+=ok1;
+      const st=S.t[key]=S.t[key]||{n:0,ok1:0,rev:0};st.n++;st.ok1+=ok1;st.rev+=rev;
+      const T=typ[key]=typ[key]||{u:q.u,t:q.t,n:0,ok1:0,rev:0,ex:0,who:new Set()};T.n++;T.ok1+=ok1;T.rev+=rev;T.ex+=q.ex?1:0;if(!ok1)T.who.add(s);
+      (q.w||[]).forEach(m=>{if(!m)return;const k=key+'|'+m;const E=err[k]=err[k]||{u:q.u,t:q.t,m,n:0,who:new Set()};E.n++;E.who.add(s)})}))});
+  ANA={stu,typ,err,pins};renderAna();M.textContent=`共 ${total} 題作答紀錄`+(fail?`（${fail} 人讀取失敗）`:'')});
+function renderAna(sel){const {stu,typ,err}=ANA,O=$('#aout');let h='';
+  /* 1. 各單元 × 學生 */
+  h+=`<h3>各單元一次答對率<small>綠 ≥80%、黃 60～79%、紅 <60%；點一位學生看詳細</small></h3><table class="at"><tr><th>座號</th>${[0,1,2,3].map(u=>`<th>${uBadge(u)}<br>${UN[u].name}</th>`).join('')}<th>合計</th></tr>`;
+  Object.keys(stu).sort((a,b)=>a-b).forEach(s=>{const S=stu[s];const tn=S.u.reduce((a,x)=>a+x.n,0),t1=S.u.reduce((a,x)=>a+x.ok1,0);
+    h+=`<tr class="st${sel===s?' sel':''}" data-s="${s}"><td><b>${s}</b></td>${S.u.map(x=>{const p=pc(x.ok1,x.n);return `<td class="c ${cls(p)}">${p==null?'—':`<b>${p}%</b><small>${x.n} 題</small>`}</td>`}).join('')}
+      <td class="c ${cls(pc(t1,tn))}">${tn?`<b>${pc(t1,tn)}%</b><small>${tn} 題</small>`:'—'}</td></tr>`;
+    if(sel===s){const ts=Object.entries(S.t).map(([k,v])=>{const [u,t]=k.split('|');return {u:+u,t,...v}}).sort((a,b)=>a.ok1/a.n-b.ok1/b.n);
+      h+=`<tr><td colspan="6"><div id="adet"><b>${s} 號 各題型</b><table class="at" style="margin-top:.4rem"><tr><th>題型</th><th>題數</th><th>一次答對</th><th>看解答</th></tr>${ts.map(x=>`<tr><td class="l">${uBadge(x.u)}${tName(x.u,x.t)}</td><td>${x.n}</td><td class="c ${cls(pc(x.ok1,x.n))}"><b>${pc(x.ok1,x.n)}%</b></td><td>${x.rev}</td></tr>`).join('')||'<tr><td colspan="4">沒有紀錄</td></tr>'}</table></div></td></tr>`}});
+  h+='</table>';
+  /* 2. 全班題型弱點 */
+  const T=Object.values(typ).filter(x=>x.n>=3).sort((a,b)=>a.ok1/a.n-b.ok1/b.n);
+  h+=`<h3>全班最弱的題型<small>作答 3 次以上的題型，一次答對率由低到高</small></h3><table class="at"><tr><th>題型</th><th>作答</th><th>一次答對</th><th>看解答</th><th>需要加強的學生</th></tr>`;
+  h+=T.slice(0,12).map(x=>{const p=pc(x.ok1,x.n);return `<tr><td class="l">${uBadge(x.u)}${tName(x.u,x.t)}</td><td>${x.n}</td><td class="c ${cls(p)}"><b>${p}%</b></td><td>${pc(x.rev,x.n)}%</td><td class="l">${[...x.who].sort((a,b)=>a-b).join('、')||'—'}</td></tr>`}).join('')||'<tr><td colspan="5">還沒有足夠的資料</td></tr>';
+  h+='</table>';
+  /* 3. 常見錯誤 */
+  const E=Object.values(err).sort((a,b)=>b.who.size-a.who.size||b.n-a.n);
+  h+=`<h3>常見錯誤<small>學生答錯時，系統判斷出的錯誤類型（人數多的排前面）</small></h3><table class="at"><tr><th>錯誤</th><th>題型</th><th>次數</th><th>學生</th></tr>`;
+  h+=E.slice(0,12).map(x=>`<tr><td class="l">${x.m}</td><td class="l">${uBadge(x.u)}${tName(x.u,x.t)}</td><td>${x.n}</td><td class="l">${[...x.who].sort((a,b)=>a-b).join('、')}</td></tr>`).join('')||'<tr><td colspan="4">還沒有錯誤紀錄</td></tr>';
+  h+='</table>';
+  O.innerHTML=h;O.querySelectorAll('tr.st').forEach(tr=>tr.addEventListener('click',()=>renderAna(sel===tr.dataset.s?null:tr.dataset.s)))}
 tap($('#hcalc'),async()=>{const rows=await fetchAll($('#hmsg'));if(!rows)return;const per=+$('#hpd').value||0,cap=+$('#hcap').value||0,wk=weekKeys(+$('#hwk').value);
   const out=rows.map(([s,v])=>{const days=v&&v!=='err'?wk.filter(k=>((v.days||{})[k]||0)>=GOAL).length:0;return [s,Math.min(cap,days*per),days]});
   $('#hout').value=out.map(([s,p])=>`${s}\t${p}`).join('\n');

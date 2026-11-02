@@ -215,31 +215,31 @@ const F={
 
 const T={
  /* 基礎 */
- b_dC(){const d=ri(3,20),a=d*3.14;return {text:`直徑 ${d} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'公分',
+ b_dC(){const d=ri(2,40),a=d*3.14;return {text:`直徑 ${d} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'公分',
    hints:['圓周長 ＝ 直徑 × 圓周率',`${d} × ${PI}`],sol:[`${d} × ${PI} ＝ ${f(a)}`],traps:[[d*d*3.14,'這是面積的算法喔'],[d/2*3.14,'直徑不用再除以 2']]}},
- b_rC(){const r=ri(3,15),a=r*2*3.14;return {text:`半徑 ${r} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'公分',
+ b_rC(){const r=ri(3,30),a=r*2*3.14;return {text:`半徑 ${r} 公分的圓，圓周長大約是幾公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'公分',
    hints:['圓周長 ＝ 直徑 × 圓周率','直徑 ＝ 半徑 × 2',`${r} × 2 × ${PI}`],sol:[`${r} × 2 × ${PI} ＝ ${f(a)}`],traps:[[r*3.14,'半徑要先 × 2 變成直徑'],[r*r*3.14,'這是面積的算法喔']]}},
- b_rA(){const r=ri(3,15),a=r*r*3.14;return {text:`半徑 ${r} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'平方公分',
+ b_rA(){const r=ri(3,20),a=r*r*3.14;return {text:`半徑 ${r} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'r',lab:`${r} 公分`}],ans:a,unit:'平方公分',
    hints:['圓面積 ＝ 半徑 × 半徑 × 圓周率',`${r} × ${r} × ${PI}`],sol:[`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[r*2*3.14,'這是圓周長喔'],[r*3.14,'半徑要乘兩次'],[2*r*2*r*3.14,'要用半徑，不是直徑']]}},
- b_dA(){const d=ev(6,24),r=d/2,a=r*r*3.14;return {text:`直徑 ${d} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'平方公分',
+ b_dA(){const d=ev(6,40),r=d/2,a=r*r*3.14;return {text:`直徑 ${d} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{show:'d',lab:`${d} 公分`}],ans:a,unit:'平方公分',
    hints:['先算半徑：直徑 ÷ 2',`${d} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI}`],sol:[`半徑 ${d} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[d*d*3.14,'要用半徑，不是直徑'],[d*3.14,'這是圓周長喔']]}},
- b_Cd(){const d=ri(3,25),C=d*3.14;return {text:`圓周長 ${f(C)} 公分的圓，直徑是幾公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:d,unit:'公分',pre:'',
+ b_Cd(){const d=ri(2,40),C=d*3.14;return {text:`圓周長 ${f(C)} 公分的圓，直徑是幾公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:d,unit:'公分',pre:'',
    hints:['直徑 × 圓周率 ＝ 圓周長','直徑 ＝ 圓周長 ÷ 圓周率',`${f(C)} ÷ ${PI}`],sol:[`${f(C)} ÷ ${PI} ＝ ${d}`],traps:[[C*3.14,'要用除的'],[d/2,'這是半徑，題目問直徑']]}},
  /* 進階 */
- a_Cr(){const dog=Math.random()<.5,u=dog?'公尺':'公分',r=ri(2,dog?9:15),C=r*2*3.14;return {text:dog?`小狗拉直牽繩繞著木樁走 1 圈，共走了 ${f(C)} 公尺，牽繩大約長幾公尺？`:`圓周長 ${f(C)} 公分的圓，半徑是幾公分？`,fig:['circle',{per:dog?`1 圈 ${f(C)} 公尺`:`圓周長 ${f(C)} 公分`,show:dog?'rq':''}],ans:r,unit:u,pre:'',
+ a_Cr(){const dog=Math.random()<.5,u=dog?'公尺':'公分',r=ri(3,dog?20:30),C=r*2*3.14;return {text:dog?`小狗拉直牽繩繞著木樁走 1 圈，共走了 ${f(C)} 公尺，牽繩大約長幾公尺？`:`圓周長 ${f(C)} 公分的圓，半徑是幾公分？`,fig:['circle',{per:dog?`1 圈 ${f(C)} 公尺`:`圓周長 ${f(C)} 公分`,show:dog?'rq':''}],ans:r,unit:u,pre:'',
    hints:dog?['牽繩的長 ＝ 圓的半徑','直徑 ＝ 圓周長 ÷ 圓周率','半徑 ＝ 直徑 ÷ 2']:['直徑 ＝ 圓周長 ÷ 圓周率','半徑 ＝ 直徑 ÷ 2'],sol:[`直徑 ${f(C)} ÷ ${PI} ＝ ${2*r}`,`半徑 ${2*r} ÷ 2 ＝ ${r}`],traps:[[2*r,'這是直徑，還要 ÷ 2']]}},
- a_CA(){const r=ri(2,10),C=r*2*3.14,a=r*r*3.14;return {text:`圓周長 ${f(C)} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:a,unit:'平方公分',
+ a_CA(){const r=ri(3,15),C=r*2*3.14,a=r*r*3.14;return {text:`圓周長 ${f(C)} 公分的圓，面積大約是幾平方公分？`,fig:['circle',{per:`圓周長 ${f(C)} 公分`}],ans:a,unit:'平方公分',
    hints:['① 直徑 ＝ 圓周長 ÷ 圓周率','② 半徑 ＝ 直徑 ÷ 2','③ 面積 ＝ 半徑 × 半徑 × 圓周率'],sol:[`直徑 ${f(C)} ÷ ${PI} ＝ ${2*r}，半徑 ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[4*r*r*3.14,'要用半徑，不是直徑'],[2*r,'這是直徑，還要算面積'],[r,'這是半徑，還要算面積']]}},
- a_double(){const d=pick([4,5,6,8,10,12,15,20]),k=pick([2,3]),a=d*k*3.14;return {text:`小圓形花圃直徑 ${d} 公尺，大花圃的直徑是小花圃的 ${k} 倍。大花圃的圓周長大約是幾公尺？`,fig:['two',{a:d,b:d*k,la:`小 ${d} 公尺`,lb:`大 ？`,show:'d'}],ans:a,unit:'公尺',
+ a_double(){const d=ri(3,25),k=pick([2,3,4]),a=d*k*3.14;return {text:`小圓形花圃直徑 ${d} 公尺，大花圃的直徑是小花圃的 ${k} 倍。大花圃的圓周長大約是幾公尺？`,fig:['two',{a:d,b:d*k,la:`小 ${d} 公尺`,lb:`大 ？`,show:'d'}],ans:a,unit:'公尺',
    hints:['先算大花圃的直徑',`${d} × ${k} ＝ ${d*k}`,`${d*k} × ${PI}`],sol:[`大花圃直徑 ${d} × ${k} ＝ ${d*k}`,`${d*k} × ${PI} ＝ ${f(a)}`],traps:[[d*3.14,'這是小花圃的圓周長'],[d*k*d*k*3.14,'題目問圓周長，不是面積']]}},
- a_card(){const a0=ev(6,24),r=a0/2,a=r*r*3.14;return {text:`在邊長 ${a0} 公分的正方形卡片上，畫一個最大的圓，圓面積大約是幾平方公分？`,fig:['sqc',{a:a0,circle:1}],ans:a,unit:'平方公分',
+ a_card(){const a0=ev(6,40),r=a0/2,a=r*r*3.14;return {text:`在邊長 ${a0} 公分的正方形卡片上，畫一個最大的圓，圓面積大約是幾平方公分？`,fig:['sqc',{a:a0,circle:1}],ans:a,unit:'平方公分',
    hints:['最大的圓：直徑 ＝ 正方形的邊長',`半徑 ＝ ${a0} ÷ 2 ＝ ${r}`],sol:[`半徑 ${a0} ÷ 2 ＝ ${r}`,`${r} × ${r} × ${PI} ＝ ${f(a)}`],traps:[[a0*a0*3.14,'要用半徑，不是邊長'],[a0*a0,'這是正方形的面積'],[a0*3.14,'這是圓周長']]}},
- a_wheel(){const d=pick([40,50,60,70,80]),n=ri(2,9),a=d*3.14*n;return {text:`直徑 ${d} 公分的輪子滾了 ${n} 圈，大約前進了幾公分？`,fig:['wheel',{d,n}],ans:a,unit:'公分',
+ a_wheel(){const d=pick([30,35,40,45,50,55,60,65,70,75,80,90]),n=ri(2,12),a=d*3.14*n;return {text:`直徑 ${d} 公分的輪子滾了 ${n} 圈，大約前進了幾公分？`,fig:['wheel',{d,n}],ans:a,unit:'公分',
    hints:['滾 1 圈 ＝ 1 個圓周長',`${d} × ${PI} × ${n}`],sol:[`1 圈：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(d*3.14)} × ${n} ＝ ${f(a)}`],traps:[[d*3.14,`這是 1 圈，要滾 ${n} 圈`]]}},
  /* 挑戰 */
  c_sqc(){const a0=ev(4,20),r=a0/2,a=a0*a0-r*r*3.14;return {text:`正方形邊長 ${a0} 公分，裡面畫一個最大的圓，橘色部分大約是幾平方公分？`,fig:['sqc',{a:a0}],ans:a,unit:'平方公分',
    hints:['橘色 ＝ 正方形面積 － 圓面積','圓的直徑 ＝ 正方形的邊長'],sol:[`正方形 ${a0} × ${a0} ＝ ${a0*a0}`,`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`${a0*a0} － ${f(r*r*3.14)} ＝ ${f(a)}`],traps:[[r*r*3.14,'這是圓的面積，還要用正方形減掉'],[a0*a0-a0*a0*3.14<0?-1:a0*a0-a0*a0*3.14,'圓的半徑是邊長的一半']]}},
- c_ring(){const R0=ri(5,12),r0=ri(2,R0-2),a=R0*R0*3.14-r0*r0*3.14;return {text:`大圓半徑 ${R0} 公分、小圓半徑 ${r0} 公分（同一個圓心），橘色部分大約是幾平方公分？`,fig:['ring',{R0,r0}],ans:a,unit:'平方公分',
+ c_ring(){const R0=ri(4,20),r0=ri(2,R0-2),a=R0*R0*3.14-r0*r0*3.14;return {text:`大圓半徑 ${R0} 公分、小圓半徑 ${r0} 公分（同一個圓心），橘色部分大約是幾平方公分？`,fig:['ring',{R0,r0}],ans:a,unit:'平方公分',
    hints:['橘色 ＝ 大圓面積 － 小圓面積'],sol:[`大圓 ${R0} × ${R0} × ${PI} ＝ ${f(R0*R0*3.14)}`,`小圓 ${r0} × ${r0} × ${PI} ＝ ${f(r0*r0*3.14)}`,`${f(R0*R0*3.14)} － ${f(r0*r0*3.14)} ＝ ${f(a)}`],traps:[[(R0-r0)*(R0-r0)*3.14,'不能先把半徑相減，要大圓面積減小圓面積']]}},
  c_cirsq(){const r=ri(3,12),a=r*r*3.14-r*r*2;return {text:`圓的半徑 ${r} 公分，圓裡面有一個白色正方形，橘色部分大約是幾平方公分？`,fig:['cirsq',{r}],ans:a,unit:'平方公分',
    hints:['橘色 ＝ 圓面積 － 正方形面積','正方形可以切成 4 個三角形，底和高都是半徑'],sol:[`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`4 個三角形 ${r} × ${r} ÷ 2 × 4 ＝ ${r*r*2}`,`${f(r*r*3.14)} － ${r*r*2} ＝ ${f(a)}`],traps:[[r*r*3.14,'這是整個圓，還要減掉白色正方形'],[r*r*3.14-r*r,'正方形是 4 個三角形，面積是 半徑×半徑×2'],[r*r*3.14-4*r*r,'正方形的邊不是直徑，要用 4 個三角形來算']]}},
@@ -249,7 +249,7 @@ const T={
    hints:['分別算出甲、乙的面積',`乙的半徑 ${r} × ${k} ＝ ${r*k}`,'乙面積 ÷ 甲面積'],sol:[`甲 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`乙 ${r*k} × ${r*k} × ${PI} ＝ ${f(r*k*r*k*3.14)}`,`${f(r*k*r*k*3.14)} ÷ ${f(r*r*3.14)} ＝ ${a}`],traps:[[k,`半徑 ${k} 倍，面積不是 ${k} 倍喔，算算看`]]}},
  c_turns(){const d=pick([40,50,60,70,80]),n=ri(3,12),L=d*3.14*n;return {text:`直徑 ${d} 公分的輪子，滾了 ${f(L)} 公分，轉了幾圈？`,fig:['wheel',{d,back:`${f(L)} 公分`}],ans:n,unit:'圈',pre:'',
    hints:['1 圈 ＝ 1 個圓周長','圈數 ＝ 總長 ÷ 1 圈的長'],sol:[`1 圈：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(L)} ÷ ${f(d*3.14)} ＝ ${n}`],traps:[]}},
- c_trackP(){const L=pick([40,50,60,70,80,90,100]),d=pick([20,30,40,50]),a=2*L+d*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場一圈大約是幾公尺？`,fig:['track',{L,d}],ans:a,unit:'公尺',
+ c_trackP(){const L=ri(3,12)*10,d=ri(2,6)*10,a=2*L+d*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場一圈大約是幾公尺？`,fig:['track',{L,d}],ans:a,unit:'公尺',
    hints:['兩個半圓 ＝ 一個圓','一圈 ＝ 圓周長 ＋ 2 條直線'],sol:[`兩個半圓：${d} × ${PI} ＝ ${f(d*3.14)}`,`${f(d*3.14)} ＋ ${L} ＋ ${L} ＝ ${f(a)}`],traps:[[L+d*3.14,'直線有上下 2 條'],[2*L+d*3.14/2,'兩個半圓合起來是一整個圓'],[2*L+2*d+d*3.14,'虛線不是操場的邊，不用算']]}},
  c_trackA(){const L=pick([40,50,60,70,80]),d=pick([20,30,40]),r=d/2,a=L*d+r*r*3.14;return {text:`操場兩邊是半圓，中間是長方形。操場的面積大約是幾平方公尺？`,fig:['track',{L,d}],ans:a,unit:'平方公尺',
    hints:['面積 ＝ 長方形 ＋ 兩個半圓（一個圓）','圓的半徑 ＝ 直徑 ÷ 2'],sol:[`長方形 ${L} × ${d} ＝ ${L*d}`,`圓 ${r} × ${r} × ${PI} ＝ ${f(r*r*3.14)}`,`${L*d} ＋ ${f(r*r*3.14)} ＝ ${f(a)}`],traps:[[L*d+d*d*3.14,'圓要用半徑，不是直徑'],[L*d,'別忘了兩邊的半圓']]}},
@@ -273,7 +273,8 @@ const sdivHtml=(a,b)=>{const {ps,x,y}=sdiv(a,b);let h='<table class="sd">';let u
 
 /* ================= 第1單元 質因數分解和短除法 ================= */
 const U1={
- prime(){const pool=[2,3,5,7,11,13,17,19,1,9,15,21,25,27,33,35,39,49,51,57,63,65,69,77,85,87,91,95,22,26,34,38,46,58,68,75];const n=pick(pool);
+ prime(){/* 1、質數(50 以內)、合數(100 以內)各占一些 */const P=[2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];const k=Math.random();
+  let n;if(k<.06)n=1;else if(k<.45)n=pick(P);else{do{n=ri(4,99)}while(isPrime(n)||(n%2===0&&Math.random()<.6))}
   const a=n===1?'都不是':isPrime(n)?'質數':'合數';const d=divs(n);
   return {type:'mc',opts:['質數','合數','都不是'],text:`${n} 是質數還是合數？`,big:`<div class="bx">${n}</div>`,ans:a,
    hints:['質數：只有 1 和自己兩個因數','合數：除了 1 和自己，還有別的因數',`找找看 ${n} 的因數`],
@@ -314,16 +315,16 @@ const U1={
   return {type:'num',text:`老師把 ${a} 枝筆和 ${b} 本筆記本全部裝袋，每袋的筆一樣多，筆記本也一樣多，最多可以裝幾袋？`,big:`<div class="bx s">筆 ${a}、筆記本 ${b}<br>→ 最多幾袋</div>`,ans:g,unit:'袋',pre:'',
    hints:['袋數要能整除兩種數量','最多 → 最大公因數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${sdiv(a,b).ps.join(' × ')} ＝ ${g}，最多裝 ${g} 袋`],traps:[[lcm(a,b),'裝袋分完要找最大公因數']]}},
  appL(){const k=ri(0,3);
-  if(k===0){const [a,b]=pick([[8,12],[6,9],[10,15],[4,6],[12,18],[9,12]]);const L=lcm(a,b);
+  if(k===0){let a,b;do{a=ri(3,15);b=ri(3,15)}while(a===b||gcd(a,b)===1||lcm(a,b)>60||a%b===0||b%a===0);if(a<b)[a,b]=[b,a];const L=lcm(a,b);
    return {type:'num',text:`用長 ${b} 公分、寬 ${a} 公分的長方形紙片排成正方形，最小的正方形邊長是幾公分？`,big:`<div class="bx s">${b} 和 ${a}<br>→ 最小的正方形</div>`,ans:L,unit:'公分',pre:'',
     hints:['正方形的邊長要是 '+a+' 的倍數，也要是 '+b+' 的倍數','最小 → 找最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'排成大正方形要找最小公倍數']]}}
-  if(k===1){const [a,b]=pick([[12,15],[8,12],[10,12],[6,15],[9,12]]);const L=lcm(a,b);
+  if(k===1){let a,b;do{a=ri(4,20);b=ri(4,20)}while(a===b||gcd(a,b)===1||lcm(a,b)>150||a%b===0||b%a===0);const L=lcm(a,b);
    return {type:'num',text:`一批餅乾每 ${a} 個裝一盒，或每 ${b} 個裝一盒，都剛好裝完。這批餅乾最少有幾個？`,big:`<div class="bx s">${a} 個一盒、${b} 個一盒<br>→ 最少幾個</div>`,ans:L,unit:'個',pre:'',
     hints:['數量要是 '+a+' 和 '+b+' 的公倍數','最少 → 最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'要找最小公倍數'],[a*b,'不互質不能直接相乘']]}}
-  if(k===2){const [a,b]=pick([[25,15],[20,30],[12,18],[10,25],[15,20]]);const L=lcm(a,b);
+  if(k===2){let a,b;do{a=ri(2,8)*5;b=ri(2,8)*5}while(a===b||lcm(a,b)>200||a%b===0||b%a===0);const L=lcm(a,b);
    return {type:'num',text:`大水池每 ${a} 分鐘噴水一次，小水池每 ${b} 分鐘噴水一次。兩個水池同時噴水後，最少再過幾分鐘會再同時噴水？`,big:`<div class="bx s">每 ${a} 分、每 ${b} 分<br>→ 再同時噴水</div>`,ans:L,unit:'分鐘',pre:'',
     hints:['同時噴水的時間是兩個數的公倍數','最少 → 最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'要找最小公倍數']]}}
-  const [a,b]=pick([[6,8],[4,6],[6,9],[8,12],[5,6]]),r=pick([1,2,3,4].filter(x=>x<Math.min(a,b)));const L=lcm(a,b);
+  let a,b;do{a=ri(3,12);b=ri(3,12)}while(a===b||lcm(a,b)>80||a%b===0||b%a===0);const r=ri(1,Math.min(a,b)-1);const L=lcm(a,b);
   return {type:'num',text:`把學員每 ${a} 人分一組，或每 ${b} 人分一組，都會多出 ${r} 人。學員最少有幾人？`,big:`<div class="bx s">每 ${a} 人、每 ${b} 人<br>都多 ${r} 人</div>`,ans:L+r,unit:'人',pre:'',
    hints:['先把多出的 '+r+' 人拿走，就剛好分完',`先找 ${a} 和 ${b} 的最小公倍數，再加 ${r}`],sol:[`${a} 和 ${b} 的最小公倍數是 ${L}`,`${L} ＋ ${r} ＝ ${L+r}`],traps:[[L,`別忘了加上多出的 ${r} 人`],[L-r,'多出的人要加上去，不是減掉']]}}
 };
