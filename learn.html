@@ -167,7 +167,12 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-linejoin:round}
 
 #seeTool{display:none;border:4px solid #ffd8a8;background:#fff4e6;color:#e8590c;border-radius:16px;font-size:1.25rem;font-weight:900;padding:.35rem}
-#seeTool.on{display:block}
+#ptk{font-size:1.5rem;font-weight:900;color:#e8590c;background:#fff4e6;border:3px solid #ffd8a8;border-radius:16px;padding:.35rem .5rem;text-align:center}
+#ptk small{display:block;font-size:1rem;color:#c2410c}
+.tkc small{font-size:.95rem;color:#c2410c}
+#toast{position:fixed;left:50%;top:18%;transform:translate(-50%,0);z-index:8;background:#fff;border:5px solid #ffd8a8;color:#e8590c;font-size:2.2rem;font-weight:900;border-radius:24px;padding:.6rem 1.6rem;box-shadow:0 8px 0 rgba(0,0,0,.12);opacity:0;pointer-events:none}
+#toast.on{animation:toast 2.2s ease forwards}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,20px) scale(.8)}12%{opacity:1;transform:translate(-50%,0) scale(1.08)}20%{transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0}}
 /* ===== 老師設定 ===== */
 #setup{flex-direction:column;gap:1rem;padding:1.2rem;overflow:auto;width:100%}
 #setup h2{margin:0;font-size:2rem}
@@ -209,6 +214,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
  #ring{width:6.5rem;height:6.5rem}#today .t2{font-size:2rem}.go{font-size:1.4rem}#fire .n{font-size:2.8rem}
  #practice{flex-wrap:wrap}#practice .go{margin:0}#practice .bi{font-size:2.6rem}
  #pnav{flex-direction:row;border-right:0;border-bottom:3px solid var(--line);padding:.4rem;gap:.4rem;position:sticky;top:0;z-index:3;align-items:center}
+ #ptk{font-size:1rem;padding:.2rem .4rem;flex:none}#ptk small{font-size:.75rem}#toast{font-size:1.5rem}
  #pback{font-size:1.05rem;padding:.4rem .6rem}#punit{flex:1;padding:.25rem .5rem;border-width:3px;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}#punit .a,#punit .b{font-size:1rem}#pbar{flex:1;min-width:4rem;margin:0}#pcnt{font-size:.85rem;margin:0}
  main{padding:.5rem}
  #body{grid-template-columns:1fr;grid-template-rows:auto auto}#figc{min-height:0;overflow:visible}#bigc{min-height:7rem;padding:.6rem 0}#fig{height:min(42vh,22rem);flex:none}
@@ -260,6 +266,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
  <aside id="pnav">
   <button id="pback">← 回去</button>
   <div id="punit"><div class="a" id="pua"></div><div class="b" id="pub"></div><div id="pbar"><i></i></div><div id="pcnt"></div></div>
+  <div id="ptk"></div>
  </aside>
  <main>
   <div id="top"><span id="qno">第 1 題</span><span id="utag"></span><span id="dots"></span></div>
@@ -273,7 +280,6 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
     <div id="fb"></div>
     <div id="pad"></div>
     <div id="opts"></div>
-    <button id="seeTool">📺 回去看教具</button>
     <div id="acts"><button class="hint" id="hint">💡 提示</button><button id="show" class="hide">看解答</button><button class="next" id="next" disabled>下一題 ▶</button></div>
    </div>
   </div>
@@ -313,6 +319,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
  <div id="tsol"></div>
  <button id="tbtn">下一步 ▶</button>
 </div></div>
+<div id="toast"></div>
 <div id="end"><div class="box"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
 <script>
 const NS='http://www.w3.org/2000/svg',$=s=>document.querySelector(s);
@@ -625,7 +632,7 @@ const UN=[
 ];
 const MIX={key:'mix',no:'★',name:'1～4 單元綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db',sub:'1～4 單元混合'};
 const GM={key:'game',no:'🎮',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
-const TK_DAY=3, TK_MAX=6;          // 每天最多拿 3 張遊戲券、最多存 6 張
+const TK_EVERY=10;                  // 每完成 10 題(不分單元、可以分好幾次做)拿 1 張遊戲券
 /* 601 挑戰樂園的遊戲:[代號, 圖示, 名稱, 單位, 越小越好] */
 const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/ 5'],['flappy','🐤','小雞跳跳','關'],['hunt','🗺️','尋寶','★'],['num','🔢','數字快手','秒',1],['simon','🎹','記憶燈光','個燈'],
  ['color','🎨','顏色陷阱','題'],['react','⚡','反應王','毫秒',1],['spot','👀','找不同','個'],['bridge','🌉','搭橋小英雄','分'],['melon','🍉','合成大西瓜','分'],['g2048','🟧','2048','分']];
@@ -669,13 +676,13 @@ function paintSync(){const s=document.getElementById('sync');if(!s)return;
 let user=LS.get('learn601_user',null);              // {seat,pin}
 let sum=null;
 const base=()=>`${ROOT}/u/${user.seat}/${user.pin}`;
-const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tkd:{},gb2:{}});
+const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tc:0,gb2:{}});
 function loadSum(){sum=Object.assign(blankSum(),LS.get('learn601_sum_'+user.seat,{}))}
 function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
-  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tkd=r.tkd||{}}   // 遊戲券以最後更新的那台為準
+  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0}   // 遊戲券以最後更新的那台為準
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}}
 function logPush(v){if(!user)return;enqueue(`${base()}/log/${uid()}`,Object.assign({d:dkey(),ts:Date.now()},v))}
 
@@ -709,7 +716,7 @@ let view='home';
 function enterHome(){show$('home');document.getElementById('meav').textContent=user.seat;document.getElementById('menm').innerHTML=`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){mergeSum(r.val);saveSum(true);render()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
-  const items=[{key:'home',no:'🏠',nav:'首頁',c:'#495057'},...UN,MIX,GM];
+  const items=[{key:'home',no:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g),MIX,GM];
   items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
   N2.style.display='contents'}
 function todayN(){return sum.days[dkey()]||0}
@@ -727,14 +734,14 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const g=el('div','grid2');
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div><div class="t1">今天的任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const gb=el('button','go',done?'再練一回 ▶':'開始練習 ▶');tap(gb,()=>startPractice('mix'));t.lastChild.appendChild(gb);
-  const tk=el('button','tkc',`🎟️ 遊戲券 × ${sum.tk||0}`);tap(tk,()=>{view='game';paintNavs();render()});t.lastChild.appendChild(tk);g.appendChild(t);
+  const tk=el('button','tkc',`🎟️ 遊戲券 × ${sum.tk||0}　<small>再 ${tkLeft()} 題拿 1 張</small>`);tap(tk,()=>{view='game';paintNavs();render()});t.lastChild.appendChild(tk);g.appendChild(t);
   const f=el('div','cd');f.id='fire';const st=streak();f.innerHTML=`<div class="n">🔥 ${st}</div><div class="l">連續完成天數</div>`;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
   f.appendChild(W);g.appendChild(f);P.appendChild(g);
   P.appendChild(el('div','sec','各單元'));const G=el('div');G.id='ucards';
-  [...UN,MIX].forEach(u=>{const b=el('button','uc',`<div class="a">${u===MIX?'★':'單元 '+u.no}</div><div class="b">${u.name}</div><div class="s">${u.g||u===MIX?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
+  [...UN.filter(u=>u.g),MIX].forEach(u=>{const b=el('button','uc',`<div class="a">${u===MIX?'★':'單元 '+u.no}</div><div class="b">${u.name}</div><div class="s">${u.g||u===MIX?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});G.appendChild(b)});P.appendChild(G);
   const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
@@ -743,6 +750,7 @@ function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${u===MIX?'
   if(u.g||u===MIX){const c=el('div','cd');c.id='practice';c.style.setProperty('--c',u.c);const b=sum.best[u.key]||0;
     c.innerHTML=`<div class="bi">✏️</div><div><div class="t">練習 ${N} 題</div><div class="s">${b?`最佳 ${b} / ${N}　${stars(b)}`:'還沒練習過'}</div></div>`;
     const g=el('button','go','開始 ▶');tap(g,()=>startPractice(u===MIX?'mix':ui));c.appendChild(g);P.appendChild(c)}
+  return;   // 教具先不放
   const tools=u===MIX?[]:u.tools;if(!tools.length)return;
   const SH=el('div','sec','📺 教具');P.appendChild(SH);const G=el('div');G.id='tools';
   tools.forEach(t=>{const v=sum.tv[t.id]||0;const b=el('button','tl',`<span class="i">${t.i}</span><span><div class="k">${t.k}</div><div class="n">${t.n}</div></span>${v?`<span class="v">✔ ${v}</span>`:''}`);
@@ -759,8 +767,8 @@ function gBetter(g,a,b){if(!a)return false;if(!b)return true;if(a.d!==b.d)return
 const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;if(g==='cups')return `${v} / 5`;if(g==='hunt')return `${v} ★`;return `${v} ${G[3]}`};
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
-  const c=el('div','cd');c.id='tkcard';const today=(sum.tkd||{})[dkey()]||0;
-  c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩一局）</div><div class="s">練習 10 題拿 1 張，今天拿了 ${today} / ${TK_DAY} 張</div></div>`;
+  const c=el('div','cd');c.id='tkcard';
+  c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩一局）</div><div class="s">練習 10 題拿 1 張，再 ${tkLeft()} 題拿下一張</div></div>`;
   const b=el('button','go',(sum.tk||0)>0?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>(sum.tk||0)>0?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
   P.appendChild(el('div','sec','🏆 全班排行榜（先比難度，再比成績）'));
   const gc=el('div');gc.id='bgames';GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bg=k;render()});gc.appendChild(x)});P.appendChild(gc);
@@ -817,7 +825,10 @@ function newRound(){let qs;
     qs=items.map(([u,t])=>genQ(u,t))}
   else qs=listFor(UN[pu].types,N).map(t=>genQ(pu,t));
   round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false};cur=0;showQ()}
-function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`}
+function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
+  const t=document.getElementById('ptk');if(t)t.innerHTML=`🎟️ × ${sum.tk||0}<small>再 ${tkLeft()} 題</small>`}
+const tkLeft=()=>TK_EVERY-(sum.tc||0);
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.remove('on');void e.offsetWidth;e.classList.add('on')}
 function paintDots(){const D=document.getElementById('dots');D.innerHTML='';round.res.forEach((r,i)=>{const e=el('i',r||'');if(i===cur)e.classList.add('cur');D.appendChild(e)})}
 function logRound(partial){if(!round||round.logged)return;const n=round.res.filter(x=>x).length;if(!n)return;round.logged=true;
   const first=round.res.filter(x=>x==='ok').length,all=round.res.filter(x=>x==='ok'||x==='ok2').length;
@@ -847,7 +858,7 @@ function showQ(){const q=round.qs[cur];$('#box').style.display='';$('#fbx').styl
   $('#figc').classList.remove('solv');$('#steps').innerHTML='';fitBig();
   const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac');A.classList.toggle('chmode',q.type==='mc');
   $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';$('#rev').style.display='none';$('#rev').innerHTML='';
-  $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;$('#seeTool').classList.remove('on');
+  $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
   if(q.type==='mc'){const O=$('#opts');O.innerHTML='';O.className=q.row?'row':'';q.opts.forEach(o=>{const b=el('button','',o);tap(b,()=>choose(b,o));O.appendChild(b)})}
   else buildPad(q.type==='frac');
   paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
@@ -858,11 +869,10 @@ function addStep(s,cls){const d=el('div',cls);d.innerHTML=s.startsWith('__HTML__
 tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;$('#figc').classList.add('solv');fitBig();addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)$('#hint').disabled=true});
 tap($('#show'),()=>{if(solved)return;round.res[cur]='no';finish(round.qs[cur],false)});
 tap($('#next'),()=>nextQ());
-tap($('#seeTool'),()=>{const q=round.qs[cur];const t=toolById(UN[q.u].tt&&UN[q.u].tt[q.t]);if(t)openTool(t,'prac')});
 const near=(a,b)=>Math.abs(a-b)<1e-6;
 function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]+>/g,''):'');const q=round.qs[cur],fb=$('#fb');fb.className='bad';
   if(tries>=2){round.res[cur]='no';finish(q,false);return}
-  fb.innerHTML=msg||'再算一次看看';$('#hint').classList.add('pulse');if(UN[q.u].tt&&UN[q.u].tt[q.t])$('#seeTool').classList.add('on');showTeach(q,msg)}
+  fb.innerHTML=msg||'再算一次看看';$('#hint').classList.add('pulse');showTeach(q,msg)}
 /* ===== 答錯一次：用同一題型、不同數字的例題，一步一步教 ===== */
 let tSteps=[],tK=0;
 function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t),k=x=>x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
@@ -901,7 +911,9 @@ function choose(b,o){if(solved||b.classList.contains('no'))return;const q=round.
   const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(!solved&&left<=1){round.res[cur]='no';finish(q,false)}}
 function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
-  const k=dkey();sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok')sum.first++;saveSum(false);
+  const k=dkey();sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok')sum.first++;
+  sum.tc=(sum.tc||0)+1;if(sum.tc>=TK_EVERY){sum.tc=0;sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast('🎟️ 拿到 1 張遊戲券！');logPush({k:'t'})}
+  saveSum(round.got>0);
   $('#figc').classList.add('solv');fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent='正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.textContent===q.ans)b.classList.add('ok')})}
@@ -911,12 +923,10 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
 function nextQ(){if(!solved)return;if(cur<N-1){cur++;showQ()}else endRound()}
 function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length,bk=pu==='mix'?'mix':UN[pu].key;
   if(first>(sum.best[bk]||0))sum.best[bk]=first;
-  const td=dkey();sum.tkd=sum.tkd||{};let got=0;
-  if((sum.tkd[td]||0)<TK_DAY){sum.tkd[td]=(sum.tkd[td]||0)+1;if((sum.tk||0)<TK_MAX){sum.tk=(sum.tk||0)+1;got=1}}
-  for(const k in sum.tkd)if(k<dkey(new Date(Date.now()-14*864e5)))delete sum.tkd[k];
+  const got=round.got||0;
   logRound(false);
   const U=unitOf(pu);$('#endt').textContent=`${U.name}　完成！`;$('#ends').textContent=stars(first)||'💪';
-  $('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 1 張遊戲券！（共 ${sum.tk} 張）`:((sum.tk||0)>=TK_MAX?'🎟️ 遊戲券存滿了，先去玩吧':'今天的遊戲券拿滿了，明天再來')}</div>`;
+  $('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:`再 ${tkLeft()} 題拿 1 張遊戲券`}</div>`;
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0)mb('🎮 去玩遊戲',()=>{view='game';history.back()});mb('再練一回 ▶',()=>newRound(),'go');
   $('#end').classList.add('on')}
