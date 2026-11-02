@@ -15,6 +15,7 @@ button{font-family:inherit;cursor:pointer}
 #seats{display:flex;flex-direction:column;gap:1rem;width:min(56rem,100%)}.sg{display:grid;grid-template-columns:repeat(8,1fr);gap:.55rem}
 #seats button{aspect-ratio:1.25;border:0;border-radius:18px;background:#fff;box-shadow:0 5px 0 var(--line);font:900 2rem 'Avenir Next','Helvetica Neue',Arial,sans-serif;color:#444}
 #seats .girl button{color:#d6336c}
+#seats .tbtn{align-self:center;border:3px dashed #ced4da;background:#fff;border-radius:16px;font-size:1.2rem;font-weight:900;color:#868e96;padding:.4rem 1.2rem}
 #seats button:active{transform:translateY(3px);box-shadow:0 2px 0 var(--line)}
 #pinbox{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:9;padding:1rem}
 #pinbox.on{display:flex}
@@ -628,6 +629,7 @@ const FIREBASE_CONFIG={
 };
 /* 座號:男生 1～15、女生 21～33 */
 const SEATS=[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],[21,22,23,24,25,26,27,28,29,30,31,32,33]];
+const TEST_SEAT=99;                 // 老師測試用帳號(密碼 0000):不上排行榜
 const GOAL=10, ROOT='learn';
 /* 單元:practice 有 g 才有練習;tools 是教具;tt 是「題型 → 對應教具」 */
 const UN=[
@@ -720,15 +722,21 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
   if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}}
+/* 老師在雲端清除紀錄後,平板上留下的舊進度也要歸零(還有沒上傳的資料就不動) */
+function resetIfCleared(remote){if(remote!=null||!user||!sum)return false;
+  const local=(sum.total||0)+(sum.tk||0)+(sum.tc||0)+Object.keys(sum.gb2||{}).length+wbLoad().length;
+  if(!local||Q.some(x=>x.p.startsWith(base())))return false;
+  sum=blankSum();LS.set('learn601_sum_'+user.seat,sum);LS.del('learn601_wb_'+user.seat);return true}
 function logPush(v){if(!user)return;enqueue(`${base()}/log/${uid()}`,Object.assign({d:dkey(),ts:Date.now()},v))}
 
 /* ===================== 登入 ===================== */
 const seats=document.getElementById('seats');
 SEATS.forEach((grp,gi)=>{const G=el('div','sg'+(gi?' girl':''));grp.forEach(i=>{const b=el('button','',String(i));tap(b,()=>openPin(i));G.appendChild(b)});seats.appendChild(G)});
+{const tb=el('button','tbtn','🧪 測試帳號');tap(tb,()=>openPin(TEST_SEAT));seats.appendChild(tb)}
 let pinSeat=0,pinVal='',pinBusy=false;
 const pinpad=document.getElementById('pinpad');
 ['1','2','3','4','5','6','7','8','9','✕','0','⌫'].forEach(k=>{const b=el('button',k==='✕'?'x':'',k==='✕'?'取消':k);tap(b,()=>pinKey(k));pinpad.appendChild(b)});
-function openPin(s){pinSeat=s;pinVal='';document.getElementById('pinseat').textContent=`${s} 號`;document.getElementById('pinmsg').textContent='密碼＝生日 4 碼（3月5日 → 0305）';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
+function openPin(s){pinSeat=s;pinVal='';document.getElementById('pinseat').textContent=s===TEST_SEAT?'🧪 測試帳號':`${s} 號`;document.getElementById('pinmsg').textContent='密碼＝生日 4 碼（3月5日 → 0305）';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
 function paintPin(){[...document.querySelectorAll('#pindots i')].forEach((d,i)=>d.classList.toggle('f',i<pinVal.length))}
 function pinMsg(t,bad){const m=document.getElementById('pinmsg');m.textContent=t;m.style.color=bad?'#e03131':'#888'}
 async function pinKey(k){if(pinBusy)return;
@@ -736,7 +744,7 @@ async function pinKey(k){if(pinBusy)return;
   if(k==='⌫'){pinVal=pinVal.slice(0,-1);paintPin();return}
   if(pinVal.length>=4)return;pinVal+=k;paintPin();if(pinVal.length<4)return;
   pinBusy=true;pinMsg('檢查中…');const r=await verify(pinSeat,pinVal);pinBusy=false;
-  if(r.ok){user={seat:pinSeat,pin:pinVal};boundKey='';LS.set('learn601_user',user);loadSum();mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
+  if(r.ok){user={seat:pinSeat,pin:pinVal};boundKey='';LS.set('learn601_user',user);loadSum();resetIfCleared(r.val);mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
   const D=document.getElementById('pindots');D.classList.remove('no');void D.offsetWidth;D.classList.add('no');
   pinMsg(r.why==='bad'?'密碼不對，再試一次':r.why==='rules'?'平台還沒開通，請告訴老師':'連不上網路，第一次登入要有網路',true);pinVal='';setTimeout(paintPin,350)}
 async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'};
@@ -749,8 +757,8 @@ let logoutT=0;function confirmLogout(){const b=document.getElementById('logout')
 
 /* ===================== 首頁 ===================== */
 let view='home';
-function enterHome(){show$('home');document.getElementById('meav').textContent=user.seat;document.getElementById('menm').innerHTML=`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
-  verify(user.seat,user.pin).then(r=>{if(r.ok){mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
+function enterHome(){show$('home');const isT=user.seat===TEST_SEAT;document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
+  verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
   const items=[{key:'home',no:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g),MIX,WB,GM];
   items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
@@ -767,7 +775,7 @@ function render(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='game')return renderGame(P);
   const u=UN.find(x=>x.key===view);renderUnit(P,u,UN.indexOf(u))}
 function renderHome(P){const n=todayN(),done=n>=GOAL;
-  P.appendChild(el('div','h1',`👋 ${user.seat} 號，${done?'今天的任務完成了！':'今天也來練習吧'}`));
+  P.appendChild(el('div','h1',`👋 ${user.seat===TEST_SEAT?'測試帳號':user.seat+' 號'}，${done?'今天的任務完成了！':'今天也來練習吧'}`));
   const g=el('div','grid2');
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div><div class="t1">今天的任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const gb=el('button','go',done?'再練一回 ▶':'開始練習 ▶');tap(gb,()=>startPractice('mix'));t.lastChild.appendChild(gb);
@@ -831,7 +839,7 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(L);loadBoard(L)}
 /* 讀全班排行:回傳 {g:[{seat,d,s,rank}]} 已排好 */
 async function lbAll(){await fbReady;if(!db||!online)return null;const v=(await timeout(db.ref(`${ROOT}/lb`).get(),8000)).val()||{};const out={};
-  for(const g in v){const arr=Object.entries(v[g]||{}).filter(([,o])=>o&&typeof o.s==='number'&&typeof o.d==='number').map(([s,o])=>({seat:+s,d:o.d,s:o.s}));
+  for(const g in v){const arr=Object.entries(v[g]||{}).filter(([,o])=>o&&typeof o.s==='number'&&typeof o.d==='number').map(([s,o])=>({seat:+s,d:o.d,s:o.s})).filter(r=>r.seat!==TEST_SEAT);
     arr.sort((a,b)=>gBetter(g,a,b)?-1:gBetter(g,b,a)?1:0);arr.forEach(r=>{r.rank=1+arr.filter(x=>gBetter(g,x,r)).length});out[g]=arr}return out}
 async function loadBoard(L){const g=bg;let all;
   try{all=await lbAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
@@ -854,7 +862,7 @@ window.__learn601={
     let all=null;try{all=await lbAll()}catch(e){}
     /* 先以雲端上自己的紀錄為準(換平板、清過資料時不會用比較差的成績蓋掉) */
     const rm=all&&(all[g]||[]).find(r=>r.seat===user.seat);if(rm&&gBetter(g,{d:rm.d,s:rm.s},sum.gb2[g]))sum.gb2[g]={d:rm.d,s:rm.s};
-    if(s>0&&gBetter(g,cand,sum.gb2[g])){sum.gb2[g]=cand;saveSum(true);enqueue(`${ROOT}/lb/${g}/${user.seat}`,{d:cand.d,s,t:Date.now()},true)}
+    if(s>0&&gBetter(g,cand,sum.gb2[g])){sum.gb2[g]=cand;saveSum(true);if(user.seat!==TEST_SEAT)enqueue(`${ROOT}/lb/${g}/${user.seat}`,{d:cand.d,s,t:Date.now()},true)}
     const mine=sum.gb2[g];if(!mine)return null;if(!all)return {best:mine};
     const others=(all[g]||[]).filter(r=>r.seat!==user.seat);return {rank:1+others.filter(x=>gBetter(g,x,mine)).length,best:mine}}
 };
