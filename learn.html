@@ -462,6 +462,8 @@ const divs=n=>{const r=[];for(let i=1;i<=n;i++)if(n%i===0)r.push(i);return r};
 const pfac=n=>{const r=[];let m=n;for(let p=2;m>1;p++)while(m%p===0){r.push(p);m/=p}return r};
 /* 短除法(兩數):回傳除數列與最後的商 */
 function sdiv(a,b){const ps=[];let x=a,y=b;for(let p=2;p<=Math.min(x,y);){if(x%p===0&&y%p===0){ps.push(p);x/=p;y/=p}else p++}return {ps,x,y}}
+/* 一個數的短除法:左邊是質數除數,一直除到商是質數 */
+const sdivOne=n=>{let h='<table class="sd">',m=n;for(let p=2;m>1&&!isPrime(m);){if(m%p===0){h+=`<tr><td class="p">${p}</td><td class="n">${m}</td></tr>`;m/=p}else p++}return h+`<tr><td></td><td class="n">${m}</td></tr></table>`};
 const sdivHtml=(a,b)=>{const {ps,x,y}=sdiv(a,b);let h='<table class="sd">';let u=a,v=b;ps.forEach(p=>{h+=`<tr><td class="p">${p}</td><td class="n">${u}</td><td class="n">${v}</td></tr>`;u/=p;v/=p});h+=`<tr><td></td><td class="n">${x}</td><td class="n">${y}</td></tr></table>`;return h};
 
 /* ================= 第1單元 質因數分解和短除法 ================= */
@@ -480,9 +482,8 @@ const U1={
     else if(k===1){const g=fs.slice();const i=ri(0,g.length-1);g[i]=pick([2,3,5,7].filter(p=>p!==g[i]));g.sort((x,y)=>x-y);if(g.reduce((t,x)=>t*x,1)!==n)w=g.join(' × ')}
     else if(fs.length>=3){const g=fs.slice();g.splice(ri(0,g.length-1),1);w=g.join(' × ')}
     if(w&&w!==ok)opts.add(w)}
-  const steps=[];let m=n;fs.forEach(p=>{steps.push(`${m} ÷ ${p} ＝ ${m/p}`);m/=p});
   return {type:'mc',opts:shuf([...opts]),text:`把 ${n} 做質因數分解，哪一個正確？`,big:`<div class="bx">${n} ＝ ？</div>`,ans:ok,
-   hints:['用短除法，除數都要用質數','一直除到商是質數為止','乘數都要是質數，乘起來要等於 '+n],sol:[...steps.slice(0,-1),`${n} ＝ ${ok}`]}},
+   hints:['用短除法，除數都要用質數','從最小的質數 2 開始除，一直除到商是質數為止','把左邊的除數和最後的商乘起來'],sol:[`__HTML__${sdivOne(n)}`,`${n} ＝ ${ok}`]}},
  coprime(){const yes=pick([[8,15],[9,10],[14,25],[24,25],[16,27],[21,22],[10,21],[19,11],[35,12],[9,28]]);const nos=[];
   while(nos.length<3){const g=pick([2,3,5,7]);const a=g*ri(2,9),b=g*ri(2,9);if(a!==b&&!nos.some(p=>p[0]===a&&p[1]===b))nos.push([a,b])}
   const all=shuf([yes,...nos]).map(p=>`${p[0]}、${p[1]}`);const ans=`${yes[0]}、${yes[1]}`;
@@ -496,7 +497,7 @@ const U1={
  lcm(){let a,b;do{a=ri(4,30);b=ri(4,30)}while(a===b||lcm(a,b)>300);const L=lcm(a,b),{ps,x,y}=sdiv(a,b);
   return {type:'num',text:`${a} 和 ${b} 的最小公倍數是多少？`,big:`<div class="bx">${a}、${b}</div>`,ans:L,unit:'',pre:'',
    hints:['用短除法：除到兩個商互質','最小公倍數 ＝ 左邊的除數 × 下面的商（L 形）'],
-   sol:[`__HTML__${sdivHtml(a,b)}`,`${[...ps,x,y].join(' × ')} ＝ ${L}`],traps:[[gcd(a,b),'這是最大公因數喔'],...(gcd(a,b)>1?[[a*b,'兩數不互質，不能直接相乘']]:[])]}},
+   sol:ps.length?[`__HTML__${sdivHtml(a,b)}`,`${[...ps,x,y].join(' × ')} ＝ ${L}`]:[`${a} 和 ${b} 互質（公因數只有 1）`,`最小公倍數 ＝ ${a} × ${b} ＝ ${L}`],traps:[[gcd(a,b),'這是最大公因數喔'],...(gcd(a,b)>1?[[a*b,'兩數不互質，不能直接相乘']]:[])]}},
  appG(){const k=ri(0,2);
   if(k===0){let L,W,g;do{g=pick([2,3,4,5,6]);L=g*ri(3,8);W=g*ri(2,6)}while(L<=W||gcd(L/g,W/g)!==1);
    return {type:'num',text:`一塊長 ${L} 公尺、寬 ${W} 公尺的長方形土地，要分割成大小相同、邊長是整公尺的正方形，正方形最大的邊長是幾公尺？`,big:`<div class="bx s">長 ${L}，寬 ${W}<br>→ 最大的正方形</div>`,ans:g,unit:'公尺',pre:'',
@@ -519,7 +520,7 @@ const U1={
     hints:['同時噴水的時間是兩個數的公倍數','最少 → 最小公倍數'],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}，最小公倍數是 ${L}`],traps:[[gcd(a,b),'要找最小公倍數']]}}
   let a,b;do{a=ri(3,12);b=ri(3,12)}while(a===b||lcm(a,b)>80||a%b===0||b%a===0);const r=ri(1,Math.min(a,b)-1);const L=lcm(a,b);
   return {type:'num',text:`把學員每 ${a} 人分一組，或每 ${b} 人分一組，都會多出 ${r} 人。學員最少有幾人？`,big:`<div class="bx s">每 ${a} 人、每 ${b} 人<br>都多 ${r} 人</div>`,ans:L+r,unit:'人',pre:'',
-   hints:['先把多出的 '+r+' 人拿走，就剛好分完',`先找 ${a} 和 ${b} 的最小公倍數，再加 ${r}`],sol:[`${a} 和 ${b} 的最小公倍數是 ${L}`,`${L} ＋ ${r} ＝ ${L+r}`],traps:[[L,`別忘了加上多出的 ${r} 人`],[L-r,'多出的人要加上去，不是減掉']]}}
+   hints:['先把多出的 '+r+' 人拿走，就剛好分完',`先找 ${a} 和 ${b} 的最小公倍數，再加 ${r}`],sol:[`__HTML__${sdivHtml(a,b)}`,`${[...sdiv(a,b).ps,sdiv(a,b).x,sdiv(a,b).y].join(' × ')} ＝ ${L}`,`${L} ＋ ${r} ＝ ${L+r}`],traps:[[L,`別忘了加上多出的 ${r} 人`],[L-r,'多出的人要加上去，不是減掉']]}}
 };
 
 /* ================= 第2單元 分數的除法 ================= */
