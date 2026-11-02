@@ -174,6 +174,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #setup .cd{display:flex;flex-direction:column;gap:.6rem;font-size:1.2rem;font-weight:800}
 #setup button{border:0;border-radius:14px;background:var(--g);color:#fff;font-size:1.2rem;font-weight:900;padding:.5rem 1rem;align-self:flex-start}
 #setup button.gray{background:#e9ecef;color:#555}
+#rulemsg{font-size:1.3rem;font-weight:900;line-height:1.5}
 #setmsg,#tabmsg,#hmsg{color:#1c7ed6;font-weight:900}
 .hrow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}.hrow input{width:4em;font-size:1.2rem;padding:.2rem;border:2px solid #dee2e6;border-radius:8px}.hrow select{font-size:1.1rem;padding:.2rem}
 #hout{font:1.1rem monospace;width:min(20rem,100%);border:2px solid #dee2e6;border-radius:10px;padding:.4rem}
@@ -267,6 +268,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 
 <section class="scr" id="setup">
  <h2>👩‍🏫 老師設定</h2>
+ <div class="cd"><div id="rulemsg"></div></div>
  <div class="cd">
   <div>① 開通密碼（只要做一次）：選擇 pins.json</div>
   <input type="file" id="pinfile" accept=".json,application/json">
@@ -671,10 +673,12 @@ async function pinKey(k){if(pinBusy)return;
   pinBusy=true;pinMsg('檢查中…');const r=await verify(pinSeat,pinVal);pinBusy=false;
   if(r.ok){user={seat:pinSeat,pin:pinVal};LS.set('learn601_user',user);loadSum();mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
   const D=document.getElementById('pindots');D.classList.remove('no');void D.offsetWidth;D.classList.add('no');
-  pinMsg(r.why==='bad'?'密碼不對，再試一次':'連不上網路，第一次登入要有網路',true);pinVal='';setTimeout(paintPin,350)}
+  pinMsg(r.why==='bad'?'密碼不對，再試一次':r.why==='rules'?'平台還沒開通，請告訴老師':'連不上網路，第一次登入要有網路',true);pinVal='';setTimeout(paintPin,350)}
 async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'};
   try{const s=await timeout(db.ref(`${ROOT}/u/${seat}/${pin}/sum`).get(),10000);return {ok:true,val:s.val()}}
-  catch(e){return {ok:false,why:/permission/i.test(String(e&&(e.code||e.message)))?'bad':'off'}}}
+  catch(e){if(!/permission/i.test(String(e&&(e.code||e.message))))return {ok:false,why:'off'};return {ok:false,why:(await rulesOK())===false?'rules':'bad'}}}
+/* 規則有沒有生效:新規則讓 learn/board 可以讀 */
+async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/board`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
 tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
@@ -876,7 +880,7 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   $('#end').classList.add('on')}
 
 /* ===================== 老師設定 ===================== */
-function openSetup(){show$('setup');const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
+function openSetup(){show$('setup');$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
 let tapT=[];tap(document.querySelector('#login h1'),()=>{const t=Date.now();tapT=tapT.filter(x=>t-x<2500);tapT.push(t);if(tapT.length>=5){tapT=[];openSetup()}});
 tap($('#setback'),()=>{history.replaceState(null,'',location.pathname);show$('login')});
 let pinData=null;
@@ -887,7 +891,8 @@ $('#pinfile').addEventListener('change',async e=>{const fl=e.target.files[0];if(
 tap($('#pinwrite'),async()=>{const o=pinData||LS.get('learn601_pins',null);if(!o){$('#setmsg').textContent='請先選擇 pins.json';return}
   $('#setmsg').textContent='寫入中…';await fbReady;if(!db){$('#setmsg').textContent='連不上 Firebase';return}
   try{await timeout(db.ref(`${ROOT}/pins`).set(o),12000);$('#setmsg').textContent='✅ 開通完成！學生可以登入了'}
-  catch(e){$('#setmsg').textContent=/permission/i.test(String(e&&(e.code||e.message)))?'已經開通過了（要改密碼請到 Firebase 主控台）':'寫入失敗：'+(e.message||e)}});
+  catch(e){if(!/permission/i.test(String(e&&(e.code||e.message)))){$('#setmsg').textContent='寫入失敗：'+(e.message||e);return}
+    $('#setmsg').textContent=(await rulesOK())===false?'❗ 寫不進去：Firebase 規則還沒更新（看最上面的說明）':'已經開通過了（要改密碼請到 Firebase 主控台）'}});
 async function fetchAll(msgEl){const pins=LS.get('learn601_pins',null);if(!pins){msgEl.textContent='請先在 ① 選擇 pins.json';return null}
   msgEl.textContent='讀取中…';await fbReady;if(!db){msgEl.textContent='連不上 Firebase';return null}
   return Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),10000)).val();return [s,v]}catch(e){return [s,'err']}}))}
