@@ -217,6 +217,22 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
  #figc.solv .bx{font-size:2rem}#figc.solv .bx.s{font-size:1.3rem}
 
 }
+/* 答錯時的例題教學 */
+#teach{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:6;padding:.8rem}
+#teach.on{display:flex}
+#teach .tbox{background:#fff;border-radius:26px;padding:1rem 1.4rem 1.1rem;width:min(56rem,100%);max-height:94vh;overflow:auto;display:flex;flex-direction:column;gap:.5rem;animation:fade .3s;border:5px solid #d0bfff}
+.ttag{align-self:flex-start;background:#7048e8;color:#fff;font-weight:900;font-size:1.4rem;border-radius:14px;padding:.2rem .9rem}
+#tmsg{font-size:1.45rem;font-weight:900;color:#e03131;min-height:0}#tmsg:empty{display:none}
+#tq{font-size:1.75rem;font-weight:900;line-height:1.5;background:#f8f9fa;border-radius:16px;padding:.4rem .8rem}#tq .num{color:#7048e8}
+#tfig{width:100%;height:min(30vh,15rem)}
+#tbig .bx{font-size:3rem}#tbig .bx.s{font-size:1.8rem}#tbig:empty{display:none}
+#tsol{display:flex;flex-direction:column;gap:.3rem;min-height:2rem}
+#tsol>div{font-size:1.7rem;font-weight:900;color:#2b8a3e;line-height:1.55;animation:fade .35s}
+#tsol .fr{font-size:.92em}#tsol .ans{color:#7048e8;border-top:3px dashed #d0bfff;padding-top:.3rem}
+#tbtn{align-self:flex-end;border:0;border-radius:18px;background:#7048e8;color:#fff;font-size:1.6rem;font-weight:900;padding:.5rem 1.4rem;box-shadow:0 4px 0 #5f3dc4}
+#tbtn.go{background:var(--o);box-shadow:0 4px 0 #e8590c}
+@media (max-width:900px),(orientation:portrait){#tq{font-size:1.3rem}#tsol>div{font-size:1.25rem}#tbig .bx{font-size:2.2rem}#tbtn{font-size:1.3rem}.ttag{font-size:1.1rem}}
+.br em{font-style:normal;font-size:1.05rem;color:#888;width:5.5rem;text-align:center}
 </style>
 </head><body>
 
@@ -291,6 +307,12 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
  <button class="gray" id="setback">← 回登入畫面</button>
 </section>
 
+<div id="teach"><div class="tbox">
+ <div class="ttag">📖 看一題例子</div><div id="tmsg"></div>
+ <div id="tq"></div><svg id="tfig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="tbig"></div>
+ <div id="tsol"></div>
+ <button id="tbtn">下一步 ▶</button>
+</div></div>
 <div id="end"><div class="box"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
 <script>
 const NS='http://www.w3.org/2000/svg',$=s=>document.querySelector(s);
@@ -647,14 +669,14 @@ function paintSync(){const s=document.getElementById('sync');if(!s)return;
 let user=LS.get('learn601_user',null);              // {seat,pin}
 let sum=null;
 const base=()=>`${ROOT}/u/${user.seat}/${user.pin}`;
-const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tkd:{},gb:{}});
+const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tkd:{},gb2:{}});
 function loadSum(){sum=Object.assign(blankSum(),LS.get('learn601_sum_'+user.seat,{}))}
 function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
   if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tkd=r.tkd||{}}   // 遊戲券以最後更新的那台為準
-  for(const k in r.gb||{}){const lo=!!(GLIST.find(x=>k.startsWith(x[0]+'_'))||[])[4],a=sum.gb[k],b=r.gb[k];if(a==null||(lo?b<a:b>a))sum.gb[k]=b}}
+  sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}}
 function logPush(v){if(!user)return;enqueue(`${base()}/log/${uid()}`,Object.assign({d:dkey(),ts:Date.now()},v))}
 
 /* ===================== 登入 ===================== */
@@ -677,8 +699,8 @@ async function pinKey(k){if(pinBusy)return;
 async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'};
   try{const s=await timeout(db.ref(`${ROOT}/u/${seat}/${pin}/sum`).get(),10000);return {ok:true,val:s.val()}}
   catch(e){if(!/permission/i.test(String(e&&(e.code||e.message))))return {ok:false,why:'off'};return {ok:false,why:(await rulesOK())===false?'rules':'bad'}}}
-/* 規則有沒有生效:新規則讓 learn/board 可以讀 */
-async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/board`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
+/* 規則有沒有生效:新規則讓 learn/lb(排行榜)可以讀 */
+async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/lb`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
 tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
@@ -729,38 +751,42 @@ function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${u===MIX?'
 const TX={};function toolExists(f){if(location.protocol==='file:')return Promise.resolve(true);if(!(f in TX))TX[f]=fetch(f,{method:'HEAD',cache:'no-store'}).then(r=>r.status!==404).catch(()=>true);return TX[f]}
 
 /* ===================== 遊戲＋排行榜 ===================== */
-let bg='tower',bd='normal';
+let bg='tower';
 const gOf=g=>GLIST.find(x=>x[0]===g);
+const DIDX={easy:0,normal:1,hard:2,boss:3};
+/* 一個遊戲只有一個榜:先比難度(魔王最高),同難度再比分數 */
+function gBetter(g,a,b){if(!a)return false;if(!b)return true;if(a.d!==b.d)return a.d>b.d;const lo=!!(gOf(g)||[])[4];return lo?a.s<b.s:a.s>b.s}
 const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;if(g==='cups')return `${v} / 5`;if(g==='hunt')return `${v} ★`;return `${v} ${G[3]}`};
+const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';const today=(sum.tkd||{})[dkey()]||0;
   c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩一局）</div><div class="s">練習 10 題拿 1 張，今天拿了 ${today} / ${TK_DAY} 張</div></div>`;
   const b=el('button','go',(sum.tk||0)>0?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>(sum.tk||0)>0?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
-  P.appendChild(el('div','sec','🏆 全班排行榜'));
+  P.appendChild(el('div','sec','🏆 全班排行榜（先比難度，再比成績）'));
   const gc=el('div');gc.id='bgames';GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bg=k;render()});gc.appendChild(x)});P.appendChild(gc);
-  const dc=el('div');dc.id='bdiffs';GDIFF.forEach(([k,ic,nm])=>{const x=el('button','bdb'+(bd===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bd=k;render()});dc.appendChild(x)});P.appendChild(dc);
   const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(L);loadBoard(L)}
-async function boardArr(g,d){await fbReady;if(!db||!online)return null;
-  const v=(await timeout(db.ref(`${ROOT}/board/${g}/${d}`).get(),8000)).val()||{};const lo=!!gOf(g)[4];
-  return Object.entries(v).filter(([,o])=>o&&typeof o.s==='number').map(([s,o])=>({seat:+s,v:o.s})).sort((a,b)=>lo?a.v-b.v:b.v-a.v)}
-const rankIn=(arr,v,lo)=>1+arr.filter(r=>lo?r.v<v:r.v>v).length;
-async function loadBoard(L){const g=bg,d=bd,lo=!!gOf(g)[4];let arr;
-  try{arr=await boardArr(g,d)}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
-  if(g!==bg||d!==bd)return;
-  if(!arr){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
-  if(!arr.length){L.innerHTML='<div class="ld">還沒有人上榜，搶第一名！</div>';return}
-  let h='';arr.forEach((r,i)=>{const rk=rankIn(arr,r.v,lo),me=r.seat===user.seat;if(i>=10&&!me)return;
-    h+=`<div class="br${me?' me':''}"><b>${rk<=3?['🥇','🥈','🥉'][rk-1]:rk}</b><span>${r.seat} 號${me?'（我）':''}</span><i>${gFmt(g,r.v)}</i></div>`});
+/* 讀全班排行:回傳 {g:[{seat,d,s,rank}]} 已排好 */
+async function lbAll(){await fbReady;if(!db||!online)return null;const v=(await timeout(db.ref(`${ROOT}/lb`).get(),8000)).val()||{};const out={};
+  for(const g in v){const arr=Object.entries(v[g]||{}).filter(([,o])=>o&&typeof o.s==='number'&&typeof o.d==='number').map(([s,o])=>({seat:+s,d:o.d,s:o.s}));
+    arr.sort((a,b)=>gBetter(g,a,b)?-1:gBetter(g,b,a)?1:0);arr.forEach(r=>{r.rank=1+arr.filter(x=>gBetter(g,x,r)).length});out[g]=arr}return out}
+async function loadBoard(L){const g=bg;let all;
+  try{all=await lbAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
+  if(g!==bg)return;if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
+  const arr=all[g]||[];if(!arr.length){L.innerHTML='<div class="ld">還沒有人上榜，搶第一名！</div>';return}
+  let h='';arr.forEach((r,i)=>{const me=r.seat===user.seat;if(i>=10&&!me)return;
+    h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${me?'（我）':''}</span><em>${dTxt(r.d)}</em><i>${gFmt(g,r.s)}</i></div>`});
   L.innerHTML=h}
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */
 window.__learn601={
+  seat:()=>user?user.seat:null,
   tickets:()=>sum?(sum.tk||0):0,
   useTicket(g,d){if(!user||!sum||!((sum.tk||0)>0))return false;sum.tk--;saveSum(true);logPush({k:'g',game:g,diff:d});return true},
-  async score(g,d,s,lo){if(!user||!sum||typeof s!=='number'||!isFinite(s))return null;const k=g+'_'+d,prev=sum.gb[k];
-    logPush({k:'gs',game:g,diff:d,score:s});
-    if(s>0&&(prev==null||(lo?s<prev:s>prev))){sum.gb[k]=s;saveSum(true);enqueue(`${ROOT}/board/${g}/${d}/${user.seat}`,{s,t:Date.now()},true)}
-    const mine=sum.gb[k];if(mine==null)return null;
-    try{const arr=await boardArr(g,d);if(!arr)return null;return {rank:rankIn(arr.filter(r=>r.seat!==user.seat),mine,lo),best:mine}}catch(e){return null}}
+  board:()=>lbAll().catch(()=>null),
+  async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;
+    const cand={d:DIDX[dk],s};logPush({k:'gs',game:g,diff:dk,score:s});sum.gb2=sum.gb2||{};
+    if(s>0&&gBetter(g,cand,sum.gb2[g])){sum.gb2[g]=cand;saveSum(true);enqueue(`${ROOT}/lb/${g}/${user.seat}`,{d:cand.d,s,t:Date.now()},true)}
+    const mine=sum.gb2[g];if(!mine)return null;
+    try{const all=await lbAll();if(!all)return {best:mine};const others=(all[g]||[]).filter(r=>r.seat!==user.seat);return {rank:1+others.filter(x=>gBetter(g,x,mine)).length,best:mine}}catch(e){return {best:mine}}}
 };
 
 /* ===================== 教具檢視 ===================== */
@@ -797,7 +823,7 @@ function logRound(partial){if(!round||round.logged)return;const n=round.res.filt
   const first=round.res.filter(x=>x==='ok').length,all=round.res.filter(x=>x==='ok'||x==='ok2').length;
   logPush({k:'p',unit:pu==='mix'?'mix':UN[pu].key,n,first,all,sec:Math.round((Date.now()-round.t0)/1000),part:partial?1:0,q:round.det.filter((d,i)=>round.res[i]).map((d,i)=>Object.assign({r:round.res[i]},d))});
   saveSum(true)}
-function leavePractice(){logRound(true);if(!user)return show$('login');document.getElementById('end').classList.remove('on');enterHome()}
+function leavePractice(){$('#teach').classList.remove('on');logRound(true);if(!user)return show$('login');document.getElementById('end').classList.remove('on');enterHome()}
 tap(document.getElementById('pback'),()=>history.back());
 
 const pad=$('#pad');
@@ -810,7 +836,7 @@ function key(k){if(solved||!round)return;const q=round.qs[cur];if(q.type==='mc')
     let v=fv[act];if(k==='⌫')v=v.slice(0,-1);else if(k==='C')v='';else if(/\d/.test(k)&&v.length<4)v=(v==='0'?'':v)+k;fv[act]=v;paintF();return}
   if(k==='⌫')val=val.slice(0,-1);else if(k==='C')val='';else if(k==='.'){if(!val.includes('.')&&val.length<9)val+=val?'.':'0.'}else if(val.length<9)val=(val==='0'?'':val)+k;
   $('#box').textContent=val;$('#box').className='ib'}
-document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')||$('#end').classList.contains('on')||vt)return;
+document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')||$('#end').classList.contains('on')||vt)return;if($('#teach').classList.contains('on')){if(e.key==='Enter'||e.key===' '){e.preventDefault();tNext()}return}
   if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&round.qs[cur].type==='frac'?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
   else if(e.key==='Tab'||e.key==='/'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
@@ -834,9 +860,25 @@ tap($('#show'),()=>{if(solved)return;round.res[cur]='no';finish(round.qs[cur],fa
 tap($('#next'),()=>nextQ());
 tap($('#seeTool'),()=>{const q=round.qs[cur];const t=toolById(UN[q.u].tt&&UN[q.u].tt[q.t]);if(t)openTool(t,'prac')});
 const near=(a,b)=>Math.abs(a-b)<1e-6;
-function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]+>/g,''):'');const fb=$('#fb');fb.className='bad';fb.innerHTML=msg||(tries===1?'再算一次看看':'看看提示吧');
-  if(tries>=1)$('#hint').classList.add('pulse');if(tries>=2)$('#show').classList.remove('hide');
-  const q=round.qs[cur];if(UN[q.u].tt&&UN[q.u].tt[q.t])$('#seeTool').classList.add('on')}
+function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]+>/g,''):'');const q=round.qs[cur],fb=$('#fb');fb.className='bad';
+  if(tries>=2){round.res[cur]='no';finish(q,false);return}
+  fb.innerHTML=msg||'再算一次看看';$('#hint').classList.add('pulse');if(UN[q.u].tt&&UN[q.u].tt[q.t])$('#seeTool').classList.add('on');showTeach(q,msg)}
+/* ===== 答錯一次：用同一題型、不同數字的例題，一步一步教 ===== */
+let tSteps=[],tK=0;
+function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t),k=x=>x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
+function ansHtml(e){const a=e.type==='frac'?mx(e.ans.n,e.ans.d):e.type==='mc'?e.ans:f(e.ans);return `答案：${e.pre?e.pre+' ':''}${a}${e.unit?' '+e.unit:''}`}
+function showTeach(q,msg){const e=makeExample(q);$('#tmsg').innerHTML=msg?'💡 '+msg:'';
+  if(!e){tSteps=q.hints.map(h=>'💡 '+h);$('#tq').innerHTML='';$('#tfig').style.display='none';$('#tbig').innerHTML=''}
+  else{$('#tq').innerHTML='例題：'+hl(e.text);const sv=$('#tfig');sv.innerHTML='';
+    if(e.fig){sv.style.display='';F[e.fig[0]](sv,e.fig[1]);$('#tbig').innerHTML=''}else{sv.style.display='none';$('#tbig').innerHTML=e.big||''}
+    tSteps=[...e.sol,'__ANS__'+ansHtml(e)]}
+  $('#tsol').innerHTML='';tK=0;tNext();$('#teach').classList.add('on');round.det[cur].ex=1}
+function tNext(){if(tK>=tSteps.length){$('#teach').classList.remove('on');return}
+  const s=tSteps[tK++],d=document.createElement('div');
+  if(s.startsWith('__ANS__')){d.className='ans';d.innerHTML=s.slice(7)}else d.innerHTML=s.startsWith('__HTML__')?s.slice(8):s;
+  $('#tsol').appendChild(d);const b=$('#tbtn');if(tK>=tSteps.length){b.textContent='懂了，回去再算一次 ▶';b.className='go'}else{b.textContent='下一步 ▶';b.className=''}
+  d.scrollIntoView&&d.scrollIntoView({block:'nearest'})}
+tap($('#tbtn'),()=>tNext());
 function right(q){round.res[cur]=tries===0?'ok':'ok2';const fb=$('#fb');fb.className='good';fb.textContent=tries===0?'答對了！':'答對了！再接再厲';finish(q,true)}
 function trapMsg(q,v){const t=(q.traps||[]).find(([x])=>x>=0&&near(v,x));if(t)return t[1];const tf=(q.trapsF||[]).find(([x])=>near(v,x.n/x.d));return tf?tf[1]:null}
 function check(){const q=round.qs[cur];
@@ -856,7 +898,7 @@ function check(){const q=round.qs[cur];
 function choose(b,o){if(solved||b.classList.contains('no'))return;const q=round.qs[cur];
   if(o===q.ans){b.classList.add('ok');right(q);return}
   b.classList.add('no');wrong(q.trapsMC&&q.trapsMC[o]);
-  const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(left<=1){round.res[cur]='no';finish(q,false)}}
+  const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(!solved&&left<=1){round.res[cur]='no';finish(q,false)}}
 function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
   const k=dkey();sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok')sum.first++;saveSum(false);
