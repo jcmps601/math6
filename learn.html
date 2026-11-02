@@ -981,6 +981,8 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
   $('#tab').innerHTML=h;$('#tabmsg').textContent=`更新時間 ${new Date().toLocaleTimeString()}`});
 
 /* ===================== 啟動 ===================== */
+/* 離線也能用:讓平板把平台存起來 */
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 addEventListener('hashchange',()=>{if(location.hash==='#setup')openSetup()});
 if(location.hash==='#setup')openSetup();
 else if(user){loadSum();enterHome()}
