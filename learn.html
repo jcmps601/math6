@@ -68,12 +68,23 @@ button{font-family:inherit;cursor:pointer}
 #subj button small{font-size:.8rem;color:#bbb;margin-left:.25rem}
 #prep{text-align:center;font-size:1.4rem;font-weight:900;color:#999;padding:1.6rem 1rem}#prep b{display:block;font-size:3rem;margin-bottom:.3rem}
 /* 題庫:圖片、短文、圖片選項 */
-.qimg{display:block;max-width:100%;max-height:13rem;margin:0 auto .5rem;border-radius:12px;background:#fff}
-.bx.p{font-size:1.5rem;font-weight:800;text-align:left;line-height:1.6;white-space:normal;color:#444}
+.qimg{display:block;max-width:100%;height:min(19rem,36vh);width:auto;object-fit:contain;margin:0 auto .5rem;border-radius:12px;background:#fff}
+.bx.p{font-size:1.65rem;font-weight:800;text-align:left;line-height:1.6;white-space:normal;color:#444}
+.bx.p.big{font-size:2.4rem;line-height:1.5;color:#333}
+#figc.solv .bx.p.big{font-size:2rem}
+@media (max-width:900px),(orientation:portrait){.bx.p{font-size:1.3rem}.bx.p.big{font-size:1.75rem}.qimg{height:28vh}}
 #figc.solv .bx.p{font-size:1.15rem}#tbig .bx.p{font-size:1.2rem}
 #opts button img{max-width:100%;max-height:100%;object-fit:contain;display:block;margin:auto;pointer-events:none}
-#opts.row button:has(img){padding:.4rem;background:#fff}
-#tbig .qimg{max-height:9rem}
+#opts.row button:has(img){padding:.4rem;background:#fff;max-height:none;height:auto;flex:1 1 0}
+#opts.row button img{height:min(12rem,26vh);width:auto;max-width:100%}
+#tbig .qimg{height:9rem}
+#figc.solv .qimg{height:min(12rem,24vh)}
+#opts.row button{white-space:nowrap}
+.bx u.fill{color:#2b8a3e;text-decoration-thickness:.07em;text-underline-offset:.18em;padding:0 .1em}
+#bigc .bx.heard,#bigc .bx.rv{color:#2b8a3e;animation:fade .3s}
+.bx.rv u{text-decoration-thickness:.07em;text-underline-offset:.15em}
+#opts.long button{font-size:1.55rem;line-height:1.25}#opts.xlong button{font-size:1.25rem;line-height:1.25}
+#opts button{overflow:hidden}
 /* 發音按鈕 */
 .say{border:0;border-radius:50%;width:6.5rem;height:6.5rem;font-size:3.4rem;background:#e7f5ff;box-shadow:0 5px 0 #a5d8ff;margin:.3rem auto;display:block}
 .say:active{transform:translateY(3px);box-shadow:0 2px 0 #a5d8ff}
@@ -112,7 +123,15 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 #q .num{color:#1c7ed6}
 #body{flex:1;min-height:0;display:grid;grid-template-columns:1fr 24rem;gap:.7rem}
 .card{background:#fff;border-radius:22px;box-shadow:0 4px 0 #f1e3cf;min-height:0}
-#figc{display:flex;flex-direction:column;padding:.5rem;overflow:auto}
+#figc{display:flex;flex-direction:column;padding:.5rem;overflow:auto;position:relative}
+/* 計算紙:題目卡片上的透明畫布 */
+#scr{position:absolute;left:0;top:0;width:100%;height:100%;z-index:4;touch-action:none;cursor:crosshair}
+#figc.nodraw #scr{pointer-events:none;cursor:auto}
+#figc .say{position:relative;z-index:6}   /* 播音鍵在畫布上面,開著畫筆也按得到 */
+#pens{position:absolute;top:.4rem;right:.4rem;z-index:5;display:flex;gap:.3rem;background:rgba(255,255,255,.92);border-radius:14px;padding:.25rem;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+#pens button{width:2.6rem;height:2.6rem;border:3px solid transparent;border-radius:11px;background:#f1f3f5;font-size:1.3rem;padding:0;line-height:1}
+#pens button.on{border-color:#1c7ed6;background:#e7f5ff}
+#figc.nodraw #pens button[data-p="h"]{border-color:#868e96;background:#dee2e6}
 #fig{flex:1;min-height:0;width:100%}
 #bigc{flex:1;min-height:5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem}
 #figc.solv #bigc{flex:none;min-height:0;padding:.3rem 0}
@@ -379,7 +398,7 @@ body{background:
   <div id="top"><span id="qno">第 1 題</span><span id="utag"></span><span id="dots"></span></div>
   <div id="q"></div>
   <div id="body">
-   <div class="card" id="figc"><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
+   <div class="card" id="figc"><canvas id="scr"></canvas><div id="pens"><button data-p="b" class="on" title="藍筆">✏️</button><button data-p="r" title="紅筆">🖍️</button><button data-p="e" title="橡皮擦">🧽</button><button data-p="c" title="全部擦掉">🗑️</button><button data-p="h" title="關掉畫筆">✋</button></div><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
    <div class="card" id="ansc">
     <div id="ansline"><span class="pre" id="pre"></span><span id="box" class="ib"></span>
      <span id="fbx"><span class="ib" id="bw" data-k="w"></span><span class="stk"><span class="ib" id="bn" data-k="n"></span><hr><span class="ib" id="bd" data-k="d"></span></span></span>
@@ -757,11 +776,14 @@ UN.forEach(u=>u.s='math');
 /* 題庫的一題 → 練習用的選擇題 */
 const isImg=o=>/\.(jpe?g|png|gif|webp|svg)$/i.test(o);
 const optHtml=o=>isImg(o)?`<img src="${o}" alt="">`:o;   // 選項可以是圖片
-function bankQ(it,s){const big=it.big==null?'':String(it.big),bc=it.bc!=null?it.bc:[...big.replace(/<[^>]+>/g,'')].length>6?'s':'';
-  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.every(o=>o.length<=4),
+function bankQ(it,s){const big=it.big==null?'':String(it.big),n=[...big.replace(/<[^>]+>/g,'')].length;
+  /* 字的大小看長度:對話、句子用大字,只有長的短文才用小字 */
+  const bc=it.bc==='p'?(n>160?'p':'p big'):it.bc!=null?it.bc:n>6?'s':'';
+  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=3),   // 並排:圖片,或很短的(ar、ee)
     big:(it.img?`<img class="qimg" src="${it.img}" alt="">`:'')+(big?`<div class="bx${bc?' '+bc:''}">${big}</div>`:''),
-    say:it.say||'',au:it.au||'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
-    hints:it.hint?[].concat(it.hint):['把題目再讀一次','先把不可能的選項刪掉'],sol:[].concat(it.exp||`答案是「${it.a}」`)}}
+    say:it.say||'',au:it.au||'',rv:it.reveal||'',hd:it.au&&it.exp?it.exp:'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
+    hints:it.hint?[].concat(it.hint):['把題目再讀一次','先把不可能的選項刪掉'],
+    sol:it.au?[]:[].concat(it.exp||[])}}   // 聽力題答完把聽到的內容放在播音鍵下面(bankReveal)
 (()=>{const B=window.BANK||{};SUBJ.forEach(S=>(B[S.k]||[]).forEach((d,i)=>{
   const items=(d.items||[]).filter(it=>it&&it.q&&Array.isArray(it.opts)&&it.opts.includes(it.a));
   const by={};items.forEach(it=>{const t=it.t||'題目';(by[t]=by[t]||[]).push(it)});
@@ -779,7 +801,7 @@ const TK_EVERY=10, TK_NEED=8;      // 每做 10 題(不分單元、可以分好�
 /* 601 挑戰樂園的遊戲:[代號, 圖示, 名稱, 單位, 越小越好] */
 const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/ 5'],['flappy','🐤','小雞跳跳','關'],['hunt','🗺️','尋寶','★'],['num','🔢','數字快手','秒',1],['simon','🎹','記憶燈光','個燈'],
  ['color','🎨','顏色陷阱','題'],['react','⚡','反應王','毫秒',1],['spot','👀','找不同','個'],['bridge','🌉','搭橋小英雄','分'],
- ['mole','🔨','打地鼠','分'],['match','🃏','翻牌配對','秒',1],['snake','🐍','貪食蛇','顆']];   // 合成大西瓜、2048 先不放
+ ['mole','🔨','打地鼠','分']];   // 合成大西瓜、2048 先不放
 const PLAY_MS=5*60*1000;           // 一張券 = 5 分鐘遊戲時間
 const GDIFF=[['easy','🌱','簡單'],['normal','⭐','普通'],['hard','🔥','困難'],['boss','👑','魔王']];
 const GAME_TOOL={id:'game',i:'🎮',k:'遊戲',n:'601 挑戰樂園',f:'game.html'};
@@ -994,7 +1016,7 @@ const DIDX={easy:0,normal:1,hard:2,boss:3};
 const DCOL=['#2fb36d','#2f8cf0','#f28a1c','#9b3fe0'];   // 和挑戰樂園的難度顏色一樣
 /* 一個遊戲只有一個榜:先比難度(魔王最高),同難度再比分數 */
 /* 每個遊戲「1 顆星」的門檻(簡單/普通/困難/魔王),和挑戰樂園裡的星星一致 */
-const STAR1={tower:[12,10,8,6],flappy:[6,8,8,7],simon:[4,5,5,4],color:[12,12,10,8],spot:[6,7,6,5],bridge:[8,7,6,5],cups:[3,3,3,3],hunt:[4,4,4,4],num:[12,25,40,65],react:[550,500,550,750],mole:[12,15,15,15],match:[45,75,100,150],snake:[8,8,7,6]};
+const STAR1={tower:[12,10,8,6],flappy:[6,8,8,7],simon:[4,5,5,4],color:[12,12,10,8],spot:[6,7,6,5],bridge:[8,7,6,5],cups:[3,3,3,3],hunt:[4,4,4,4],num:[12,25,40,65],react:[550,500,550,750],mole:[12,15,15,15]};
 /* 有沒有在這個難度拿到 1 顆星 */
 function starred(g,r){const T=STAR1[g];if(!T||!r)return false;const lo=!!(gOf(g)||[])[4];return lo?r.s<=T[r.d]:r.s>=T[r.d]}
 /* 排名:先比「拿到 1 顆星的最高難度」,都沒拿到星的排在後面;同一級再比成績 */
@@ -1061,6 +1083,35 @@ function closeTool(){if(!vt)return;const sec=Math.round((Date.now()-vtStart)/100
   document.getElementById('viewer').classList.remove('on');frameGo('about:blank');if(vtFrom==='home')render()}
 tap(document.getElementById('vback'),()=>history.back());
 addEventListener('popstate',()=>{if(vt)return closeTool();if(document.getElementById('prac').classList.contains('on'))leavePractice()});
+
+/* ===================== 計算紙 =====================
+   題目卡片上蓋一層透明畫布,學生可以用平板的筆直接在題目上計算。
+   用過筆之後,手指和手掌碰到不會畫(防誤觸);✋ 可以關掉畫筆,回到用手點按;換題會自動清空。 */
+const SCR={on:LS.get('learn601_draw',true),pen:'b',strokes:[],cur:null,penSeen:false};
+const scrCv=$('#scr'),scrCx=scrCv.getContext('2d');
+function scrFit(){const f=$('#figc'),w=f.clientWidth,h=f.clientHeight,d=Math.min(2,devicePixelRatio||1);
+  if(scrCv.width!==Math.round(w*d)||scrCv.height!==Math.round(h*d)){scrCv.width=Math.round(w*d);scrCv.height=Math.round(h*d)}
+  scrCx.setTransform(d,0,0,d,0,0);scrDraw()}
+function scrLine(st){const P=st.p;if(!P.length)return;scrCx.globalCompositeOperation=st.e?'destination-out':'source-over';
+  scrCx.strokeStyle=st.c;scrCx.lineCap=scrCx.lineJoin='round';
+  if(P.length===1){scrCx.beginPath();scrCx.arc(P[0][0],P[0][1],st.w*P[0][2]/2,0,7);scrCx.fillStyle=st.c;scrCx.fill();return}
+  for(let i=1;i<P.length;i++){scrCx.beginPath();scrCx.lineWidth=st.w*(P[i-1][2]+P[i][2])/2;scrCx.moveTo(P[i-1][0],P[i-1][1]);scrCx.lineTo(P[i][0],P[i][1]);scrCx.stroke()}}
+function scrDraw(){scrCx.clearRect(0,0,scrCv.width,scrCv.height);SCR.strokes.forEach(scrLine);scrCx.globalCompositeOperation='source-over'}
+function scrClear(){SCR.strokes=[];SCR.cur=null;scrDraw()}
+function scrPaint(){$('#figc').classList.toggle('nodraw',!SCR.on);$('#pens').querySelectorAll('button').forEach(b=>b.classList.toggle('on',SCR.on&&b.dataset.p===SCR.pen))}
+const scrPt=e=>{const r=scrCv.getBoundingClientRect(),pr=e.pointerType==='pen'&&e.pressure>0?.55+e.pressure*.9:1;return [e.clientX-r.left,e.clientY-r.top,pr]};
+scrCv.addEventListener('pointerdown',e=>{if(!SCR.on)return;if(e.pointerType==='pen')SCR.penSeen=true;else if(e.pointerType==='touch'&&SCR.penSeen)return;   // 用過筆,手掌不畫
+  e.preventDefault();try{scrCv.setPointerCapture(e.pointerId)}catch(x){}const er=SCR.pen==='e';
+  SCR.cur={id:e.pointerId,e:er,c:SCR.pen==='r'?'#e03131':'#1c4fd6',w:er?28:3.2,p:[scrPt(e)]};SCR.strokes.push(SCR.cur);scrLine(SCR.cur)});
+scrCv.addEventListener('pointermove',e=>{const st=SCR.cur;if(!st||st.id!==e.pointerId)return;e.preventDefault();
+  let evs=e.getCoalescedEvents?e.getCoalescedEvents():[];if(!evs.length)evs=[e];const n=st.p.length;evs.forEach(x=>st.p.push(scrPt(x)));
+  scrLine({...st,p:st.p.slice(Math.max(0,n-1))})});
+['pointerup','pointercancel'].forEach(t=>scrCv.addEventListener(t,e=>{if(SCR.cur&&SCR.cur.id===e.pointerId)SCR.cur=null}));
+$('#pens').addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.p;
+  if(k==='c')return scrClear();if(k==='h')SCR.on=!SCR.on;else{SCR.on=true;SCR.pen=k}LS.set('learn601_draw',SCR.on);scrPaint()});
+addEventListener('resize',()=>{if($('#prac').classList.contains('on'))scrFit()});
+if(window.ResizeObserver)new ResizeObserver(()=>scrFit()).observe($('#figc'));
+scrPaint();
 
 /* ===================== 發音 =====================
    用平板內建的語音唸題目(say)和答案(speak);有中文就用國語唸 */
@@ -1132,7 +1183,7 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&round.qs[cur].type==='frac'?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
   else if(e.key==='Tab'||e.key==='/'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
-function showQ(){const q=round.qs[cur];$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
+function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   $('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
   const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none'}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
@@ -1141,14 +1192,16 @@ function showQ(){const q=round.qs[cur];$('#box').style.display='';$('#fbx').styl
   const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac');A.classList.toggle('chmode',q.type==='mc');
   $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';$('#rev').style.display='none';$('#rev').innerHTML='';
   $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
-  if(q.type==='mc'){const O=$('#opts');O.innerHTML='';O.className=q.row?'row':'';q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)})}
+  if(q.type==='mc'){const O=$('#opts');O.innerHTML='';const ml=Math.max(...q.opts.map(o=>isImg(o)?0:String(o).length));
+    O.className=(q.row?'row':'')+(ml>40?' xlong':ml>18?' long':'');q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)})}
   else buildPad(q.type==='frac');
   paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
 function fitBig(){const c=$('#bigc');c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;while(b.scrollWidth>c.clientWidth-8&&k++<30){fs*=.93;b.style.fontSize=fs+'px'}})}
 addEventListener('resize',()=>{if(round&&$('#prac').classList.contains('on'))fitBig()});
 function addStep(s,cls){const d=el('div',cls);d.innerHTML=s.startsWith('__HTML__')?s.slice(8):s;$('#steps').appendChild(d);return d}
-tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;$('#figc').classList.add('solv');fitBig();addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)$('#hint').disabled=true});
+const solv=q=>{if(!q.id)$('#figc').classList.add('solv')};   // 題庫題不縮小題目,解答直接接在下面
+tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;solv(q);fitBig();addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)$('#hint').disabled=true});
 tap($('#show'),()=>{if(solved)return;round.res[cur]='no';finish(round.qs[cur],false)});
 tap($('#next'),()=>nextQ());
 const near=(a,b)=>Math.abs(a-b)<1e-6;
@@ -1199,12 +1252,20 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
     if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 答對 ${n} 題，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
     else{round.miss=(round.miss||0)+1;toast(`這 10 題答對 ${n} 題，要答對 ${TK_NEED} 題才有券`)}}
   saveSum(round.got>0);wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
-  $('#figc').classList.add('solv');fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
+  solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent='正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
     else{const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):f(q.ans);r.style.display='inline-block';$('#box').style.display='none';$('#fbx').style.display='none'}}
+  if(q.id)bankReveal(q);
   $('#next').disabled=false;$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintP();
   setTimeout(()=>{const s=$('#steps').lastElementChild;if(s&&s.scrollIntoView)s.scrollIntoView({block:'nearest'})},50)}
+/* 題庫題答完:答案填進底線;聽力題把聽到的內容、或答完才給看的字,放在播音鍵下面 */
+function bankReveal(q){const c=$('#bigc');let filled=false;
+  if(typeof q.ans==='string'&&!isImg(q.ans)&&!/^[○╳]/.test(q.ans)){const bx=c.querySelector('.bx');
+    if(bx&&/＿+/.test(bx.innerHTML)){bx.innerHTML=bx.innerHTML.replace(/＿+/,`<u class="fill">${q.ans}</u>`);filled=true}}
+  if(q.rv)c.insertAdjacentHTML('beforeend',`<div class="bx s rv">${q.rv}</div>`);
+  else if(q.hd&&!filled)c.insertAdjacentHTML('beforeend',`<div class="bx s heard">${q.hd}</div>`);
+  fitBig()}
 function nextQ(){if(!solved)return;if(cur<N-1){cur++;showQ()}else endRound()}
 function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length,bk=typeof pu==='string'?pu:UN[pu].key;
   if(pu!=='wb'&&first>(sum.best[bk]||0))sum.best[bk]=first;
