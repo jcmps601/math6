@@ -360,6 +360,43 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
   .stat{font-size:24px; min-width:100px; height:50px}
   .rdots i{width:24px; height:24px; font-size:14px}
 }
+
+/* 新遊戲卡片 */
+.gcard.w .nm{color:#5c940d} .gcard.p .nm{color:#d6336c} .gcard.z .nm{color:#2b8a3e}
+.stage.wshake{animation:wshk .3s}
+@keyframes wshk{25%{transform:translateX(-1.2%)}75%{transform:translateX(1.2%)}}
+
+/* 打地鼠 */
+#wPane{background:radial-gradient(ellipse at 50% 30%,#d3f5b0 0%,#a5e07a 60%,#74c044 100%); touch-action:manipulation}
+.wgrid{position:absolute; left:50%; top:50%; height:90%; aspect-ratio:1; transform:translate(-50%,-50%); display:grid; gap:1.2cqw}
+.wcell{position:relative; cursor:pointer}
+.wcell::before{content:''; position:absolute; left:10%; right:10%; bottom:6%; height:28%; border-radius:50%;
+  background:radial-gradient(ellipse at 50% 35%,#2e1b0e 0%,#4a2e17 55%,#7a4f2a 100%); box-shadow:0 .4cqw 0 #5b3a1d}
+.wm{position:absolute; left:0; right:0; top:0; bottom:20%; overflow:hidden}
+.wm i{position:absolute; left:50%; bottom:0; transform:translate(-50%,115%); font-style:normal; line-height:1;
+  font-size:calc(var(--ws)*.62); transition:transform .11s ease-out; filter:drop-shadow(0 .3cqw 0 #0003)}
+.wcell.up .wm i{transform:translate(-50%,6%)}
+.wcell.gold .wm i{filter:drop-shadow(0 0 1.2cqw #ffd43b) drop-shadow(0 0 .5cqw #fab005) sepia(.6) saturate(3) hue-rotate(-10deg)}
+.wfx{position:absolute; left:50%; top:4%; transform:translateX(-50%); font-weight:900; font-size:calc(var(--ws)*.26); color:#fff;
+  text-shadow:0 .3cqw 0 #0006; white-space:nowrap; pointer-events:none; z-index:3; animation:wfx .7s ease-out forwards}
+.wfx.bad{color:#ffe3e3}
+@keyframes wfx{from{opacity:1; transform:translate(-50%,0)} to{opacity:0; transform:translate(-50%,-70%)}}
+
+/* 翻牌配對 */
+#pPane{background:radial-gradient(ellipse at 50% 30%,#fff0f6 0%,#ffdeeb 60%,#fcc2d7 100%); touch-action:manipulation}
+.pgrid{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:grid; gap:1.2cqw}
+.pcard{perspective:60cqw; cursor:pointer}
+.pcard .in{position:relative; width:100%; height:100%; transition:transform .3s; transform-style:preserve-3d}
+.pcard.open .in,.pcard.done .in{transform:rotateY(180deg)}
+.pcard .f,.pcard .b{position:absolute; inset:0; border-radius:1.4cqw; backface-visibility:hidden; -webkit-backface-visibility:hidden; display:grid; place-items:center}
+.pcard .b{background:linear-gradient(150deg,#ff8fb1,#e64980); box-shadow:inset 0 -.5cqw 0 #0002; font-size:var(--pf); font-weight:900; color:#fff9}
+.pcard .f{background:#fff; transform:rotateY(180deg); font-size:var(--pf); box-shadow:inset 0 -.5cqw 0 #0001}
+.pcard.done .f{background:#d3f9d8}
+.pcard.bad .f{background:#ffe3e3}
+
+/* 貪食蛇 */
+#zPane{background:#5fae3b; touch-action:none; cursor:pointer}
+#zCv{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none}
 </style>
 </head>
 <body>
@@ -381,6 +418,9 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
     <button class="gcard d" data-game="spot"><div class="ic">👀</div><div class="nm">找不同</div><div class="bests" id="hb_spot"></div></button>
     <button class="gcard b" data-game="bridge"><div class="ic">🌉</div><div class="nm">搭橋小英雄</div><div class="bests" id="hb_bridge"></div></button>
     <button class="gcard m" data-game="melon"><div class="ic">🍉</div><div class="nm">合成大西瓜</div><div class="bests" id="hb_melon"></div></button>
+    <button class="gcard w" data-game="mole"><div class="ic">🔨</div><div class="nm">打地鼠</div><div class="bests" id="hb_mole"></div></button>
+    <button class="gcard p" data-game="match"><div class="ic">🃏</div><div class="nm">翻牌配對</div><div class="bests" id="hb_match"></div></button>
+    <button class="gcard z" data-game="snake"><div class="ic">🐍</div><div class="nm">貪食蛇</div><div class="bests" id="hb_snake"></div></button>
     <button class="gcard g" data-game="g2048"><div class="ic"><span class="t2048"></span></div><div class="nm">2048</div><div class="bests" id="hb_g2048"></div></button>
   </div>
 </section>
@@ -416,6 +456,9 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
       <div class="pane" id="xPane"><div class="xmsg" id="xMsg"></div><div class="xsub" id="xSub"></div></div>
       <div class="pane" id="nPane"><div class="ngrid" id="nGrid"></div></div>
       <div class="pane" id="hPane"><div class="hlamp" id="hLamp"></div><div class="hshov" id="hShov"></div><div class="hgrid" id="hGrid"></div><div class="hlad" id="hLad"></div></div>
+      <div class="pane" id="wPane"><div class="wgrid" id="wGrid"></div></div>
+      <div class="pane" id="pPane"><div class="pgrid" id="pGrid"></div></div>
+      <div class="pane" id="zPane"><canvas id="zCv"></canvas><div class="tapHint" id="zHint">滑動或點蛇頭的上下左右來轉彎</div></div>
       <div class="bigmsg" id="bigMsg"></div>
       <div class="count" id="count"></div>
     </div>
@@ -583,7 +626,7 @@ function bgmCompile(spec,sepLead){
 
 
 /* ═════════════ 設定 ═════════════ */
-const GAMES={tower:{ic:'🧱',nm:'疊高塔'},cups:{ic:'🥤',nm:'三杯追星'},flappy:{ic:'🐤',nm:'小雞跳跳'},hunt:{ic:'🗺️',nm:'尋寶'},num:{ic:'🔢',nm:'數字快手'},simon:{ic:'🎹',nm:'記憶燈光'},color:{ic:'🎨',nm:'顏色陷阱'},react:{ic:'⚡',nm:'反應王'},spot:{ic:'👀',nm:'找不同'},bridge:{ic:'🌉',nm:'搭橋小英雄'},melon:{ic:'🍉',nm:'合成大西瓜'},g2048:{ic:'🔶',nm:'2048'}};
+const GAMES={tower:{ic:'🧱',nm:'疊高塔'},cups:{ic:'🥤',nm:'三杯追星'},flappy:{ic:'🐤',nm:'小雞跳跳'},hunt:{ic:'🗺️',nm:'尋寶'},num:{ic:'🔢',nm:'數字快手'},simon:{ic:'🎹',nm:'記憶燈光'},color:{ic:'🎨',nm:'顏色陷阱'},react:{ic:'⚡',nm:'反應王'},spot:{ic:'👀',nm:'找不同'},bridge:{ic:'🌉',nm:'搭橋小英雄'},melon:{ic:'🍉',nm:'合成大西瓜'},g2048:{ic:'🔶',nm:'2048'},mole:{ic:'🔨',nm:'打地鼠'},match:{ic:'🃏',nm:'翻牌配對'},snake:{ic:'🐍',nm:'貪食蛇'}};
 const GAME_KEYS=Object.keys(GAMES);
 const DIFFS=[{k:'easy',ic:'🌱',nm:'簡單'},{k:'normal',ic:'⭐',nm:'普通'},{k:'hard',ic:'🔥',nm:'困難'},{k:'boss',ic:'👑',nm:'魔王'}];
 const DIFF_COL={easy:'#2fb36d',normal:'#2f8cf0',hard:'#f28a1c',boss:'#9b3fe0'};
@@ -672,6 +715,9 @@ const CT_CFG={
   boss:  {k:5,btn:'trick', shuffle:true, mix:true, stars:[8,12,16]}};
 /* 各遊戲的星星門檻、分數顯示 */
 function gInfo(g,d){
+  if(g==='mole') return {th:WM_CFG[d].stars, big:x=>`${x}<small>分</small>`, txt:x=>`${x} 分`};
+  if(g==='match') return {th:PM_CFG[d].stars, low:true, big:x=>`${x}<small>秒</small>`, txt:x=>`${x} 秒`, nx:x=>`${x} 秒內`};
+  if(g==='snake') return {th:ZK_CFG[d].stars, big:x=>`${x}<small>顆</small>`, txt:x=>`${x} 顆`, nx:x=>`吃到 ${x} 顆`};
   if(g==='tower') return {th:TW_CFG[d].stars, big:x=>`${x}<small>層</small>`, txt:x=>`${x} 層`};
   if(g==='flappy') return {th:FP_CFG[d].stars, big:x=>`${x}<small>關</small>`, txt:x=>`${x} 關`};
   if(g==='simon') return {th:SM_CFG[d].stars, big:x=>`${x}<small>個燈</small>`, txt:x=>`${x} 個燈`};
@@ -851,7 +897,7 @@ const G={timers:[],run:0};                          // run：每開一局 +1，�
 function later(fn,ms){ const r=G.run; G.timers.push(setTimeout(()=>{ if(r===G.run) fn(); },ms)); }
 function stopGame(){
   G.run++; G.timers.forEach(clearTimeout); G.timers=[]; clearInterval(tw.tick); tw.tick=0; clearInterval(fp.tick); fp.tick=0;
-  tw.phase='idle'; cu.phase='idle'; fp.phase='idle'; ht.phase='idle'; nm.phase='idle'; clearInterval(nm.tick); nm.tick=0; sm.phase='idle'; ct.phase='idle'; rx.phase='idle'; rx.token++; fds.phase='idle'; clearInterval(fds.tick); fds.tick=0; br.phase='idle'; mel.phase='idle'; g2.phase='idle'; clearInterval(mel.tick); mel.tick=0; clearInterval(ct.tick); ct.tick=0; $('#count').innerHTML=''; bigMsg('');
+  tw.phase='idle'; cu.phase='idle'; fp.phase='idle'; ht.phase='idle'; nm.phase='idle'; clearInterval(nm.tick); nm.tick=0; sm.phase='idle'; ct.phase='idle'; rx.phase='idle'; rx.token++; fds.phase='idle'; clearInterval(fds.tick); fds.tick=0; br.phase='idle'; mel.phase='idle'; g2.phase='idle'; clearInterval(mel.tick); mel.tick=0; clearInterval(ct.tick); ct.tick=0; wm.phase='idle'; clearInterval(wm.tick); wm.tick=0; pm.phase='idle'; clearInterval(pm.tick); pm.tick=0; zk.phase='idle'; $('#count').innerHTML=''; bigMsg('');
   $$('.confetti').forEach(e=>e.remove());
 }
 /* 愛心：用同一個圖形畫，滿的是紅色實心、扣掉的是灰色空心，大小一致 */
@@ -867,13 +913,13 @@ function startGame(){
   stopGame(); show('game'); $('#result').classList.remove('on');
   const D=DIFFS.find(d=>d.k===curDiff), Gm=GAMES[curGame];
   const chip=$('#gChip'); chip.innerHTML=`${Gm.ic} ${Gm.nm}　${D.ic} ${D.nm}`; chip.style.background=DIFF_COL[curDiff];
-  const pane={tower:'tPane',cups:'cPane',flappy:'fPane',hunt:'hPane',num:'nPane',simon:'sPane',color:'kPane',react:'xPane',spot:'dPane',bridge:'bPane',melon:'mPane',g2048:'gPane'};
+  const pane={tower:'tPane',cups:'cPane',flappy:'fPane',hunt:'hPane',num:'nPane',simon:'sPane',color:'kPane',react:'xPane',spot:'dPane',bridge:'bPane',melon:'mPane',g2048:'gPane',mole:'wPane',match:'pPane',snake:'zPane'};
   $$('.pane').forEach(p=>p.classList.toggle('on',p.id===pane[curGame]));
-  $('#gTime').hidden=!['tower','flappy','num','color','spot','g2048'].includes(curGame); $('#gDots').hidden=!['cups','hunt','simon','react','bridge'].includes(curGame);
+  $('#gTime').hidden=!['tower','flappy','num','color','spot','g2048','mole'].includes(curGame); $('#gDots').hidden=!['cups','hunt','simon','react','bridge'].includes(curGame);
   $('#gTime').classList.remove('warn');
   fitStage();
   bgmStop(true);
-  ({tower:twStart,cups:cuStart,flappy:fpStart,hunt:htStart,num:nmStart,simon:smStart,color:ctStart,react:rxStart,spot:fdStart,bridge:brStart,melon:melStart,g2048:g2Start})[curGame]();
+  ({tower:twStart,cups:cuStart,flappy:fpStart,hunt:htStart,num:nmStart,simon:smStart,color:ctStart,react:rxStart,spot:fdStart,bridge:brStart,melon:melStart,g2048:g2Start,mole:wmStart,match:pmStart,snake:zkStart})[curGame]();
 }
 
 /* ═════════════ 結果 ═════════════ */
@@ -2192,6 +2238,209 @@ renderHome();
 
 </script>
 <script>
+/* ═════════════ 🔨 打地鼠 ═════════════
+   30 秒，地鼠冒出來就點牠 +1；金色地鼠 +3（躲得比較快）；困難以上會冒出炸彈，點到 −2。 */
+const WM_SECS=30;
+const WM_CFG={
+  easy:  {n:3,up:1150,gap:[650,950],max:1,gold:0,   bomb:0,   stars:[12,20,27]},
+  normal:{n:3,up:950, gap:[450,750],max:2,gold:0.1, bomb:0,   stars:[15,25,35]},
+  hard:  {n:3,up:800, gap:[380,620],max:2,gold:0.1, bomb:0.2, stars:[15,25,35]},
+  boss:  {n:4,up:650, gap:[280,500],max:3,gold:0.12,bomb:0.25,stars:[15,26,36]}};
+const wm={phase:'idle',cfg:WM_CFG.normal,tick:0,t0:0,score:0,cells:[]};
+function wmHud(){ $('#gScore').innerHTML=`🔨 ${wm.score}`; }
+function wmBuild(){
+  const C=wm.cfg, g=$('#wGrid');
+  g.style.gridTemplateColumns=`repeat(${C.n},1fr)`; g.style.setProperty('--ws',C.n===3?'15cqw':'11cqw');
+  g.innerHTML=[...Array(C.n*C.n)].map((_,i)=>`<div class="wcell" data-i="${i}"><div class="wm"><i></i></div></div>`).join('');
+  wm.cells=[...g.children].map(el=>({el,kind:null,tok:0}));
+}
+function wmSpawn(){
+  if(wm.phase!=='play') return;
+  const C=wm.cfg, free=wm.cells.filter(c=>!c.kind);
+  if(wm.cells.length-free.length<C.max&&free.length){
+    const c=free[Math.floor(Math.random()*free.length)], r=Math.random(), tok=++c.tok;
+    c.kind=r<C.bomb?'bomb':r<C.bomb+C.gold?'gold':'mole';
+    c.el.querySelector('.wfx')?.remove();
+    c.el.querySelector('i').textContent=c.kind==='bomb'?'💣':'🐹'; c.el.className='wcell up '+c.kind;
+    later(()=>{ if(c.tok===tok&&c.kind){ c.kind=null; c.el.className='wcell'; } },c.kind==='gold'?C.up*0.75:C.up);
+  }
+  later(wmSpawn,C.gap[0]+Math.random()*(C.gap[1]-C.gap[0]));
+}
+function wmHit(c){
+  if(wm.phase!=='play'||!c||!c.kind) return;
+  const k=c.kind, before=wm.score, d=k==='bomb'?-2:k==='gold'?3:1; c.kind=null; const tok=++c.tok;
+  if(k==='bomb'){ tone(120,0.3,'sawtooth',0.06); const st=$('#stage'); st.classList.remove('wshake'); void st.offsetWidth; st.classList.add('wshake'); }
+  else{ tone(k==='gold'?1320:880,0.08,'triangle',0.07); tone(k==='gold'?1760:1175,0.08,'triangle',0.05,0.05); }
+  wm.score=Math.max(0,wm.score+d); wmHud();
+  wm.cfg.stars.forEach((x,j)=>{ if(before<x&&wm.score>=x) later(()=>sfx.star(j),80); });
+  c.el.className='wcell up'; c.el.querySelector('i').textContent=k==='bomb'?'💥':'😵';
+  const fx=document.createElement('b'); fx.className='wfx'+(d<0?' bad':''); fx.textContent=d<0?'−2':k==='gold'?'⭐ +3':'+1'; c.el.appendChild(fx);
+  later(()=>{ if(c.tok===tok) c.el.className='wcell'; },320);
+  later(()=>fx.remove(),700);
+}
+function wmStart(){
+  wm.cfg=WM_CFG[curDiff]; Object.assign(wm,{phase:'ready',score:0}); wmBuild(); wmHud(); setTime(WM_SECS,false);
+  countdown(()=>{
+    wm.phase='play'; wm.t0=performance.now(); playSong('spot',TEMPO[curDiff]); wmSpawn();
+    let shown=WM_SECS;
+    wm.tick=setInterval(()=>{
+      const left=Math.max(0,Math.ceil((wm.t0+WM_SECS*1000-performance.now())/1000));
+      if(left!==shown){ shown=left; setTime(left,wm.phase==='play'); if(left<=5&&left>0) sfx.tick(); }
+      if(left<=0) wmEnd();
+    },100);
+  });
+}
+function wmEnd(){
+  if(wm.phase!=='play') return;
+  wm.phase='end'; clearInterval(wm.tick); wm.tick=0; setTime(0,false);
+  wm.cells.forEach(c=>{ c.kind=null; c.tok++; c.el.className='wcell'; });
+  bgmStop(); sfx.whistle(); bigMsg('時間到！',1500);
+  later(()=>showResult('mole',wm.score),2000);
+}
+$('#wGrid').addEventListener('pointerdown',e=>{ const el=e.target.closest('.wcell'); if(!el) return; e.preventDefault(); wmHit(wm.cells[+el.dataset.i]); });
+
+/* ═════════════ 🃏 翻牌配對 ═════════════
+   翻兩張，一樣就留著；全部配完的秒數就是成績（越少越好）。開始前會先偷看一下（魔王不能偷看）。 */
+const PM_POOL=['🍎','🍌','🍇','🍓','🍉','🍑','🍒','🥝','🍍','🥕','🌽','🍄'];
+const PM_BOSS=['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮'];   // 魔王：長得很像的動物臉
+const PM_CFG={
+  easy:  {c:4,r:3,peek:2500,pool:PM_POOL,stars:[45,30,22]},
+  normal:{c:4,r:4,peek:1500,pool:PM_POOL,stars:[75,50,38]},
+  hard:  {c:5,r:4,peek:1000,pool:PM_POOL,stars:[100,70,52]},
+  boss:  {c:6,r:4,peek:0,   pool:PM_BOSS,stars:[150,105,80]}};
+const pm={phase:'idle',cfg:PM_CFG.normal,cards:[],open:[],found:0,pairs:0,t0:0,tick:0,lock:false};
+const pmSec=()=>pm.t0?Math.max(1,Math.ceil((performance.now()-pm.t0)/1000)):0;
+function pmHud(){ $('#gScore').innerHTML=`🃏 ${pm.found}/${pm.pairs}<small>⏱ ${pmSec()} 秒</small>`; }
+function pmStart(){
+  const C=pm.cfg=PM_CFG[curDiff], n=C.c*C.r/2;
+  const pick=[...C.pool].sort(()=>Math.random()-0.5).slice(0,n), deck=[...pick,...pick];
+  for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+  Object.assign(pm,{phase:'ready',open:[],found:0,pairs:n,t0:0,lock:false});
+  const H=(50.6-(C.r-1)*1.2)/C.r, W=H*0.82, g=$('#pGrid');
+  g.style.gridTemplateColumns=`repeat(${C.c},${W}cqw)`; g.style.gridTemplateRows=`repeat(${C.r},${H}cqw)`; g.style.setProperty('--pf',(H*0.55)+'cqw');
+  g.innerHTML=deck.map((e,i)=>`<div class="pcard" data-i="${i}"><div class="in"><div class="b">?</div><div class="f">${e}</div></div></div>`).join('');
+  pm.cards=deck.map((e,i)=>({e,el:g.children[i],done:false}));
+  pmHud();
+  countdown(()=>{
+    const go=()=>{ pm.phase='play'; pm.t0=performance.now(); pm.tick=setInterval(pmHud,250); playSong('simon',TEMPO[curDiff]); };
+    if(!C.peek) return go();
+    pm.cards.forEach(c=>c.el.classList.add('open')); bigMsg('記住位置！');
+    later(()=>{ pm.cards.forEach(c=>c.el.classList.remove('open')); bigMsg(''); later(go,320); },C.peek);
+  });
+}
+function pmFlip(c){
+  if(pm.phase!=='play'||pm.lock||!c||c.done||c.el.classList.contains('open')) return;
+  c.el.classList.add('open'); pm.open.push(c); tone(700,0.05,'triangle',0.05);
+  if(pm.open.length<2) return;
+  const [a,b]=pm.open; pm.open=[];
+  if(a.e===b.e){
+    a.done=b.done=true; pm.found++; pmHud();
+    later(()=>{ a.el.classList.add('done'); b.el.classList.add('done'); tone(988,0.1,'triangle',0.07); tone(1319,0.14,'triangle',0.06,0.08); },250);
+    if(pm.found===pm.pairs) pmEnd();
+  }else{
+    pm.lock=true;
+    later(()=>{ a.el.classList.add('bad'); b.el.classList.add('bad'); tone(200,0.12,'sine',0.05); },300);
+    later(()=>{ [a,b].forEach(x=>x.el.classList.remove('open','bad')); pm.lock=false; },850);
+  }
+}
+function pmEnd(){
+  if(pm.phase!=='play') return;
+  const sc=pmSec(); pm.phase='end'; clearInterval(pm.tick); pm.tick=0; pmHud();
+  bgmStop(); later(()=>sfx.win(),300); bigMsg('全部配對完成！',1500);
+  later(()=>showResult('match',sc),1900);
+}
+$('#pGrid').addEventListener('pointerdown',e=>{ const el=e.target.closest('.pcard'); if(!el) return; e.preventDefault(); pmFlip(pm.cards[+el.dataset.i]); });
+
+/* ═════════════ 🐍 貪食蛇 ═════════════
+   吃蘋果會變長，撞到牆、石頭或自己就結束；成績＝吃到幾顆。
+   簡單可以穿牆；普通以上撞牆就結束，而且越吃越快；困難、魔王有石頭。 */
+const ZW=16, ZH=9;
+const ZK_CFG={
+  easy:  {ms:210,wrap:true, rocks:0,fast:0,  stars:[8,15,22]},
+  normal:{ms:170,wrap:false,rocks:0,fast:2,  stars:[8,15,22]},
+  hard:  {ms:140,wrap:false,rocks:5,fast:2,  stars:[7,13,20]},
+  boss:  {ms:115,wrap:false,rocks:9,fast:2.5,stars:[6,12,18]}};
+const zk={phase:'idle',cfg:ZK_CFG.normal,body:[],dir:{x:1,y:0},q:[],food:null,rocks:[],score:0,ms:170,p0:null};
+const zkHas=(arr,x,y)=>arr.some(p=>p.x===x&&p.y===y);
+function zkHud(){ $('#gScore').innerHTML=`🍎 ${zk.score}`; }
+function zkFree(){
+  const out=[]; for(let y=0;y<ZH;y++) for(let x=0;x<ZW;x++) if(!zkHas(zk.body,x,y)&&!zkHas(zk.rocks,x,y)) out.push({x,y});
+  return out[Math.floor(Math.random()*out.length)]||null;
+}
+function zkStart(){
+  const C=zk.cfg=ZK_CFG[curDiff], my=Math.floor(ZH/2);
+  Object.assign(zk,{phase:'ready',body:[{x:4,y:my},{x:3,y:my},{x:2,y:my}],dir:{x:1,y:0},q:[],score:0,ms:C.ms,rocks:[],p0:null});
+  while(zk.rocks.length<C.rocks){ const x=2+Math.floor(Math.random()*(ZW-4)), y=Math.floor(Math.random()*ZH);
+    if(Math.abs(y-my)<=1&&x<9) continue; if(!zkHas(zk.rocks,x,y)) zk.rocks.push({x,y}); }
+  zk.food=zkFree(); zkHud(); $('#zHint').classList.remove('off');
+  requestAnimationFrame(zkDraw);
+  countdown(()=>{ zk.phase='play'; playSong('flappy',TEMPO[curDiff]); later(zkStep,zk.ms); });
+}
+function zkTurn(x,y){
+  if(zk.phase!=='play'&&zk.phase!=='ready') return;
+  const last=zk.q.length?zk.q[zk.q.length-1]:zk.dir;
+  if((x===last.x&&y===last.y)||(x===-last.x&&y===-last.y)||zk.q.length>=2) return;
+  zk.q.push({x,y}); $('#zHint').classList.add('off');
+}
+function zkStep(){
+  if(zk.phase!=='play') return;
+  const C=zk.cfg; if(zk.q.length) zk.dir=zk.q.shift();
+  const h=zk.body[0]; let nx=h.x+zk.dir.x, ny=h.y+zk.dir.y;
+  if(C.wrap){ nx=(nx+ZW)%ZW; ny=(ny+ZH)%ZH; }
+  const eat=zk.food&&nx===zk.food.x&&ny===zk.food.y;
+  const hitSelf=zkHas(eat?zk.body:zk.body.slice(0,-1),nx,ny);
+  if(nx<0||ny<0||nx>=ZW||ny>=ZH||hitSelf||zkHas(zk.rocks,nx,ny)) return zkDie();
+  zk.body.unshift({x:nx,y:ny});
+  if(eat){
+    zk.score++; zkHud(); zk.ms=Math.max(70,zk.ms-C.fast);
+    tone(880+Math.min(zk.score,20)*20,0.08,'triangle',0.07); tone(1320,0.06,'sine',0.03,0.05);
+    C.stars.forEach((x,j)=>{ if(zk.score===x) later(()=>sfx.star(j),80); });
+    zk.food=zkFree();
+  }else zk.body.pop();
+  zkDraw(); later(zkStep,zk.ms);
+}
+function zkDie(){
+  zk.phase='end'; bgmStop(); tone(160,0.3,'sawtooth',0.06); later(()=>sfx.lose(),250);
+  const st=$('#stage'); st.classList.remove('wshake'); void st.offsetWidth; st.classList.add('wshake');
+  zkDraw(true); bigMsg('撞到了！',1500); later(()=>showResult('snake',zk.score),1900);
+}
+function zkDraw(dead){
+  const cv=$('#zCv'), w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return;
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
+  const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
+  const s=Math.min(w/ZW,h/ZH), ox=(w-s*ZW)/2, oy=(h-s*ZH)/2;
+  c.fillStyle='#5fae3b'; c.fillRect(0,0,w,h);
+  for(let y=0;y<ZH;y++) for(let x=0;x<ZW;x++){ c.fillStyle=(x+y)%2?'#a9dc76':'#9bd46a'; c.fillRect(ox+x*s,oy+y*s,s,s); }
+  if(!zk.cfg.wrap){ c.strokeStyle='#3d7a22'; c.lineWidth=s*0.12; c.strokeRect(ox,oy,s*ZW,s*ZH); }
+  c.textAlign='center'; c.textBaseline='middle'; c.font=`${s*0.8}px sans-serif`;
+  zk.rocks.forEach(p=>c.fillText('🪨',ox+(p.x+0.5)*s,oy+(p.y+0.55)*s));
+  if(zk.food) c.fillText('🍎',ox+(zk.food.x+0.5)*s,oy+(zk.food.y+0.55)*s);
+  const n=zk.body.length;
+  for(let i=n-1;i>=0;i--){ const p=zk.body[i], k=i===0?0:i/n;
+    c.fillStyle=dead&&i===0?'#e03131':`hsl(${215-k*25} 75% ${i===0?42:52+k*10}%)`;
+    rr(c,ox+p.x*s+s*0.07,oy+p.y*s+s*0.07,s*0.86,s*0.86,s*(i===0?0.38:0.3)); c.fill(); }
+  const hd=zk.body[0], d=zk.dir, cx=ox+(hd.x+0.5)*s, cy=oy+(hd.y+0.5)*s;
+  [-1,1].forEach(side=>{ const ex=cx+d.x*s*0.15-d.y*side*s*0.2, ey=cy+d.y*s*0.15+d.x*side*s*0.2;
+    c.fillStyle='#fff'; c.beginPath(); c.arc(ex,ey,s*0.13,0,7); c.fill();
+    c.fillStyle='#222'; c.beginPath(); c.arc(ex+d.x*s*0.04,ey+d.y*s*0.04,s*0.065,0,7); c.fill(); });
+}
+const ZK_KEYS={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};
+document.addEventListener('keydown',e=>{ if(curGame!=='snake'||!$('#game').classList.contains('on')) return;
+  const k=ZK_KEYS[e.key.length===1?e.key.toLowerCase():e.key]; if(k){ e.preventDefault(); zkTurn(k[0],k[1]); } });
+$('#zPane').addEventListener('pointerdown',e=>{ e.preventDefault(); zk.p0={x:e.clientX,y:e.clientY}; });
+$('#zPane').addEventListener('pointerup',e=>{
+  if(!zk.p0) return; const dx=e.clientX-zk.p0.x, dy=e.clientY-zk.p0.y; zk.p0=null;
+  if(Math.hypot(dx,dy)>25) return Math.abs(dx)>Math.abs(dy)?zkTurn(Math.sign(dx),0):zkTurn(0,Math.sign(dy));
+  /* 點一下：看點在蛇頭的哪一邊就往那邊轉 */
+  const cv=$('#zCv'), r=cv.getBoundingClientRect(), s=Math.min(r.width/ZW,r.height/ZH);
+  const tx=(e.clientX-r.left-(r.width-s*ZW)/2)/s-0.5, ty=(e.clientY-r.top-(r.height-s*ZH)/2)/s-0.5, hd=zk.body[0], d=zk.q.length?zk.q[zk.q.length-1]:zk.dir;
+  if(!hd) return;
+  if(d.x!==0){ if(Math.abs(ty-hd.y)>=0.5) zkTurn(0,Math.sign(ty-hd.y)); }
+  else if(Math.abs(tx-hd.x)>=0.5) zkTurn(Math.sign(tx-hd.x),0);
+});
+window.addEventListener('resize',()=>{ if(curGame==='snake'&&$('#game').classList.contains('on')) requestAnimationFrame(()=>zkDraw(zk.phase==='end')); });
+
 /* ═════════════ 601 學習平台模式 ═════════════
    只有在「601 學習平台」裡面開啟時才會啟動（直接開這個檔案、上課用大螢幕時完全不受影響）：
    ・一張遊戲券 = 5 分鐘：時間內任何遊戲想玩幾局都可以；時間到，正在玩的那局玩完就結束（搭橋小英雄直接結算）
@@ -2217,7 +2466,9 @@ renderHome();
 .rrank{font-size:24px;font-weight:900;color:#e8590c;margin-top:4px;min-height:1.2em}
 #lbBox{background:rgba(255,255,255,.95);border-radius:22px;padding:10px 18px;min-width:min(760px,92vw);max-width:92vw;box-shadow:0 5px 0 #0002}
 #lbBox .h{font-size:22px;font-weight:900;color:#e8590c;margin-bottom:6px}
-#lbBox .rows{display:flex;flex-wrap:wrap;gap:6px 18px}
+#lbBox .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#lbBox .col{display:flex;flex-direction:column;gap:2px;border-top:6px solid var(--dc);background:#f8f9fa;border-radius:12px;padding:4px 10px 6px}
+#lbBox .col>b{font-size:19px;color:var(--dc)}#lbBox .col .r{font-size:18px;overflow:hidden;text-overflow:ellipsis}#lbBox .r.none{color:#bbb;font-size:17px}
 #lbBox .r{font-size:21px;font-weight:900;color:#444;white-space:nowrap}#lbBox .r.me{color:#e8590c}
 #lbBox .r small{font-size:16px;color:#888;margin:0 4px}
 .lbme{display:block;margin-top:4px;font-size:15px;font-weight:900;color:#ffe14d}`;
@@ -2243,24 +2494,25 @@ renderHome();
     if(upPending&&!inGame()){ upPending=false; setTimeout(()=>showMsg('⏰','5 分鐘到了！'),$('#result').classList.contains('on')?2600:0); }
   }
   setInterval(tick,250); tick();
-  /* 排行榜 */
-  const DI=['🌱','⭐','🔥','👑'], DK=['easy','normal','hard','boss'];
-  const fmt=(g,r)=>`<small>${DI[r.d]}${r.k?'★':''}</small>${gInfo(g,DK[r.d]).txt(r.s)}${r.k?'':'<small>（未達 1 星）</small>'}`;
+  /* 排行榜：四個難度分開排名 */
+  const DI=['🌱','⭐','🔥','👑'], DK=['easy','normal','hard','boss'], DN=['簡單','普通','困難','魔王'], DC=['#2fb36d','#2f8cf0','#f28a1c','#9b3fe0'];
   const box=document.createElement('div'); box.id='lbBox'; $('#diff').appendChild(box);
+  const head='<div class="h">🏆 全班排行（四個難度分開排名，★＝拿到 1 顆星）</div>';
   async function showBoard(g){
-    box.innerHTML='<div class="h">🏆 全班排行</div><div class="rows"><span class="r">讀取中…</span></div>';
+    box.innerHTML=head+'<div class="cols"><span class="r">讀取中…</span></div>';
     const all=await L.board(); if(g!==curGame) return;
-    if(!all){ box.innerHTML='<div class="h">🏆 全班排行</div><div class="rows"><span class="r">📴 連上網路才看得到</span></div>'; return; }
-    const arr=all[g]||[], me=L.seat();
-    if(!arr.length){ box.innerHTML='<div class="h">🏆 全班排行</div><div class="rows"><span class="r">還沒有人上榜，搶第一名！</span></div>'; return; }
-    let h=''; arr.forEach((r,i)=>{ const isMe=r.seat===me; if(i>=5&&!isMe) return;
-      h+=`<span class="r${isMe?' me':''}">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank+'.'} ${r.seat}號 ${fmt(g,r)}</span>`; });
-    box.innerHTML=`<div class="h">🏆 全班排行（先比拿到 1 顆星的最高難度，再比成績）</div><div class="rows">${h}</div>`;
+    if(!all){ box.innerHTML=head+'<div class="cols"><span class="r">📴 連上網路才看得到</span></div>'; return; }
+    const me=L.seat();
+    box.innerHTML=head+'<div class="cols">'+DK.map((k,d)=>{ const arr=(all[g]||[])[d]||[]; let h='';
+      arr.forEach((r,i)=>{ const isMe=r.seat===me; if(i>=3&&!isMe) return;
+        h+=`<span class="r${isMe?' me':''}">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank+'.'} ${r.seat}號 <small>${gInfo(g,k).txt(r.s)}${r.k?'★':''}</small></span>`; });
+      return `<div class="col" style="--dc:${DC[d]}"><b>${DI[d]} ${DN[d]}</b>${h||'<span class="r none">還沒有人</span>'}</div>`; }).join('')+'</div>';
   }
   async function showHomeRanks(){
     const all=await L.board(); if(!all) return; const me=L.seat();
-    for(const g of GAME_KEYS){ const el=$('#hb_'+g); if(!el) continue; const r=(all[g]||[]).find(x=>x.seat===me);
-      el.querySelectorAll('.lbme').forEach(x=>x.remove()); if(r){ const s=document.createElement('span'); s.className='lbme'; s.textContent=`🏆 全班第 ${r.rank} 名`; el.appendChild(s); } }
+    for(const g of GAME_KEYS){ const el=$('#hb_'+g); if(!el) continue; el.querySelectorAll('.lbme').forEach(x=>x.remove());
+      const t=DK.map((k,d)=>{ const r=((all[g]||[])[d]||[]).find(x=>x.seat===me); return r?`${DI[d]}第${r.rank}`:''; }).filter(Boolean).join(' ');
+      if(t){ const s=document.createElement('span'); s.className='lbme'; s.textContent='🏆 '+t; el.appendChild(s); } }
   }
   const _goDiff=goDiff; goDiff=function(){ _goDiff(); showBoard(curGame); };
   const _goHome=goHome; goHome=function(){ _goHome(); showHomeRanks(); };
@@ -2274,7 +2526,7 @@ renderHome();
   const rk=document.createElement('div'); rk.className='rrank'; const nx=$('#rNext'); nx.parentNode.insertBefore(rk,nx.nextSibling);
   const _res=showResult;
   showResult=function(g,score){ _res(g,score); rk.textContent=''; const d=curDiff;
-    Promise.resolve(L.score(g,d,score)).then(r=>{ if(r&&r.best) rk.textContent=(r.rank?`🏆 全班第 ${r.rank} 名　`:'')+`我的最佳：${DI[r.best.d]} ${gInfo(g,DK[r.best.d]).txt(r.best.s)}`; }).catch(()=>{}); };
+    Promise.resolve(L.score(g,d,score)).then(r=>{ if(r&&r.best) rk.textContent=(r.rank?`🏆 ${DI[r.best.d]} ${DN[r.best.d]}全班第 ${r.rank} 名　`:'')+`我的最佳：${gInfo(g,DK[r.best.d]).txt(r.best.s)}`; }).catch(()=>{}); };
   showHomeRanks();
 })();
 </script>
