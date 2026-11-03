@@ -245,6 +245,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #bgames,#bdiffs{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.6rem}
 .bgb,.bdb{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1.1rem;font-weight:900;color:#555;padding:.3rem .7rem}
 .bgb.on{border-color:#e8590c;background:#fff4e6;color:#e8590c}.bdb.on{border-color:#495057;background:#495057;color:#fff}
+#xqcard{display:flex;align-items:center;gap:1.2rem;margin-top:.8rem}#xqcard .tkn{font-size:3rem}#xqcard .t{font-size:1.7rem;font-weight:900}#xqcard .s{font-size:1.15rem;color:#999;font-weight:800}#xqcard .go{margin:0 0 0 auto}
 #board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;background:none;box-shadow:none;padding:0}
 .bcol{background:#fff;border-radius:20px;box-shadow:0 5px 0 var(--line);overflow:hidden;display:flex;flex-direction:column;gap:.15rem;padding-bottom:.4rem}
 .bcol .bh{background:var(--dc);color:#fff;font-size:1.3rem;font-weight:900;padding:.45rem .7rem;margin-bottom:.2rem}
@@ -805,6 +806,7 @@ const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/
 const PLAY_MS=5*60*1000;           // 一張券 = 5 分鐘遊戲時間
 const GDIFF=[['easy','🌱','簡單'],['normal','⭐','普通'],['hard','🔥','困難'],['boss','👑','魔王']];
 const GAME_TOOL={id:'game',i:'🎮',k:'遊戲',n:'601 挑戰樂園',f:'game.html'};
+const XQ_TOOL={id:'xq',i:'♟️',k:'對戰',n:'象棋對戰',f:'chess.html'};   // 兩人連線,一局用 1 張遊戲券
 const PU=[0,1,2,3];               // 有練習題的單元
 let N=10;                       // 一回的題數(錯題再練可能少於 10)
 const WB={key:'wb',no:'📕',ic:'📕',name:'錯題再練',nav:'錯題',c:'#c92a2a',cb:'#fff5f5'};
@@ -1028,6 +1030,8 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
   const can=left>0||(sum.tk||0)>0;const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
+  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">♟️</div><div><div class="t">象棋對戰</div><div class="s">兩台平板連線對下・一局用 1 張遊戲券</div></div>';
+  const xb=el('button','go','開始 ▶');tap(xb,()=>openTool(XQ_TOOL));x.appendChild(xb);P.appendChild(x);
   P.appendChild(el('div','sec','🏆 全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
   const gc=el('div');gc.id='bgames';GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bg=k;render()});gc.appendChild(x)});P.appendChild(gc);
   const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(L);loadBoard(L)}
@@ -1062,6 +1066,9 @@ window.__learn601={
   /* 開一局:5 分鐘還沒用完就直接玩;用完了才扣 1 張券、重新給 5 分鐘 */
   startPlay(g,d){if(!user||!sum)return {ok:false};if(playLeft()>0)return {ok:true};
     if(!((sum.tk||0)>0))return {ok:false};sum.tk--;sum.se=Date.now()+PLAY_MS;saveSum(true);logPush({k:'g',game:g,diff:d});return {ok:true,fresh:true}},
+  /* 象棋:一局用 1 張遊戲券(老師測試帳號不用) */
+  useTicket(g){if(!user||!sum)return false;if(user.seat===TEST_SEAT)return true;if(!((sum.tk||0)>0))return false;
+    sum.tk--;saveSum(true);logPush({k:'g',game:g});return true},
   board:()=>lbAll().catch(()=>null),
   async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;
     const d=DIDX[dk],k=bKey(g,d);logPush({k:'gs',game:g,diff:dk,score:s});sum.gb3=sum.gb3||{};
