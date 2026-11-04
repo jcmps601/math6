@@ -491,6 +491,7 @@ body{background:
 @media (max-width:700px){#boss{flex-wrap:wrap}#boss .bmon{font-size:3.4rem}#boss .brw{width:100%}}
 .bhit{display:inline-block;margin-left:.5rem;color:#7048e8;font-weight:900;animation:popin .4s}
 .bend{color:#7048e8}
+#tbout .tbrule{background:#f8f9fa;border-radius:12px;padding:.7rem;font-size:.95rem;white-space:pre;overflow:auto;user-select:text}
 #tbout .tbh{font-size:1.2rem;font-weight:900;margin:.4rem 0}#tbout .chip{cursor:default}#tbout .chip.z{opacity:.45}#tbout .chip.z small{color:#999}
 </style>
 </head><body>
@@ -998,7 +999,7 @@ async function ensureBind(){if(!user||!db||!fauth)return false;
     const k=u.uid+'|'+user.seat+'|'+user.pin;if(boundKey===k)return true;
     await timeout(db.ref(`${ROOT}/bind/${u.uid}`).set({s:String(user.seat),p:String(user.pin)}),10000);boundKey=k;return true}catch(e){return false}}
 async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true;
-  while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/');
+  while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/')||it.p.startsWith(ROOT+'/boss/');
     if(isLb&&!(await ensureBind()))break;
     /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
     const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
@@ -1597,7 +1598,7 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
    ・一次就答對 10 點、第二次才答對 5 點;錯題本、各科都算
    ・魔王的血＝全班人數 × BOSS_HP_EACH(大約每人一週答對 15 題就打得倒)
    ・打倒以後,這週有出手(打滿 BOSS_MIN 點)的人都可以領 1 張遊戲券(上週的也還能領)
-   ・傷害存在 learn/lb/boss_星期一日期/座號 = {d:3,s:這週打了幾點,t:時間}(用排行榜的位置,只能寫自己那一格)
+   ・傷害存在 learn/boss/星期一日期/座號 = {s:這週打了幾點,t:時間}(只能寫自己那一格;Firebase 規則要加 BOSS_RULE 那一段)
    ・測試帳號也會寫,但不算進全班的血量(自己看得到自己打的) */
 const BOSSES=[{i:'🐲',n:'噴火龍・阿焰'},{i:'🐙',n:'墨汁章魚王'},{i:'🦂',n:'沙漠蠍子王'},{i:'👻',n:'搗蛋幽靈'},{i:'🤖',n:'鐵甲機器怪'},{i:'🦈',n:'鯊魚船長'},{i:'🐻‍❄️',n:'冰原大白熊'},{i:'🦖',n:'森林暴龍'}];
 const BOSS_HP_EACH=150,BOSS_MIN=50,BOSS_HIT={ok:10,ok2:5};
@@ -1610,17 +1611,27 @@ function bossHit(res){const h=BOSS_HIT[res]||0;if(!h||!user||!sum)return 0;const
   sum.bossD=sum.bossD||{};sum.bossD[wk]=(sum.bossD[wk]||0)+h;
   for(const k of Object.keys(sum.bossD))if(k<bossWk(4))delete sum.bossD[k];   // 只留最近幾週
   round.bd=(round.bd||0)+h;BOSSC=null;
-  enqueue(`${ROOT}/lb/boss_${wk}/${user.seat}`,{d:3,s:sum.bossD[wk],t:Date.now()},true);return h}
+  enqueue(`${ROOT}/boss/${wk}/${user.seat}`,{s:sum.bossD[wk],t:Date.now()},true);return h}
+/* 要貼到 Firebase 規則「learn」裡面的那一段(老師頁會顯示、可以複製) */
+const BOSS_RULE=`"boss": {
+  ".read": true,
+  "$wk": {
+    "$seat": {
+      ".write": "auth != null && root.child('learn/bind/' + auth.uid + '/s').val() === $seat",
+      ".validate": "newData.child('s').isNumber() && newData.child('s').val() >= 0 && newData.child('t').isNumber()"
+    }
+  }
+}`;
 /* 讀全班打了多少(記 20 秒) */
 let BOSSC=null;
 async function bossLoad(wk){if(BOSSC&&BOSSC.wk===wk&&Date.now()-BOSSC.at<20000)return BOSSC;
-  await fbReady;let v=null;if(db&&online){try{v=(await timeout(db.ref(`${ROOT}/lb/boss_${wk}`).get(),8000)).val()||{}}catch(e){v=null}}
+  await fbReady;let v=null,denied=false;if(db&&online){try{v=(await timeout(db.ref(`${ROOT}/boss/${wk}`).get(),8000)).val()||{}}catch(e){v=null;denied=/permission/i.test(String(e&&(e.code||e.message)))}}
   const rows=[];if(v)for(const [st,o] of Object.entries(v)){const s=+st;if(o&&typeof o.s==='number'&&isFinite(o.s)&&o.s>0)rows.push({seat:s,s:o.s,t:o.t||0})}
   /* 自己的用平板上的(可能還沒上傳完) */
   if(user){const me=rows.find(r=>r.seat===user.seat),m=myBoss(wk);if(me)me.s=Math.max(me.s,m);else if(m)rows.push({seat:user.seat,s:m,t:Date.now()})}
   const cls=rows.filter(r=>!isTest(r.seat)).sort((a,b)=>b.s-a.s||a.seat-b.seat);
   let tot=cls.reduce((a,r)=>a+r.s,0);if(user&&isTest(user.seat))tot+=myBoss(wk);   // 測試帳號:自己打的也看得到效果
-  const R={wk,at:Date.now(),ok:!!v,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP()};if(wk===bossWk())BOSSC=R;return R}
+  const R={wk,at:Date.now(),ok:!!v,denied,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP()};if(wk===bossWk())BOSSC=R;return R}
 const bossClaimed=wk=>!!(sum&&sum.bossR&&sum.bossR[wk]);
 function bossClaim(wk){if(!sum||bossClaimed(wk))return;sum.bossR=sum.bossR||{};sum.bossR[wk]=1;
   if(!isTest(user.seat))sum.tk=(sum.tk||0)+1;saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);
@@ -1635,7 +1646,7 @@ async function bossPaint(c,wk){const B=bossOf(wk);let R,L=null;try{[R,L]=await P
   if(!c.isConnected)return;const left=Math.max(0,R.hp-R.tot),dead=left<=0,me=myBoss(wk),rk=R.rows.findIndex(r=>r.seat===user.seat);
   c.classList.toggle('dead',dead);c.querySelector('#bbi').style.width=(left/R.hp*100)+'%';
   c.querySelector('#bbt').textContent=dead?'💥 被打倒了！':`剩 ${left} / ${R.hp}`;
-  c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${R.tot}</b> 點・`:'📴 連上網路才看得到全班打了多少・')+(me?`我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！');
+  c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${R.tot}</b> 點・`:R.denied?'⏳ 全班的點數還沒開通（請告訴老師）・':'📴 連上網路才看得到全班打了多少・')+(me?`我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！');
   const md=['🥇','🥈','🥉'];c.querySelector('#bbtop').innerHTML=R.rows.length?'本週勇者：'+R.rows.slice(0,5).map((r,i)=>`<span>${md[i]||''}${r.seat} 號 ${r.s}</span>`).join(''):'';
   /* 打倒了:有出手的人領獎(這週、上週) */
   const rw=c.querySelector('#bbrw');rw.innerHTML='';
@@ -1651,6 +1662,8 @@ function bossEndMsg(){const d=round.bd||0;if(!d)return '';const B=bossOf(bossWk(
   return `<div class="tkget bend">⚔️ 這一輪對${B.i} ${B.n}造成 <b>${d}</b> 點傷害！</div>`}
 /* 老師頁:本週魔王、每個人打了多少 */
 async function bossTeacher(){const O=$('#tbout');if(!O)return;O.textContent='讀取中…';const wk=bossWk(),B=bossOf(wk);let R;try{R=await bossLoad(wk)}catch(e){}
+  if(R&&R.denied){O.innerHTML=`<div class="dbad">❗ Firebase 規則還沒加上魔王的設定，學生打的點數存不上去。<br>請到 Firebase 主控台 → Realtime Database →「規則」，在 <b>"learn": {</b> 的下一行貼上下面這段（後面要加逗號），按「發布」，再按上面的「🔄 重新整理」。</div><pre class="tbrule">${BOSS_RULE},</pre><button class="gray" id="tbcopy">📋 複製規則</button>`;
+    tap($('#tbcopy'),()=>{try{navigator.clipboard.writeText(BOSS_RULE+',');$('#tbcopy').textContent='✅ 已複製'}catch(e){}});return}
   if(!R||!R.ok){O.textContent='📴 連不上 Firebase';return}const m={};R.rows.forEach(r=>m[r.seat]=r.s);const left=Math.max(0,R.hp-R.tot);
   O.innerHTML=`<div class="tbh">${B.i} <b>${B.n}</b>　${left?`剩 ${left} / ${R.hp}`:'💥 已經被打倒了'}　全班打了 ${R.tot} 點・${R.rows.length} 人出手</div>`+
     `<div class="chips">${SEATS.flat().map(s=>`<span class="chip${m[s]?'':' z'}">${s}<small>${m[s]||'還沒'}</small></span>`).join('')}</div>`+
