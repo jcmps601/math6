@@ -471,6 +471,27 @@ body{background:
 @media (max-width:1100px){.hmw{flex-direction:column}.hmw #ddet{position:static;margin-top:0;min-width:0;width:100%}.hmw #ddet.tip{display:none}}#ddet .dt{font-size:1.3rem;font-weight:900;margin-bottom:.4rem}
 #ddet .dr{display:flex;justify-content:space-between;gap:1rem;padding:.25rem 0;border-bottom:2px solid #fff}
 @media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.care{grid-template-columns:minmax(0,1fr)}.wk{grid-template-columns:2rem minmax(0,1fr) minmax(0,1fr)}.wk .chips{grid-column:2/-1}}
+/* 全班打魔王 */
+#boss{display:flex;align-items:center;gap:1rem;margin-top:1rem;background:linear-gradient(135deg,#fff,#f3f0ff)}
+#boss .bmon{position:relative;font-size:4.6rem;line-height:1;flex:none;animation:bob 2.4s ease-in-out infinite}
+#boss .bmon.hit{animation:shake .5s 2}
+#boss .bdmg{position:absolute;left:50%;top:-.2rem;font-size:1.7rem;font-weight:900;color:#e03131;text-shadow:0 2px 0 #fff;animation:bdmg 1.6s forwards;pointer-events:none}
+@keyframes bdmg{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}20%{opacity:1;transform:translate(-50%,-6px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-40px)}}
+#boss.dead .bmon{filter:grayscale(1);opacity:.55;animation:none;transform:rotate(-12deg)}
+#boss .binfo{flex:1;min-width:0}
+#boss .bt{font-size:1.35rem;font-weight:900;color:#5f3dc4}#boss .bt small{font-size:.95rem;color:#999;margin-left:.6rem;font-weight:800}
+#boss .bbar{position:relative;height:1.9rem;background:#e9ecef;border-radius:1rem;overflow:hidden;margin:.45rem 0}
+#boss .bbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#ff6b6b,#fa5252);border-radius:1rem;transition:width 1.2s}
+#boss .bbar b{position:relative;display:block;text-align:center;line-height:1.9rem;font-size:1.05rem;color:#333}
+#boss .bsub{font-size:1.05rem;color:#555;font-weight:800}#boss .bsub b{color:#c92a2a}
+#boss .btop{font-size:.95rem;color:#7950f2;font-weight:800;margin-top:.2rem;display:flex;flex-wrap:wrap;gap:.2rem .7rem}
+#boss .brw{flex:none;display:flex;flex-direction:column;gap:.4rem;align-items:stretch}#boss .brw:empty{display:none}
+#boss .brw .go{font-size:1.15rem;display:flex;flex-direction:column;align-items:center}#boss .brw .go small{font-size:.85rem}
+#boss .bnote{font-size:.95rem;color:#868e96;font-weight:800;max-width:11rem}
+@media (max-width:700px){#boss{flex-wrap:wrap}#boss .bmon{font-size:3.4rem}#boss .brw{width:100%}}
+.bhit{display:inline-block;margin-left:.5rem;color:#7048e8;font-weight:900;animation:popin .4s}
+.bend{color:#7048e8}
+#tbout .tbh{font-size:1.2rem;font-weight:900;margin:.4rem 0}#tbout .chip{cursor:default}#tbout .chip.z{opacity:.45}#tbout .chip.z small{color:#999}
 </style>
 </head><body>
 
@@ -526,6 +547,7 @@ body{background:
 <section class="scr" id="setup">
  <h2>👩‍🏫 老師設定</h2>
  <div class="cd"><div id="rulemsg"></div></div>
+ <div class="cd" id="tboss"><div class="dhead"><b>⚔️ 本週全班打魔王</b><button id="tbload">🔄 重新整理</button></div><div id="tbout"></div></div>
  <div class="cd" id="dash">
   <div class="dhead"><b>📊 班級儀表板</b>
    <div class="dper" id="dper"><button data-p="w" class="on">本週</button><button data-p="7">最近 7 天</button><button data-p="30">最近 30 天</button><button data-p="0">全部</button></div>
@@ -999,6 +1021,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
   if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
+  sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
 /* 老師在雲端清除紀錄後,平板上留下的舊進度也要歸零(還有沒上傳的資料就不動) */
 function resetIfCleared(remote){if(remote!=null||!user||!sum)return false;
@@ -1117,7 +1140,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
-  f.appendChild(W);g.appendChild(f);P.appendChild(g);
+  f.appendChild(W);g.appendChild(f);P.appendChild(g);P.appendChild(bossCard());
   const SJ=subjOf(subj);P.appendChild(el('div','sec',`${SJ.ic} ${SJ.n}`));const G=el('div');G.id='ucards';
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;P.appendChild(c)}
   [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.ic||''}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
@@ -1539,6 +1562,7 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
   if(sum.tc>=TK_EVERY){const n=sum.tco||0;sum.tc=0;sum.tco=0;round.last10=n;
     if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 答對 ${n} 題，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
     else{round.miss=(round.miss||0)+1;toast(`這 10 題答對 ${n} 題，要答對 ${TK_NEED} 題才有券`)}}
+  const bh=bossHit(round.res[cur]);if(bh)$('#fb').insertAdjacentHTML('beforeend',`<span class="bhit">⚔️ +${bh}</span>`);
   saveSum(round.got>0);wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.id?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
@@ -1562,14 +1586,78 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   const got=round.got||0;
   logRound(false);
   const U=unitOf(pu);$('#endt').textContent=`${U.name}　完成！`;$('#ends').textContent=stars(first)||'💪';
-  $('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`;
+  $('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`+bossEndMsg();
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
   else mb('再練一回 ▶',()=>newRound(),'go');
   $('#end').classList.add('on');if(first>=8){sfx.win();confetti(70)}else sfx.done()}
 
+/* ===================== 全班打魔王 =====================
+   每週一隻魔王(星期一換新的),全班一起打。不用同時在線:每個人在家練習,答對就扣魔王的血。
+   ・一次就答對 10 點、第二次才答對 5 點;錯題本、各科都算
+   ・魔王的血＝全班人數 × BOSS_HP_EACH(大約每人一週答對 15 題就打得倒)
+   ・打倒以後,這週有出手(打滿 BOSS_MIN 點)的人都可以領 1 張遊戲券(上週的也還能領)
+   ・傷害存在 learn/lb/boss_星期一日期/座號 = {d:3,s:這週打了幾點,t:時間}(用排行榜的位置,只能寫自己那一格)
+   ・測試帳號也會寫,但不算進全班的血量(自己看得到自己打的) */
+const BOSSES=[{i:'🐲',n:'噴火龍・阿焰'},{i:'🐙',n:'墨汁章魚王'},{i:'🦂',n:'沙漠蠍子王'},{i:'👻',n:'搗蛋幽靈'},{i:'🤖',n:'鐵甲機器怪'},{i:'🦈',n:'鯊魚船長'},{i:'🐻‍❄️',n:'冰原大白熊'},{i:'🦖',n:'森林暴龍'}];
+const BOSS_HP_EACH=150,BOSS_MIN=50,BOSS_HIT={ok:10,ok2:5};
+const bossWk=(back=0)=>weekKeys(back)[0];
+const bossOf=wk=>{const n=Math.floor(new Date(wk+'T00:00:00').getTime()/6048e5),L=BOSSES.length;return BOSSES[((n%L)+L)%L]};
+const bossHP=()=>SEATS.flat().length*BOSS_HP_EACH;
+const myBoss=wk=>(sum&&sum.bossD&&sum.bossD[wk])||0;
+/* 答完一題:扣魔王的血(在 finish 裡呼叫) */
+function bossHit(res){const h=BOSS_HIT[res]||0;if(!h||!user||!sum)return 0;const wk=bossWk();
+  sum.bossD=sum.bossD||{};sum.bossD[wk]=(sum.bossD[wk]||0)+h;
+  for(const k of Object.keys(sum.bossD))if(k<bossWk(4))delete sum.bossD[k];   // 只留最近幾週
+  round.bd=(round.bd||0)+h;BOSSC=null;
+  enqueue(`${ROOT}/lb/boss_${wk}/${user.seat}`,{d:3,s:sum.bossD[wk],t:Date.now()},true);return h}
+/* 讀全班打了多少(記 20 秒) */
+let BOSSC=null;
+async function bossLoad(wk){if(BOSSC&&BOSSC.wk===wk&&Date.now()-BOSSC.at<20000)return BOSSC;
+  await fbReady;let v=null;if(db&&online){try{v=(await timeout(db.ref(`${ROOT}/lb/boss_${wk}`).get(),8000)).val()||{}}catch(e){v=null}}
+  const rows=[];if(v)for(const [st,o] of Object.entries(v)){const s=+st;if(o&&typeof o.s==='number'&&isFinite(o.s)&&o.s>0)rows.push({seat:s,s:o.s,t:o.t||0})}
+  /* 自己的用平板上的(可能還沒上傳完) */
+  if(user){const me=rows.find(r=>r.seat===user.seat),m=myBoss(wk);if(me)me.s=Math.max(me.s,m);else if(m)rows.push({seat:user.seat,s:m,t:Date.now()})}
+  const cls=rows.filter(r=>!isTest(r.seat)).sort((a,b)=>b.s-a.s||a.seat-b.seat);
+  let tot=cls.reduce((a,r)=>a+r.s,0);if(user&&isTest(user.seat))tot+=myBoss(wk);   // 測試帳號:自己打的也看得到效果
+  const R={wk,at:Date.now(),ok:!!v,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP()};if(wk===bossWk())BOSSC=R;return R}
+const bossClaimed=wk=>!!(sum&&sum.bossR&&sum.bossR[wk]);
+function bossClaim(wk){if(!sum||bossClaimed(wk))return;sum.bossR=sum.bossR||{};sum.bossR[wk]=1;
+  if(!isTest(user.seat))sum.tk=(sum.tk||0)+1;saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);
+  toast(`🎟️ ${bossOf(wk).n}被打倒了！拿到 1 張遊戲券`);paintNavs();render()}
+const bossEnd=()=>{const d=new Date(),left=7-((d.getDay()+6)%7);return left<=1?'今天晚上 12 點換新魔王':`還有 ${left} 天`};
+/* 首頁的魔王卡片:先畫平板上的資料,雲端讀回來再更新 */
+function bossCard(){const c=el('div','cd');c.id='boss';const wk=bossWk(),B=bossOf(wk);
+  c.innerHTML=`<div class="bmon" id="bmon">${B.i}</div><div class="binfo"><div class="bt">⚔️ 全班打魔王：<b>${B.n}</b><small>${bossEnd()}</small></div>
+    <div class="bbar"><i id="bbi"></i><b id="bbt">讀取中…</b></div><div class="bsub" id="bbs"></div><div class="btop" id="bbtop"></div></div><div class="brw" id="bbrw"></div>`;
+  bossPaint(c,wk);return c}
+async function bossPaint(c,wk){const B=bossOf(wk);let R,L=null;try{[R,L]=await Promise.all([bossLoad(wk),bossLoad(bossWk(1))])}catch(e){return}
+  if(!c.isConnected)return;const left=Math.max(0,R.hp-R.tot),dead=left<=0,me=myBoss(wk),rk=R.rows.findIndex(r=>r.seat===user.seat);
+  c.classList.toggle('dead',dead);c.querySelector('#bbi').style.width=(left/R.hp*100)+'%';
+  c.querySelector('#bbt').textContent=dead?'💥 被打倒了！':`剩 ${left} / ${R.hp}`;
+  c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${R.tot}</b> 點・`:'📴 連上網路才看得到全班打了多少・')+(me?`我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！');
+  const md=['🥇','🥈','🥉'];c.querySelector('#bbtop').innerHTML=R.rows.length?'本週勇者：'+R.rows.slice(0,5).map((r,i)=>`<span>${md[i]||''}${r.seat} 號 ${r.s}</span>`).join(''):'';
+  /* 打倒了:有出手的人領獎(這週、上週) */
+  const rw=c.querySelector('#bbrw');rw.innerHTML='';
+  [[wk,R],[bossWk(1),L]].forEach(([w,X])=>{if(!X||X.tot<X.hp||bossClaimed(w))return;const m=myBoss(w);
+    if(m>=BOSS_MIN){const b=el('button','go',`🎁 領獎勵${w===wk?'':'（上週）'}<small>遊戲券 1 張</small>`);tap(b,()=>bossClaim(w));rw.appendChild(b)}
+    else if(w===wk)rw.appendChild(el('div','bnote',`打滿 ${BOSS_MIN} 點就能領獎勵（還差 ${BOSS_MIN-m} 點）`))});
+  /* 上次看到之後全班又打了多少:魔王晃一下、跳出傷害數字 */
+  const seenK='learn601_bseen_'+user.seat,seen=LS.get(seenK,null),gain=seen&&seen.wk===wk?R.tot-seen.tot:0;
+  if(R.ok)LS.set(seenK,{wk,tot:R.tot});
+  if(gain>0&&!dead){const m=c.querySelector('#bmon');m.classList.remove('hit');void m.offsetWidth;m.classList.add('hit');m.insertAdjacentHTML('beforeend',`<span class="bdmg">-${gain}</span>`)}}
+/* 練習結束畫面:這一輪打了幾點 */
+function bossEndMsg(){const d=round.bd||0;if(!d)return '';const B=bossOf(bossWk());
+  return `<div class="tkget bend">⚔️ 這一輪對${B.i} ${B.n}造成 <b>${d}</b> 點傷害！</div>`}
+/* 老師頁:本週魔王、每個人打了多少 */
+async function bossTeacher(){const O=$('#tbout');if(!O)return;O.textContent='讀取中…';const wk=bossWk(),B=bossOf(wk);let R;try{R=await bossLoad(wk)}catch(e){}
+  if(!R||!R.ok){O.textContent='📴 連不上 Firebase';return}const m={};R.rows.forEach(r=>m[r.seat]=r.s);const left=Math.max(0,R.hp-R.tot);
+  O.innerHTML=`<div class="tbh">${B.i} <b>${B.n}</b>　${left?`剩 ${left} / ${R.hp}`:'💥 已經被打倒了'}　全班打了 ${R.tot} 點・${R.rows.length} 人出手</div>`+
+    `<div class="chips">${SEATS.flat().map(s=>`<span class="chip${m[s]?'':' z'}">${s}<small>${m[s]||'還沒'}</small></span>`).join('')}</div>`+
+    ((R.tests||[]).length?`<div class="tbh" style="font-size:1rem;color:#888">🧪 ${R.tests.map(r=>`${testName(r.seat).replace('🧪 ','')} ${r.s} 點`).join('、')}（不算進全班）</div>`:'')}
+
 /* ===================== 老師設定 ===================== */
-function openSetup(){show$('setup');setTimeout(()=>{if(!DASH)dashLoad()},300);$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
+function openSetup(){show$('setup');setTimeout(()=>{if(!DASH)dashLoad();bossTeacher()},300);$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
 let tapT=[];tap(document.querySelector('#login h1'),()=>{const t=Date.now();tapT=tapT.filter(x=>t-x<2500);tapT.push(t);if(tapT.length>=5){tapT=[];openSetup()}});
 tap($('#setback'),()=>{history.replaceState(null,'',location.pathname);show$('login')});
 let pinData=null;
@@ -1729,7 +1817,7 @@ function dashRender(){if(!DASH)return;const {stu,weak,bad}=dashStats(),O=$('#dou
   O.querySelectorAll('[data-s]').forEach(e=>e.addEventListener('click',()=>{const s=+e.dataset.s;dSel=dSel===s?null:s;dashRender();if(dSel)setTimeout(()=>{const d=$('#ddet');d&&d.getBoundingClientRect().top>innerHeight&&d.scrollIntoView({block:'nearest',behavior:'smooth'})},50)}));
   O.querySelectorAll('.hsub button').forEach(b=>b.addEventListener('click',()=>{dSubj=b.dataset.k;dashRender()}))}
 document.querySelectorAll('#dper button').forEach(b=>b.addEventListener('click',()=>{dPer=b.dataset.p;document.querySelectorAll('#dper button').forEach(x=>x.classList.toggle('on',x===b));dashRender()}));
-tap($('#dload'),()=>dashLoad());
+tap($('#dload'),()=>dashLoad());tap($('#tbload'),()=>{BOSSC=null;bossTeacher()});
 tap($('#dxls'),()=>{if(!DASH){$('#dmsg').textContent='先按「重新整理」讀取資料';return}dashXlsx()});
 
 /* ---- 匯出 Excel：自己做一個 .xlsx（Excel、Google 試算表、Numbers 都打得開） ---- */
