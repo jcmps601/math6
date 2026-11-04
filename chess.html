@@ -90,6 +90,9 @@ button{font-family:inherit;cursor:pointer}
  #acts{flex-direction:row;gap:.35rem}#acts .btn{font-size:.95rem;padding:.35rem .4rem;flex:1}
  #side .code{font-size:.8rem}.capr span{width:1.2rem;height:1.2rem;font-size:.75rem}
 }
+
+#offMsg{background:#fff3bf;border:3px solid #f59f00;border-radius:16px;padding:.4rem .8rem;font-size:1.15rem;font-weight:900;color:#e8590c;text-align:center}
+#offMsg b{font-size:1.6rem;color:#c0392b}
 </style></head><body>
 
 <section class="scr on" id="home">
@@ -137,7 +140,7 @@ button{font-family:inherit;cursor:pointer}
    連線用和「601 搶答王」同一個 Firebase（rooms/房號），每走一步就存一次棋譜，兩邊同步。
    連不上 Firebase 時改用本機模式：同一台電腦的兩個分頁可以互下（測試用）。
    也可以「同一台平板兩人輪流下」，不用連線。
-   規則：在學習平台裡，每下一局要用 1 張遊戲券（兩個人各用自己的；再來一局也要再用一張），
+   規則：在學習平台裡，連線對戰輸的人用 1 張遊戲券（贏的、和局不用；中途離開算輸），同一台平板一局用 1 張，
    免得學生一直下棋不練習。直接開這個檔案（不在平台裡）就不用券。 */
 const $=s=>document.querySelector(s);
 /* 和學習平台、搶答王同一個 Firebase 專案 */
@@ -158,7 +161,8 @@ function localNet(){
   const write=f=>{const d=read();f(d);localStorage.setItem(KEY,JSON.stringify(d));fire()};
   return {mode:'local',get:async p=>getP(read(),p)??null,set:async(p,v)=>write(d=>setP(d,p,v)),
     update:async(p,v)=>write(d=>{for(const k in v)setP(d,p+'/'+k,v[k])}),remove:async p=>write(d=>setP(d,p,null)),
-    on:(p,cb)=>{const l={p,cb};L.add(l);setTimeout(()=>cb(getP(read(),p)??null));return ()=>L.delete(l)}};
+    on:(p,cb)=>{const l={p,cb};L.add(l);setTimeout(()=>cb(getP(read(),p)??null));return ()=>L.delete(l)},
+    onDisc:()=>{},cancelDisc:()=>{},conn:cb=>{cb(true);return ()=>{}}};
 }
 let Net=null;
 const netReady=(async()=>{
@@ -168,21 +172,24 @@ const netReady=(async()=>{
     await timeout(loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js'),10000);
     const app=firebase.apps.find(a=>a.name==='xq')||firebase.initializeApp(FIREBASE_CONFIG,'xq'),db=app.database();
     Net={mode:'firebase',get:async p=>(await timeout(db.ref(p).get(),8000)).val(),set:(p,v)=>db.ref(p).set(v),update:(p,v)=>db.ref(p).update(v),remove:p=>db.ref(p).remove(),
-      on:(p,cb)=>{const r=db.ref(p),h=s=>cb(s.val());r.on('value',h);return ()=>r.off('value',h)}};
+      on:(p,cb)=>{const r=db.ref(p),h=s=>cb(s.val());r.on('value',h);return ()=>r.off('value',h)},
+      /* 斷線(關掉、上一頁、平板睡著)時,雲端自動幫我寫「我離線了」的時間 */
+      onDisc:p=>{try{db.ref(p).onDisconnect().set({'.sv':'timestamp'})}catch(e){}},cancelDisc:p=>{try{db.ref(p).onDisconnect().cancel()}catch(e){}},
+      conn:cb=>{const r=db.ref('.info/connected'),h=s=>cb(!!s.val());r.on('value',h);return ()=>r.off('value',h)}};
   }catch(e){Net=localNet()}
   return Net})();
 
 /* ---- 我是誰：在學習平台裡就用座號 ---- */
 let P=null;try{P=window.parent!==window&&window.parent.__learn601}catch(e){}
 function myName(){const s=P&&P.seat&&P.seat();if(s)return s>=98?'測試帳號 '+(s===99?1:2):s+' 號';return LS.get('xq_name','')}
-/* 遊戲券:在平台裡一局用 1 張 */
+/* 遊戲券:連線對戰輸的人用 1 張;同一台平板一局用 1 張 */
 const inPlat=()=>!!(P&&P.useTicket&&P.seat&&P.seat());
 const hasTicket=()=>!inPlat()||(P.isTest&&P.isTest())||P.seat()===99||(P.tickets()||0)>0;
 const payTicket=()=>!inPlat()||P.useTicket('xq');
 const mySeat=()=>inPlat()?P.seat():0;
-const NO_TK='遊戲券不夠：下一局象棋要用 1 張遊戲券，回平台練習 10 題答對 8 題就能拿到！';
+const NO_TK='要有 1 張遊戲券才能下棋（輸的人用掉 1 張，贏的人不用）。回平台練習 10 題答對 8 題就能拿到！';
 function paintMe(){const n=myName();$('#me').innerHTML=(n?`我是 <b>${n}</b>`+(inPlat()?'':' <button id="bName">改名字</button>'):'<button id="bName">先輸入你的名字</button>')
-    +(inPlat()?`<div style="margin-top:.3rem">🎟️ 遊戲券 × ${P.tickets()||0}　<small>（一局用 1 張）</small></div>`:'');
+    +(inPlat()?`<div style="margin-top:.3rem">🎟️ 遊戲券 × ${P.tickets()||0}　<small>（連線對戰：輸的人用 1 張）</small></div>`:'');
   const b=$('#bName');if(b)b.onclick=askName}
 function askName(){const v=(prompt('你的名字或座號：',LS.get('xq_name',''))||'').trim().slice(0,10);if(v){LS.set('xq_name',v);paintMe()}return v}
 
@@ -315,24 +322,59 @@ async function play(m){
 /* 收到棋局更新 */
 function onState(){
   const st=G.st;if(!st)return;
-  if(st.phase==='play'&&(st.g||1)!==G.paid){if(payTicket())G.paid=st.g||1;else{alert(NO_TK);return leave()}}const R=replayNow(st),len=(st.moves||'').split(',').filter(Boolean).length;
+  if(st.phase==='play'&&G.mode==='solo'&&(st.g||1)!==G.paid){if(payTicket())G.paid=st.g||1;else{alert(NO_TK);return leave()}}
+  if(G.mode==='net')guard(st);const R=replayNow(st),len=(st.moves||'').split(',').filter(Boolean).length;
   if(len!==G.lastLen){if(len>G.lastLen&&R.check&&G.type==='xq')setTimeout(sfx.chk,150);G.lastLen=len;G.sel=-1}
   render();
-  if(st.phase==='end'){const w=st.winner,draw=w==='draw',mine=G.mode==='net'&&w===G.me;record(draw?2:w===G.me,st.reason,len);
+  if(st.phase==='end'&&st.winner==='none'){$('#ovT').textContent='⏸️ 這局不算';$('#ovT').style.color='#7a5a32';$('#ovS').textContent=st.reason||'';$('#over').classList.add('on');if(inPlat()&&P.xqPending)P.xqPending(null)}
+  else if(st.phase==='end'){const w=st.winner,draw=w==='draw',mine=G.mode==='net'&&w===G.me;record(draw?2:w===G.me,st.reason,len);
     /* 暗棋:玩家是 r(先下)/b(後下),顏色要看翻到什麼 */
     const cw=G.type==='aq'&&!draw?(R.col&&R.col[w])||w:w,side=x=>x==='r'?'紅方':'黑方';
     $('#ovT').textContent=draw?'🤝 和局':G.mode==='net'?(mine?'🎉 你贏了！':'再接再厲！'):(cw==='r'?'🔴 紅方勝！':'⚫ 黑方勝！');
     $('#ovT').style.color=draw?'#7a5a32':cw==='r'?'#c0392b':'#222';
-    $('#ovS').textContent=(G.mode==='net'&&!draw?side(cw)+'勝・':'')+(st.reason||'');
+    $('#ovS').textContent=(G.mode==='net'&&!draw?side(cw)+'勝・':'')+(st.reason||'')+(G.mode==='net'&&inPlat()&&!draw&&!mine&&!(P.isTest&&P.isTest())?'（用掉 1 張遊戲券）':'');
     if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(mine||G.mode==='solo')sfx.win()}}
   else $('#over').classList.remove('on');
 }
 /* 戰績:在平台裡、兩台連線下完一局,把勝負記到雲端(同一局只記一次;中途離開算輸) */
-function record(win,reason,n){if(G.mode!=='net'||!inPlat()||!P.xqResult||!G.st)return;if(G.st.phase==='end'&&!G.st.winner)return;   // 還不知道誰贏就先不記
+function record(win,reason,n){if(G.mode!=='net'||!inPlat()||!P.xqResult||!G.st)return;if(G.st.phase==='end'&&(!G.st.winner||G.st.winner==='none'))return;   // 還不知道誰贏就先不記
   const opp=G.players[XQ.other(G.me)];const k=`${G.type==='aq'?'aq':''}${G.pin}_${G.created||0}_${G.st.g||1}`;if(G.rec===k)return;G.rec=k;
-  P.xqResult({k,o:opp&&opp.seat||0,w:win,r:reason||'',n:n||0,g:G.type});paintRec()}
+  P.xqResult({k,o:opp&&opp.seat||0,w:win,r:reason||'',n:n||0,g:G.type});
+  if(win===false&&G.charged!==k){G.charged=k;payTicket()}   // 連線對戰:輸的人才扣 1 張券(贏的、和局不扣)
+  if(P.xqPending)P.xqPending(null);paintRec()}
 async function paintRec(){const e=$('#rec');if(!e)return;if(!inPlat()||!P.xqStats){e.textContent='';return}
   try{const s=await P.xqStats(G.type);e.innerHTML=s.n?`我的${GNAME[G.type]}戰績：<b>${s.w}</b> 勝 ${s.l} 敗${s.d?` ${s.d} 和`:''}（共 ${s.n} 局）`:`還沒有下過${GNAME[G.type]}對戰，快邀請同學吧！`}catch(x){}}
+
+/* ═════════════ 中途跑掉怎麼辦 ═════════════
+   ・對局中每個人在雲端都有「斷線就自動寫離線時間」(players/我/off)；按上一頁、關掉、平板睡著都算斷線。
+   ・對方看到我離線：畫面倒數 20 秒，20 秒內沒回來就判對方贏（只是網路斷一下、馬上回來就可以繼續）。
+   ・在平台裡按「回平台」或上一頁：平台會先問「現在離開算你輸」，確定就跟認輸一樣。
+   ・跑掉的人：平台記得「有一局還沒下完」，下次登入時補記輸、補扣券。 */
+const OFF_MS=20000;
+const gameKey=()=>`${G.type==='aq'?'aq':''}${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;
+function guard(st){
+  const playing=st.phase==='play'&&!!(G.players.r&&G.players.b);
+  /* 再來一局時我已經沒有遊戲券了：這局不算，回去練習 */
+  if(playing&&G.armed!==gameKey()&&!st.moves&&!hasTicket()){Net.update(`rooms/${G.pin}/state`,{phase:'end',winner:'none',reason:`${inPlat()&&P.seatName?P.seatName(P.seat()):'對手'}的遊戲券用完了，這局不算`,t:Date.now()}).catch(()=>{});return}
+  if(playing&&G.armed!==gameKey()){G.armed=gameKey();
+    const p=`rooms/${G.pin}/players/${G.me}/off`;Net.set(p,null).catch(()=>{});Net.onDisc(p);
+    if(!G.unConn){G.unConn=Net.conn(on=>{if(on&&G.mode==='net'&&G.st&&G.st.phase==='play'){Net.set(`rooms/${G.pin}/players/${G.me}/off`,null).catch(()=>{});Net.onDisc(`rooms/${G.pin}/players/${G.me}/off`)}})}
+    if(inPlat()&&P.xqPending){const opp=G.players[XQ.other(G.me)];P.xqPending({k:gameKey(),pin:G.pin,me:G.me,o:opp&&opp.seat||0,g:G.type,t:Date.now()})}}
+  if(st.phase==='end'&&G.armed){Net.cancelDisc(`rooms/${G.pin}/players/${G.me}/off`);G.armed='';clearTimeout(G.offT);G.offT=0}
+  watchOpp()}
+function watchOpp(){const opp=G.players[XQ.other(G.me)],st=G.st,b=$('#offMsg');
+  const off=G.mode==='net'&&st&&st.phase==='play'&&opp&&opp.off;
+  if(!off){clearTimeout(G.offT);G.offT=0;if(b)b.remove();return}
+  if(!b){const e=document.createElement('div');e.id='offMsg';$('#status').after(e)}
+  if(G.offT)return;const t0=Date.now();
+  const tick=()=>{const left=Math.ceil((OFF_MS-(Date.now()-t0))/1000),e=$('#offMsg');
+    if(!G.offT)return;if(left<=0){G.offT=0;if(e)e.remove();
+      if(G.st&&G.st.phase==='play')Net.update(`rooms/${G.pin}/state`,{phase:'end',winner:G.me,reason:'對手中途離開',t:Date.now()}).catch(()=>{});return}
+    if(e)e.innerHTML=`📴 對手離線了<br><b>${left}</b> 秒內沒回來就算你贏`;G.offT=setTimeout(tick,250)};
+  G.offT=setTimeout(tick,0)}
+/* 給平台用：現在是不是正在連線對戰中、要離開時先算輸 */
+window.__xqBusy=()=>G.mode==='net'&&!!G.st&&G.st.phase==='play'&&!!(G.players.r&&G.players.b);
+window.__xqQuit=()=>leave();
 function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='game')fit()}
 function fit(){/* SVG 用 aspect-ratio 自己縮放,這裡只在換方向時重畫 */render()}
 addEventListener('resize',()=>{if($('#game').classList.contains('on'))fit()});
@@ -342,7 +384,7 @@ const msg=t=>{$('#msg').textContent=t||''};
 function listen(){G.un.forEach(f=>f());G.un=[
   Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&$('#game').classList.contains('on')&&G.st&&G.st.phase!=='end'){G.st.phase='end';G.st.winner=G.me;G.st.reason='對手離開了';onState()}return}
     G.st=v;if(v.phase!=='wait'&&$('#wait').classList.contains('on')){uninvite();startGame()}if($('#game').classList.contains('on'))onState()}),
-  Net.on(`rooms/${G.pin}/players`,v=>{G.players=v||{};const mine=Object.keys(G.players).find(k=>G.players[k]&&G.players[k].id===myId);if(mine&&mine!==G.me){G.me=mine;G.flip=G.me==='b';drawGrid()}if($('#game').classList.contains('on'))render()})]}
+  Net.on(`rooms/${G.pin}/players`,v=>{G.players=v||{};const mine=Object.keys(G.players).find(k=>G.players[k]&&G.players[k].id===myId);if(mine&&mine!==G.me){G.me=mine;G.flip=G.me==='b';drawGrid()}if($('#game').classList.contains('on')){render();if(G.st)guard(G.st)}})]}
 function startGame(){G.flip=G.me==='b';G.lastLen=-1;drawGrid();show('game');onState()}
 async function needName(){if(!hasTicket()){msg(NO_TK);return null}let n=myName();if(!n)n=askName();if(!n){msg('先輸入名字');return null}return n}
 $('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('建立中…');await netReady;
@@ -370,7 +412,7 @@ $('#bResign').onclick=async()=>{if(!G.st||G.st.phase!=='play')return;
   const loser=G.mode==='solo'?G.R.turn:G.me;if(!confirm(G.mode==='solo'?`${loser==='r'?'紅方':'黑方'}要認輸嗎？`:'確定要認輸嗎？'))return;
   const lc=G.type==='aq'?(G.R.col&&G.R.col[loser])||loser:loser;const upd={phase:'end',winner:XQ.other(loser),reason:(lc==='r'?'紅方':'黑方')+'認輸',t:Date.now()};
   if(G.mode==='solo'){G.st={...G.st,...upd};onState()}else{try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){}}};
-async function leave(){$('#over').classList.remove('on');uninvite();
+async function leave(){$('#over').classList.remove('on');uninvite();clearTimeout(G.offT);G.offT=0;if(G.armed&&G.pin){Net.cancelDisc(`rooms/${G.pin}/players/${G.me}/off`);G.armed=''}
   if(G.mode==='net'){if(G.st&&G.st.phase==='play'){const len=(G.st.moves||'').split(',').filter(Boolean).length;record(false,'中途離開',len)}G.un.forEach(f=>f());G.un=[];
     try{if(G.st&&G.st.phase==='play')await Net.update(`rooms/${G.pin}/state`,{phase:'end',winner:XQ.other(G.me),reason:sideName(G.me)+'離開了',t:Date.now()});
       await Net.remove(`rooms/${G.pin}/players/${G.me}`);const pl=await Net.get(`rooms/${G.pin}/players`);if(!pl||!Object.keys(pl).length)await Net.remove(`rooms/${G.pin}`)/* 兩個人都走了就刪掉房間 */}catch(e){}}
@@ -400,7 +442,7 @@ $('#bInv').onclick=openPick;
 async function invite(s){$('#pick').classList.remove('on');await $('#bNew').onclick();if(!G.pin||G.mode!=='net')return;
   try{await P.invite(s,G.pin,G.type);G.inv=s;$('#waitNote').textContent=`已經邀請 ${P.seatName(s)}，等他按「接受」…`;$('#invMsg').textContent=''}catch(e){$('#invMsg').textContent='邀請送不出去，請檢查網路'}
   G.un.push(Net.on(`rooms/${G.pin}/dec`,v=>{if(!v||!$('#wait').classList.contains('on'))return;G.inv=0;
-    $('#invMsg').textContent=v.why==='noticket'?`${P.seatName(v.s)} 的遊戲券用完了，請他先去練習`:`${P.seatName(v.s)} 說下次再玩`}))}
+    $('#invMsg').textContent=v.why==='noticket'?`${P.seatName(v.s)} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${P.seatName(v.s)} 正在跟別人下棋，等一下再邀請`:`${P.seatName(v.s)} 說下次再玩`}))}
 setType(G.type);paintMe();paintRec();if(inPlat()&&P.invite)$('#bInv').hidden=false;
 (async()=>{const q=new URLSearchParams(location.search);await netReady;
   if(q.get('join')){$('#pinIn').value=q.get('join');$('#bJoin').onclick()}
