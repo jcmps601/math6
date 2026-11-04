@@ -596,7 +596,7 @@ body{background:
 <div id="toast"></div>
 <div id="end"><div class="box"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
 <!-- 國語、英語、自然、社會的題庫(數學的題目在下面的程式裡自動出題) -->
-<script src="pet.js"></script><script src="park.js"></script><script src="farm.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script>
+<script src="pet.js"></script><script src="farm.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script>
 <script>
 const NS='http://www.w3.org/2000/svg',$=s=>document.querySelector(s);
 function mk(p,t,a={},s){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(s!=null)e.textContent=s;if(p)p.appendChild(e);return e}
@@ -956,7 +956,7 @@ const mixByKey=k=>MIXES.find(m=>m.key===k);
 const isMix=u=>MIXES.includes(u);
 const GM={key:'game',no:'🎮',ic:'🎮',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
 const PETNAV={key:'pet',no:'🐾',ic:'🐾',nav:'寵物',c:'#f06595',cb:'#fff0f6'};   // 我的寵物(pet.js)
-const PARKNAV={key:'park',no:'🏝️',ic:'🏝️',nav:'樂園',c:'#20c997',cb:'#e6fcf5'};   // 全班樂園(park.js)
+const FARMNAV={key:'farm',no:'🌾',ic:'🌾',nav:'農場',c:'#74b816',cb:'#f4fce3'};   // 快樂農場(farm.js)
 const TK_EVERY=10, TK_NEED=8;      // 每做 10 題(不分單元、可以分好幾次做),答對 8 題以上(含看完例題後第二次答對)拿 1 張遊戲券
 /* 601 挑戰樂園的遊戲:[代號, 圖示, 名稱, 單位, 越小越好] */
 const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/ 5'],['flappy','🐤','小雞跳跳','關'],['hunt','🗺️','尋寶','★'],['num','🔢','數字快手','秒',1],['simon','🎹','記憶燈光','個燈'],
@@ -1001,7 +1001,7 @@ async function ensureBind(){if(!user||!db||!fauth)return false;
     const k=u.uid+'|'+user.seat+'|'+user.pin;if(boundKey===k)return true;
     await timeout(db.ref(`${ROOT}/bind/${u.uid}`).set({s:String(user.seat),p:String(user.pin)}),10000);boundKey=k;return true}catch(e){return false}}
 async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true;
-  while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/')||it.p.startsWith(ROOT+'/boss/')||it.p.startsWith(ROOT+'/pet')||it.p.startsWith(ROOT+'/park/')||it.p.startsWith(ROOT+'/farm');   // pet/、petlike/、park/、farm/、farmact/
+  while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/')||it.p.startsWith(ROOT+'/boss/')||it.p.startsWith(ROOT+'/pet')||it.p.startsWith(ROOT+'/farm');   // pet/、petlike/、farm/、farmact/
     if(isLb&&!(await ensureBind()))break;
     /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
     const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
@@ -1025,7 +1025,6 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet&&(!sum.pet||(r.pet.u||0)>(sum.pet.u||0)))sum.pet=r.pet;   // 寵物、花園:以最後更新的那台為準
-  if(r.park&&(!sum.park||(r.park.u||0)>(sum.park.u||0)))sum.park=r.park;
   if(r.farm&&(!sum.farm||(r.farm.u||0)>(sum.farm.u||0)))sum.farm=r.farm;
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
@@ -1059,7 +1058,7 @@ async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'}
   catch(e){if(!/permission/i.test(String(e&&(e.code||e.message))))return {ok:false,why:'off'};return {ok:false,why:(await rulesOK())===false?'rules':'bad'}}}
 /* 規則有沒有生效:新規則讓 learn/lb(排行榜)可以讀 */
 async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/lb`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
-tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();PARK.leavePlaza();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
+tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
 /* ===================== 介面:全螢幕、鎖右鍵、音效、彩帶 ===================== */
@@ -1105,7 +1104,7 @@ let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj)
 function enterHome(){show$('home');presence();listenInv();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
-  const M=mixOf(subj),items=[{key:'home',no:'🏠',ic:'🏠',nav:'首頁',c:'#495057'},PETNAV,PARKNAV,...UN.filter(u=>u.g&&u.s===subj),...(M?[M]:[]),WB,GM];
+  const M=mixOf(subj),items=[{key:'home',no:'🏠',ic:'🏠',nav:'首頁',c:'#495057'},PETNAV,FARMNAV,...UN.filter(u=>u.g&&u.s===subj),...(M?[M]:[]),WB,GM];
   items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.ic||u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);b.style.setProperty('--cb',u.cb||'#f1f3f5');tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
   N2.style.display='contents'}
 function todayN(){return sum.days[dkey()]||0}
@@ -1129,9 +1128,9 @@ function render(){const P=document.getElementById('pane'),k=view+'|'+subj,same=r
       for(let i=0;i<4;i++){const m=Math.max(h0-P.scrollHeight,d0-document.documentElement.scrollHeight);if(m<=0)break;hh+=m;pad.style.height=hh+'px'}
       setTimeout(()=>pad.remove(),2500)}
     P.scrollTop=st;if(ws)scrollTo(0,ws)}}
-function render0(){const P=document.getElementById('pane');P.innerHTML='';if(view!=='park')PARK.leavePlaza();   // 離開樂園就離開廣場
+function render0(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='pet')return PET.page(P);
-  if(view==='park')return PARK.page(P);
+  if(view==='farm')return FARM.view(P);
   if(view!=='wb'&&view!=='game')P.appendChild(subjBar());
   if(view==='home')return renderHome(P);
   const M=mixByKey(view);if(M)return renderUnit(P,M,null);

@@ -410,7 +410,17 @@
       else { addXp(1); if ((f.hc || 0) < HELP_COIN_MAX) { f.hc = (f.hc || 0) + 1; addCoin(1); } msg(`${act === 'w' ? '💧 幫忙澆水' : act === 'g' ? '🌿 幫忙拔雜草' : '🐛 幫忙捉蟲'}了！謝謝你 ❤️${(f.hc || 0) <= HELP_COIN_MAX ? '　🪙+1' : ''}`); snd(700); }
       saveSum(true); paintV(); VC = null;
     });
-    tap(m.querySelector('.pmx'), () => { m.remove(); if (view === 'park') render(); });
+    tap(m.querySelector('.pmx'), () => { m.remove(); if (view === 'farm') render(); });
+  }
+
+  /* ───────── 農場頁（左邊選單「農場」）：我的農場、同學的農場 ───────── */
+  let tabK = 'mine';
+  function farmView(P) {   // 不能叫 view：會蓋掉平台的 view（目前在哪一頁）
+    const h = el('div', 'h1', `<span class="tag">🌾</span>快樂農場`); h.style.setProperty('--c', '#74b816'); P.appendChild(h);
+    const T = el('div', 'ptabs fk'); [['mine', '🌾 我的農場'], ['visit', '👫 同學的農場']].forEach(([k, n]) => { const b = el('button', tabK === k ? 'on' : '', n); tap(b, () => { if (tabK === k) return; tabK = k; render(); }); T.appendChild(b); });
+    P.appendChild(T);
+    const C = el('div', 'cd fkc'); P.appendChild(C);
+    if (tabK === 'mine') page(C); else visitList(C);
   }
 
   /* ───────── 首頁的小卡片 ───────── */
@@ -418,12 +428,13 @@
     const f = F(), c = el('button', 'cd', ''); c.id = 'farmmini'; let ripe = 0, thirsty = 0, grow = 0;
     f.p.slice(0, plotsFor(lvOf(f.xp).lv)).forEach(P => { const S = stat(P); if (S.empty) return; if (S.ripe) ripe++; else if (S.thirsty) thirsty++; else grow++; });
     c.innerHTML = `<div class="fmv">${farmSVG(f, { mini: 1 })}</div><div class="fmi"><div class="fmt">🌾 我的農場 <small>Lv.${lvOf(f.xp).lv}</small></div><div class="fms">${ripe ? `✨ ${ripe} 塊田可以收成！` : thirsty ? `💧 ${thirsty} 塊田口渴了` : grow ? `🌱 ${grow} 塊田長大中` : '🌱 快去種菜吧！'}　💧 ${f.water || 0}</div></div><span class="pgo">▶</span>`;
-    tap(c, () => { view = 'park'; if (window.PARK) PARK._mode('farm'); paintNavs(); render(); });
+    tap(c, () => { view = 'farm'; tabK = 'mine'; paintNavs(); render(); });
     return c;
   }
 
   /* ───────── 樣式 ───────── */
   const css = `
+  .ptabs.fk button.on{color:#5c940d}.fkc{border-top-left-radius:0;border-top-right-radius:0}
   .fhead{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem}
   .flv{flex:1;min-width:12rem}.flv b{font-size:1.4rem;color:#5c940d;display:block}.flv small{font-size:.9rem;color:#888;font-weight:800}.flv .pbar{margin:.25rem 0 .1rem}
   .fres{display:flex;gap:.5rem;flex-wrap:wrap}.fres span{background:#fff;border:3px solid #e9ecef;border-radius:14px;padding:.2rem .7rem;font-size:1.25rem;font-weight:900;color:#495057}
@@ -471,5 +482,5 @@
   @media (max-width:700px){.frow2{grid-template-columns:1fr}.fseeds{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr))}.fvg{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
-  window.FARM = { page, visitList, gain, endRound, homeCard, farmSVG, crop, produce, CROPS, stat, F, lvOf, plotsFor, applyInbox };
+  window.FARM = { view: farmView, page, visitList, gain, endRound, homeCard, farmSVG, crop, produce, CROPS, stat, F, lvOf, plotsFor, applyInbox };
 })();
