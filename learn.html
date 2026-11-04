@@ -367,7 +367,7 @@ body{background:
 /* ══ 螢幕大小自動調整（手機、平板、電腦）══ */
 #pinbox .box{max-height:100%;overflow:auto}
 /* 畫筆工具列在題目卡片右上角：短文、圖片題往下讓一點，字才不會被蓋住 */
-#figc:has(.bx.p),#figc:has(.qimg){padding-top:3.4rem}
+#figc{padding-top:3.4rem}
 @media (max-width:900px),(orientation:portrait){#figc{padding-top:3.3rem}}
 /* 手機橫拿、矮的螢幕 */
 @media (orientation:landscape) and (max-height:560px){
@@ -393,6 +393,10 @@ body{background:
 .bx .ob{color:#adb5bd;font-weight:700}
 .say.again{animation:sayag .45s ease 3}
 @keyframes sayag{50%{transform:scale(1.15);box-shadow:0 0 0 .6rem #a5d8ff88}}
+
+/* 題目卡片:題目區不會被壓得比內容還矮(以前短文太長時會往上下溢出,蓋到畫筆列和下面的提示);真的放不下就在卡片裡上下捲 */
+#bigc{flex:1 0 auto}
+#steps{flex:none}
 </style>
 </head><body>
 
@@ -811,8 +815,12 @@ const optHtml=o=>isImg(o)?`<img src="${o}" alt="">`:o;   // 選項可以是圖�
 const bankKind=it=>it.au||it.say?'listen':/短文|閱讀/.test(it.t||'')?'read':it.img||it.opts.some(isImg)?'look':'think';
 const KIND_HINT={listen:['再按 🔊 聽一次，仔細聽','先看清楚每個選項，再聽一次'],read:['回到短文裡，看空格前後的字','先把不可能的選項刪掉'],
   look:['再仔細看一次圖','先把不可能的選項刪掉'],think:['把題目再讀一次','先把不可能的選項刪掉']};
-function bankQ(it,s){let big=it.big==null?'':String(it.big);const n=[...big.replace(/<[^>]+>/g,'')].length,kind=bankKind(it);
+/* 英語:彎的引號 ’ ‘ “ ” 換成直的 ' "(中文字型裡彎的引號是全形,It’s 會變成 It’  s) */
+const enQ=v=>typeof v==='string'?v.replace(/[’‘]/g,"'").replace(/[“”]/g,'"'):Array.isArray(v)?v.map(enQ):v;
+function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);it=o}let big=it.big==null?'':String(it.big);const n=[...big.replace(/<[^>]+>/g,'')].length,kind=bankKind(it);
   /* 短文填空:其他還沒輪到的格子也畫成淡淡的底線,學生才看得出哪裡是空格 */
+  /* 題目問「畫線的部分」:畫線的字一開始就要看得到(以前答完才出現) */
+  if(it.reveal&&/畫線/.test(it.q||'')&&!big){big=String(it.reveal);it=Object.assign({},it,{reveal:'',bc:'',exp:''})}
   if(it.t==='短文填空')big=big.replace(/(^|[^>])\((\d)\)(?!＿)/g,'$1<span class="ob">($2)＿＿</span>');
   /* 字的大小看長度:對話、句子用大字,只有長的短文才用小字 */
   const bc=it.bc==='p'?(n>160?'p':'p big'):it.bc!=null?it.bc:n>6?'s':'';
@@ -1229,9 +1237,10 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   else if(e.key==='Tab'||e.key==='/'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
 function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
-  $('#prac').classList.toggle('en',(q.subj||(q.id&&q.id.split('|')[0]))==='en');$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
+  const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
+  $('#prac').classList.toggle('en',isEn);$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
-  const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none'}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
+  const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none';$('#bigc').innerHTML=''}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
   stopAu();if(q.say||q.au)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
   $('#figc').classList.remove('solv');$('#steps').innerHTML='';fitBig();
   const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac');A.classList.toggle('chmode',q.type==='mc');
@@ -1243,13 +1252,13 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
   paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
 /* 題目大字放不下時縮小:不換行的大字看寬度;會換行的句子(.s)、短文(.p)只在整張卡片放不下時才縮小,最小 18px */
-function fitBig(){const c=$('#bigc'),F=$('#figc');c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;
+function fitBig(){const c=$('#bigc'),F=$('#figc');if(!c.clientWidth)return;c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;
   if(b.classList.contains('p')||b.classList.contains('s')){while(F.scrollHeight>F.clientHeight+2&&fs>18&&k++<30){fs=Math.max(18,fs*.93);b.style.fontSize=fs+'px'}return}
   while(b.scrollWidth>c.clientWidth-8&&k++<30){fs*=.93;b.style.fontSize=fs+'px'}})}
 addEventListener('resize',()=>{if(round&&$('#prac').classList.contains('on'))fitBig()});
 function addStep(s,cls){const d=el('div',cls);d.innerHTML=s.startsWith('__HTML__')?s.slice(8):s;$('#steps').appendChild(d);return d}
 const solv=q=>{if(!q.id)$('#figc').classList.add('solv')};   // 題庫題不縮小題目,解答直接接在下面
-tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;solv(q);fitBig();addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)$('#hint').disabled=true});
+tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;solv(q);addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)$('#hint').disabled=true;fitBig()});
 tap($('#show'),()=>{if(solved)return;round.res[cur]='no';finish(round.qs[cur],false)});
 tap($('#next'),()=>nextQ());
 const near=(a,b)=>Math.abs(a-b)<1e-6;
