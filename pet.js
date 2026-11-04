@@ -574,5 +574,5 @@
   @media (max-width:700px){.pacts{grid-template-columns:repeat(3,minmax(0,1fr))}.pstage{height:min(22rem,48vh)}.pbub{font-size:1rem;top:4.6rem}.ptag b{font-size:1.2rem}.pcoin{font-size:1.1rem}.pspg .psvg{width:5.2rem;height:5.2rem}}`;
   const S = document.createElement('style'); S.textContent = css; document.head.appendChild(S);
 
-  window.PET = { petSVG, eggSVG, itemSVG, SPECIES, COLORS, ITEMS, FOODS, NAMES, STICKERS, lvOf, stageOf, gain, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { night: () => night(), petSVG, eggSVG, itemSVG, SPECIES, COLORS, ITEMS, FOODS, NAMES, STICKERS, lvOf, stageOf, gain, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();

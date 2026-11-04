@@ -1058,7 +1058,7 @@ async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'}
   catch(e){if(!/permission/i.test(String(e&&(e.code||e.message))))return {ok:false,why:'off'};return {ok:false,why:(await rulesOK())===false?'rules':'bad'}}}
 /* 規則有沒有生效:新規則讓 learn/lb(排行榜)可以讀 */
 async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/lb`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
-tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
+tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();PARK.leavePlaza();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
 /* ===================== 介面:全螢幕、鎖右鍵、音效、彩帶 ===================== */
@@ -1128,7 +1128,7 @@ function render(){const P=document.getElementById('pane'),k=view+'|'+subj,same=r
       for(let i=0;i<4;i++){const m=Math.max(h0-P.scrollHeight,d0-document.documentElement.scrollHeight);if(m<=0)break;hh+=m;pad.style.height=hh+'px'}
       setTimeout(()=>pad.remove(),2500)}
     P.scrollTop=st;if(ws)scrollTo(0,ws)}}
-function render0(){const P=document.getElementById('pane');P.innerHTML='';
+function render0(){const P=document.getElementById('pane');P.innerHTML='';if(view!=='park')PARK.leavePlaza();   // 離開樂園就離開廣場
   if(view==='pet')return PET.page(P);
   if(view==='park')return PARK.page(P);
   if(view!=='wb'&&view!=='game')P.appendChild(subjBar());

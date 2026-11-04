@@ -76,6 +76,8 @@
       case 'bighouse': return sh(29) + `<rect x="-26" y="-66" width="52" height="64" rx="3" fill="#e7f5ff" stroke="#74c0fc" stroke-width="2.5"/><path d="M-32 -64 L0 -92 L32 -64Z" fill="#4dabf7" stroke="#1c7ed6" stroke-width="2.5" ${L}/><path d="M-26 -34 H26" stroke="#74c0fc" stroke-width="2.5"/><rect x="-7" y="-24" width="14" height="22" rx="2" fill="#ff922b" stroke="#d9480f" stroke-width="2"/>${[[-20, -58], [8, -58], [-20, -28], [12, -28]].map(([x, y]) => `<rect x="${x}" y="${y}" width="${x === 12 ? 8 : 12}" height="10" rx="1.5" fill="#fff9db" stroke="#74c0fc" stroke-width="2"/>`).join('')}<circle cx="0" cy="-76" r="5" fill="#fff9db" stroke="#1c7ed6" stroke-width="2"/>`;
       case 'windmill': return sh(22) + `<path d="M-16 -2 L-9 -62 H9 L16 -2Z" fill="#fff4e6" stroke="#c9a27a" stroke-width="2.5" ${L}/><path d="M-12 -66 L0 -80 L12 -66Z" fill="#e03131" stroke="#a51111" stroke-width="2.5"/><rect x="-5" y="-18" width="10" height="16" rx="5" fill="#a8743a"/><g transform="translate(0 -62)"><g class="wml"><g fill="#fff" stroke="#868e96" stroke-width="2">${[0, 90, 180, 270].map(a => `<path d="M0 0 L-5 -34 H5Z" transform="rotate(${a})"/>`).join('')}</g></g><circle r="5" fill="#495057"/></g>`;
       case 'castle': return sh(30) + `<rect x="-22" y="-56" width="44" height="54" fill="#ffdeeb" stroke="#e64980" stroke-width="2.5"/>${[-28, 16].map(x => `<rect x="${x}" y="-78" width="12" height="76" fill="#fcc2d7" stroke="#e64980" stroke-width="2.5"/><path d="M${x - 3} -76 L${x + 6} -94 L${x + 15} -76Z" fill="#b197fc" stroke="#7048e8" stroke-width="2.5" ${L}/><path d="M${x + 6} -94 V-104 L${x + 14} -100 L${x + 6} -97" fill="#ffd43b" stroke="#e67700" stroke-width="1.5"/>`).join('')}<path d="M-22 -56 v-6 h7 v6 h7 v-6 h8 v6 h7 v-6 h7 v6 h8 v-6" fill="none" stroke="#e64980" stroke-width="2.5"/><path d="M-9 -2 V-22 Q0 -32 9 -22 V-2Z" fill="#a8743a" stroke="#7a4f22" stroke-width="2"/><circle cx="0" cy="-42" r="6" fill="#a5d8ff" stroke="#e64980" stroke-width="2"/>`;
+      case 'wheel': return sh(30) + `<path d="M-4 -2 L0 -58 L4 -2Z M-26 -2 L0 -58 M26 -2 L0 -58" stroke="#868e96" stroke-width="3.5" fill="none"/><g transform="translate(0 -58)"><g class="wml"><circle r="40" fill="none" stroke="#ff8787" stroke-width="4"/>${[...Array(8)].map((_, i) => { const a = i * Math.PI / 4; return `<path d="M0 0 L${(40 * Math.cos(a)).toFixed(1)} ${(40 * Math.sin(a)).toFixed(1)}" stroke="#ffa8a8" stroke-width="2"/><rect x="${(40 * Math.cos(a) - 7).toFixed(1)}" y="${(40 * Math.sin(a) - 5).toFixed(1)}" width="14" height="10" rx="3" fill="${['#ffd43b', '#74c0fc', '#69db7c', '#b197fc'][i % 4]}" stroke="#495057" stroke-width="1.5"/>`; }).join('')}</g><circle r="6" fill="#495057"/></g>`;
+      case 'rainbow': return `${['#ff8787', '#ffd43b', '#69db7c', '#74c0fc', '#b197fc'].map((c, i) => `<path d="M${-60 + i * 7} 0 A${60 - i * 7} ${54 - i * 7} 0 0 1 ${60 - i * 7} 0" fill="none" stroke="${c}" stroke-width="7" opacity=".85"/>`).join('')}<g fill="#fff"><circle cx="-58" cy="-2" r="9"/><circle cx="-48" cy="0" r="7"/><circle cx="58" cy="-2" r="9"/><circle cx="48" cy="0" r="7"/></g>`;
       case 'trophy': return sh(18) + `<rect x="-16" y="-14" width="32" height="12" rx="3" fill="#a8743a" stroke="#7a4f22" stroke-width="2.5"/><path d="M-6 -14 V-22 H6 V-14" fill="#ffd43b" stroke="#e67700" stroke-width="2"/><path d="M-16 -50 H16 Q16 -24 0 -22 Q-16 -24 -16 -50Z" fill="#ffd43b" stroke="#e67700" stroke-width="2.5"/><path d="M-16 -46 Q-26 -46 -24 -36 Q-22 -30 -14 -32 M16 -46 Q26 -46 24 -36 Q22 -30 14 -32" stroke="#e67700" stroke-width="3" fill="none"/><path d="M-8 -44 Q-8 -32 -2 -28" stroke="#fff" stroke-width="3" fill="none" opacity=".6" stroke-linecap="round"/><text x="0" y="-33" text-anchor="middle" font-size="12">⭐</text>`;
     }
     return '';
@@ -200,10 +202,11 @@
   let mode = 'mine', tool = 'block', pick = 'grass', walkT = 0, rot = 0, hist = [];
   function page(P) {
     const h = el('div', 'h1', `<span class="tag">🏝️</span>601 樂園`); h.style.setProperty('--c', '#20c997'); P.appendChild(h);
-    const T2 = el('div', 'ptabs pk'); [['mine', '🏝️ 我的方塊島'], ['map', '🗺️ 全班樂園']].forEach(([k, n]) => { const b = el('button', mode === k ? 'on' : '', n); tap(b, () => { if (mode === k) return; mode = k; render(); }); T2.appendChild(b); });
+    const T2 = el('div', 'ptabs pk'); [['mine', '🏝️ 我的方塊島'], ['plaza', '🎪 廣場'], ['map', '🗺️ 全班樂園']].forEach(([k, n]) => { const b = el('button', mode === k ? 'on' : '', n); tap(b, () => { if (mode === k) return; leavePlaza(); mode = k; render(); }); T2.appendChild(b); });
     P.appendChild(T2);
     const C = el('div', 'cd pkc'); P.appendChild(C);
-    if (mode === 'mine') mine(C); else map(C);
+    if (mode !== 'plaza') leavePlaza();
+    if (mode === 'mine') mine(C); else if (mode === 'plaza') plaza(C); else map(C);
   }
   function mine(C) {
     C.innerHTML = `<div class="pkhead"><div class="pkcoin">🪙 <b id="pkcoin">${coins()}</b></div><div class="pktip" id="pktip"></div>
@@ -385,6 +388,139 @@
       ${live ? '<g id="plz"></g>' : ''}</svg>`;
   }
 
+  /* ───────── 第三期：廣場（同時在線的同學一起玩） ─────────
+     ・進到廣場：雲端 learn/plaza/座號 = {x,y 站在哪一格, e 表情, et 按表情的時間, 外觀…, t 心跳}；離開或斷線自動刪掉
+     ・點地板＝寵物走過去；按表情＝頭上冒泡泡、跳一跳
+     ・每 30 秒冒出 3 顆星星（每台平板用同一個亂數算出位置），先走到的人拿 1 枚金幣：learn/pstar/時段_第幾顆 = 座號（先寫的人贏）
+       一天最多拿 STAR_MAX 枚（玩廣場賺不了太多，還是要練習）
+     ・晚上 9 點到早上 6 點廣場關門（寵物要睡覺） */
+  const PN = 10, PT = 40, STAR_MS = 30000, STAR_N = 3, STAR_MAX = 10, LIVE_MS = 70000;
+  const EMOTES = ['👋', '😆', '❤️', '🎉', '💃', '⭐'];
+  let PZ = null;   // {me:{x,y}, others:{}, ref, un, hb, stars, claimed}
+  const pzNight = () => PET.night();   // 跟寵物睡覺的時間一樣
+  /* 廣場的固定裝飾（依中央公園蓋好幾個再多放） */
+  function plazaDeco(done) {
+    const D = [[0, 0, 'tree'], [9, 0, 'pine'], [0, 9, 'pine'], [9, 9, 'tree'], [0, 4, 'bench'], [9, 5, 'bench'], [4, 0, 'lamp'], [5, 9, 'lamp'], [2, 9, 'flower'], [7, 0, 'flower']];
+    if (done >= 1) D.push([4, 4, 'fountain']);
+    if (done >= 2) D.push([1, 1, 'sakura'], [8, 8, 'sakura'], [3, 1, 'flower'], [6, 8, 'flower'], [1, 6, 'sunflower'], [8, 3, 'sunflower']);
+    if (done >= 3) D.push([7, 2, 'slide']);
+    if (done >= 4) D.push([2, 7, 'wheel']);
+    if (done >= 5) D.push([8, 6, 'castle']);
+    if (done >= 6) D.push([5, 5, 'rainbow']);
+    return D;
+  }
+  const pzBlocked = (D, x, y) => D.some(([a, b]) => a === x && b === y) || ((x === 4 || x === 5) && (y === 4 || y === 5) && D.some(d => d[2] === 'fountain'));
+  /* 這個時段的星星（每台平板算出來一樣） */
+  function starsOf(slot, D) {
+    let a = slot * 2654435761 >>> 0; const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const out = []; for (let k = 0; k < 60 && out.length < STAR_N; k++) { const x = Math.floor(rnd() * PN), y = Math.floor(rnd() * PN); if (!pzBlocked(D, x, y) && !out.some(s => s.x === x && s.y === y)) out.push({ k: out.length, x, y }); }
+    return out;
+  }
+  const PP = (x, y) => P3((x + .5) * PT, (y + .5) * PT, 0).map(Number);
+  function plazaSVG(D) {
+    const W = PN * PT, [lx, ly] = P3(0, W, 0).map(Number), [bx, by] = P3(W, W, 0).map(Number), [rx, ry] = P3(W, 0, 0).map(Number), out = [];
+    out.push(skyBGw(rx, by));
+    out.push(`<ellipse cx="0" cy="${by + 60}" rx="${rx * .7}" ry="14" fill="#000" opacity=".08"/>`);
+    out.push(`<path d="M${lx} ${ly} L${bx} ${by} L${bx} ${by + 30} L${(lx + bx) / 2} ${(ly + by) / 2 + 52} L${lx} ${ly + 30}Z" fill="url(#pkdirtL)"/><path d="M${bx} ${by} L${rx} ${ry} L${rx} ${ry + 30} L${(rx + bx) / 2} ${(ry + by) / 2 + 52} L${bx} ${by + 30}Z" fill="url(#pkdirtR)"/>`);
+    for (let x = 0; x < PN; x++) for (let y = 0; y < PN; y++) {
+      const q = [P3(x * PT, y * PT, 0), P3((x + 1) * PT, y * PT, 0), P3((x + 1) * PT, (y + 1) * PT, 0), P3(x * PT, (y + 1) * PT, 0)];
+      const ring = Math.max(Math.abs(x - 4.5), Math.abs(y - 4.5)), path = ring > 1.5 && ring < 2.6 || x === 4 || x === 5 || y === 4 || y === 5;
+      out.push(`<polygon points="${poly(q)}" fill="${path ? ((x + y) % 2 ? '#f1f3f5' : '#e9ecef') : ((x + y) % 2 ? '#a9e8b8' : '#b6efc4')}" stroke="${path ? '#dee2e6' : '#a9e8b8'}" stroke-width=".8" data-x="${x}" data-y="${y}"/>`);
+    }
+    out.push(`<path d="M${lx} ${ly} L${bx} ${by} L${rx} ${ry}" stroke="#51cf66" stroke-width="4" fill="none" stroke-linejoin="round" pointer-events="none"/>`);
+    const items = D.map(([x, y, k]) => { const [X, Y] = PP(x, y); return { d: x + y, html: `<g transform="translate(${X} ${Y + 6}) scale(${k === 'fountain' || k === 'castle' || k === 'wheel' || k === 'rainbow' ? 1.25 : .85})" pointer-events="none">${sprite(k)}</g>` }; }).sort((a, b) => a.d - b.d);
+    out.push(`<g id="pzdeco">${items.map(i => i.html).join('')}</g><g id="pzstar"></g><g id="pzpets"></g>`);
+    const top = -150, vb = `${-rx - 60} ${top - 20} ${rx * 2 + 120} ${by + 140 - top}`;
+    return `<svg class="plot plz" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pkdirtL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a066"/><stop offset="1" stop-color="#a86b34"/></linearGradient><linearGradient id="pkdirtR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c08850"/><stop offset="1" stop-color="#8a5a2b"/></linearGradient>${skyDefs()}</defs>${out.join('')}</svg>`;
+  }
+  function skyBGw(rx, by) {   // 廣場的天空、海（寬一點）
+    const x0 = -rx - 60, w = rx * 2 + 120, y0 = -170, h = by + 300;
+    return `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="url(#pksk)"/><circle cx="${x0 + w - 70}" cy="${y0 + 60}" r="26" fill="#ffe066"/><circle cx="${x0 + w - 70}" cy="${y0 + 60}" r="40" fill="#ffe066" opacity=".25"/>
+      <g class="pkcl" fill="#fff" opacity=".9"><g><circle cx="${x0 + 70}" cy="${y0 + 60}" r="15"/><circle cx="${x0 + 90}" cy="${y0 + 52}" r="20"/><circle cx="${x0 + 110}" cy="${y0 + 62}" r="13"/></g><g><circle cx="${x0 + w * .5}" cy="${y0 + 36}" r="11"/><circle cx="${x0 + w * .5 + 16}" cy="${y0 + 30}" r="14"/><circle cx="${x0 + w * .5 + 32}" cy="${y0 + 38}" r="10"/></g></g>
+      <rect x="${x0}" y="${by + 100}" width="${w}" height="200" fill="url(#pksea)"/>`;
+  }
+  function myLook() { const p = pet(); if (!p || p.st !== 'pet') return null; const L = PET.look(p); return { sp: L.sp, nm: p.nm | 0, lv: L.lv, c: L.c | 0, h: L.h || '', g: L.g || '', k: L.k || '' }; }
+  async function plaza(C) {
+    if (pzNight()) { C.innerHTML = '<div class="pzclosed">🌙 廣場晚上 9 點到早上 6 點關門，寵物們都去睡覺了，明天早上見！</div>'; return; }
+    const L = myLook(); if (!L) { C.innerHTML = '<div class="pzclosed">🥚 先讓寵物孵化，才能帶牠來廣場玩喔！<br><small>到「🐾 寵物」頁看看</small></div>'; return; }
+    await fbReady; if (!db || !online) { C.innerHTML = '<div class="pzclosed">📴 連上網路才能和同學一起玩</div>'; return; }
+    const R = await loadAll(); const done = FUND.filter(f => fundTotal(R) >= f.s).length, D = plazaDeco(done);
+    C.innerHTML = `<div class="pkhead"><div class="pkcoin">🪙 <b id="pkcoin">${coins()}</b></div><div class="pktip" id="pztip">👆 點地板，寵物就會走過去。撿到 ⭐ 可以拿金幣！</div></div>
+      <div class="pkplot pzbox" id="pzbox">${plazaSVG(D)}</div><div class="pzem" id="pzem">${EMOTES.map((e, i) => `<button data-e="${i}">${e}</button>`).join('')}</div><div class="pzwho" id="pzwho"></div>`;
+    let x = 4, y = 7; while (pzBlocked(D, x, y)) x = (x + 1) % PN;
+    PZ = { D, me: { x, y }, others: {}, starDone: {}, ref: db.ref(`${ROOT}/plaza/${user.seat}`), seat: user.seat };
+    if (!(await ensureBind())) { C.querySelector('#pztip').textContent = '連線有點問題，等一下再試'; return; }
+    const send = extra => { if (!PZ) return; const v = Object.assign({ x: PZ.me.x, y: PZ.me.y, t: Date.now() }, L, PZ.me.e != null ? { e: PZ.me.e, et: PZ.me.et } : {}, extra || {}); PZ.ref.set(v).catch(() => { }); };
+    try { PZ.ref.onDisconnect().remove(); } catch (e) { }
+    send(); PZ.hb = setInterval(() => { if (!document.getElementById('pzbox') || view !== 'park' || mode !== 'plaza') return leavePlaza(); send(); paintStars(); }, 25000);
+    PZ.send = send;
+    const all = db.ref(`${ROOT}/plaza`), cb = s => { if (!PZ) return; PZ.others = s.val() || {}; paintPets(); };
+    all.on('value', cb); PZ.un = () => all.off('value', cb);
+    const st = db.ref(`${ROOT}/pstar`).orderByKey().startAt(String(Math.floor(Date.now() / STAR_MS) - 1)), scb = s => { if (!PZ) return; PZ.starDone = s.val() || {}; paintStars(); };
+    st.on('value', scb); const un0 = PZ.un; PZ.un = () => { un0(); st.off('value', scb); };
+    PZ.tick = setInterval(() => { if (!document.getElementById('pzbox')) return; paintStars(); }, 2000);
+    C.querySelector('#pzbox').addEventListener('pointerdown', e => { const t = e.target.closest('[data-x]'); if (!t) return; e.preventDefault(); moveTo(+t.dataset.x, +t.dataset.y); });
+    C.querySelectorAll('[data-e]').forEach(b => tap(b, () => { if (!PZ) return; PZ.me.e = +b.dataset.e; PZ.me.et = Date.now(); send(); paintPets(); snd(700); }));
+    paintPets(); paintStars();
+  }
+  function leavePlaza() {
+    if (!PZ) return; clearInterval(PZ.hb); clearInterval(PZ.tick); try { PZ.un && PZ.un(); } catch (e) { }
+    try { PZ.ref.remove(); PZ.ref.onDisconnect().cancel(); } catch (e) { } PZ = null;
+  }
+  function moveTo(x, y) {
+    if (!PZ) return; if (pzBlocked(PZ.D, x, y)) { const t = document.getElementById('pztip'); if (t) t.textContent = '那裡有東西擋住了，換一個地方'; return; }
+    PZ.me.x = x; PZ.me.y = y; PZ.send(); paintPets(); snd(520);
+    setTimeout(() => claim(x, y), 1300);   // 走到了再撿星星
+  }
+  function paintPets() {
+    const G = document.getElementById('pzpets'); if (!G || !PZ) return;
+    const now = Date.now(), list = Object.entries(PZ.others).filter(([s, v]) => v && now - (v.t || 0) < LIVE_MS && (!isTest(+s) || isTest(user.seat)) && PET.SPECIES[v.sp]);
+    if (!list.some(([s]) => +s === PZ.seat)) list.push([String(PZ.seat), Object.assign({}, myLook(), PZ.me, { t: now })]);
+    const seen = new Set();
+    list.sort((a, b) => (a[1].x + a[1].y) - (b[1].x + b[1].y)).forEach(([s, v]) => {
+      seen.add(s); const me = +s === PZ.seat, pos = me ? PZ.me : v, [X, Y] = PP(pos.x | 0, pos.y | 0);
+      let g = G.querySelector(`[data-s="${s}"]`);
+      const key = [v.sp, v.c, v.h, v.g, v.k, v.lv].join();
+      if (!g || g.dataset.k !== key) {
+        if (g) g.remove();
+        g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.setAttribute('class', 'ppw pzp' + (me ? ' me' : '')); g.dataset.s = s; g.dataset.k = key;
+        g.innerHTML = `<ellipse cx="0" cy="2" rx="16" ry="5" fill="#000" opacity=".12"/><svg x="-33" y="-64" width="66" height="66" viewBox="0 0 200 200" overflow="visible">${PET.petSVG(Object.assign({}, v, { mood: 'happy' }))}</svg>
+          <g transform="translate(0 -70)"><rect x="-22" y="-11" width="44" height="16" rx="8" fill="${me ? '#20c997' : '#fff'}" opacity=".92"/><text y="1" text-anchor="middle" font-size="10" font-weight="900" fill="${me ? '#fff' : '#555'}">${me ? '我' : seatName(+s)}</text></g><g class="pzb"></g>`;
+        g.style.transform = `translate(${X}px,${Y}px)`; G.appendChild(g);
+      }
+      g.style.transform = `translate(${X}px,${Y}px)`;
+      const e = me ? PZ.me : v, show = e.e != null && now - (e.et || 0) < 4000, b = g.querySelector('.pzb');
+      if (show) { if (b.dataset.et !== String(e.et)) { b.dataset.et = String(e.et); b.innerHTML = `<g transform="translate(0 -94)"><circle r="15" fill="#fff" stroke="#ffd8a8" stroke-width="2"/><text y="6" text-anchor="middle" font-size="17">${EMOTES[e.e] || ''}</text></g>`; const p = g.querySelector('svg'); p.classList.remove('pzhop'); void p.getBBox; p.classList.add('pzhop'); setTimeout(() => { if (b.dataset.et === String(e.et)) { b.innerHTML = ''; p.classList.remove('pzhop'); } }, 4000 - (now - e.et)); } }
+    });
+    G.querySelectorAll('[data-s]').forEach(g => { if (!seen.has(g.dataset.s)) g.remove(); });
+    /* 依前後重新排（前面的蓋住後面的） */
+    [...G.children].sort((a, b) => { const pa = a.style.transform.match(/,(-?[\d.]+)px/), pb = b.style.transform.match(/,(-?[\d.]+)px/); return (pa ? +pa[1] : 0) - (pb ? +pb[1] : 0); }).forEach(n => G.appendChild(n));
+    const W = document.getElementById('pzwho'); if (W) W.innerHTML = `🎪 現在在廣場：${list.map(([s]) => `<span class="${+s === PZ.seat ? 'me' : ''}">${+s === PZ.seat ? '我' : seatName(+s)}</span>`).join('')}`;
+  }
+  const slotNow = () => Math.floor(Date.now() / STAR_MS);
+  const starKey = (slot, k) => `${slot}_${k}`;
+  function paintStars() {
+    const G = document.getElementById('pzstar'); if (!G || !PZ) return; const slot = slotNow();
+    G.innerHTML = starsOf(slot, PZ.D).filter(s => !PZ.starDone[starKey(slot, s.k)]).map(s => { const [X, Y] = PP(s.x, s.y); return `<g transform="translate(${X} ${Y - 12})" class="pzst"><circle r="13" fill="#fff3bf" opacity=".6"/><text y="7" text-anchor="middle" font-size="20">⭐</text></g>`; }).join('');
+  }
+  async function claim(x, y) {
+    if (!PZ || PZ.me.x !== x || PZ.me.y !== y) return;
+    const slot = slotNow(), s = starsOf(slot, PZ.D).find(s => s.x === x && s.y === y); if (!s) return;
+    const key = starKey(slot, s.k); if (PZ.starDone[key]) return;
+    const p = pet(), today = dkey(); p.star = p.star && p.star.d === today ? p.star : { d: today, n: 0 };
+    const tip = t => { const e = document.getElementById('pztip'); if (e) e.textContent = t; };
+    try {
+      const r = await db.ref(`${ROOT}/pstar/${key}`).transaction(cur => cur ? undefined : String(user.seat));
+      if (!r.committed) { tip('哎呀，被同學先撿走了！'); return; }
+    } catch (e) { tip('撿星星失敗，再試一次'); return; }
+    PZ.starDone[key] = String(user.seat); paintStars();
+    if (p.star.n >= STAR_MAX) { tip(`⭐ 撿到了！（今天的金幣已經拿滿 ${STAR_MAX} 枚，明天再來）`); snd(880); return; }
+    p.star.n++; p.coin = (p.coin || 0) + 1; p.u = Date.now(); saveSum(true);
+    const c = document.getElementById('pkcoin'); if (c) c.textContent = coins();
+    tip(`⭐ 撿到星星！🪙 +1（今天還能拿 ${STAR_MAX - p.star.n} 枚）`); try { sfx.ok(); } catch (e) { }
+    PZ.me.e = 5; PZ.me.et = Date.now(); PZ.send(); paintPets();
+  }
+
   /* ───────── 樣式 ───────── */
   const css = `
   .ptabs.pk{margin-top:.2rem}.ptabs.pk button.on{color:#0ca678}
@@ -425,8 +561,15 @@
   .plot .pkbird{animation:pkbird 9s ease-in-out infinite}@keyframes pkbird{50%{transform:translate(60px,-12px)}}
   img.plot.mini{width:100%;height:auto;display:block}
   .pkvis{border-radius:20px;overflow:hidden}
+
+  .pzbox{max-width:46rem}.plz .pzp{transition:transform 1.2s ease-in-out}.plz .pzp.me>svg .psvg{filter:drop-shadow(0 0 4px #fff)}
+  .plz .pzhop{animation:phop .5s ease-out 3}.plz .pzst{animation:pzst 1.2s ease-in-out infinite}@keyframes pzst{50%{transform:translateY(-4px)}}
+  .plz .pzst{transform-box:fill-box}
+  .pzem{display:flex;gap:.5rem;justify-content:center;margin-top:.7rem;flex-wrap:wrap}.pzem button{font-size:2rem;background:#fff;border:3px solid #ffe8cc;border-radius:18px;padding:.25rem .7rem;box-shadow:0 3px 0 #ffd8a8}.pzem button:active{transform:translateY(2px);box-shadow:none}
+  .pzwho{margin-top:.6rem;font-size:1.05rem;font-weight:900;color:#0ca678;display:flex;flex-wrap:wrap;gap:.3rem .5rem;justify-content:center}.pzwho span{background:#e6fcf5;border-radius:10px;padding:.1rem .5rem}.pzwho span.me{background:#20c997;color:#fff}
+  .pzclosed{font-size:1.3rem;font-weight:900;color:#666;text-align:center;padding:2.5rem 1rem;line-height:1.7}.pzclosed small{font-size:1rem;color:#999}
   @media (max-width:700px){.pkitems{grid-template-columns:repeat(auto-fill,minmax(5.4rem,1fr))}.pkit .pkic{height:3.4rem}.pkmap{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
-  window.PARK = { page, plotSVG, sprite, parkSVG, OBJ, BLOCKS, FUND, S, starter, validV, validD, loadAll, fundTotal, _mode: m => { mode = m; } };
+  window.PARK = { page, leavePlaza, starsOf, plazaDeco, plotSVG, sprite, parkSVG, OBJ, BLOCKS, FUND, S, starter, validV, validD, loadAll, fundTotal, _mode: m => { mode = m; } };
 })();
