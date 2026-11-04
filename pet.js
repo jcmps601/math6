@@ -569,7 +569,7 @@
   .png button{background:#fff9db;border:3px solid #ffe066;border-radius:14px;padding:.45rem .2rem;font-size:1.15rem;font-weight:900;color:#e67700;font-family:inherit}.png button.on{background:#ffe066}
   .pstk{display:flex;justify-content:center;gap:.6rem;margin:.4rem 0 1rem;flex-wrap:wrap}.pstk button{font-size:2.4rem;background:#fff0f6;border:3px solid #ffdeeb;border-radius:18px;padding:.3rem .7rem}
   .pdone{font-size:1.2rem;font-weight:900;color:#2b8a3e}
-  .pmx{font-size:1.1rem}
+  .pmx{font-size:1.1rem;border:0;background:#e9ecef;border-radius:14px;padding:.5rem 1.6rem;font-weight:900;color:#555;font-family:inherit;margin-top:.3rem}
   .petend{color:#e67700}
   @media (max-width:700px){.pacts{grid-template-columns:repeat(3,minmax(0,1fr))}.pstage{height:min(22rem,48vh)}.pbub{font-size:1rem;top:4.6rem}.ptag b{font-size:1.2rem}.pcoin{font-size:1.1rem}.pspg .psvg{width:5.2rem;height:5.2rem}}`;
   const S = document.createElement('style'); S.textContent = css; document.head.appendChild(S);
