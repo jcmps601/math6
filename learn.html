@@ -431,6 +431,7 @@ body{background:
 .dper button,#setup .dper button{border:0;background:none;border-radius:999px;font-size:1.05rem;font-weight:900;color:#888;padding:.35rem .9rem;box-shadow:none}
 .dper button.on,#setup .dper button.on{background:#fff;color:#e8590c;box-shadow:0 2px 0 #dee2e6}
 #dmsg{color:#888;font-size:1rem}
+.dbad{background:#fff4e6;color:#d9480f;border-radius:12px;padding:.5rem .8rem;font-weight:800;font-size:1.05rem;margin-bottom:.6rem}
 .dnone{color:#999;font-size:1.2rem;padding:1rem 0}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem}
 .kpi{background:#f8f9fa;border-radius:20px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.2rem}
@@ -1677,7 +1678,7 @@ async function dashLoad(){const pins=LS.get('learn601_pins',null),M=$('#dmsg');i
   DASH={rows,t:Date.now()};M.textContent=`更新時間 ${pad2(new Date().getHours())}:${pad2(new Date().getMinutes())}`+(rows.some(r=>r.sum==='err'||!r.log)?'（有人讀取失敗）':'');dashRender()}
 /* 依目前選的時間範圍統計 */
 function dashStats(){const since=dSince(),today=dkey(),wk=weekKeys(0),now=Date.now();
-  const stu=DASH.rows.map(r=>{const v=r.sum&&r.sum!=='err'?r.sum:null,days=(v&&v.days)||{};
+  const all=DASH.rows.map(r=>{const v=r.sum&&r.sum!=='err'?r.sum:null,days=(v&&v.days)||{};
     const S={s:r.s,ok:!!v,err:r.sum==='err'||!r.log,today:days[today]||0,wkQ:wk.reduce((a,k)=>a+(days[k]||0),0),wkGoal:wk.filter(k=>(days[k]||0)>=GOAL).length,
       last:v&&v.last||0,idle:v&&v.last?Math.floor((now-v.last)/864e5):null,n:0,ok1:0,rev:0,u:{},t:{}};
     (r.log||[]).filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).forEach(q=>{if(q.u==null||!UN[q.u])return;
@@ -1685,12 +1686,15 @@ function dashStats(){const since=dSince(),today=dkey(),wk=weekKeys(0),now=Date.n
       const U=S.u[q.u]=S.u[q.u]||{n:0,ok1:0};U.n++;U.ok1+=o1;
       const k=q.u+'|'+q.t,T=S.t[k]=S.t[k]||{u:q.u,t:q.t,n:0,ok1:0,rev:0};T.n++;T.ok1+=o1;T.rev+=q.r==='no'?1:0}));
     return S});
+  /* 讀取失敗的學生資料不完整:不算進統計(免得被當成「沒練習」),另外列出來 */
+  const bad=all.filter(x=>x.err).map(x=>x.s),stu=all.filter(x=>!x.err);
   const typ={};stu.forEach(S=>Object.values(S.t).forEach(T=>{const k=T.u+'|'+T.t,A=typ[k]=typ[k]||{u:T.u,t:T.t,n:0,ok1:0,rev:0,who:[]};A.n+=T.n;A.ok1+=T.ok1;A.rev+=T.rev;if(T.n&&T.ok1/T.n<.6)A.who.push(S.s)}));
   const weak=Object.values(typ).filter(x=>x.n>=5&&x.ok1/x.n<.85).sort((a,b)=>a.ok1/a.n-b.ok1/b.n||b.n-a.n).slice(0,5);
-  return {stu,weak,typ}}
-function dashRender(){if(!DASH)return;const {stu,weak}=dashStats(),O=$('#dout'),N=stu.length,chip=(s,t)=>`<span class="chip" data-s="${s}">${s}${t?`<small>${t}</small>`:''}</span>`;
+  return {stu,weak,typ,bad}}
+function dashRender(){if(!DASH)return;const {stu,weak,bad}=dashStats(),O=$('#dout'),N=stu.length,chip=(s,t)=>`<span class="chip" data-s="${s}">${s}${t?`<small>${t}</small>`:''}</span>`;
   const sumQ=stu.reduce((a,x)=>a+x.n,0),sum1=stu.reduce((a,x)=>a+x.ok1,0),todayN=stu.filter(x=>x.today>0).length,goalAvg=N?stu.reduce((a,x)=>a+x.wkGoal,0)/N:0,rate=pc(sum1,sumQ);
-  let h=`<div class="kpis">
+  let h=bad.length?`<div class="dbad">⚠️ ${bad.join('、')} 號的資料沒有讀到（網路不穩），下面的統計先不算他們，按「🔄 重新整理」再讀一次</div>`:'';
+  h+=`<div class="kpis">
     <div class="kpi ${todayN>=N*.8?'g':todayN>=N*.5?'y':'r'}"><span class="kl">今天有練習</span><span class="kv">${todayN}<small>/ ${N} 人</small></span><span class="ks">還沒練習 ${N-todayN} 人</span></div>
     <div class="kpi"><span class="kl">本週完成每日目標（${GOAL} 題）</span><span class="kv">${goalAvg.toFixed(1)}<small>天／人</small></span><span class="ks">全班共 ${stu.reduce((a,x)=>a+x.wkGoal,0)} 人次</span></div>
     <div class="kpi"><span class="kl">${dPerName()}全班答題</span><span class="kv">${sumQ}<small>題</small></span><span class="ks">平均每人 ${N?Math.round(sumQ/N):0} 題</span></div>
@@ -1729,11 +1733,11 @@ tap($('#dload'),()=>dashLoad());
 tap($('#dxls'),()=>{if(!DASH){$('#dmsg').textContent='先按「重新整理」讀取資料';return}dashXlsx()});
 
 /* ---- 匯出 Excel：自己做一個 .xlsx（Excel、Google 試算表、Numbers 都打得開） ---- */
-function dashXlsx(){const {stu,typ}=dashStats(),per=dPerName(),d=new Date(),stamp=`${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
+function dashXlsx(){const {stu,typ,bad}=dashStats(),per=dPerName(),d=new Date(),stamp=`${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
   const H=t=>({v:t,s:1}),col=p=>p==null?0:p>=80?2:p>=60?3:4,dt=t=>t?`${new Date(t).getMonth()+1}/${new Date(t).getDate()}`:'';
   const sheets=[];
   sheets.push({name:'總覽',w:[8,10,14,14,12,14,12,14],rows:[[H('座號'),H('今天題數'),H('本週完成天數'),H(per+'題數'),H('一次答對率%'),H('看解答次數'),H('最近練習'),H('幾天沒練習')],
-    ...stu.map(S=>[S.s,S.today,S.wkGoal,S.n,S.n?{v:pc(S.ok1,S.n),s:col(pc(S.ok1,S.n))}:'',S.rev,dt(S.last),S.idle??'沒練過'])]});
+    ...stu.map(S=>[S.s,S.today,S.wkGoal,S.n,S.n?{v:pc(S.ok1,S.n),s:col(pc(S.ok1,S.n))}:'',S.rev,dt(S.last),S.idle??'沒練過']),...bad.map(s=>[s,'資料沒有讀到，請重新整理後再匯出'])]});
   const subsU=AU();sheets.push({name:'各單元熟練度',w:[8,...subsU.map(()=>14)],rows:[[H('座號'),...subsU.map(i=>H(uLab(UN[i])+' '+(UN[i].nav||UN[i].name)))],
     ...stu.map(S=>[S.s,...subsU.map(i=>{const U=S.u[i];if(!U)return '';const p=pc(U.ok1,U.n);return {v:`${p}%（${U.n}題）`,s:col(p)}})])]});
   const T=Object.values(typ).sort((a,b)=>a.ok1/a.n-b.ok1/b.n);

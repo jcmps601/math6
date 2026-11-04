@@ -235,7 +235,7 @@ function localNet(){
   return {mode:'local',get:async p=>getP(read(),p)??null,set:async(p,v)=>write(d=>setP(d,p,v)),
     update:async(p,v)=>write(d=>{for(const k in v)setP(d,p+'/'+k,v[k])}),remove:async p=>write(d=>setP(d,p,null)),
     on:(p,cb)=>{const l={p,cb};L.add(l);setTimeout(()=>cb(getP(read(),p)??null));return ()=>L.delete(l)},
-    onDisc:()=>{},cancelDisc:()=>{},conn:cb=>{cb(true);return ()=>{}}};
+    onDisc:()=>{},onDiscRm:()=>{},cancelDisc:()=>{},conn:cb=>{cb(true);return ()=>{}}};
 }
 let Net=null;
 const netReady=(async()=>{
@@ -247,7 +247,9 @@ const netReady=(async()=>{
     Net={mode:'firebase',get:async p=>(await timeout(db.ref(p).get(),8000)).val(),set:(p,v)=>db.ref(p).set(v),update:(p,v)=>db.ref(p).update(v),remove:p=>db.ref(p).remove(),
       on:(p,cb)=>{const r=db.ref(p),h=s=>cb(s.val());r.on('value',h);return ()=>r.off('value',h)},
       /* 斷線(關掉、上一頁、平板睡著)時,雲端自動幫我寫「我離線了」的時間 */
-      onDisc:p=>{try{db.ref(p).onDisconnect().set({'.sv':'timestamp'})}catch(e){}},cancelDisc:p=>{try{db.ref(p).onDisconnect().cancel()}catch(e){}},
+      onDisc:p=>{try{db.ref(p).onDisconnect().set({'.sv':'timestamp'})}catch(e){}},
+      /* 斷線時雲端自動刪掉(等人加入的房間用:開房的人關掉、回平台,房間就不會留著) */
+      onDiscRm:p=>{try{db.ref(p).onDisconnect().remove()}catch(e){}},cancelDisc:p=>{try{db.ref(p).onDisconnect().cancel()}catch(e){}},
       conn:cb=>{const r=db.ref('.info/connected'),h=s=>cb(!!s.val());r.on('value',h);return ()=>r.off('value',h)}};
   }catch(e){Net=localNet()}
   return Net})();
@@ -486,16 +488,26 @@ addEventListener('resize',()=>{if($('#game').classList.contains('on'))fit()});
 /* ═════════════ 房間 ═════════════ */
 const msg=t=>{$('#msg').textContent=t||''};
 function listen(){G.un.forEach(f=>f());G.un=[
-  Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&$('#game').classList.contains('on')&&G.st&&G.st.phase!=='end'){G.st.phase='end';G.st.winner=G.me;G.st.reason='對手離開了';onState()}return}
-    G.st=v;if(v.phase!=='wait'&&$('#wait').classList.contains('on')){uninvite();startGame()}if($('#game').classList.contains('on'))onState()}),
+  Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&$('#game').classList.contains('on')&&G.st&&G.st.phase!=='end'){G.st.phase='end';G.st.winner=G.me;G.st.reason='對手離開了';onState()}
+      /* 等人的時候網路斷了,雲端已經把房間刪掉:回首頁重開 */
+      else if($('#wait').classList.contains('on')){uninvite();G.un.forEach(f=>f());G.un=[];G.mode='';show('home');msg('網路斷了一下，房間關掉了，請重新建立房間')}return}
+    G.st=v;if(v.phase!=='wait'&&$('#wait').classList.contains('on')){Net.cancelDisc(`rooms/${G.pin}`);uninvite();startGame()}if($('#game').classList.contains('on'))onState()}),   // 有人加入了:房間不再斷線就刪
   Net.on(`rooms/${G.pin}/live`,v=>{if(G.type==='pd')PDV.setLive(v)}),
   Net.on(`rooms/${G.pin}/players`,v=>{G.players=v||{};const mine=Object.keys(G.players).find(k=>G.players[k]&&G.players[k].id===myId);if(mine&&mine!==G.me){G.me=mine;G.flip=G.me==='b';drawGrid()}if($('#game').classList.contains('on')){render();if(G.st)guard(G.st);if($('#over').classList.contains('on'))paintAgain()}})]}
 function startGame(){G.flip=G.me==='b';G.lastLen=-1;drawGrid();show('game');onState()}
 async function needName(){if(!hasTicket()){msg(NO_TK);return null}let n=myName();if(!n)n=askName();if(!n){msg('先輸入名字');return null}return n}
-$('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('建立中…');await netReady;
+/* 清掉沒下完、被丟著的對戰房間(兩個人都直接關掉平板時會留下來):
+   只清軍棋、暗棋、大砲對轟的房間(搶答王的不動),最後一次動作超過 3 小時才清 */
+const STALE_MS=3*60*60*1000;
+async function sweepRooms(){if(Net.mode!=='firebase'||sweepRooms.done)return;sweepRooms.done=1;
+  try{const all=await Net.get('rooms')||{},now=Date.now();
+    for(const [p,r] of Object.entries(all)){if(!r||!r.meta||!GNAME[r.meta.game])continue;
+      const t=Math.max(+(r.state&&r.state.t)||0,+r.meta.created||0);if(t&&now-t>STALE_MS)await Net.remove(`rooms/${p}`).catch(()=>{})}}catch(e){}}
+$('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('建立中…');await netReady;await sweepRooms();
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/state`)))pin=p}
     if(!pin)return msg('房間滿了，等一下再試');
     G.newCreated=Date.now();await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...fresh()},players:{r:{id:myId,name,seat:mySeat()}}});
+    Net.onDiscRm(`rooms/${pin}`);   // 還沒人加入就關掉、回平台:雲端自動刪掉房間
     Object.assign(G,{mode:'net',pin,me:'r',st:null,players:{},paid:0,created:G.newCreated});$('#pinBig').textContent=pin;msg('');show('wait');listen();
   }catch(e){msg('連不上網路，請檢查網路或改用「同一台平板」')}};
 $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');const name=await needName();if(!name)return;
@@ -511,7 +523,7 @@ $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.t
   }catch(e){msg('連不上網路，請再試一次')}};
 $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bJoin').onclick()});
 $('#bLocal').onclick=()=>{if(!hasTicket())return msg(NO_TK);Object.assign(G,{mode:'solo',pin:'',me:'r',players:{},st:{phase:'play',moves:'',turn:'r',g:1,...fresh()},paid:0});startGame()};
-$('#bCancel').onclick=async()=>{uninvite();G.un.forEach(f=>f());G.un=[];try{await Net.remove(`rooms/${G.pin}`)}catch(e){}show('home')};
+$('#bCancel').onclick=async()=>{uninvite();G.un.forEach(f=>f());G.un=[];Net.cancelDisc(`rooms/${G.pin}`);try{await Net.remove(`rooms/${G.pin}`)}catch(e){}G.mode='';show('home')};   // 取消「斷線就刪」:以後別人用到同一個房號才不會被刪
 $('#bUndo').onclick=()=>{if(G.mode!=='solo'||!G.st.moves)return;const a=G.st.moves.split(',');a.pop();G.st={...G.st,phase:'play',moves:a.join(',')};G.sel=-1;onState()};
 $('#bResign').onclick=async()=>{if(!G.st||G.st.phase!=='play')return;
   const loser=G.mode==='solo'?G.R.turn:G.me;if(!confirm(G.mode==='solo'?`${loser==='r'?'紅方':'黑方'}要認輸嗎？`:'確定要認輸嗎？'))return;
