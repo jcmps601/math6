@@ -382,6 +382,28 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
 .wfx.bad{color:#ffe3e3}
 @keyframes wfx{from{opacity:1; transform:translate(-50%,0)} to{opacity:0; transform:translate(-50%,-70%)}}
 
+/* 切禮物 */
+.gcard.l .nm{color:#d6336c}
+#lPane{background:radial-gradient(ellipse at 50% 25%,#5157b3 0%,#2c2f72 58%,#1b1d4a 100%); touch-action:none; cursor:crosshair}
+#lPane canvas{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none}
+/* 按住別放 */
+.gcard.p .nm{color:#7048e8}
+#hdPane{touch-action:none}
+#hdField{position:absolute; inset:0; background:radial-gradient(ellipse at 50% 40%,#3d2a66 0%,#21163d 80%); touch-action:none; user-select:none; -webkit-user-select:none}
+.hddot{position:absolute; width:var(--s); height:var(--s); margin:calc(var(--s)/-2) 0 0 calc(var(--s)/-2); border-radius:50%; display:grid; place-items:center;
+  font-size:calc(var(--s)*.4); font-weight:900; color:#fff; background:var(--c); box-shadow:0 0 0 .8cqw rgba(255,255,255,.25); transform:scale(.2); opacity:0;
+  transition:transform .3s cubic-bezier(.3,1.5,.5,1), opacity .2s; pointer-events:none}
+.hddot.on{transform:scale(1); opacity:1}
+.hddot.on:not(.held):not(.lost){animation:hdshrink var(--t) linear .3s forwards}
+@keyframes hdshrink{from{transform:scale(1)}to{transform:scale(var(--k,1))}}
+.hddot::before{content:''; position:absolute; inset:-1.4cqw; border-radius:50%; border:.7cqw solid #fff; opacity:.9; animation:hdring var(--t) linear forwards}
+@keyframes hdring{from{clip-path:inset(0 0 0 0)}to{clip-path:inset(100% 0 0 0)}}
+.hddot.held{box-shadow:0 0 0 1.1cqw #fff, 0 0 4cqw var(--c)}
+.hddot.held::before{display:none}
+.hddot.lost{background:#555; box-shadow:none}
+.hddot.lost::before{display:none}
+.hdnote{position:absolute; left:50%; bottom:6%; transform:translateX(-50%); font-weight:800; font-size:2.6cqw; color:#ffb3b3; white-space:nowrap; pointer-events:none}
+.hdnote:empty{display:none}
 </style>
 </head>
 <body>
@@ -404,6 +426,8 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
     <button class="gcard b" data-game="bridge"><div class="ic">🌉</div><div class="nm">搭橋小英雄</div><div class="bests" id="hb_bridge"></div></button>
     <button class="gcard m" data-game="melon"><div class="ic">🍉</div><div class="nm">合成大西瓜</div><div class="bests" id="hb_melon"></div></button>
     <button class="gcard w" data-game="mole"><div class="ic">🔨</div><div class="nm">打地鼠</div><div class="bests" id="hb_mole"></div></button>
+    <button class="gcard l" data-game="slice"><div class="ic">🎁</div><div class="nm">切禮物</div><div class="bests" id="hb_slice"></div></button>
+    <button class="gcard p" data-game="hold"><div class="ic">🖐️</div><div class="nm">按住別放</div><div class="bests" id="hb_hold"></div></button>
     <button class="gcard g" data-game="g2048"><div class="ic"><span class="t2048"></span></div><div class="nm">2048</div><div class="bests" id="hb_g2048"></div></button>
   </div>
 </section>
@@ -440,6 +464,8 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
       <div class="pane" id="nPane"><div class="ngrid" id="nGrid"></div></div>
       <div class="pane" id="hPane"><div class="hlamp" id="hLamp"></div><div class="hshov" id="hShov"></div><div class="hgrid" id="hGrid"></div><div class="hlad" id="hLad"></div></div>
       <div class="pane" id="wPane"><div class="wgrid" id="wGrid"></div></div>
+      <div class="pane" id="lPane"><canvas id="lCv"></canvas><div class="tapHint" id="lHint">手指劃過去切開禮物，別切到炸彈！</div></div>
+      <div class="pane" id="hdPane"><div id="hdField"><div id="hdDots"></div><div class="hdnote" id="hdNote"></div></div><div class="tapHint" id="hdHint">圓圈出現就用一根手指按住，不能放開！</div></div>
       <div class="bigmsg" id="bigMsg"></div>
       <div class="count" id="count"></div>
     </div>
@@ -607,7 +633,7 @@ function bgmCompile(spec,sepLead){
 
 
 /* ═════════════ 設定 ═════════════ */
-const GAMES={tower:{ic:'🧱',nm:'疊高塔'},cups:{ic:'🥤',nm:'三杯追星'},flappy:{ic:'🐤',nm:'小雞跳跳'},hunt:{ic:'🗺️',nm:'尋寶'},num:{ic:'🔢',nm:'數字快手'},simon:{ic:'🎹',nm:'記憶燈光'},color:{ic:'🎨',nm:'顏色陷阱'},react:{ic:'⚡',nm:'反應王'},spot:{ic:'👀',nm:'找不同'},bridge:{ic:'🌉',nm:'搭橋小英雄'},melon:{ic:'🍉',nm:'合成大西瓜'},g2048:{ic:'🔶',nm:'2048'},mole:{ic:'🔨',nm:'打地鼠'}};
+const GAMES={tower:{ic:'🧱',nm:'疊高塔'},cups:{ic:'🥤',nm:'三杯追星'},flappy:{ic:'🐤',nm:'小雞跳跳'},hunt:{ic:'🗺️',nm:'尋寶'},num:{ic:'🔢',nm:'數字快手'},simon:{ic:'🎹',nm:'記憶燈光'},color:{ic:'🎨',nm:'顏色陷阱'},react:{ic:'⚡',nm:'反應王'},spot:{ic:'👀',nm:'找不同'},bridge:{ic:'🌉',nm:'搭橋小英雄'},melon:{ic:'🍉',nm:'合成大西瓜'},g2048:{ic:'🔶',nm:'2048'},mole:{ic:'🔨',nm:'打地鼠'},slice:{ic:'🎁',nm:'切禮物'},hold:{ic:'🖐️',nm:'按住別放'}};
 const GAME_KEYS=Object.keys(GAMES);
 const DIFFS=[{k:'easy',ic:'🌱',nm:'簡單'},{k:'normal',ic:'⭐',nm:'普通'},{k:'hard',ic:'🔥',nm:'困難'},{k:'boss',ic:'👑',nm:'魔王'}];
 const DIFF_COL={easy:'#2fb36d',normal:'#2f8cf0',hard:'#f28a1c',boss:'#9b3fe0'};
@@ -697,6 +723,8 @@ const CT_CFG={
 /* 各遊戲的星星門檻、分數顯示 */
 function gInfo(g,d){
   if(g==='mole') return {th:WM_CFG[d].stars, big:x=>`${x}<small>分</small>`, txt:x=>`${x} 分`};
+  if(g==='slice') return {th:SL_CFG[d].stars, big:x=>`${x}<small>個</small>`, txt:x=>`${x} 個`, nx:x=>`切到 ${x} 個`};
+  if(g==='hold') return {th:HD_CFG[d].stars, big:x=>`${x}<small>個</small>`, txt:x=>`${x} 個`, nx:x=>`同時按住 ${x} 個`};
   if(g==='tower') return {th:TW_CFG[d].stars, big:x=>`${x}<small>層</small>`, txt:x=>`${x} 層`};
   if(g==='flappy') return {th:FP_CFG[d].stars, big:x=>`${x}<small>關</small>`, txt:x=>`${x} 關`};
   if(g==='simon') return {th:SM_CFG[d].stars, big:x=>`${x}<small>個燈</small>`, txt:x=>`${x} 個燈`};
@@ -876,7 +904,7 @@ const G={timers:[],run:0};                          // run：每開一局 +1，�
 function later(fn,ms){ const r=G.run; G.timers.push(setTimeout(()=>{ if(r===G.run) fn(); },ms)); }
 function stopGame(){
   G.run++; G.timers.forEach(clearTimeout); G.timers=[]; clearInterval(tw.tick); tw.tick=0; clearInterval(fp.tick); fp.tick=0;
-  tw.phase='idle'; cu.phase='idle'; fp.phase='idle'; ht.phase='idle'; nm.phase='idle'; clearInterval(nm.tick); nm.tick=0; sm.phase='idle'; ct.phase='idle'; rx.phase='idle'; rx.token++; fds.phase='idle'; clearInterval(fds.tick); fds.tick=0; br.phase='idle'; mel.phase='idle'; g2.phase='idle'; clearInterval(mel.tick); mel.tick=0; clearInterval(ct.tick); ct.tick=0; wm.phase='idle'; clearInterval(wm.tick); wm.tick=0; $('#count').innerHTML=''; bigMsg('');
+  tw.phase='idle'; cu.phase='idle'; fp.phase='idle'; ht.phase='idle'; nm.phase='idle'; clearInterval(nm.tick); nm.tick=0; sm.phase='idle'; ct.phase='idle'; rx.phase='idle'; rx.token++; fds.phase='idle'; clearInterval(fds.tick); fds.tick=0; br.phase='idle'; mel.phase='idle'; g2.phase='idle'; clearInterval(mel.tick); mel.tick=0; clearInterval(ct.tick); ct.tick=0; wm.phase='idle'; clearInterval(wm.tick); wm.tick=0; if(typeof slStop==='function'){ slStop(); hdStop(); } $('#count').innerHTML=''; bigMsg('');
   $$('.confetti').forEach(e=>e.remove());
 }
 /* 愛心：用同一個圖形畫，滿的是紅色實心、扣掉的是灰色空心，大小一致 */
@@ -892,13 +920,13 @@ function startGame(){
   stopGame(); show('game'); $('#result').classList.remove('on');
   const D=DIFFS.find(d=>d.k===curDiff), Gm=GAMES[curGame];
   const chip=$('#gChip'); chip.innerHTML=`${Gm.ic} ${Gm.nm}　${D.ic} ${D.nm}`; chip.style.background=DIFF_COL[curDiff];
-  const pane={tower:'tPane',cups:'cPane',flappy:'fPane',hunt:'hPane',num:'nPane',simon:'sPane',color:'kPane',react:'xPane',spot:'dPane',bridge:'bPane',melon:'mPane',g2048:'gPane',mole:'wPane'};
+  const pane={tower:'tPane',cups:'cPane',flappy:'fPane',hunt:'hPane',num:'nPane',simon:'sPane',color:'kPane',react:'xPane',spot:'dPane',bridge:'bPane',melon:'mPane',g2048:'gPane',mole:'wPane',slice:'lPane',hold:'hdPane'};
   $$('.pane').forEach(p=>p.classList.toggle('on',p.id===pane[curGame]));
-  $('#gTime').hidden=!['tower','flappy','num','color','spot','g2048','mole'].includes(curGame); $('#gDots').hidden=!['cups','hunt','simon','react','bridge'].includes(curGame);
+  $('#gTime').hidden=!['tower','flappy','num','color','spot','g2048','mole','slice'].includes(curGame); $('#gDots').hidden=!['cups','hunt','simon','react','bridge'].includes(curGame);
   $('#gTime').classList.remove('warn');
   fitStage();
   bgmStop(true);
-  ({tower:twStart,cups:cuStart,flappy:fpStart,hunt:htStart,num:nmStart,simon:smStart,color:ctStart,react:rxStart,spot:fdStart,bridge:brStart,melon:melStart,g2048:g2Start,mole:wmStart})[curGame]();
+  ({tower:twStart,cups:cuStart,flappy:fpStart,hunt:htStart,num:nmStart,simon:smStart,color:ctStart,react:rxStart,spot:fdStart,bridge:brStart,melon:melStart,g2048:g2Start,mole:wmStart,slice:slStart,hold:hdStart})[curGame]();
 }
 
 /* ═════════════ 結果 ═════════════ */
@@ -2213,8 +2241,288 @@ function g2End(why){
     if(m){ e.preventDefault(); g2Move(m); } });
 })();
 
-renderHome();
+/* 打地鼠、切禮物、按住別放寫在後面的 <script>，等全部載入完再畫首頁（不然存過這些遊戲的紀錄時，首頁會出錯） */
+addEventListener('DOMContentLoaded',renderHome);
 
+</script>
+<script>
+/* ═════════════ 🎁 切禮物 ═════════════
+   禮物盒從下面拋上來，手指「劃過去」就切開 +1；一刀連切 3 個，多送 1 個。
+   切到炸彈扣 3 個、刀子麻掉 0.7 秒。30 秒，愈後面拋得愈快、一次愈多。
+   難度改：拋的速度、一次幾個、炸彈多寡、禮物大小；魔王一次可能 2 顆炸彈，還有會發亮的金禮物（+3，飛得比較快）。 */
+const SL_SECS=30;
+const SL_CFG={
+  easy:  {g0:0.95,gp:0.70,gap0:1500,gap1:850,more:0.30,bomb0:0.00,bombp:0.10,bombs:1,r:0.062,gold:0,   stars:[15,25,35]},
+  normal:{g0:1.15,gp:1.00,gap0:1350,gap1:650,more:0.35,bomb0:0.12,bombp:0.14,bombs:1,r:0.056,gold:0,   stars:[15,25,35]},
+  hard:  {g0:1.35,gp:1.10,gap0:1150,gap1:560,more:0.45,bomb0:0.16,bombp:0.18,bombs:1,r:0.050,gold:0.06,stars:[15,24,33]},
+  boss:  {g0:1.55,gp:1.20,gap0:1000,gap1:480,more:0.50,bomb0:0.20,bombp:0.20,bombs:2,r:0.046,gold:0.08,stars:[12,20,28]}};
+const SL_COLORS=['#ff5b7a','#ffb13b','#3fc97f','#4fb0ff','#a77bff','#ff7ad9','#2ec4b6'];
+const sl={phase:'idle',cfg:SL_CFG.normal,objs:[],parts:[],floats:[],trail:[],ptr:new Map(),t0:0,tick:0,
+  score:0,raf:0,last:0,stun:0,nextWave:0,ctx:null,W:0,Hp:0,HU:0.5625,dpr:1};
+const slProg=()=>Math.min(1,(performance.now()-sl.t0)/(SL_SECS*1000));
+function slHud(){ $('#gScore').innerHTML=`🎁 ${sl.score}`; }
+function slAdd(d,before){ sl.score=Math.max(0,sl.score+d); slHud();
+  sl.cfg.stars.forEach((x,j)=>{ if(before<x&&sl.score>=x) later(()=>sfx.star(j),80); }); }
+function slCanvas(){
+  const cv=$('#lCv'); if(!cv||!cv.isConnected) return false;
+  const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return false;
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(w!==sl.W||h!==sl.Hp||dpr!==sl.dpr||!sl.ctx){ sl.W=w; sl.Hp=h; sl.dpr=dpr; cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); sl.ctx=cv.getContext('2d'); }
+  sl.HU=h/w; return true;
+}
+function slWave(now){
+  const C=sl.cfg, p=slProg(), HU=sl.HU;
+  const n=1+(Math.random()<C.more+0.4*p?1:0)+(p>0.4&&Math.random()<0.45?1:0)+(p>0.75&&Math.random()<0.4?1:0);
+  let bombs=0;
+  for(let k=0;k<n;k++){
+    const bomb=p>0.1&&bombs<C.bombs&&Math.random()<C.bomb0+C.bombp*p; if(bomb) bombs++;
+    const gold=!bomb&&Math.random()<C.gold;
+    const g=(C.g0+C.gp*p)*(gold?1.25:1), r=bomb?C.r*0.82:C.r;
+    const x=0.12+Math.random()*0.76, y=HU+r+0.01;
+    const apex=HU*(0.13+Math.random()*0.32);                 // 最高點：畫面上方 13%～45%
+    const rise=y-apex, tUp=Math.sqrt(2*rise/g), xEnd=0.12+Math.random()*0.76;
+    sl.objs.push({bomb,gold,x,y,vx:(xEnd-x)/(2*tUp),vy:-Math.sqrt(2*g*rise),g,r,
+      rot:(Math.random()-0.5)*0.8,spin:(Math.random()-0.5)*4,
+      c:gold?'#ffc933':SL_COLORS[Math.floor(Math.random()*SL_COLORS.length)],born:now+k*(90+Math.random()*130)});
+  }
+  tone(260+Math.random()*80,0.06,'sine',0.02);
+  sl.nextWave=now+(C.gap0-(C.gap0-C.gap1)*p)*(0.8+0.4*Math.random());
+}
+function slSeg(px,py,ax,ay,bx,by){
+  const dx=bx-ax, dy=by-ay, L=dx*dx+dy*dy;
+  let t=L?((px-ax)*dx+(py-ay)*dy)/L:0; t=Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(ax+dx*t),py-(ay+dy*t));
+}
+function slCut(P,bx,by,now){
+  if(now<sl.stun||sl.phase!=='play') return;
+  const ax=P.x, ay=P.y;
+  for(const o of sl.objs){
+    if(o.dead||now<o.born) continue;
+    if(slSeg(o.x,o.y,ax,ay,bx,by)<o.r*1.12){
+      o.dead=true;
+      if(o.bomb){ slBoom(o,now); P.combo=0; break; }
+      slSplit(o,bx-ax,by-ay,now,P);
+    }
+  }
+}
+function slSplit(o,dx,dy,now,P){
+  const L=Math.hypot(dx,dy)||1, nx=-dy/L, ny=dx/L;
+  [1,-1].forEach(s=>sl.parts.push({type:'half',s,x:o.x,y:o.y,vx:o.vx*0.6+nx*s*0.3,vy:Math.min(o.vy,0)*0.3+ny*s*0.3-0.12,
+    g:1.6,rot:o.rot,spin:s*5,r:o.r,c:o.c,life:1.3}));
+  for(let i=0;i<12;i++){ const a=Math.random()*6.283, v=0.15+Math.random()*0.45;
+    sl.parts.push({type:'bit',x:o.x,y:o.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-0.2,g:1.2,
+      c:i%3?o.c:'#fff',life:0.45+Math.random()*0.4,sz:0.006+Math.random()*0.007}); }
+  const before=sl.score, add=o.gold?3:1; P.combo++;
+  sl.floats.push({x:o.x,y:o.y-o.r,t:o.gold?'⭐ +3':'+1',c:o.gold?'#ffe45c':'#fff',t0:now});
+  let bonus=0;
+  if(P.combo%3===0){ bonus=1; sl.floats.push({x:o.x,y:o.y-o.r-0.05,t:'連切 +1',c:'#ffe45c',t0:now}); tone(1175,0.1,'triangle',0.06,0.05); }
+  slAdd(add+bonus,before);
+  tone(620+Math.min(sl.score,30)*16,0.07,'triangle',0.06); tone(1800,0.03,'sawtooth',0.015);
+}
+function slBoom(o,now){
+  for(let i=0;i<22;i++){ const a=Math.random()*6.283, v=0.2+Math.random()*0.6;
+    sl.parts.push({type:'bit',x:o.x,y:o.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:0.6,
+      c:['#ffb13b','#ff5b5b','#ffe45c','#555'][i%4],life:0.45+Math.random()*0.35,sz:0.008+Math.random()*0.01}); }
+  sl.parts.push({type:'ring',x:o.x,y:o.y,life:0.4,max:0.4});
+  const lost=Math.min(3,sl.score); sl.score-=lost; slHud(); sl.stun=now+700;
+  sl.floats.push({x:o.x,y:o.y-o.r,t:lost?`−${lost}`:'💥',c:'#ff7b7b',t0:now});
+  tone(110,0.3,'sawtooth',0.08); tone(70,0.4,'square',0.05,0.02);
+  const st=$('#stage'); st.classList.remove('wshake'); void st.offsetWidth; st.classList.add('wshake');
+}
+function slStep(now){
+  const dt=Math.min(0.033,(now-sl.last)/1000||1/60); sl.last=now;
+  if(sl.phase==='play'&&now>=sl.nextWave) slWave(now);
+  for(const o of sl.objs){ if(o.dead||now<o.born) continue;
+    o.vy+=o.g*dt; o.x+=o.vx*dt; o.y+=o.vy*dt; o.rot+=o.spin*dt;
+    if(o.vy>0&&o.y>sl.HU+o.r+0.02) o.gone=true; }
+  sl.objs=sl.objs.filter(o=>!o.dead&&!o.gone);
+  for(const q of sl.parts){ q.life-=dt;
+    if(q.type!=='ring'){ q.vy+=(q.g||1.2)*dt; q.x+=q.vx*dt; q.y+=q.vy*dt; if(q.spin) q.rot+=q.spin*dt; } }
+  sl.parts=sl.parts.filter(q=>q.life>0&&q.y<sl.HU+0.2);
+  sl.floats=sl.floats.filter(f=>now-f.t0<700);
+  sl.trail=sl.trail.filter(p=>now-p.t<170);
+}
+function slRR(c,x,y,w,h,r){ r=Math.min(r,w/2,h/2);
+  c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+function slGift(c,x,y,r,rot,col,side,gold){
+  c.save(); c.translate(x,y); c.rotate(rot);
+  if(side){ c.beginPath(); c.rect(side<0?-r*1.7:0,-r*1.7,r*1.7,r*3.4); c.clip(); }
+  const s=r*0.95;
+  if(gold){ c.shadowColor='#ffd43b'; c.shadowBlur=r*900; }
+  slRR(c,-s,-s*0.72,2*s,1.72*s,s*0.2); c.fillStyle=col; c.fill(); c.shadowBlur=0;
+  c.fillStyle='rgba(0,0,0,.14)'; c.fillRect(-s,s*0.62,2*s,s*0.38);
+  c.fillStyle='rgba(255,255,255,.25)'; c.fillRect(-s*0.85,-s*0.62,s*0.5,s*0.12);
+  c.fillStyle='rgba(0,0,0,.16)'; c.fillRect(-s,-s*0.24,2*s,s*0.07);
+  c.fillStyle=gold?'#e03131':'#fff'; c.fillRect(-s*0.17,-s*0.72,s*0.34,1.72*s); c.fillRect(-s,-s*0.02,2*s,s*0.3);
+  c.beginPath(); c.ellipse(-s*0.3,-s*0.86,s*0.3,s*0.19,-0.45,0,6.283); c.fill();
+  c.beginPath(); c.ellipse(s*0.3,-s*0.86,s*0.3,s*0.19,0.45,0,6.283); c.fill();
+  c.restore();
+}
+function slBomb(c,x,y,r,now){
+  c.save(); c.translate(x,y);
+  const g=c.createRadialGradient(-r*0.35,-r*0.35,r*0.1,0,0,r);
+  g.addColorStop(0,'#77778a'); g.addColorStop(1,'#141419');
+  c.fillStyle=g; c.beginPath(); c.arc(0,0,r,0,6.283); c.fill();
+  c.fillStyle='#2b2b35'; c.fillRect(-r*0.3,-r*1.2,r*0.6,r*0.34);
+  c.strokeStyle='#c9a36b'; c.lineWidth=r*0.15; c.lineCap='round';
+  c.beginPath(); c.moveTo(0,-r*1.15); c.quadraticCurveTo(r*0.3,-r*1.65,r*0.62,-r*1.45); c.stroke();
+  const f=0.65+0.35*Math.sin(now/35);
+  c.fillStyle='#ffd166'; c.beginPath(); c.arc(r*0.64,-r*1.47,r*0.26*f,0,6.283); c.fill();
+  c.fillStyle='#ff4d2e'; c.beginPath(); c.arc(r*0.64,-r*1.47,r*0.12*f,0,6.283); c.fill();
+  c.restore();
+}
+function slDraw(now){
+  const c=sl.ctx; if(!c) return;
+  const W=sl.W, HU=sl.HU;
+  c.setTransform(sl.dpr,0,0,sl.dpr,0,0); c.clearRect(0,0,W,sl.Hp);
+  c.setTransform(sl.dpr*W,0,0,sl.dpr*W,0,0);
+  if(sl.phase==='ready'){                                      // 倒數時：三個禮物＋一顆炸彈示意
+    slGift(c,0.3,HU*0.6,0.06,-0.25,'#ff5b7a'); slGift(c,0.5,HU*0.46,0.07,0.08,'#4fb0ff');
+    slGift(c,0.7,HU*0.62,0.06,0.3,'#ffb13b'); slBomb(c,0.87,HU*0.4,0.045,now);
+  }
+  for(const o of sl.objs){ if(now<o.born) continue; o.bomb?slBomb(c,o.x,o.y,o.r,now):slGift(c,o.x,o.y,o.r,o.rot,o.c,0,o.gold); }
+  for(const q of sl.parts){
+    if(q.type==='half'){ c.globalAlpha=Math.min(1,q.life*2); slGift(c,q.x,q.y,q.r,q.rot,q.c,q.s); c.globalAlpha=1; }
+    else if(q.type==='bit'){ c.globalAlpha=Math.min(1,q.life*2.5); c.fillStyle=q.c; c.fillRect(q.x-q.sz/2,q.y-q.sz/2,q.sz,q.sz); c.globalAlpha=1; }
+    else if(q.type==='ring'){ const k=1-q.life/q.max; c.globalAlpha=1-k; c.strokeStyle='#ffd166'; c.lineWidth=0.012;
+      c.beginPath(); c.arc(q.x,q.y,0.03+k*0.16,0,6.283); c.stroke(); c.globalAlpha=1; }
+  }
+  if(sl.trail.length){                                         // 刀光（被炸到時變紅）
+    const red=now<sl.stun; c.lineCap='round';
+    for(let i=1;i<sl.trail.length;i++){ const a=sl.trail[i-1], b=sl.trail[i]; if(a.id!==b.id) continue;
+      const age=Math.min(1,(now-b.t)/170);
+      c.strokeStyle=red?`rgba(255,90,90,${1-age})`:`rgba(255,255,255,${0.95*(1-age)})`;
+      c.lineWidth=Math.max(0.002,0.016*(1-age)); c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke(); }
+  }
+  c.setTransform(sl.dpr,0,0,sl.dpr,0,0);
+  c.textAlign='center'; c.font=`900 ${Math.max(14,Math.round(W*0.042))}px system-ui,"Noto Sans TC",sans-serif`;
+  for(const f of sl.floats){ const k=(now-f.t0)/700, y=(f.y-k*0.06)*W;
+    c.globalAlpha=Math.max(0,1-k*k); c.lineWidth=3; c.strokeStyle='rgba(0,0,0,.5)';
+    c.strokeText(f.t,f.x*W,y); c.fillStyle=f.c; c.fillText(f.t,f.x*W,y); c.globalAlpha=1; }
+}
+function slLoop(){
+  sl.raf=0; if(sl.phase==='idle'||!slCanvas()) return;
+  const now=performance.now(); slStep(now); slDraw(now);
+  if(sl.phase!=='idle') sl.raf=requestAnimationFrame(slLoop);
+}
+function slStart(){
+  sl.cfg=SL_CFG[curDiff];
+  Object.assign(sl,{phase:'ready',objs:[],parts:[],floats:[],trail:[],score:0,stun:0}); sl.ptr.clear();
+  slHud(); setTime(SL_SECS,false); $('#lHint').style.display='';
+  sl.last=performance.now(); if(!sl.raf) sl.raf=requestAnimationFrame(slLoop);
+  countdown(()=>{
+    sl.phase='play'; sl.t0=performance.now(); sl.nextWave=sl.t0+300; $('#lHint').style.display='none';
+    playSong('flappy',TEMPO[curDiff]);
+    let shown=SL_SECS;
+    sl.tick=setInterval(()=>{
+      const left=Math.max(0,Math.ceil((sl.t0+SL_SECS*1000-performance.now())/1000));
+      if(left!==shown){ shown=left; setTime(left,sl.phase==='play'); if(left<=5&&left>0) sfx.tick(); }
+      if(left<=0) slEnd();
+    },100);
+  });
+}
+function slEnd(){
+  if(sl.phase!=='play') return;
+  sl.phase='end'; clearInterval(sl.tick); sl.tick=0; setTime(0,false); sl.ptr.clear();
+  bgmStop(); sfx.whistle(); bigMsg('時間到！',1500);
+  later(()=>{ sl.objs=[]; showResult('slice',sl.score); },2000);
+}
+function slStop(){ sl.phase='idle'; clearInterval(sl.tick); sl.tick=0; sl.ptr.clear(); if(sl.raf){ cancelAnimationFrame(sl.raf); sl.raf=0; } }
+(function(){
+  const cv=$('#lCv');
+  const xy=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.width]; };
+  cv.addEventListener('pointerdown',e=>{
+    if(sl.phase!=='play') return; e.preventDefault();
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    const [x,y]=xy(e); sl.ptr.set(e.pointerId,{x,y,combo:0});
+    sl.trail.push({x,y,t:performance.now(),id:e.pointerId});
+  });
+  cv.addEventListener('pointermove',e=>{
+    const P=sl.ptr.get(e.pointerId); if(!P||sl.phase!=='play') return; e.preventDefault();
+    const evs=(e.getCoalescedEvents&&e.getCoalescedEvents().length)?e.getCoalescedEvents():[e];
+    for(const ev of evs){ const [x,y]=xy(ev); if(Math.hypot(x-P.x,y-P.y)<0.004) continue;
+      const now=performance.now(); slCut(P,x,y,now); P.x=x; P.y=y; sl.trail.push({x,y,t:now,id:e.pointerId}); }
+  });
+  const up=e=>sl.ptr.delete(e.pointerId);
+  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>cv.addEventListener(n,up));
+})();
+
+/* ═════════════ 🖐️ 按住別放（多指挑戰；榮譽卡裡原本叫「扭扭樂」）═════════════
+   圓圈一個一個冒出來，每個都要在時限內用一根手指按住，而且不能放開；全部按住後才會冒下一個。
+   放開任何一根手指、或來不及按到就結束。分數＝最多同時按住幾個（按滿就成功結束）。
+   難度改：按下去的時限、圓圈大小、冒出來的速度；魔王的圓圈會慢慢縮小。
+   要平板（多點觸控）才玩得出高分；滑鼠只能按住 1 個。 */
+const HD_CFG={
+  easy:  {wait:4000,size:13,next:900,max:10,shrink:0,  stars:[4,6,8]},
+  normal:{wait:3200,size:12,next:750,max:10,shrink:0,  stars:[4,6,8]},
+  hard:  {wait:2600,size:11,next:600,max:10,shrink:0,  stars:[4,6,8]},
+  boss:  {wait:2100,size:11,next:450,max:10,shrink:0.3,stars:[3,5,7]}};
+const HD_COLS=['#ff5b7a','#ffb13b','#3fc97f','#4fb0ff','#a77bff','#ff7ad9','#2ec4b6','#f6c948','#ff8a3d','#74c0fc'];
+const hd={phase:'idle',cfg:HD_CFG.normal,dots:[],held:0,best:0,dl:0};
+function hdHud(){ $('#gScore').innerHTML=`🖐️ ${hd.best}`; }
+function hdSpawn(){
+  if(hd.phase!=='play') return;
+  const C=hd.cfg, f=$('#hdField'), W=f.clientWidth, H=f.clientHeight;
+  const R=C.size/100*W/2, mx=(R*1.25)/W*100, my=(R*1.25)/H*100;
+  let x,y,ok=false;
+  for(let k=0;k<120&&!ok;k++){ x=mx+Math.random()*(100-2*mx); y=Math.max(my,13)+Math.random()*(100-Math.max(my,13)-my);
+    ok=hd.dots.every(d=>Math.hypot((d.x-x)/100*W,(d.y-y)/100*H)>R*2.35); }
+  const i=hd.dots.length, el=document.createElement('div');
+  el.className='hddot'; el.textContent=i+1; el.style.left=x+'%'; el.style.top=y+'%';
+  el.style.setProperty('--c',HD_COLS[i%HD_COLS.length]); el.style.setProperty('--t',C.wait+'ms'); el.style.setProperty('--s',C.size+'cqw');
+  if(C.shrink) el.style.setProperty('--k',1-C.shrink);
+  $('#hdDots').appendChild(el); void el.offsetWidth; el.classList.add('on');
+  hd.dots.push({x,y,el,pid:null});
+  tone(520+i*60,0.08,'triangle',0.05);
+  clearTimeout(hd.dl); hd.dl=setTimeout(()=>{ if(hd.phase==='play'&&hd.dots.some(d=>d.pid===null)) hdEnd('來不及按到！'); },C.wait);
+}
+function hdDown(e){
+  if(hd.phase!=='play') return;
+  const f=$('#hdField'), r=f.getBoundingClientRect();
+  const px=(e.clientX-r.left)/r.width*100, py=(e.clientY-r.top)/r.height*100, W=r.width, H=r.height;
+  const R=hd.cfg.size/100*W/2;
+  /* 判定比圓圈大 30%（魔王縮小了也照縮小後的大小算） */
+  const d=hd.dots.find(d=>d.pid===null&&Math.hypot((d.x-px)/100*W,(d.y-py)/100*H)<Math.max(R*0.7,d.el.getBoundingClientRect().width/2)*1.3);
+  if(!d) return;
+  e.preventDefault(); try{ f.setPointerCapture(e.pointerId); }catch(_){}
+  d.pid=e.pointerId; d.el.classList.add('held');
+  const before=hd.best;
+  hd.held=hd.dots.filter(x=>x.pid!==null).length; hd.best=Math.max(hd.best,hd.held); hdHud(); if(hd.held>=2) $('#hdNote').textContent='';
+  hd.cfg.stars.forEach((x,j)=>{ if(before<x&&hd.best>=x) later(()=>sfx.star(j),80); });
+  tone(700+hd.held*50,0.07,'triangle',0.05);
+  if(hd.dots.every(x=>x.pid!==null)){
+    clearTimeout(hd.dl);
+    if(hd.held>=hd.cfg.max) later(()=>{ if(hd.phase==='play') hdEnd(`全部 ${hd.cfg.max} 個都按住了！`,true); },1000);
+    else later(hdSpawn,hd.cfg.next);
+  }
+}
+function hdUp(e){
+  if(hd.phase!=='play') return;
+  const d=hd.dots.find(x=>x.pid===e.pointerId); if(!d) return;
+  d.el.classList.remove('held'); d.el.classList.add('lost'); d.pid=null;
+  hdEnd('手指放開了！');
+}
+function hdEnd(why,win){
+  if(hd.phase!=='play') return;
+  hd.phase='end'; clearTimeout(hd.dl);
+  hd.dots.forEach(d=>{ if(d.pid===null&&!d.el.classList.contains('held')) d.el.classList.add('lost'); });
+  bgmStop(); win?sfx.win():sfx.lose(); bigMsg(why,1600);
+  later(()=>showResult('hold',hd.best),2000);
+}
+function hdStart(){
+  hd.cfg=HD_CFG[curDiff]; clearTimeout(hd.dl);
+  Object.assign(hd,{phase:'ready',dots:[],held:0,best:0}); $('#hdDots').innerHTML=''; hdHud();
+  $('#hdNote').textContent=(navigator.maxTouchPoints||0)<2?'這台裝置可能不支援多點觸控（滑鼠只能按住 1 個）':'';
+  $('#hdHint').style.display='';
+  countdown(()=>{ hd.phase='play'; $('#hdHint').style.display='none'; playSong('simon',TEMPO[curDiff]); hdSpawn(); });
+}
+function hdStop(){ hd.phase='idle'; clearTimeout(hd.dl); }
+(function(){
+  const f=$('#hdField');
+  f.addEventListener('pointerdown',hdDown);
+  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>f.addEventListener(n,hdUp));
+})();
 </script>
 <script>
 /* ═════════════ 🔨 打地鼠 ═════════════
