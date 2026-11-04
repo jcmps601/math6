@@ -404,6 +404,49 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
 .hddot.lost::before{display:none}
 .hdnote{position:absolute; left:50%; bottom:6%; transform:translateX(-50%); font-weight:800; font-size:2.6cqw; color:#ffb3b3; white-space:nowrap; pointer-events:none}
 .hdnote:empty{display:none}
+/* ══ 螢幕大小自動調整（手機、平板、電腦）══
+   首頁、選難度、結果畫面放不下時可以上下滑動；卡片大小同時看螢幕寬和高；手機直拿時提醒轉橫的玩 */
+#home,#diff{overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; justify-content:flex-start; padding:84px 16px 76px}
+#home>.logo,#diff>.dtitle{margin-top:auto}
+#home>:last-child,#diff>:last-child{margin-bottom:auto}
+#home{gap:min(3.4vh,30px)} #diff{gap:min(3.4vh,30px)}
+.gcard{width:clamp(108px,min(14.2vw,22vh),220px); padding:min(2vh,18px) 1.2vw min(1.6vh,14px)}
+#result{overflow-y:auto; padding:16px}
+#result.on{display:flex; align-items:flex-start; justify-content:center}
+.rcard{margin:auto}
+@media (min-aspect-ratio:16/9), (max-height:620px) and (min-aspect-ratio:4/3){ .cards{grid-template-columns:repeat(7,auto)} }
+@media (max-width:560px){
+  #home,#diff{padding:70px 10px 72px}
+  .cards{grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; gap:10px}
+  .gcard{width:auto; border-radius:20px; padding:10px 4px 8px; gap:6px}
+  .gcard .nm{font-size:15px} .gcard .bests{font-size:13px; gap:2px 6px}
+  .dgrid{grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; gap:12px}
+  .dbtn{padding:16px 6px 12px}
+  #diff #lbBox{min-width:0; width:100%}
+  #diff #lbBox .cols{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .back{height:46px; font-size:20px; top:10px; left:10px}
+  .corner{top:10px; right:10px} .rbtn{width:46px; height:46px; font-size:23px}
+  .pbtn{height:54px; font-size:21px; padding:0 18px}
+  .rcard{padding:24px 16px 20px}
+  .hud{padding-right:64px; gap:6px} .chip{font-size:15px; padding:0 10px; height:40px} .stat{min-width:64px; font-size:19px; height:42px; padding:0 8px}
+}
+@media (max-height:560px){
+  #home,#diff{padding-top:64px; padding-bottom:60px}
+  .hud{height:58px; gap:8px} .hud .back{height:44px; font-size:20px}
+  .chip{height:40px; font-size:18px; padding:0 12px} .stat{height:42px; font-size:22px; min-width:84px}
+  .corner{top:8px} .rbtn{width:44px; height:44px; font-size:22px}
+  .back{height:44px; top:8px; font-size:20px}
+  .stagewrap{padding:0 10px 10px}
+  .rcard{padding:18px 20px 16px} .rnum{font-size:min(11vw,17vh)} .rstars i{font-size:min(8vw,12vh)}
+  .rbtns{margin-top:12px} .pbtn{height:48px; font-size:20px}
+  .dbtn{padding:2vh 1vw 1.6vh}
+}
+/* 手機直拿：遊戲畫面是橫的 16:9，提醒轉橫的玩 */
+.rotate{display:none}
+@media (orientation:portrait) and (max-width:600px){
+  #game.on .rotate{display:block; position:absolute; left:50%; bottom:16%; transform:translateX(-50%); z-index:5; background:#fff;
+    color:#5f3dc4; font-weight:900; font-size:17px; padding:8px 16px; border-radius:999px; box-shadow:0 4px 0 #0002; white-space:nowrap; pointer-events:none}
+}
 </style>
 </head>
 <body>
@@ -449,6 +492,7 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
     <div class="stat" id="gScore"></div>
     <div class="stat" id="gTime" hidden></div>
   </div>
+  <div class="rotate">📱↻ 把手機轉成橫的，畫面會比較大</div>
   <div class="stagewrap" id="stageWrap">
     <div class="stage" id="stage">
       <div class="pane" id="tPane"><canvas id="tCv"></canvas><div class="tapHint" id="tHint">點畫面放積木</div></div>

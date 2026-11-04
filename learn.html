@@ -137,7 +137,7 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 #figc.solv #bigc{flex:none;min-height:0;padding:.3rem 0}
 #figc.solv .bx{font-size:2.6rem}#figc.solv .bx.s{font-size:1.7rem}
 .bx{font-size:4.2rem;font-weight:900;color:#333;text-align:center;line-height:1.35}
-.bx.s{font-size:2.3rem;color:#555}.bx:not(.s){white-space:nowrap}
+.bx.s{font-size:2.3rem;color:#555}.bx:not(.s):not(.p){white-space:nowrap}
 .cq{color:var(--o)}
 #steps{display:flex;flex-direction:column;gap:.25rem;padding:0 .6rem .3rem}
 #steps>div{font-size:1.55rem;font-weight:900;animation:fade .3s;line-height:1.55}
@@ -363,6 +363,29 @@ body{background:
 #toast{top:3vh;z-index:30}
 .tkc small{display:block;margin-top:.1rem}
 @media (max-width:900px),(orientation:portrait){.mascot.big{font-size:3rem}.hello .hi{font-size:1.4rem}.bubble{font-size:.95rem}#login .fsb{top:.4rem;right:.4rem;font-size:.9rem}.uc .ui{font-size:2.6rem}.sidebtns{flex:none;flex-direction:column;gap:.2rem}.sidebtns button{font-size:.75rem;padding:.15rem .35rem}}
+
+/* ══ 螢幕大小自動調整（手機、平板、電腦）══ */
+#pinbox .box{max-height:100%;overflow:auto}
+/* 畫筆工具列在題目卡片右上角：短文、圖片題往下讓一點，字才不會被蓋住 */
+#figc:has(.bx.p),#figc:has(.qimg){padding-top:3.4rem}
+@media (max-width:900px),(orientation:portrait){#figc{padding-top:3.3rem}}
+/* 手機橫拿、矮的螢幕 */
+@media (orientation:landscape) and (max-height:560px){
+ #login{justify-content:flex-start;gap:.5rem;padding:.5rem 1rem 1rem}#login h1{font-size:1.9rem}#login h1 small{font-size:.95rem}
+ .lmascot .mascot.big{font-size:2.2rem}
+ #seats{gap:.45rem}#seats .sg{grid-template-columns:repeat(8,1fr);gap:.4rem}
+ #seats button{aspect-ratio:auto;padding:.45rem 0;font-size:1.35rem;border-radius:12px}
+ #pinbox{padding:.4rem}#pinbox .box{padding:.6rem 1rem;gap:.35rem;width:min(30rem,100%)}
+ #pinpad{grid-template-columns:repeat(6,1fr);gap:.35rem}#pinpad button{font-size:1.45rem;padding:.35rem 0}
+ #pinseat{font-size:1.4rem}
+ #end .box{padding:.8rem 1.2rem;max-height:100%;overflow:auto}#end .big{font-size:2.6rem}#end h2{font-size:1.6rem}
+ #fig{height:min(60vh,22rem)}#bigc{min-height:4rem}
+}
+/* 手機直拿:長句子的選項自動換行、按鈕跟著變高 */
+@media (max-width:560px){#opts{min-height:0}#opts:not(.row) button{flex:none;max-height:none;min-height:3.4rem;height:auto;padding:.45rem .5rem}#opts.long button{font-size:1.2rem}#opts.xlong button{font-size:1.05rem}}
+@media (max-width:480px){#top{flex-wrap:wrap;row-gap:.35rem}#dots{gap:.22rem}#dots i{width:.62rem;height:.62rem}}
+/* 小手機（寬度 400 以下） */
+@media (max-width:400px){#seats .sg{gap:.4rem}#seats button{font-size:1.6rem;border-radius:14px}#pinpad button{font-size:1.7rem}}
 </style>
 </head><body>
 
@@ -791,7 +814,9 @@ function bankQ(it,s){const big=it.big==null?'':String(it.big),n=[...big.replace(
   const g={};for(const t in by)g[t]=()=>bankQ(pick(by[t]),S.k);
   const [c,cb]=d.c?[d.c,d.cb||'#f8f9fa']:UCOL[i%UCOL.length],no=String(d.no||i+1),name=d.name||'單元 '+no;
   UN.push({key:S.k+no,s:S.k,no,ic:d.ic||S.ic,name,nav:d.nav||name,c,cb,g:items.length?g:null,types:Object.keys(by),tools:[]})}))})();
-const uLab=U=>U.s&&U.s!=='math'?`${subjOf(U.s).n}${U.no}`:'單元'+U.no;
+/* 單元標籤:數學的單元對應課本(單元 1～4);國語、英語…題庫的分類是「題型」,不寫單元幾,免得學生以為是課本第幾單元 */
+const uLab=U=>U.s&&U.s!=='math'?`${subjOf(U.s).n}・${U.nav||U.name}`:'單元'+U.no;
+const uTag=U=>U.s&&U.s!=='math'?`${subjOf(U.s).ic} ${subjOf(U.s).n}`:'單元 '+U.no;
 const MIX={key:'mix',s:'math',no:'★',ic:'🌟',name:'1～4 單元綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db',sub:'1～4 單元混合'};
 const MIXES=[MIX,...SUBJ.slice(1).map(S=>({key:'mix_'+S.k,s:S.k,no:'★',ic:'🌟',name:S.n+'綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db'}))];
 const mixOf=k=>{const M=MIXES.find(m=>m.s===k);return M&&UN.some(u=>u.s===k&&u.g)?M:null};
@@ -975,12 +1000,12 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   f.appendChild(W);g.appendChild(f);P.appendChild(g);
   const SJ=subjOf(subj);P.appendChild(el('div','sec',`${SJ.ic} ${SJ.n}`));const G=el('div');G.id='ucards';
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;P.appendChild(c)}
-  [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.ic||''}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':'單元 '+u.no}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
+  [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.ic||''}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});G.appendChild(b)});P.appendChild(G);
   const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
   const c=el('div','cd');c.style.marginTop='1rem';c.appendChild(S);P.appendChild(c)}
-function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${isMix(u)?'★':'單元 '+u.no}</span>${u.name}`);h.style.setProperty('--c',u.c);P.appendChild(h);
+function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${isMix(u)?'★':uTag(u)}</span>${u.name}`);h.style.setProperty('--c',u.c);P.appendChild(h);
   if(u.g||isMix(u)){const c=el('div','cd');c.id='practice';c.style.setProperty('--c',u.c);const b=sum.best[u.key]||0;
     c.innerHTML=`<div class="bi">✏️</div><div><div class="t">練習 ${N} 題</div><div class="s">${b?`最佳 ${b} / ${N}　${stars(b)}`:'還沒練習過'}</div></div>`;
     const g=el('button','go','開始 ▶');tap(g,()=>startPractice(isMix(u)?u.key:ui));c.appendChild(g);P.appendChild(c)}
@@ -1204,7 +1229,10 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
   else buildPad(q.type==='frac');
   paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
-function fitBig(){const c=$('#bigc');c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;while(b.scrollWidth>c.clientWidth-8&&k++<30){fs*=.93;b.style.fontSize=fs+'px'}})}
+/* 題目大字放不下時縮小:不換行的大字看寬度;會換行的句子(.s)、短文(.p)只在整張卡片放不下時才縮小,最小 18px */
+function fitBig(){const c=$('#bigc'),F=$('#figc');c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;
+  if(b.classList.contains('p')||b.classList.contains('s')){while(F.scrollHeight>F.clientHeight+2&&fs>18&&k++<30){fs=Math.max(18,fs*.93);b.style.fontSize=fs+'px'}return}
+  while(b.scrollWidth>c.clientWidth-8&&k++<30){fs*=.93;b.style.fontSize=fs+'px'}})}
 addEventListener('resize',()=>{if(round&&$('#prac').classList.contains('on'))fitBig()});
 function addStep(s,cls){const d=el('div',cls);d.innerHTML=s.startsWith('__HTML__')?s.slice(8):s;$('#steps').appendChild(d);return d}
 const solv=q=>{if(!q.id)$('#figc').classList.add('solv')};   // 題庫題不縮小題目,解答直接接在下面
