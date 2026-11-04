@@ -386,6 +386,13 @@ body{background:
 @media (max-width:480px){#top{flex-wrap:wrap;row-gap:.35rem}#dots{gap:.22rem}#dots i{width:.62rem;height:.62rem}}
 /* 小手機（寬度 400 以下） */
 @media (max-width:400px){#seats .sg{gap:.4rem}#seats button{font-size:1.6rem;border-radius:14px}#pinpad button{font-size:1.7rem}}
+
+/* 英語:英文字母用英文字型(中文字型的 ’ 是全形,It’s 會變成 It’  s);中文字會自動用中文字型 */
+#prac.en #q,#prac.en .bx,#prac.en #opts button,#prac.en #steps,.wq,#adet{font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,Roboto,"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif}
+#prac.en .bx{letter-spacing:.01em}
+.bx .ob{color:#adb5bd;font-weight:700}
+.say.again{animation:sayag .45s ease 3}
+@keyframes sayag{50%{transform:scale(1.15);box-shadow:0 0 0 .6rem #a5d8ff88}}
 </style>
 </head><body>
 
@@ -800,13 +807,19 @@ UN.forEach(u=>u.s='math');
 /* 題庫的一題 → 練習用的選擇題 */
 const isImg=o=>/\.(jpe?g|png|gif|webp|svg)$/i.test(o);
 const optHtml=o=>isImg(o)?`<img src="${o}" alt="">`:o;   // 選項可以是圖片
-function bankQ(it,s){const big=it.big==null?'':String(it.big),n=[...big.replace(/<[^>]+>/g,'')].length;
+/* 題庫題的種類:聽(錄音、語音)、讀(短文、閱讀測驗)、看(有圖)、想(文法、句子) ── 答錯時給的提示不一樣 */
+const bankKind=it=>it.au||it.say?'listen':/短文|閱讀/.test(it.t||'')?'read':it.img||it.opts.some(isImg)?'look':'think';
+const KIND_HINT={listen:['再按 🔊 聽一次，仔細聽','先看清楚每個選項，再聽一次'],read:['回到短文裡，看空格前後的字','先把不可能的選項刪掉'],
+  look:['再仔細看一次圖','先把不可能的選項刪掉'],think:['把題目再讀一次','先把不可能的選項刪掉']};
+function bankQ(it,s){let big=it.big==null?'':String(it.big);const n=[...big.replace(/<[^>]+>/g,'')].length,kind=bankKind(it);
+  /* 短文填空:其他還沒輪到的格子也畫成淡淡的底線,學生才看得出哪裡是空格 */
+  if(it.t==='短文填空')big=big.replace(/(^|[^>])\((\d)\)(?!＿)/g,'$1<span class="ob">($2)＿＿</span>');
   /* 字的大小看長度:對話、句子用大字,只有長的短文才用小字 */
   const bc=it.bc==='p'?(n>160?'p':'p big'):it.bc!=null?it.bc:n>6?'s':'';
   return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=3),   // 並排:圖片,或很短的(ar、ee)
     big:(it.img?`<img class="qimg" src="${it.img}" alt="">`:'')+(big?`<div class="bx${bc?' '+bc:''}">${big}</div>`:''),
     say:it.say||'',au:it.au||'',rv:it.reveal||'',hd:it.au&&it.exp?it.exp:'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
-    hints:it.hint?[].concat(it.hint):['把題目再讀一次','先把不可能的選項刪掉'],
+    subj:s,kind,hints:it.hint?[].concat(it.hint):KIND_HINT[kind].slice(),
     sol:it.au?[]:[].concat(it.exp||[])}}   // 聽力題答完把聽到的內容放在播音鍵下面(bankReveal)
 (()=>{const B=window.BANK||{};SUBJ.forEach(S=>(B[S.k]||[]).forEach((d,i)=>{
   const items=(d.items||[]).filter(it=>it&&it.q&&Array.isArray(it.opts)&&it.opts.includes(it.a));
@@ -925,7 +938,7 @@ tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;LS.del('le
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
 /* ===================== 介面:全螢幕、鎖右鍵、音效、彩帶 ===================== */
-const CHEER=['每天練一點，就會越來越厲害！','先練 10 題，再去玩遊戲吧！','錯了沒關係，看例題就會懂','今天的你也很棒！'];
+const CHEER=['每天練一點，就會越來越厲害！','先練 10 題，再去玩遊戲吧！','錯了沒關係，看提示和解說就會懂','今天的你也很棒！'];
 const CHEER_DONE=['太厲害了，任務完成！','繼續練，還能拿更多遊戲券','記得去錯題本複習喔'];
 const PRAISE=['答對了！','太棒了！','好厲害！','完全正確！','你真行！'];
 /* 全螢幕(iPad、Android、電腦);不支援時提示「加入主畫面」 */
@@ -1216,7 +1229,7 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   else if(e.key==='Tab'||e.key==='/'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
 function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
-  $('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
+  $('#prac').classList.toggle('en',(q.subj||(q.id&&q.id.split('|')[0]))==='en');$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
   const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none'}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
   stopAu();if(q.say||q.au)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
@@ -1242,7 +1255,18 @@ tap($('#next'),()=>nextQ());
 const near=(a,b)=>Math.abs(a-b)<1e-6;
 function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]+>/g,''):'');const q=round.qs[cur],fb=$('#fb');fb.className='bad';
   if(tries>=2){round.res[cur]='no';finish(q,false);return}
-  sfx.no();fb.innerHTML=msg||pick(['再想想看','差一點點！','沒關係，再試一次']);$('#hint').classList.add('pulse');showTeach(q,msg)}
+  sfx.no();
+  if(q.id){bankTry(q,msg);return}   // 國語、英語…:不用數學的「看一題例子」
+  fb.innerHTML=msg||pick(['再想想看','差一點點！','沒關係，再試一次']);$('#hint').classList.add('pulse');showTeach(q,msg)}
+/* 題庫題答錯一次:錯的選項劃掉,依題型告訴學生該怎麼再試(聽力→再聽一次、短文→回去找線索、看圖→再看圖),順便給第一個提示 */
+const KIND_TRY={listen:'不對喔，再按 🔊 聽一次',read:'不對喔，回到短文裡找線索',look:'不對喔，再仔細看一次圖',think:'不對喔，再想一想'};
+function bankTry(q,msg){const fb=$('#fb');fb.innerHTML=msg||KIND_TRY[q.kind]||KIND_TRY.think;
+  /* 聽力題:上面已經說「再聽一次」,提示就不要再重複一樣的話 */
+  if(q.kind==='listen')while(hintK<q.hints.length&&/聽一次/.test(q.hints[hintK]))hintK++;
+  if(hintK<q.hints.length){addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;if(hintK>=q.hints.length)$('#hint').disabled=true}
+  $('#hint').classList.toggle('pulse',hintK<q.hints.length);
+  const sb=$('#bigc .say');if(sb){sb.classList.remove('again');void sb.offsetWidth;sb.classList.add('again')}
+  fitBig()}
 /* ===== 答錯一次：用同一題型、不同數字的例題，一步一步教 ===== */
 let tSteps=[],tK=0;
 function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t,true),k=x=>x.id||x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
@@ -1288,7 +1312,7 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
     else{round.miss=(round.miss||0)+1;toast(`這 10 題答對 ${n} 題，要答對 ${TK_NEED} 題才有券`)}}
   saveSum(round.got>0);wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
-  if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent='正確答案在這裡，看懂算式再下一題';
+  if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.id?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
     else{const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):f(q.ans);r.style.display='inline-block';$('#box').style.display='none';$('#fbx').style.display='none'}}
   if(q.id)bankReveal(q);
@@ -1297,7 +1321,9 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
 /* 題庫題答完:答案填進底線;聽力題把聽到的內容、或答完才給看的字,放在播音鍵下面 */
 function bankReveal(q){const c=$('#bigc');let filled=false;
   if(typeof q.ans==='string'&&!isImg(q.ans)&&!/^[○╳]/.test(q.ans)){const bx=c.querySelector('.bx');
-    if(bx&&/＿+/.test(bx.innerHTML)){bx.innerHTML=bx.innerHTML.replace(/＿+/,`<u class="fill">${q.ans}</u>`);filled=true}}
+    /* 短文有好幾格:填進「這一題」的那格(粗體的),不是第一個底線 */
+    const cb=bx&&[...bx.querySelectorAll('b')].find(e=>/＿/.test(e.innerHTML)),tg=cb||bx;
+    if(tg&&/＿+/.test(tg.innerHTML)){tg.innerHTML=tg.innerHTML.replace(/＿+/,`<u class="fill">${q.ans}</u>`);filled=true}}
   if(q.rv)c.insertAdjacentHTML('beforeend',`<div class="bx s rv">${q.rv}</div>`);
   else if(q.hd&&!filled)c.insertAdjacentHTML('beforeend',`<div class="bx s heard">${q.hd}</div>`);
   fitBig()}
