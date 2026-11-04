@@ -423,6 +423,53 @@ body{background:
 /* 座號按鈕跟著螢幕高度縮放，矮的筆電螢幕也一次看得到全部（含測試帳號） */
 @media (min-height:561px){#seats{width:min(56rem,100%,max(24rem,calc((100vh - 21rem) * 2.5)))}}
 #seats .tbtn{aspect-ratio:auto!important;height:auto}
+
+/* ═══ 老師頁：班級儀表板 ═══ */
+#dash{gap:1rem}
+#dash .dhead{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}#dash .dhead>b{font-size:1.7rem;margin-right:.6rem}
+.dper{display:flex;gap:.3rem;background:#f1f3f5;border-radius:999px;padding:.25rem}
+.dper button,#setup .dper button{border:0;background:none;border-radius:999px;font-size:1.05rem;font-weight:900;color:#888;padding:.35rem .9rem;box-shadow:none}
+.dper button.on,#setup .dper button.on{background:#fff;color:#e8590c;box-shadow:0 2px 0 #dee2e6}
+#dmsg{color:#888;font-size:1rem}
+.dnone{color:#999;font-size:1.2rem;padding:1rem 0}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem}
+.kpi{background:#f8f9fa;border-radius:20px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.2rem}
+.kpi .kl{font-size:1.05rem;color:#888}.kpi .kv{font-size:2.6rem;font-weight:900;color:#333;line-height:1.1}.kpi .kv small{font-size:1.2rem;color:#999;margin-left:.2rem}
+.kpi .ks{font-size:.95rem;color:#aaa}
+.kpi.g .kv{color:#2b8a3e}.kpi.y .kv{color:#e67700}.kpi.r .kv{color:#c92a2a}
+.dsec{font-size:1.45rem;font-weight:900;color:#333;margin-top:.4rem}.dsec small{font-size:1rem;color:#999;margin-left:.5rem}
+.care{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
+.cbox{border-radius:20px;padding:.8rem 1rem;border:3px solid}
+.cbox .ct{font-size:1.2rem;font-weight:900;margin-bottom:.5rem}.cbox .ct b{font-size:1.6rem;margin-left:.3rem}
+.cbox.a{border-color:#ffc9c9;background:#fff5f5}.cbox.a .ct{color:#c92a2a}
+.cbox.b{border-color:#ffd8a8;background:#fff9db}.cbox.b .ct{color:#e8590c}
+.cbox.c{border-color:#d0bfff;background:#f8f0fc}.cbox.c .ct{color:#7048e8}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}.chip{background:#fff;border-radius:12px;padding:.25rem .6rem;font-size:1.25rem;font-weight:900;color:#333;box-shadow:0 2px 0 #dee2e6;cursor:pointer}
+.chip small{font-size:.85rem;color:#e8590c;margin-left:.25rem}.chips .ok{color:#2b8a3e;font-size:1.1rem}
+.weak{display:flex;flex-direction:column;gap:.5rem}
+.wk{display:grid;grid-template-columns:2.4rem minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.4fr);align-items:center;gap:.8rem;background:#f8f9fa;border-radius:16px;padding:.55rem .8rem}
+.wk .wn{font-size:1.7rem;font-weight:900;color:#c92a2a;text-align:center}.wk .wt{font-size:1.2rem;font-weight:900}.wk .wt small{display:block;font-size:.85rem;color:#999}
+.wbar{height:1.5rem;background:#e9ecef;border-radius:999px;position:relative;overflow:hidden}.wbar i{position:absolute;inset:0 auto 0 0;border-radius:999px}
+.wbar b{position:absolute;inset:0;display:grid;place-items:center;font-size:1rem}
+.wk .chips .chip{font-size:1rem;padding:.15rem .45rem}
+.hsub{display:flex;flex-wrap:wrap;gap:.4rem}.hsub button,#setup .hsub button{border:3px solid #e9ecef;background:#fff;border-radius:999px;font-size:1.05rem;font-weight:900;color:#888;padding:.25rem .9rem;box-shadow:none}
+.hsub button.on,#setup .hsub button.on{border-color:var(--c);color:var(--c)}
+.hm{overflow-x:auto}.hm table{border-collapse:separate;border-spacing:4px}
+.hm th{font-size:.95rem;color:#888;font-weight:900;max-width:7rem;line-height:1.2}.hm th.s{min-width:3rem}
+.hm td{width:4.6rem;height:3.1rem;border-radius:10px;text-align:center;font-size:1.25rem;font-weight:900;background:#f1f3f5;color:#bbb;cursor:pointer}
+.hm td small{display:block;font-size:.72rem;font-weight:800;opacity:.75}
+.hm td.g{background:#69db7c;color:#fff}.hm td.y{background:#ffd43b;color:#5c3c00}.hm td.r{background:#ff8787;color:#fff}
+.hm td.f{opacity:.55}
+.hm td.s{background:none;color:#333;font-size:1.3rem;width:auto}
+.hm tr.sel td.s{color:#e8590c}
+.hleg{display:flex;gap:1rem;flex-wrap:wrap;color:#888;font-size:1rem;font-weight:800}.hleg i{display:inline-block;width:1rem;height:1rem;border-radius:4px;vertical-align:-2px;margin-right:.3rem}
+#ddet{background:#fff9db;border-radius:16px;padding:.8rem 1rem;font-size:1.1rem;margin-top:.4rem}
+#ddet .dx{float:right;font-size:1rem;color:#999;cursor:pointer}
+.hmw{display:flex;gap:1rem;align-items:flex-start}.hmw .hm{flex:none;max-width:100%}.hmw #ddet{flex:1;min-width:18rem;position:sticky;top:.5rem;margin-top:2.4rem}
+#ddet.tip{background:#f8f9fa;color:#999;font-weight:800}
+@media (max-width:1100px){.hmw{flex-direction:column}.hmw #ddet{position:static;margin-top:0;min-width:0;width:100%}.hmw #ddet.tip{display:none}}#ddet .dt{font-size:1.3rem;font-weight:900;margin-bottom:.4rem}
+#ddet .dr{display:flex;justify-content:space-between;gap:1rem;padding:.25rem 0;border-bottom:2px solid #fff}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.care{grid-template-columns:minmax(0,1fr)}.wk{grid-template-columns:2rem minmax(0,1fr) minmax(0,1fr)}.wk .chips{grid-column:2/-1}}
 </style>
 </head><body>
 
@@ -478,6 +525,12 @@ body{background:
 <section class="scr" id="setup">
  <h2>👩‍🏫 老師設定</h2>
  <div class="cd"><div id="rulemsg"></div></div>
+ <div class="cd" id="dash">
+  <div class="dhead"><b>📊 班級儀表板</b>
+   <div class="dper" id="dper"><button data-p="w" class="on">本週</button><button data-p="7">最近 7 天</button><button data-p="30">最近 30 天</button><button data-p="0">全部</button></div>
+   <button id="dload">🔄 重新整理</button><button id="dxls" class="gray">📥 匯出 Excel</button><span id="dmsg"></span></div>
+  <div id="dout"><div class="dnone">選好 ① 的 pins.json 以後，這裡會自動顯示全班的狀況</div></div>
+ </div>
  <div class="cd">
   <div>① 開通密碼（只要做一次）：選擇 pins.json</div>
   <input type="file" id="pinfile" accept=".json,application/json">
@@ -1515,13 +1568,13 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   $('#end').classList.add('on');if(first>=8){sfx.win();confetti(70)}else sfx.done()}
 
 /* ===================== 老師設定 ===================== */
-function openSetup(){show$('setup');$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
+function openSetup(){show$('setup');setTimeout(()=>{if(!DASH)dashLoad()},300);$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
 let tapT=[];tap(document.querySelector('#login h1'),()=>{const t=Date.now();tapT=tapT.filter(x=>t-x<2500);tapT.push(t);if(tapT.length>=5){tapT=[];openSetup()}});
 tap($('#setback'),()=>{history.replaceState(null,'',location.pathname);show$('login')});
 let pinData=null;
 $('#pinfile').addEventListener('change',async e=>{const fl=e.target.files[0];if(!fl)return;
   try{const o=JSON.parse(await fl.text());const ok=Object.keys(o).length>=1&&Object.entries(o).every(([k,v])=>/^\d+$/.test(k)&&/^\d{4}$/.test(String(v)));
-    if(!ok)throw 0;for(const k in o)o[k]=String(o[k]);pinData=o;LS.set('learn601_pins',o);$('#setmsg').textContent=`讀到 ${Object.keys(o).length} 位學生的密碼，已存在這台電腦`}
+    if(!ok)throw 0;for(const k in o)o[k]=String(o[k]);pinData=o;LS.set('learn601_pins',o);$('#setmsg').textContent=`讀到 ${Object.keys(o).length} 位學生的密碼，已存在這台電腦`;dashLoad()}
   catch(_){pinData=null;$('#setmsg').textContent='檔案格式不對'}});
 tap($('#pinwrite'),async()=>{const o=pinData||LS.get('learn601_pins',null);if(!o){$('#setmsg').textContent='請先選擇 pins.json';return}
   $('#setmsg').textContent='寫入中…';await fbReady;if(!db){$('#setmsg').textContent='連不上 Firebase';return}
@@ -1603,6 +1656,117 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
   rows.forEach(([s,v])=>{if(!v||v==='err'){h+=`<tr class="none"><td>${s}</td><td colspan="5">${v==='err'?'讀取失敗':'還沒練習'}</td></tr>`;return}
     const L=v.last?new Date(v.last):null;h+=`<tr><td>${s}</td><td>${(v.days||{})[today]||0}</td><td>${wk.filter(k=>((v.days||{})[k]||0)>=GOAL).length}</td><td>${v.total||0}</td><td>${v.total?Math.round(v.first/v.total*100):0}%</td><td>${L?`${L.getMonth()+1}/${L.getDate()} ${pad2(L.getHours())}:${pad2(L.getMinutes())}`:''}</td></tr>`});
   $('#tab').innerHTML=h;$('#tabmsg').textContent=`更新時間 ${new Date().toLocaleTimeString()}`});
+
+/* ===================== 老師頁：班級儀表板 =====================
+   打開老師頁就自動讀全班的「摘要」和「作答紀錄」，一眼看到：
+   ・今天、這段時間的練習狀況（四個大數字）
+   ・需要關心的學生：本週還沒練習、好幾天沒練習、答對率偏低
+   ・全班最常錯的 5 種題型（附需要加強的學生）
+   ・各單元熟練度色塊（綠 ≥80%、黃 60～79%、紅 <60%），點座號看他每種題型
+   ・匯出 Excel（自己產生 .xlsx，不用連到別的網站） */
+let DASH=null,dPer='w',dSubj='math',dSel=null;
+const dSince=()=>dPer==='w'?weekKeys(0)[0]:+dPer?dkey(new Date(Date.now()-(+dPer-1)*864e5)):'';
+const dPerName=()=>({w:'本週','7':'最近 7 天','30':'最近 30 天','0':'全部'})[dPer];
+async function dashLoad(){const pins=LS.get('learn601_pins',null),M=$('#dmsg');if(!pins){$('#dout').innerHTML='<div class="dnone">先在下面 ① 選擇 pins.json，這裡就會顯示全班的狀況</div>';return}
+  M.textContent='讀取中…';await fbReady;if(!db||!online){M.textContent='📴 連不上 Firebase';return}
+  const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let done=0;
+  const rows=await Promise.all(seats.map(async s=>{let sm=null,lg=null;
+    try{sm=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),12000)).val()}catch(e){sm='err'}
+    try{lg=Object.values((await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/log`).get(),20000)).val()||{})}catch(e){lg=null}
+    M.textContent=`讀取中… ${++done} / ${seats.length}`;return {s:+s,sum:sm,log:lg}}));
+  DASH={rows,t:Date.now()};M.textContent=`更新時間 ${pad2(new Date().getHours())}:${pad2(new Date().getMinutes())}`+(rows.some(r=>r.sum==='err'||!r.log)?'（有人讀取失敗）':'');dashRender()}
+/* 依目前選的時間範圍統計 */
+function dashStats(){const since=dSince(),today=dkey(),wk=weekKeys(0),now=Date.now();
+  const stu=DASH.rows.map(r=>{const v=r.sum&&r.sum!=='err'?r.sum:null,days=(v&&v.days)||{};
+    const S={s:r.s,ok:!!v,err:r.sum==='err'||!r.log,today:days[today]||0,wkQ:wk.reduce((a,k)=>a+(days[k]||0),0),wkGoal:wk.filter(k=>(days[k]||0)>=GOAL).length,
+      last:v&&v.last||0,idle:v&&v.last?Math.floor((now-v.last)/864e5):null,n:0,ok1:0,rev:0,u:{},t:{}};
+    (r.log||[]).filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).forEach(q=>{if(q.u==null||!UN[q.u])return;
+      const o1=q.r==='ok'?1:0;S.n++;S.ok1+=o1;S.rev+=q.r==='no'?1:0;
+      const U=S.u[q.u]=S.u[q.u]||{n:0,ok1:0};U.n++;U.ok1+=o1;
+      const k=q.u+'|'+q.t,T=S.t[k]=S.t[k]||{u:q.u,t:q.t,n:0,ok1:0,rev:0};T.n++;T.ok1+=o1;T.rev+=q.r==='no'?1:0}));
+    return S});
+  const typ={};stu.forEach(S=>Object.values(S.t).forEach(T=>{const k=T.u+'|'+T.t,A=typ[k]=typ[k]||{u:T.u,t:T.t,n:0,ok1:0,rev:0,who:[]};A.n+=T.n;A.ok1+=T.ok1;A.rev+=T.rev;if(T.n&&T.ok1/T.n<.6)A.who.push(S.s)}));
+  const weak=Object.values(typ).filter(x=>x.n>=5&&x.ok1/x.n<.85).sort((a,b)=>a.ok1/a.n-b.ok1/b.n||b.n-a.n).slice(0,5);
+  return {stu,weak,typ}}
+function dashRender(){if(!DASH)return;const {stu,weak}=dashStats(),O=$('#dout'),N=stu.length,chip=(s,t)=>`<span class="chip" data-s="${s}">${s}${t?`<small>${t}</small>`:''}</span>`;
+  const sumQ=stu.reduce((a,x)=>a+x.n,0),sum1=stu.reduce((a,x)=>a+x.ok1,0),todayN=stu.filter(x=>x.today>0).length,goalAvg=N?stu.reduce((a,x)=>a+x.wkGoal,0)/N:0,rate=pc(sum1,sumQ);
+  let h=`<div class="kpis">
+    <div class="kpi ${todayN>=N*.8?'g':todayN>=N*.5?'y':'r'}"><span class="kl">今天有練習</span><span class="kv">${todayN}<small>/ ${N} 人</small></span><span class="ks">還沒練習 ${N-todayN} 人</span></div>
+    <div class="kpi"><span class="kl">本週完成每日目標（${GOAL} 題）</span><span class="kv">${goalAvg.toFixed(1)}<small>天／人</small></span><span class="ks">全班共 ${stu.reduce((a,x)=>a+x.wkGoal,0)} 人次</span></div>
+    <div class="kpi"><span class="kl">${dPerName()}全班答題</span><span class="kv">${sumQ}<small>題</small></span><span class="ks">平均每人 ${N?Math.round(sumQ/N):0} 題</span></div>
+    <div class="kpi ${cls(rate)}"><span class="kl">${dPerName()}一次答對率</span><span class="kv">${rate==null?'—':rate+'<small>%</small>'}</span><span class="ks">看解答 ${pc(stu.reduce((a,x)=>a+x.rev,0),sumQ)??0}%</span></div></div>`;
+  /* 需要關心 */
+  const noWk=stu.filter(x=>!x.wkQ),idle=stu.filter(x=>x.idle!=null&&x.idle>=3&&x.wkQ).sort((a,b)=>b.idle-a.idle),never=stu.filter(x=>!x.last&&!x.err),low=stu.filter(x=>x.n>=10&&x.ok1/x.n<.6).sort((a,b)=>a.ok1/a.n-b.ok1/b.n);
+  h+=`<div class="dsec">🔔 需要關心<small>點座號看他的詳細</small></div><div class="care">
+    <div class="cbox a"><div class="ct">本週還沒練習<b>${noWk.length}</b> 人</div><div class="chips">${noWk.map(x=>chip(x.s,x.idle!=null?x.idle+' 天':'沒練過')).join('')||'<span class="ok">👍 全班都練過了</span>'}</div></div>
+    <div class="cbox b"><div class="ct">3 天以上沒練習<b>${idle.length}</b> 人</div><div class="chips">${idle.map(x=>chip(x.s,x.idle+' 天')).join('')||'<span class="ok">👍 沒有</span>'}</div></div>
+    <div class="cbox c"><div class="ct">${dPerName()}答對率偏低<b>${low.length}</b> 人</div><div class="chips">${low.map(x=>chip(x.s,pc(x.ok1,x.n)+'%')).join('')||'<span class="ok">👍 沒有</span>'}</div></div></div>`;
+  /* 最常錯的題型 */
+  h+=`<div class="dsec">❗ 全班最常錯的 5 種題型<small>${dPerName()}・作答 5 次以上、一次答對率未滿 85%，由低到高</small></div><div class="weak">`+
+    (weak.map((x,i)=>{const p=pc(x.ok1,x.n),col=p>=80?'#69db7c':p>=60?'#ffd43b':'#ff8787';return `<div class="wk"><div class="wn">${i+1}</div><div class="wt">${tName(x.u,x.t)}<small>${uLab(UN[x.u])}・作答 ${x.n} 次</small></div>
+      <div class="wbar"><i style="width:${p}%;background:${col}"></i><b>${p}%</b></div><div class="chips">${x.who.sort((a,b)=>a-b).slice(0,10).map(s=>chip(s)).join('')}${x.who.length>10?`<span class="ok">…等 ${x.who.length} 人</span>`:''}${x.who.length?'':'<span class="ok">沒有特別需要加強的學生</span>'}</div></div>`}).join('')||'<div class="dnone">👍 這段時間沒有特別弱的題型（一次答對率都在 85% 以上，或作答還不夠多）</div>')+'</div>';
+  /* 熟練度色塊 */
+  const subs=SUBJ.filter(S=>AU().some(i=>(UN[i].s||'math')===S.k));if(!subs.some(S=>S.k===dSubj))dSubj=subs[0].k;
+  const cols=AU().filter(i=>(UN[i].s||'math')===dSubj);
+  h+=`<div class="dsec">🟩 各單元熟練度<small>${dPerName()}・一次答對率；淡色＝題數少於 5 題</small></div>
+    <div class="hsub">${subs.map(S=>`<button data-k="${S.k}" class="${S.k===dSubj?'on':''}" style="--c:${S.c}">${S.ic} ${S.n}</button>`).join('')}</div>
+    <div class="hleg"><span><i style="background:#69db7c"></i>80% 以上</span><span><i style="background:#ffd43b"></i>60～79%</span><span><i style="background:#ff8787"></i>未滿 60%</span><span><i style="background:#f1f3f5"></i>還沒練習</span></div>
+    <div class="hmw"><div class="hm"><table><tr><th class="s">座號</th>${cols.map(i=>`<th title="${UN[i].name}">${UN[i].nav||UN[i].name}</th>`).join('')}</tr>`;
+  stu.forEach(S=>{h+=`<tr class="${dSel===S.s?'sel':''}"><td class="s chip-row" data-s="${S.s}">${S.s}</td>${cols.map(i=>{const U=S.u[i],p=U?pc(U.ok1,U.n):null;return `<td class="${cls(p)}${U&&U.n<5?' f':''}" data-s="${S.s}">${p==null?'':p}${U?`<small>${U.n} 題</small>`:''}</td>`}).join('')}</tr>`;
+    });
+  h+='</table></div>';
+  const SS=stu.find(x=>x.s===dSel);
+  if(SS){const S=SS,ts=Object.values(S.t).sort((a,b)=>a.ok1/a.n-b.ok1/b.n);
+      h+=`<div id="ddet"><span class="dx" data-s="${S.s}">✕ 關閉</span><div class="dt">${S.s} 號・${dPerName()}・共 ${S.n} 題・一次答對 ${pc(S.ok1,S.n)??0}%${S.last?`・最近練習 ${new Date(S.last).getMonth()+1}/${new Date(S.last).getDate()}`:''}</div>
+        ${ts.map(x=>`<div class="dr"><span>${uBadge(x.u)}${tName(x.u,x.t)}</span><span>${x.n} 題・一次答對 <b style="color:${pc(x.ok1,x.n)>=80?'#2b8a3e':pc(x.ok1,x.n)>=60?'#e67700':'#c92a2a'}">${pc(x.ok1,x.n)}%</b>・看解答 ${x.rev} 次</span></div>`).join('')||'這段時間沒有作答紀錄'}</div>`}
+  else h+='<div id="ddet" class="tip">👈 點左邊的座號或色塊，這裡會顯示那位學生每種題型的答對率</div>';
+  h+='</div>';
+  O.innerHTML=h;
+  O.querySelectorAll('[data-s]').forEach(e=>e.addEventListener('click',()=>{const s=+e.dataset.s;dSel=dSel===s?null:s;dashRender();if(dSel)setTimeout(()=>{const d=$('#ddet');d&&d.getBoundingClientRect().top>innerHeight&&d.scrollIntoView({block:'nearest',behavior:'smooth'})},50)}));
+  O.querySelectorAll('.hsub button').forEach(b=>b.addEventListener('click',()=>{dSubj=b.dataset.k;dashRender()}))}
+document.querySelectorAll('#dper button').forEach(b=>b.addEventListener('click',()=>{dPer=b.dataset.p;document.querySelectorAll('#dper button').forEach(x=>x.classList.toggle('on',x===b));dashRender()}));
+tap($('#dload'),()=>dashLoad());
+tap($('#dxls'),()=>{if(!DASH){$('#dmsg').textContent='先按「重新整理」讀取資料';return}dashXlsx()});
+
+/* ---- 匯出 Excel：自己做一個 .xlsx（Excel、Google 試算表、Numbers 都打得開） ---- */
+function dashXlsx(){const {stu,typ}=dashStats(),per=dPerName(),d=new Date(),stamp=`${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
+  const H=t=>({v:t,s:1}),col=p=>p==null?0:p>=80?2:p>=60?3:4,dt=t=>t?`${new Date(t).getMonth()+1}/${new Date(t).getDate()}`:'';
+  const sheets=[];
+  sheets.push({name:'總覽',w:[8,10,14,14,12,14,12,14],rows:[[H('座號'),H('今天題數'),H('本週完成天數'),H(per+'題數'),H('一次答對率%'),H('看解答次數'),H('最近練習'),H('幾天沒練習')],
+    ...stu.map(S=>[S.s,S.today,S.wkGoal,S.n,S.n?{v:pc(S.ok1,S.n),s:col(pc(S.ok1,S.n))}:'',S.rev,dt(S.last),S.idle??'沒練過'])]});
+  const subsU=AU();sheets.push({name:'各單元熟練度',w:[8,...subsU.map(()=>14)],rows:[[H('座號'),...subsU.map(i=>H(uLab(UN[i])+' '+(UN[i].nav||UN[i].name)))],
+    ...stu.map(S=>[S.s,...subsU.map(i=>{const U=S.u[i];if(!U)return '';const p=pc(U.ok1,U.n);return {v:`${p}%（${U.n}題）`,s:col(p)}})])]});
+  const T=Object.values(typ).sort((a,b)=>a.ok1/a.n-b.ok1/b.n);
+  sheets.push({name:'題型弱點',w:[22,24,10,12,12,40],rows:[[H('單元'),H('題型'),H('作答次數'),H('一次答對率%'),H('看解答%'),H('需要加強的學生（答對率未滿 60%）')],
+    ...T.map(x=>[uLab(UN[x.u])+' '+(UN[x.u].nav||''),tName(x.u,x.t),x.n,{v:pc(x.ok1,x.n),s:col(pc(x.ok1,x.n))},pc(x.rev,x.n),x.who.sort((a,b)=>a-b).join('、')])]});
+  const per2=[];stu.forEach(S=>Object.values(S.t).forEach(x=>per2.push([S.s,uLab(UN[x.u]),tName(x.u,x.t),x.n,{v:pc(x.ok1,x.n),s:col(pc(x.ok1,x.n))},x.rev])));
+  sheets.push({name:'每人各題型',w:[8,20,24,10,12,10],rows:[[H('座號'),H('單元'),H('題型'),H('題數'),H('一次答對率%'),H('看解答次數')],...per2]});
+  const blob=xlsxBlob(sheets),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`601練習紀錄_${per}_${stamp}.xlsx`;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);$('#dmsg').textContent=`✅ 已下載 ${a.download}`}
+/* 最小的 xlsx 產生器：工作表＋粗體標題＋綠黃紅底色，用 zip（不壓縮）包起來 */
+function xlsxBlob(sheets){const enc=new TextEncoder(),esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');
+  const colN=i=>{let s='';i++;while(i){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s};
+  const sheetXml=sh=>`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${(sh.w||[]).map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${sh.rows.map((r,ri)=>`<row r="${ri+1}">${r.map((c,ci)=>{const o=c&&typeof c==='object'?c:{v:c,s:0},ref=colN(ci)+(ri+1),st=o.s?` s="${o.s}"`:'';
+      if(o.v===''||o.v==null)return st?`<c r="${ref}"${st}/>`:'';return typeof o.v==='number'&&isFinite(o.v)?`<c r="${ref}"${st}><v>${o.v}</v></c>`:`<c r="${ref}"${st} t="inlineStr"><is><t>${esc(o.v)}</t></is></c>`}).join('')}</row>`).join('')}</sheetData></worksheet>`;
+  const files=[['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
+    ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${esc(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`],
+    ['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ['xl/styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="12"/><name val="Microsoft JhengHei"/></font><font><b/><sz val="12"/><name val="Microsoft JhengHei"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE9ECEF"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB2F2BB"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFEC99"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFC9C9"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="5"><xf fontId="0" fillId="0"/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"/><xf fontId="0" fillId="3" applyFill="1"/><xf fontId="0" fillId="4" applyFill="1"/><xf fontId="0" fillId="5" applyFill="1"/></cellXfs></styleSheet>'],
+    ...sheets.map((s,i)=>[`xl/worksheets/sheet${i+1}.xml`,sheetXml(s)])];
+  /* zip（store） */
+  const crcT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+  const crc=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=crcT[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+  const parts=[],cent=[];let off=0;
+  const u16=n=>[n&255,(n>>>8)&255],u32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+  for(const [name,txt] of files){const nm=enc.encode(name),data=enc.encode(txt),c=crc(data);
+    const lh=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(c),...u32(data.length),...u32(data.length),...u16(nm.length),...u16(0)]);
+    parts.push(lh,nm,data);
+    cent.push(new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(c),...u32(data.length),...u32(data.length),...u16(nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=lh.length+nm.length+data.length}
+  const cs=cent.reduce((a,b)=>a+b.length,0);
+  const end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cs),...u32(off),...u16(0)]);
+  return new Blob([...parts,...cent,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
 
 /* ===================== 啟動 ===================== */
 paintFS();paintSnd();
