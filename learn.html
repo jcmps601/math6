@@ -1617,8 +1617,8 @@ const BOSS_RULE=`"boss": {
   ".read": true,
   "$wk": {
     "$seat": {
-      ".write": "auth != null && root.child('learn/bind/' + auth.uid + '/s').val() === $seat",
-      ".validate": "newData.child('s').isNumber() && newData.child('s').val() >= 0 && newData.child('t').isNumber()"
+      ".write": "auth != null && newData.exists() && root.child('learn').child('bind').child(auth.uid).child('s').val() === $seat",
+      ".validate": "$wk.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) && newData.hasChildren(['s','t']) && newData.child('s').isNumber() && newData.child('s').val() >= 0 && newData.child('s').val() <= 20000 && newData.child('t').isNumber()"
     }
   }
 }`;
@@ -1664,8 +1664,8 @@ function bossEndMsg(){const d=round.bd||0;if(!d)return '';const B=bossOf(bossWk(
 async function bossTeacher(){const O=$('#tbout');if(!O)return;O.textContent='讀取中…';const wk=bossWk(),B=bossOf(wk);let R;try{R=await bossLoad(wk)}catch(e){}
   if(R&&R.denied){O.innerHTML=`<div class="dbad">❗ Firebase 規則還沒加上魔王的設定，學生打的點數存不上去。<br>請到 Firebase 主控台 → Realtime Database →「規則」，在 <b>"learn": {</b> 的下一行貼上下面這段（後面要加逗號），按「發布」，再按上面的「🔄 重新整理」。</div><pre class="tbrule">${BOSS_RULE},</pre><button class="gray" id="tbcopy">📋 複製規則</button>`;
     tap($('#tbcopy'),()=>{try{navigator.clipboard.writeText(BOSS_RULE+',');$('#tbcopy').textContent='✅ 已複製'}catch(e){}});return}
-  if(!R||!R.ok){O.textContent='📴 連不上 Firebase';return}const m={};R.rows.forEach(r=>m[r.seat]=r.s);const left=Math.max(0,R.hp-R.tot);
-  O.innerHTML=`<div class="tbh">${B.i} <b>${B.n}</b>　${left?`剩 ${left} / ${R.hp}`:'💥 已經被打倒了'}　全班打了 ${R.tot} 點・${R.rows.length} 人出手</div>`+
+  if(!R||!R.ok){O.textContent='📴 連不上 Firebase';return}const m={};R.rows.forEach(r=>m[r.seat]=r.s);const tot=R.rows.reduce((a,r)=>a+r.s,0),left=Math.max(0,R.hp-tot);   // 只算全班(不含測試帳號)
+  O.innerHTML=`<div class="tbh">${B.i} <b>${B.n}</b>　${left?`剩 ${left} / ${R.hp}`:'💥 已經被打倒了'}　全班打了 ${tot} 點・${R.rows.length} 人出手</div>`+
     `<div class="chips">${SEATS.flat().map(s=>`<span class="chip${m[s]?'':' z'}">${s}<small>${m[s]||'還沒'}</small></span>`).join('')}</div>`+
     ((R.tests||[]).length?`<div class="tbh" style="font-size:1rem;color:#888">🧪 ${R.tests.map(r=>`${testName(r.seat).replace('🧪 ','')} ${r.s} 點`).join('、')}（不算進全班）</div>`:'')}
 
