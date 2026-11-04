@@ -10,7 +10,10 @@ button{font-family:inherit;cursor:pointer}
 .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #8e2a20}
 .btn.b{background:#2f3640;box-shadow:0 5px 0 #11151a}.btn.g{background:#fff;color:#7a5a32;box-shadow:0 5px 0 #d9b97f}
 /* 首頁 */
-#home,#wait{flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;padding:1rem;text-align:center}
+#home,#wait{flex-direction:column;align-items:center;justify-content:flex-start;gap:1.2rem;padding:1rem;text-align:center;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+/* 放得下就置中，放不下就從上面開始排、可以捲動（不會被切掉） */
+#home>:first-child,#wait>:first-child{margin-top:auto}#home>:last-child,#wait>:last-child{margin-bottom:auto}
+#home>*,#wait>*{flex:none;max-width:100%}
 .logo{font-size:clamp(2.4rem,6vw,4rem);font-weight:900;letter-spacing:.1em;color:#8e2a20;text-shadow:0 4px 0 #fff8}
 /* 帥、將的圓圈:字縮小、拿掉字距,才會在圓圈正中間 */
 .logo span{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;font-size:.72em;line-height:1;letter-spacing:0;width:1.75em;height:1.75em;border-radius:50%;background:#fffaf0;border:.1em solid #c0392b;color:#c0392b;margin:0 .25em;box-shadow:0 .1em 0 #d9b97f;text-shadow:none}
@@ -144,6 +147,23 @@ button{font-family:inherit;cursor:pointer}
  #game.pd #acts{width:auto;flex-direction:row}#game.pd #acts .btn{font-size:.85rem;padding:.3rem}}
 #offMsg{background:#fff3bf;border:3px solid #f59f00;border-radius:16px;padding:.4rem .8rem;font-size:1.15rem;font-weight:900;color:#e8590c;text-align:center}
 #offMsg b{font-size:1.6rem;color:#c0392b}
+/* ═══ 依螢幕大小調整首頁、等待畫面 ═══ */
+.btn{font-size:clamp(1.1rem,min(4.6vw,3.6vh),1.6rem);padding:clamp(.45rem,1.6vh,.7rem) clamp(1rem,3vw,1.6rem)}
+.logo{font-size:clamp(1.9rem,min(7vw,7.5vh),4rem)}
+#pinIn{font-size:clamp(1.4rem,min(6vw,4.5vh),2rem)}
+#types button,.types button{font-size:clamp(1rem,min(3.6vw,3vh),1.3rem);padding:.35rem clamp(.6rem,2.2vw,1.2rem)}
+#aqRule,#pdRule{font-size:clamp(.9rem,min(3.4vw,2.6vh),1.05rem)}
+#me{font-size:clamp(1rem,min(4vw,3vh),1.3rem)}
+#pinBig{font-size:clamp(3rem,min(14vw,16vh),8rem)}
+@media (max-height:760px){#home,#wait{gap:.7rem}.menu{gap:.6rem}}
+@media (max-height:560px){#home,#wait{gap:.45rem;padding:.6rem}.menu{gap:.45rem}.logo span{display:none}}
+/* 橫的但不高（筆電、平板橫拿、在平台裡）：分左右兩欄，一眼看完 */
+@media (orientation:landscape) and (max-height:720px) and (min-width:700px){
+ #home.scr.on{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-rows:min-content;align-content:safe center;justify-items:center;column-gap:clamp(1rem,4vw,3rem);row-gap:.6rem;padding:.8rem clamp(1rem,4vw,3rem)}
+ #home>:first-child{margin-top:0}#home>:last-child{margin-bottom:0}
+ #types{grid-column:1/-1;grid-row:1}
+ #home .logo{grid-column:1;grid-row:2}#aqRule,#pdRule{grid-column:1;grid-row:3}#me{grid-column:1;grid-row:4}#mode{grid-column:1;grid-row:5}#rec{grid-column:1;grid-row:6}
+ #home .menu{grid-column:2;grid-row:2/span 4;align-self:center;width:100%;max-width:26rem}#msg{grid-column:2;grid-row:6}}
 </style></head><body>
 
 <section class="scr on" id="home">

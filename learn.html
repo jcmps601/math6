@@ -10,7 +10,8 @@ html,body{margin:0;height:100%;background:var(--bg);font-family:'PingFang TC','M
 button{font-family:inherit;cursor:pointer}
 .scr{display:none;height:100%}.scr.on{display:flex}
 /* ===== 登入 ===== */
-#login{flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;padding:1rem}
+#login{flex-direction:column;align-items:center;justify-content:flex-start;gap:1.2rem;padding:1rem;overflow-y:auto;overflow-x:hidden}
+#login>.lmascot{margin-top:auto}#login>#seats{margin-bottom:auto}
 #login h1{margin:0;font-size:3rem;color:var(--g);letter-spacing:.05em}
 #login h1 small{display:block;font-size:1.3rem;color:#999;text-align:center;letter-spacing:.2em}
 #seats{display:flex;flex-direction:column;gap:1rem;width:min(56rem,100%)}.sg{display:grid;grid-template-columns:repeat(8,1fr);gap:.55rem}
@@ -412,12 +413,16 @@ body{background:
 #xqinv .xir{display:flex;gap:.6rem;justify-content:center}#xqinv .xir button{border:0;border-radius:16px;font:900 1.3rem 'PingFang TC','Microsoft JhengHei',sans-serif;padding:.45rem 1.2rem;background:#f1f3f5;color:#666}
 #xqinv .xir button.xok{background:#2f9e44;color:#fff;box-shadow:0 4px 0 #2b8a3e}
 #xqcard .xi{flex:1;min-width:12rem}#xqcard .xr{font-size:1.15rem;font-weight:800;color:#7a5a32;margin-top:.25rem}#xqcard .xr b{color:#c0392b}
-#xqcard .xbtns{display:flex;gap:.5rem;flex-wrap:wrap;margin-left:auto}#xqcard .xbtns .go{margin:0}#xqcard .go.gray{background:#868e96;box-shadow:0 4px 0 #495057}
+#xqcard .xbtns{display:flex;gap:.5rem;flex-wrap:wrap;margin-left:auto}#xqcard .xbtns .go{margin:0}
+@media (max-width:760px){#xqcard{flex-wrap:wrap}#xqcard .xbtns{width:100%;margin-left:0}#xqcard .xbtns .go{flex:1 1 40%;font-size:1.15rem}}#xqcard .go.gray{background:#868e96;box-shadow:0 4px 0 #495057}
 #xqhist .xht{font-size:1.2rem;font-weight:900;color:#7a5a32;margin-bottom:.3rem}
 #xqhist .xhr{display:flex;align-items:center;gap:.6rem;font-size:1.1rem;font-weight:800;padding:.25rem 0;border-bottom:2px solid #f8f1e4}
 #xqhist .xhr span{flex:none;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900}
 #xqhist .xhr span.w{background:#e8590c}#xqhist .xhr span.l{background:#adb5bd}#xqhist .xhr span.d{background:#74c0fc}#xqhist .xhr em{font-style:normal;font-size:.9rem;color:#fff;background:#b07a3c;border-radius:8px;padding:0 .35rem}
 #xqhist .xhr small{color:#999;font-weight:800}#xqhist .xhr i{margin-left:auto;font-style:normal;color:#bbb;font-size:.95rem}
+/* 座號按鈕跟著螢幕高度縮放，矮的筆電螢幕也一次看得到全部（含測試帳號） */
+@media (min-height:561px){#seats{width:min(56rem,100%,max(24rem,calc((100vh - 21rem) * 2.5)))}}
+#seats .tbtn{aspect-ratio:auto!important;height:auto}
 </style>
 </head><body>
 
@@ -1030,7 +1035,18 @@ function subjBar(){const B=el('div');B.id='subj';
   SUBJ.forEach(S=>{const n=UN.some(u=>u.s===S.k&&u.g);const b=el('button',S.k===subj?'on':'',`${S.ic} ${S.n}${n?'':'<small>準備中</small>'}`);b.style.setProperty('--c',S.c);
     tap(b,()=>{if(subj===S.k)return;subj=S.k;LS.set('learn601_subj',subj);const u=UN.find(x=>x.key===view)||mixByKey(view);if(u&&u.s!==subj)view='home';paintNavs();render()});B.appendChild(b)});
   return B}
-function render(){const P=document.getElementById('pane');P.innerHTML='';
+/* 同一頁重畫時，保留捲動的位置（不會跳回最上面） */
+function render(){const P=document.getElementById('pane'),k=view+'|'+subj,same=render.k===k,st=same?P.scrollTop:0,ws=same?scrollY:0;
+  const h0=same?P.scrollHeight:0,d0=same?document.documentElement.scrollHeight:0;
+  render0();render.k=view+'|'+subj;
+  if(same&&(st||ws)){
+    /* 排行榜這些要等雲端讀回來才會變長：先墊一塊空白撐住高度，等讀完再拿掉 */
+    const need=Math.max(h0-P.scrollHeight,d0-document.documentElement.scrollHeight);
+    if(need>0){const pad=el('div');pad.className='keepH';let hh=need;pad.style.height=hh+'px';P.appendChild(pad);
+      for(let i=0;i<4;i++){const m=Math.max(h0-P.scrollHeight,d0-document.documentElement.scrollHeight);if(m<=0)break;hh+=m;pad.style.height=hh+'px'}
+      setTimeout(()=>pad.remove(),2500)}
+    P.scrollTop=st;if(ws)scrollTo(0,ws)}}
+function render0(){const P=document.getElementById('pane');P.innerHTML='';
   if(view!=='wb'&&view!=='game')P.appendChild(subjBar());
   if(view==='home')return renderHome(P);
   const M=mixByKey(view);if(M)return renderUnit(P,M,null);
@@ -1115,8 +1131,10 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   P.appendChild(el('div','sec',`🏆 雙人對戰勝率排行榜（下滿 ${WR_MIN} 局才上榜）`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
   P.appendChild(el('div','sec','🏆 全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
-  const gc=el('div');gc.id='bgames';GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bg=k;render()});gc.appendChild(x)});P.appendChild(gc);
-  const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(L);loadBoard(L)}
+  /* 切換遊戲只換下面的排行榜，不重畫整頁（頁面不會跳） */
+  const gc=el('div');gc.id='bgames';const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';
+  GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{if(bg===k)return;bg=k;gc.querySelectorAll('.bgb').forEach(b=>b.classList.toggle('on',b===x));loadBoard(L)});gc.appendChild(x)});
+  P.appendChild(gc);P.appendChild(L);loadBoard(L)}
 async function paintXq(){const r=document.getElementById('xqrec'),h=document.getElementById('xqhist');if(!r)return;const S=await xqStats();
   const one=(t,n)=>{const H=S.h.filter(x=>xqG(x)===t);if(!H.length)return '';const w=H.filter(x=>x.w===1).length,l=H.filter(x=>x.w===0).length,d=H.filter(x=>x.w===2).length;return `${n} <b>${w}</b> 勝 <b>${l}</b> 敗${d?` ${d} 和`:''}`};
   r.innerHTML=S.n?'我的戰績：'+Object.keys(GAMES).map(k=>one(k,GAMES[k].n)).filter(Boolean).join('　・　'):'還沒有對戰紀錄';
@@ -1160,9 +1178,11 @@ async function lbAll(){await fbReady;if(!db||!online)return null;const v=(await 
 function boardRows(g,arr,max){let h='';arr.forEach((r,i)=>{const me=user&&r.seat===user.seat;if(i>=max&&!me)return;
     h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${me?'<small>我</small>':''}</span><i>${gFmt(g,r.s)}${r.k?'<sup>★</sup>':''}</i></div>`});
   return h||'<div class="ld">還沒有人，搶第一！</div>'}
-async function loadBoard(L){const g=bg;let all;
-  try{all=await lbAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
-  if(g!==bg)return;if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
+/* 排行榜讀一次記 30 秒，切換遊戲馬上換、不用等 */
+let LBC=null;
+async function loadBoard(L,fresh){const g=bg;let all;
+  try{if(!fresh&&LBC&&Date.now()-LBC.t<30000)all=LBC.v;else{all=await lbAll();if(all)LBC={t:Date.now(),v:all}}}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
+  if(g!==bg)return;L.style.minHeight=Math.max(parseFloat(L.style.minHeight)||0,L.offsetHeight)+'px';   // 高度只會變高不會變矮，畫面不會被往上拉if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   L.innerHTML=GDIFF.map(([k,ic,nm],d)=>{const arr=all[g][d]||[],me=arr.find(r=>r.seat===user.seat);
     return `<div class="bcol" style="--dc:${DCOL[d]}"><div class="bh">${ic} ${nm}<small>${arr.length} 人${me?`・我第 ${me.rank} 名`:''}</small></div>${boardRows(g,arr,5)}</div>`}).join('')}
 
@@ -1257,7 +1277,7 @@ window.__learn601={
   useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
     sum.tk--;saveSum(true);logPush({k:'g',game:g});return true},
   board:()=>lbAll().catch(()=>null),
-  async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;
+  async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;LBC=null;
     const d=DIDX[dk],k=bKey(g,d);logPush({k:'gs',game:g,diff:dk,score:s});sum.gb3=sum.gb3||{};
     let all=null;try{all=await lbAll()}catch(e){}
     /* 先以雲端上自己的紀錄為準(換平板、清過資料時不會用比較差的成績蓋掉) */
