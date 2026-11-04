@@ -412,7 +412,7 @@ body{background:
 #xqhist .xht{font-size:1.2rem;font-weight:900;color:#7a5a32;margin-bottom:.3rem}
 #xqhist .xhr{display:flex;align-items:center;gap:.6rem;font-size:1.1rem;font-weight:800;padding:.25rem 0;border-bottom:2px solid #f8f1e4}
 #xqhist .xhr span{flex:none;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900}
-#xqhist .xhr span.w{background:#e8590c}#xqhist .xhr span.l{background:#adb5bd}
+#xqhist .xhr span.w{background:#e8590c}#xqhist .xhr span.l{background:#adb5bd}#xqhist .xhr span.d{background:#74c0fc}#xqhist .xhr em{font-style:normal;font-size:.9rem;color:#fff;background:#b07a3c;border-radius:8px;padding:0 .35rem}
 #xqhist .xhr small{color:#999;font-weight:800}#xqhist .xhr i{margin-left:auto;font-style:normal;color:#bbb;font-size:.95rem}
 </style>
 </head><body>
@@ -877,7 +877,7 @@ const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/
 const PLAY_MS=5*60*1000;           // 一張券 = 5 分鐘遊戲時間
 const GDIFF=[['easy','🌱','簡單'],['normal','⭐','普通'],['hard','🔥','困難'],['boss','👑','魔王']];
 const GAME_TOOL={id:'game',i:'🎮',k:'遊戲',n:'601 挑戰樂園',f:'game.html'};
-const XQ_TOOL={id:'xq',i:'♟️',k:'對戰',n:'象棋對戰',f:'chess.html'};   // 兩人連線,一局用 1 張遊戲券
+const XQ_TOOL={id:'xq',i:'♟️',k:'對戰',n:'象棋・暗棋對戰',f:'chess.html'};   // 兩人連線,一局用 1 張遊戲券
 const PU=[0,1,2,3];               // 有練習題的單元
 let N=10;                       // 一回的題數(錯題再練可能少於 10)
 const WB={key:'wb',no:'📕',ic:'📕',name:'錯題再練',nav:'錯題',c:'#c92a2a',cb:'#fff5f5'};
@@ -1101,18 +1101,21 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">🎟️<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
   const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
-  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">♟️</div><div class="xi"><div class="t">象棋對戰</div><div class="s">兩台平板連線對下・一局用 1 張遊戲券</div><div class="xr" id="xqrec"></div></div>';
+  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">♟️</div><div class="xi"><div class="t">象棋・暗棋對戰</div><div class="s">兩台平板連線對下・一局用 1 張遊戲券</div><div class="xr" id="xqrec"></div></div>';
   const xw=el('div');xw.className='xbtns';const xv=el('button','go','📨 邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
-  const xb=el('button','go gray','開始 ▶');tap(xb,()=>openTool(XQ_TOOL));xw.appendChild(xv);xw.appendChild(xb);x.appendChild(xw);P.appendChild(x);
+  const xb=el('button','go gray','♟️ 象棋');tap(xb,()=>openTool({...XQ_TOOL,f:'chess.html?g=xq'}));
+  const xa=el('button','go gray','🀄 暗棋');tap(xa,()=>openTool({...XQ_TOOL,f:'chess.html?g=aq'}));
+  [xv,xb,xa].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
   P.appendChild(el('div','sec','🏆 全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
   const gc=el('div');gc.id='bgames';GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{bg=k;render()});gc.appendChild(x)});P.appendChild(gc);
   const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(L);loadBoard(L)}
 async function paintXq(){const r=document.getElementById('xqrec'),h=document.getElementById('xqhist');if(!r)return;const S=await xqStats();
-  r.innerHTML=S.n?`我的戰績：<b>${S.w}</b> 勝 <b>${S.l}</b> 敗（共 ${S.n} 局）`:'還沒有對戰紀錄';
+  const one=(t,n)=>{const H=S.h.filter(x=>xqG(x)===t);if(!H.length)return '';const w=H.filter(x=>x.w===1).length,l=H.filter(x=>x.w===0).length,d=H.filter(x=>x.w===2).length;return `${n} <b>${w}</b> 勝 <b>${l}</b> 敗${d?` ${d} 和`:''}`};
+  r.innerHTML=S.n?'我的戰績：'+[one('xq','象棋'),one('aq','暗棋')].filter(Boolean).join('　・　'):'還沒有對戰紀錄';
   if(!h)return;if(!S.n){h.style.display='none';return}h.style.display='';
   const d=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`};
-  h.innerHTML='<div class="xht">♟️ 最近的對戰</div>'+S.h.slice(0,8).map(x=>`<div class="xhr"><span class="${x.w?'w':'l'}">${x.w?'勝':'敗'}</span><b>對 ${x.o?seatName(x.o):'同學'}</b><small>${x.r||''}${x.n?`・${x.n} 步`:''}</small><i>${d(x.t)}</i></div>`).join('')}
+  h.innerHTML='<div class="xht">♟️ 最近的對戰</div>'+S.h.slice(0,8).map(x=>`<div class="xhr"><span class="${x.w===1?'w':x.w===2?'d':'l'}">${x.w===1?'勝':x.w===2?'和':'敗'}</span><em>${xqG(x)==='aq'?'暗棋':'象棋'}</em><b>對 ${x.o?seatName(x.o):'同學'}</b><small>${x.r||''}${x.n?`・${x.n} 步`:''}</small><i>${d(x.t)}</i></div>`).join('')}
 /* 排行榜:每個遊戲的 4 個難度各自一個榜,雲端存在 lb/遊戲_難度/座號(例如 lb/tower_easy/12)。
    以前的 lb/遊戲/座號 只存一筆「最好的」,讀的時候放進那一筆的難度,舊成績不會不見。 */
 const DK=['easy','normal','hard','boss'];
@@ -1146,14 +1149,15 @@ const seatName=s=>isTest(s)?testName(s).replace('🧪 ',''):s+' 號';
 const allSeats=()=>[...SEATS.flat(),...(user&&isTest(user.seat)?TEST_SEATS:[])];   // 測試帳號只會看到、邀請到測試帳號和全班
 function xqLocal(){return user?LS.get('learn601_xqh_'+user.seat,[]):[]}
 function xqResult(r){if(!user||!r||!r.k)return;const key=String(r.k).replace(/[.#$\[\]\/]/g,'_').slice(0,46),H=xqLocal();if(H.some(x=>x.k===key))return;
-  const v={o:+r.o||0,w:r.w?1:0,r:String(r.r||'').slice(0,20),n:+r.n||0,t:Date.now()};
+  const v={o:+r.o||0,w:r.w===2?2:r.w?1:0,r:String(r.r||'').slice(0,20),n:+r.n||0,t:Date.now(),g:r.g==='aq'?'aq':'xq'};   // w:1 贏、0 輸、2 和局;g:xq 象棋、aq 暗棋
   H.push({...v,k:key});LS.set('learn601_xqh_'+user.seat,H.slice(-200));enqueue(`${ROOT}/xq/${user.seat}/${key}`,v)}
 /* 自己的戰績:雲端的(換平板也看得到)和這台平板的合在一起 */
 async function xqHist(seat){const s=seat||(user&&user.seat);const m={};
   if(user&&s===user.seat)xqLocal().forEach(x=>m[x.k]=x);
   try{if(db&&online){const v=(await timeout(db.ref(`${ROOT}/xq/${s}`).get(),8000)).val()||{};for(const k in v)if(v[k])m[k]={...v[k],k}}}catch(e){}
   return Object.values(m).sort((a,b)=>b.t-a.t)}
-async function xqStats(seat){const H=await xqHist(seat),w=H.filter(x=>x.w).length;return {n:H.length,w,l:H.length-w,h:H}}
+const xqG=x=>x.g==='aq'?'aq':'xq';
+async function xqStats(type,seat){const H=(await xqHist(seat)).filter(x=>!type||xqG(x)===type);return {n:H.length,w:H.filter(x=>x.w===1).length,l:H.filter(x=>x.w===0).length,d:H.filter(x=>x.w===2).length,h:H}}
 async function onlineSeats(){const out={};try{if(db&&online){const v=(await timeout(db.ref(`${ROOT}/on`).get(),8000)).val()||{};const now=Date.now();
   for(const k in v)if(v[k]&&now-v[k]<ON_MS)out[k]=1}}catch(e){}return out}
 let onT=0,onRef=null;
@@ -1162,7 +1166,7 @@ async function presence(){clearInterval(onT);if(!user)return;const s=user.seat;
     try{onRef=db.ref(`${ROOT}/on/${s}`);await onRef.set(Date.now());if(onRef.onDisconnect)onRef.onDisconnect().remove()}catch(e){}};
   beat();onT=setInterval(beat,30000)}
 function presenceOff(){clearInterval(onT);try{if(onRef)onRef.remove()}catch(e){}onRef=null}
-async function sendInv(to,pin){if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:Date.now()}),8000)}
+async function sendInv(to,pin,g){if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:Date.now(),g:g==='aq'?'aq':'xq'}),8000)}
 function unInv(to){try{if(db&&user)db.ref(`${ROOT}/inv/${to}/${user.seat}`).remove()}catch(e){}}
 /* 收邀請 */
 let invRef=null,invCb=null,invNow=null;
@@ -1171,12 +1175,12 @@ async function listenInv(){if(invRef&&invCb)invRef.off('value',invCb);invRef=nul
   invRef=db.ref(`${ROOT}/inv/${s}`);invCb=snap=>{const v=snap.val()||{},now=Date.now();
     const list=Object.entries(v).filter(([f,x])=>x&&x.p&&now-x.t<INV_MS).sort((a,b)=>b[1].t-a[1].t);
     if(!list.length){if(invNow&&!v[invNow.f])hideInv();return}
-    const [f,x]=list[0];if(invNow&&invNow.f===f&&invNow.p===x.p)return;showInv({f:+f,p:x.p,t:x.t})};
+    const [f,x]=list[0];if(invNow&&invNow.f===+f&&invNow.p===x.p)return;showInv({f:+f,p:x.p,t:x.t,g:x.g==='aq'?'aq':'xq'})};
   invRef.on('value',invCb)}
 function invBox(){let b=document.getElementById('xqinv');if(b)return b;b=el('div');b.id='xqinv';
   b.innerHTML='<div class="xiv"><div class="xit"></div><div class="xis"></div><div class="xir"><button class="xok" id="invYes">✅ 接受</button><button class="xno" id="invNo">下次再說</button></div></div>';document.body.appendChild(b);
   tap(b.querySelector('#invYes'),()=>acceptInv());tap(b.querySelector('#invNo'),()=>declineInv('no'));return b}
-function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=`♟️ ${seatName(x.f)} 邀請你下象棋！`;
+function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=`${x.g==='aq'?'🀄':'♟️'} ${seatName(x.f)} 邀請你下${x.g==='aq'?'暗棋':'象棋'}！`;
   b.querySelector('.xis').textContent='接受就會直接進到棋盤（一局用 1 張遊戲券）';b.classList.add('on');try{sfx.ok()}catch(e){}
   clearTimeout(showInv.t);showInv.t=setTimeout(()=>{if(invNow===x)hideInv()},Math.max(5000,INV_MS-(Date.now()-x.t)))}
 function hideInv(){invNow=null;const b=document.getElementById('xqinv');if(b)b.classList.remove('on')}
@@ -1194,8 +1198,8 @@ window.__learn601={
   tickets:()=>tkN(),
   isTest:()=>!!user&&isTest(user.seat),
   /* 象棋:戰績、邀請 */
-  xqResult:r=>xqResult(r), xqStats:()=>xqStats(), online:()=>onlineSeats(), seats:()=>allSeats(), seatName:s=>seatName(s),
-  invite:(to,pin)=>sendInv(to,pin), uninvite:to=>unInv(to),
+  xqResult:r=>xqResult(r), xqStats:t=>xqStats(t), online:()=>onlineSeats(), seats:()=>allSeats(), seatName:s=>seatName(s),
+  invite:(to,pin,g)=>sendInv(to,pin,g), uninvite:to=>unInv(to),
   left:()=>playLeft(),
   /* 開一局:5 分鐘還沒用完就直接玩;用完了才扣 1 張券、重新給 5 分鐘 */
   startPlay(g,d){if(!user||!sum)return {ok:false};if(playLeft()>0)return {ok:true};
@@ -1470,12 +1474,12 @@ let ANA=null;
 let XQALL=null;
 tap($('#xqload'),async()=>{const M=$('#xqmsg');M.textContent=' 讀取中…';await fbReady;
   try{XQALL=(await timeout(db.ref(`${ROOT}/xq`).get(),10000)).val()||{};M.textContent='';paintXqAll()}catch(e){M.textContent=' 讀不到，請檢查網路'}});
-function paintXqAll(sel){const A=XQALL||{},rows=[...SEATS.flat(),...TEST_SEATS].map(s=>{const g=Object.values(A[s]||{}).filter(Boolean).sort((a,b)=>b.t-a.t);const w=g.filter(x=>x.w).length;return {s,g,w,l:g.length-w}}).filter(r=>r.g.length||!isTest(r.s));
+function paintXqAll(sel){const A=XQALL||{},rows=[...SEATS.flat(),...TEST_SEATS].map(s=>{const g=Object.values(A[s]||{}).filter(Boolean).sort((a,b)=>b.t-a.t);const w=g.filter(x=>x.w===1).length,dr=g.filter(x=>x.w===2).length;return {s,g,w,d:dr,l:g.length-w-dr}}).filter(r=>r.g.length||!isTest(r.s));
   const d=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`};
-  let h=`<table class="at"><tr><th>座號</th><th>局數</th><th>勝</th><th>敗</th><th>勝率</th><th class="l">最近的對手</th></tr>`;
-  rows.forEach(r=>{h+=`<tr class="st${sel===r.s?' sel':''}" data-s="${r.s}"><td><b>${isTest(r.s)?testName(r.s):r.s}</b></td><td>${r.g.length||'—'}</td><td>${r.g.length?r.w:''}</td><td>${r.g.length?r.l:''}</td><td>${r.g.length?pc(r.w,r.g.length)+'%':''}</td>
-    <td class="l">${r.g.slice(0,3).map(x=>`${x.w?'勝':'敗'} ${x.o?seatName(x.o):'?'}`).join('、')}</td></tr>`;
-    if(sel===r.s&&r.g.length)h+=`<tr><td colspan="6"><div id="adet">${r.g.map(x=>`${d(x.t)}　對 ${x.o?seatName(x.o):'?'}　<b>${x.w?'勝':'敗'}</b>　${x.r||''}${x.n?`（${x.n} 步）`:''}`).join('<br>')}</div></td></tr>`});
+  let h=`<table class="at"><tr><th>座號</th><th>局數</th><th>勝</th><th>敗</th><th>和</th><th>勝率</th><th class="l">最近的對手</th></tr>`;
+  rows.forEach(r=>{h+=`<tr class="st${sel===r.s?' sel':''}" data-s="${r.s}"><td><b>${isTest(r.s)?testName(r.s):r.s}</b></td><td>${r.g.length||'—'}</td><td>${r.g.length?r.w:''}</td><td>${r.g.length?r.l:''}</td><td>${r.g.length?r.d:''}</td><td>${r.g.length?pc(r.w,r.g.length)+'%':''}</td>
+    <td class="l">${r.g.slice(0,3).map(x=>`${xqG(x)==='aq'?'暗':'象'}${x.w===1?'勝':x.w===2?'和':'敗'} ${x.o?seatName(x.o):'?'}`).join('、')}</td></tr>`;
+    if(sel===r.s&&r.g.length)h+=`<tr><td colspan="7"><div id="adet">${r.g.map(x=>`${d(x.t)}　${xqG(x)==='aq'?'暗棋':'象棋'}　對 ${x.o?seatName(x.o):'?'}　<b>${x.w===1?'勝':x.w===2?'和':'敗'}</b>　${x.r||''}${x.n?`（${x.n} 步）`:''}`).join('<br>')}</div></td></tr>`});
   const tot=rows.reduce((a,r)=>a+r.g.length,0);
   $('#xqout').innerHTML=`<div style="margin:.4rem 0;color:#888;font-weight:800">全班共記錄 ${tot} 筆（每一局兩個人各記一筆）</div>`+h+'</table>';
   $('#xqout').querySelectorAll('tr.st').forEach(t=>t.onclick=()=>paintXqAll(+t.dataset.s===sel?null:+t.dataset.s))}
