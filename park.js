@@ -199,14 +199,14 @@
   }
 
   /* ───────── 樂園頁 ───────── */
-  let mode = 'mine', tool = 'block', pick = 'grass', walkT = 0, rot = 0, hist = [];
+  let mode = 'farm', tool = 'block', pick = 'grass', walkT = 0, rot = 0, hist = [];
   function page(P) {
     const h = el('div', 'h1', `<span class="tag">🏝️</span>601 樂園`); h.style.setProperty('--c', '#20c997'); P.appendChild(h);
-    const T2 = el('div', 'ptabs pk'); [['mine', '🏝️ 我的方塊島'], ['plaza', '🎪 廣場'], ['map', '🗺️ 全班樂園']].forEach(([k, n]) => { const b = el('button', mode === k ? 'on' : '', n); tap(b, () => { if (mode === k) return; leavePlaza(); mode = k; render(); }); T2.appendChild(b); });
+    const T2 = el('div', 'ptabs pk'); [['farm', '🌾 我的農場'], ['visit', '👫 同學的農場'], ['plaza', '🎪 廣場'], ['mine', '🏝️ 方塊島'], ['map', '🏛️ 中央公園']].forEach(([k, n]) => { const b = el('button', mode === k ? 'on' : '', n); tap(b, () => { if (mode === k) return; leavePlaza(); mode = k; render(); }); T2.appendChild(b); });
     P.appendChild(T2);
     const C = el('div', 'cd pkc'); P.appendChild(C);
     if (mode !== 'plaza') leavePlaza();
-    if (mode === 'mine') mine(C); else if (mode === 'plaza') plaza(C); else map(C);
+    if (mode === 'farm') FARM.page(C); else if (mode === 'visit') FARM.visitList(C); else if (mode === 'mine') mine(C); else if (mode === 'plaza') plaza(C); else map(C);
   }
   function mine(C) {
     C.innerHTML = `<div class="pkhead"><div class="pkcoin">🪙 <b id="pkcoin">${coins()}</b></div><div class="pktip" id="pktip"></div>
@@ -523,7 +523,7 @@
 
   /* ───────── 樣式 ───────── */
   const css = `
-  .ptabs.pk{margin-top:.2rem}.ptabs.pk button.on{color:#0ca678}
+  .ptabs.pk{margin-top:.2rem;flex-wrap:wrap}.ptabs.pk button{flex:1 1 auto}.ptabs.pk button.on{color:#0ca678}
   .pkc{border-top-left-radius:0;border-top-right-radius:0}
   .pkhead{display:flex;align-items:center;gap:.8rem;margin-bottom:.4rem}.pkcoin{background:#fff9db;border:3px solid #ffe066;border-radius:16px;padding:.25rem .8rem;font-size:1.3rem;font-weight:900;color:#e67700;flex:none}
   .pktip{flex:1;font-size:1.1rem;font-weight:900;color:#0ca678}
