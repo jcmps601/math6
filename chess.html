@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>601 象棋對戰</title>
+<title>601 軍棋對戰</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;font-family:'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif;color:#3b2a1a;background:radial-gradient(ellipse at 50% 20%,#fff4dc 0%,#f6dfb3 70%,#eccb8f 100%);overflow:hidden;user-select:none;-webkit-user-select:none}
@@ -68,7 +68,7 @@ button{font-family:inherit;cursor:pointer}
 #types button,.types button{border:0;border-radius:999px;font-size:1.3rem;font-weight:900;padding:.4rem 1.2rem;background:none;color:#9a7a52}
 #types button.on,.types button.on{background:#fff;color:#8e2a20;box-shadow:0 3px 0 #d9b97f}
 .logo em{font-style:normal}
-#aqRule{background:#fffaf0;border-radius:16px;padding:.5rem .9rem;line-height:1.6;color:#7a5a32;font-size:1.05rem}#aqRule b{color:#c0392b}
+#aqRule,#pdRule{background:#fffaf0;border-radius:16px;padding:.5rem .9rem;line-height:1.6;color:#7a5a32;font-size:1.05rem}#aqRule b,#pdRule b{color:#c0392b}
 #pickG{color:#c0392b}
 /* 暗棋 */
 .aq .pc.dn circle.f{fill:url(#aqBack)}
@@ -92,14 +92,65 @@ button{font-family:inherit;cursor:pointer}
  #side .code{font-size:.8rem}.capr span{width:1.2rem;height:1.2rem;font-size:.75rem}
 }
 
+/* ═══ 大砲對轟 ═══ */
+#pdCv,#pdCtl{display:none}
+#game.pd{flex-direction:column;padding:.5rem;gap:.5rem;background:linear-gradient(#cfeaff,#fdf2dc)}
+#game.pd #board{display:none}#game.pd #pdCv{display:block;border-radius:18px;box-shadow:0 6px 18px rgba(30,60,90,.25);touch-action:none}
+#game.pd #boardWrap{flex:1 1 0;min-height:0}
+#game.pd #side{width:100%;flex-direction:row;align-items:stretch;gap:.5rem;flex:none}
+#game.pd .pl{display:none}
+#game.pd #status{display:none!important}
+#game.pd #pdCtl{display:flex;flex:1;min-width:0;gap:.45rem;align-items:stretch;background:#fffaf0;border-radius:18px;box-shadow:0 4px 0 #d9b97f;padding:.45rem;position:relative}
+#game.pd #acts{flex:0 0 auto;width:6.2rem;flex-direction:column;order:2;gap:.4rem}#game.pd #acts .btn{font-size:1rem;padding:.4rem .3rem;flex:1}
+#game.pd #side .code{display:none}
+#game.pd #offMsg{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:8;font-size:1.4rem;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.pdw{display:flex;flex-direction:column;gap:.3rem;flex:0 0 auto}
+.pdw button{display:flex;align-items:center;gap:.3rem;border:3px solid #e9d5ae;background:#fff;border-radius:12px;padding:.15rem .5rem;font-weight:900;color:#7a5a32;font-size:.95rem;min-width:7.6rem}
+.pdw button span{font-size:1.2rem}.pdw button em{margin-left:auto;font-style:normal;font-size:.85rem;color:#9a7a52}
+.pdw button.on{border-color:#f59f00;background:#fff3bf;color:#c2410c}
+.pdw button:disabled{opacity:.4}
+.pdk{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:.2rem;position:relative;padding:1.35rem .35rem .35rem;background:#f6ead3;border-radius:14px}
+.pdk label{position:absolute;top:.15rem;left:0;right:0;text-align:center;font-weight:900;color:#9a7a52;font-size:.95rem}
+.pdk{flex-direction:row;align-items:center}
+.pdk button{flex:none;width:2.9rem;height:2.9rem;border:0;border-radius:14px;background:#2f3640;color:#fff;font-size:1.3rem;font-weight:900;box-shadow:0 4px 0 #11151a;touch-action:none}
+.pdk button:active{transform:translateY(2px);box-shadow:0 2px 0 #11151a}
+.pdk>b{flex:1;text-align:center;font-size:1.7rem;font-weight:900;color:#1f2937;font-family:'Avenir Next',Arial,sans-serif}
+.pdbar{flex:1;min-width:2.5rem;height:2.2rem;margin:0 .35rem;background:#e5e7eb;border-radius:12px;position:relative;overflow:hidden;touch-action:none}
+.pdbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#fde047,#f97316,#dc2626);border-radius:12px}
+.pdbar.fuel i{background:linear-gradient(90deg,#86efac,#22c55e)}
+.pdbar b{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:1.25rem;color:#111;text-shadow:0 0 4px #fff,0 0 4px #fff;font-family:'Avenir Next',Arial,sans-serif}
+#pdFire{flex:0 0 auto;width:7.4rem;border:0;border-radius:18px;font-size:1.5rem;font-weight:900;color:#fff;background:linear-gradient(#ff8a3d,#e8590c);box-shadow:0 5px 0 #a0400a;touch-action:none}
+#pdFire:active{transform:translateY(3px);box-shadow:0 2px 0 #a0400a}
+#pdCtl[data-side="b"] #pdFire{background:linear-gradient(#60a5fa,#2563eb);box-shadow:0 5px 0 #1e40af}
+#pdCtl.off .pdk,#pdCtl.off .pdw,#pdCtl.off #pdFire{opacity:.35;filter:grayscale(.6)}
+#pdWait{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#7a5a32;pointer-events:none;text-shadow:0 0 8px #fffaf0,0 0 8px #fffaf0,0 0 8px #fffaf0}
+#pdCtl.off #pdWait:not(:empty){display:flex}
+/* 直拿、窄：控制區分兩排；遊戲畫面貼著控制區，上面空的地方提醒轉橫的 */
+@media (orientation:portrait),(max-width:860px) and (min-height:561px){
+ #game.pd #boardWrap{flex-direction:column;justify-content:flex-end;align-items:center;gap:.6rem}
+ #game.pd #boardWrap::before{content:'📱 把平板轉成橫的，畫面會更大';font-size:1.1rem;font-weight:900;color:#7a8ca0;margin-bottom:auto;padding-top:1rem}
+ #game.pd #side{flex-wrap:wrap}#game.pd #pdCtl{flex:1 1 100%;flex-wrap:wrap;order:-1}
+ .pdw{flex-direction:row;flex:1 1 100%}.pdw button{flex:1;min-width:0;justify-content:center}.pdw button b{font-size:.85rem}
+ .pdk{flex:1 1 40%}#pdFire{flex:1 1 100%;height:3.2rem}
+ #game.pd #acts{flex:1 1 100%;width:auto;flex-direction:row}}
+/* 手機橫拿（很矮）：控制區放右邊 */
+@media (orientation:landscape) and (max-height:560px){
+ #game.pd{flex-direction:row;padding:.35rem;gap:.35rem}
+ #game.pd #side{width:15.5rem;flex-direction:column;flex-wrap:nowrap;overflow:auto}
+ #game.pd #pdCtl{flex-direction:column;flex:1 1 auto;padding:.35rem;gap:.3rem;order:0}
+ .pdw{flex-direction:row}.pdw button{flex:1;min-width:0;padding:.1rem .2rem;justify-content:center}.pdw button b{display:none}
+ .pdk{padding:.2rem .3rem}.pdk label{position:static;width:2.2rem;font-size:.8rem}.pdk button{width:2.3rem;height:2.3rem;font-size:1rem}.pdk>b{font-size:1.2rem}.pdbar{height:1.8rem}
+ #pdFire{width:auto;height:2.6rem;font-size:1.2rem}
+ #game.pd #acts{width:auto;flex-direction:row}#game.pd #acts .btn{font-size:.85rem;padding:.3rem}}
 #offMsg{background:#fff3bf;border:3px solid #f59f00;border-radius:16px;padding:.4rem .8rem;font-size:1.15rem;font-weight:900;color:#e8590c;text-align:center}
 #offMsg b{font-size:1.6rem;color:#c0392b}
 </style></head><body>
 
 <section class="scr on" id="home">
-  <div id="types"><button data-t="xq">♟️ 象棋</button><button data-t="aq">🀄 暗棋</button></div>
-  <div class="logo"><span>帥</span><em id="logoT">象棋對戰</em><span>將</span></div>
+  <div id="types"><button data-t="xq">♟️ 軍棋</button><button data-t="aq">🀄 暗棋</button><button data-t="pd">🎯 大砲對轟</button></div>
+  <div class="logo"><span>帥</span><em id="logoT">軍棋對戰</em><span>將</span></div>
   <div class="note" id="aqRule" hidden>32 顆棋全部蓋著：輪到你就<b>翻一顆</b>或<b>走一格</b>。第一顆翻到什麼顏色，你就是那一方。<br>大吃小（兵卒可以吃帥將）；炮要<b>隔一顆</b>才能吃。對方的棋被吃光就贏了！</div>
+  <div class="note" id="pdRule" hidden>輪到你：可以先<b>開車</b>移動一下，再調<b>角度</b>和<b>力道</b>發射砲彈（也可以直接在畫面上拖）。<br>注意上面的<b>風向</b>！先把對方的血打到 0 就贏了。</div>
   <div id="me"></div>
   <div class="menu">
     <button class="btn" id="bNew">🏠 建立房間（我先下・紅方）</button>
@@ -121,11 +172,12 @@ button{font-family:inherit;cursor:pointer}
 </section>
 
 <section class="scr" id="game">
-  <div id="boardWrap"><svg id="board" viewBox="-60 -60 920 1020"></svg></div>
+  <div id="boardWrap"><svg id="board" viewBox="-60 -60 920 1020"></svg><canvas id="pdCv"></canvas></div>
   <aside id="side">
     <div class="pl b" id="plTop"><i>將</i><div><b id="nmTop"></b><small id="smTop"></small></div></div>
     <div id="status"></div>
     <div class="pl r" id="plBot"><i>帥</i><div><b id="nmBot"></b><small id="smBot"></small></div></div>
+    <div id="pdCtl"></div>
     <div id="acts"><button class="btn g" id="bUndo" hidden>↩ 悔棋</button><button class="btn b" id="bResign">🏳 認輸</button><button class="btn g" id="bLeave">離開</button></div>
     <div class="code" id="code"></div>
   </aside>
@@ -133,8 +185,8 @@ button{font-family:inherit;cursor:pointer}
 
 <div id="over"><div class="box"><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="s" id="ovN"></div><div class="row"><button class="btn" id="bAgain">🔁 再來一局（換邊）</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
-<div id="pick"><div class="box"><div class="t">📨 邀請誰一起下<span id="pickG">象棋</span>？</div><div id="pickT" class="types"><button data-t="xq">♟️ 象棋</button><button data-t="aq">🀄 暗棋</button></div><div class="s">綠色的同學現在在平台上，按一下就會邀請他</div><div id="pickList"></div><button class="btn g" id="pickX">取消</button></div></div>
-<script src="xq.js"></script><script src="aq.js"></script>
+<div id="pick"><div class="box"><div class="t">📨 邀請誰一起下<span id="pickG">軍棋</span>？</div><div id="pickT" class="types"><button data-t="xq">♟️ 軍棋</button><button data-t="aq">🀄 暗棋</button><button data-t="pd">🎯 大砲對轟</button></div><div class="s">綠色的同學現在在平台上，按一下就會邀請他</div><div id="pickList"></div><button class="btn g" id="pickX">取消</button></div></div>
+<script src="xq.js"></script><script src="aq.js"></script><script src="pd.js"></script><script src="pdv.js"></script>
 <script>
 /* ═════════════ 601 象棋對戰 ═════════════
    兩台平板連線對下：建立房間的人拿紅方先下，另一人輸入 4 位數房號加入。
@@ -203,14 +255,17 @@ const NS='http://www.w3.org/2000/svg',svg=$('#board');
 const mk=(p,t,a={},txt)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;p.appendChild(e);return e};
 const G={mode:'',pin:'',me:'r',st:null,players:{},sel:-1,flip:false,un:[],lastLen:0,type:'xq'};
 /* 遊戲種類:xq 象棋、aq 暗棋(網址 ?g=aq 或上次選的) */
-const GNAME={xq:'象棋',aq:'暗棋'};
-G.type=(q=>q==='aq'||q==='xq'?q:LS.get('xq_type','xq'))(new URLSearchParams(location.search).get('g'));
+const GNAME={xq:'軍棋',aq:'暗棋',pd:'大砲對轟'};
+const gPre=()=>G.type==='xq'?'':G.type;   // 戰績的局號開頭(象棋沒有)
+G.type=(q=>GNAME[q]?q:(t=>GNAME[t]?t:'xq')(LS.get('xq_type','xq')))(new URLSearchParams(location.search).get('g'));
 function setType(t){G.type=t;LS.set('xq_type',t);document.querySelectorAll('#types button,#pickT button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  $('#logoT').textContent=GNAME[t]+'對戰';$('#aqRule').hidden=t!=='aq';document.title='601 '+GNAME[t]+'對戰';$('#pickG').textContent=GNAME[t];
-  document.querySelectorAll('.logo span').forEach((s,i)=>s.textContent=t==='aq'?(i?'暗':'翻'):(i?'將':'帥'))}
+  $('#logoT').textContent=t==='pd'?GNAME[t]:GNAME[t]+'對戰';$('#aqRule').hidden=t!=='aq';$('#pdRule').hidden=t!=='pd';document.title='601 '+$('#logoT').textContent;$('#pickG').textContent=GNAME[t];
+  document.querySelectorAll('.logo span').forEach((s,i)=>s.textContent=t==='aq'?(i?'暗':'翻'):t==='pd'?(i?'轟':'砰'):(i?'將':'帥'));
+  $('#bNew').textContent=t==='pd'?'🏠 建立房間（我先打・紅隊）':'🏠 建立房間（我先下・紅方）';$('#bLocal').textContent=t==='pd'?'👥 同一台平板兩人輪流打':'👥 同一台平板兩人輪流下'}
 document.querySelectorAll('#types button,#pickT button').forEach(b=>b.onclick=()=>{if(G.mode)return;setType(b.dataset.t);paintRec()});
 const view=i=>{const c=i%9,r=(i/9)|0;return G.flip?[8-c,9-r]:[c,r]};
 function drawGrid(){
+  $('#game').classList.toggle('pd',G.type==='pd');if(G.type==='pd')return pdShow();PDV.stop();
   if(G.type==='aq')return aqGrid();
   svg.innerHTML='';svg.setAttribute('viewBox','-60 -60 920 1020');svg.style.aspectRatio='920/1020';svg.classList.remove('aq');
   mk(svg,'rect',{x:-55,y:-55,width:910,height:1010,rx:28,fill:'#e9c38a',stroke:'#a8743a','stroke-width':8});
@@ -227,6 +282,7 @@ function drawGrid(){
   G.layer=mk(svg,'g');
 }
 function render(){
+  if(G.type==='pd')return pdRender();
   if(G.type==='aq')return aqRender();
   const st=G.st||{moves:''},R=XQ.replay(st.moves||''),b=R.b;G.R=R;
   const L=G.layer;L.innerHTML='';
@@ -255,7 +311,7 @@ function render(){
 
 /* ═════════════ 暗棋的棋盤 ═════════════
    4 × 8 格，棋放在格子正中間；平板直拿時把棋盤轉成 8 列 × 4 行，棋才不會太小 */
-const sideName=s=>{if(G.type!=='aq')return s==='r'?'紅方':'黑方';const c=G.R&&G.R.col&&G.R.col[s];return c?(c==='r'?'紅方':'黑方'):(s===G.me?'我':'對方')};
+const sideName=s=>{if(G.type==='pd')return s==='r'?'紅隊':'藍隊';if(G.type!=='aq')return s==='r'?'紅方':'黑方';const c=G.R&&G.R.col&&G.R.col[s];return c?(c==='r'?'紅方':'黑方'):(s===G.me?'我':'對方')};
 const AQV=()=>innerHeight>innerWidth*1.05;   // 直的
 const aqXY=i=>{const r=(i/8)|0,c=i%8;return AQV()?[r,7-c]:[c,r]};
 function aqGrid(){const v=AQV(),W=v?4:8,H=v?8:4,S=110;
@@ -300,8 +356,23 @@ function aqTap(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;co
   if(G.sel>=0){const m=R.legal.find(m=>m[0]==='m'&&m[1]===G.sel&&m[2]===i);if(m)return play(m)}
   if(t&&!t.up){G.sel=-1;return play(['f',i])}                       // 點蓋著的棋＝翻開
   G.sel=t&&t.up&&mine&&AQ.color(t.p)===mine&&R.legal.some(m=>m[0]==='m'&&m[1]===i)?i:-1;if(G.sel>=0)tone(660,.05,'triangle',.04);aqRender()}
+/* ═════════════ 大砲對轟（畫面在 pdv.js、規則在 pd.js） ═════════════ */
+const pdHost={state:()=>G.st,canAct:()=>canMove(),solo:()=>G.mode==='solo',me:()=>G.mode==='net'?G.me:null,
+  names:()=>G.mode==='solo'?{r:'紅隊',b:'藍隊'}:{r:(G.players.r&&G.players.r.name)||'紅隊',b:(G.players.b&&G.players.b.name)||'藍隊'},
+  send:t=>play(t),live:v=>{if(G.mode==='net'&&G.pin)Net.set(`rooms/${G.pin}/live`,v).catch(()=>{})},
+  idle:()=>{if(G.st&&G.st.phase==='end'&&$('#game').classList.contains('on'))onState()}};
+function pdShow(){if(!pdShow.m){PDV.mount({cv:$('#pdCv'),ctl:$('#pdCtl'),host:pdHost});pdShow.m=1}PDV.start();requestAnimationFrame(()=>PDV.fit())}
+function pdRender(){G.R=replayNow(G.st||{});PDV.update();$('#bUndo').hidden=true;$('#code').textContent=G.mode==='net'?`房號 ${G.pin}`:''}
+async function pdPlay(tok){if(!canMove())return;const old={...G.st};
+  const moves=(G.st.moves?G.st.moves+',':'')+tok,N=PD.replay(G.st.map,G.st.seed,moves),upd={moves,turn:N.turn,t:Date.now()};
+  if(N.over){upd.phase='end';upd.winner=N.winner;upd.reason=N.reason}
+  if(G.mode==='solo'){G.st={...G.st,...upd};onState();return}
+  G.st={...G.st,...upd};render();
+  try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){G.st=old;PDV.unlock();render();alert('連線失敗，這一發沒有送出，請再發射一次')}}
 const canMove=()=>{const st=G.st;if(!st||st.phase!=='play'||!G.R||G.R.over)return false;return G.mode==='solo'||G.R.turn===G.me};
-const replayNow=st=>G.type==='aq'?AQ.replay(st.deck,st.moves||''):XQ.replay(st.moves||'');
+const replayNow=st=>G.type==='pd'?PD.replay(st.map,st.seed,st.moves||''):G.type==='aq'?AQ.replay(st.deck,st.moves||''):XQ.replay(st.moves||'');
+/* 新的一局:暗棋要洗牌、大砲對轟要新地圖 */
+const fresh=()=>G.type==='aq'?{deck:AQ.deal()}:G.type==='pd'?PD.newGame():{};
 /* 點棋盤:先點自己的棋,再點綠點 */
 svg.addEventListener('pointerdown',e=>{
   if(!canMove())return;e.preventDefault();if(G.type==='aq')return aqTap(e);
@@ -311,6 +382,7 @@ svg.addEventListener('pointerdown',e=>{
   if(G.sel>=0&&R.legal.some(m=>m[0]===G.sel&&m[1]===i))return play([G.sel,i]);
   G.sel=p&&XQ.side(p)===R.turn?i:-1;if(G.sel>=0)tone(660,.05,'triangle',.04);render()});
 async function play(m){
+  if(G.type==='pd')return pdPlay(m);
   const R=G.R,aq=G.type==='aq',cap=aq?m[0]==='m'&&!!R.b[m[2]]:!!R.b[m[1]];G.sel=-1;
   const moves=(G.st.moves?G.st.moves+',':'')+(aq?AQ.enc(m):XQ.enc(m)),N=aq?AQ.replay(G.st.deck,moves):XQ.replay(moves);
   const upd={moves,turn:N.turn,t:Date.now()};
@@ -329,17 +401,18 @@ function onState(){
   render();
   if(st.phase==='end'&&st.winner==='none'){$('#ovT').textContent='⏸️ 這局不算';$('#ovT').style.color='#7a5a32';$('#ovS').textContent=st.reason||'';$('#over').classList.add('on');if(inPlat()&&P.xqPending)P.xqPending(null);sendTk();paintAgain()}
   else if(st.phase==='end'){const w=st.winner,draw=w==='draw',mine=G.mode==='net'&&w===G.me;record(draw?2:w===G.me,st.reason,len);
+    if(G.type==='pd'&&PDV.busy()){$('#over').classList.remove('on');return}   // 等砲彈、爆炸播完再跳結束畫面
     /* 暗棋:玩家是 r(先下)/b(後下),顏色要看翻到什麼 */
-    const cw=G.type==='aq'&&!draw?(R.col&&R.col[w])||w:w,side=x=>x==='r'?'紅方':'黑方';
-    $('#ovT').textContent=draw?'🤝 和局':G.mode==='net'?(mine?'🎉 你贏了！':'再接再厲！'):(cw==='r'?'🔴 紅方勝！':'⚫ 黑方勝！');
-    $('#ovT').style.color=draw?'#7a5a32':cw==='r'?'#c0392b':'#222';
+    const cw=G.type==='aq'&&!draw?(R.col&&R.col[w])||w:w,side=x=>G.type==='pd'?sideName(x):x==='r'?'紅方':'黑方';
+    $('#ovT').textContent=draw?'🤝 和局':G.mode==='net'?(mine?'🎉 你贏了！':'再接再厲！'):(G.type==='pd'?(cw==='r'?'🔴 紅隊勝！':'🔵 藍隊勝！'):cw==='r'?'🔴 紅方勝！':'⚫ 黑方勝！');
+    $('#ovT').style.color=draw?'#7a5a32':cw==='r'?'#c0392b':G.type==='pd'?'#2563eb':'#222';
     $('#ovS').textContent=(G.mode==='net'&&!draw?side(cw)+'勝・':'')+(st.reason||'')+(G.mode==='net'&&inPlat()&&!draw&&!mine&&!(P.isTest&&P.isTest())?'（用掉 1 張遊戲券）':'');
     if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(mine||G.mode==='solo')sfx.win()}paintAgain()}
   else $('#over').classList.remove('on');
 }
 /* 戰績:在平台裡、兩台連線下完一局,把勝負記到雲端(同一局只記一次;中途離開算輸) */
 function record(win,reason,n){if(G.mode!=='net'||!inPlat()||!P.xqResult||!G.st)return;if(G.st.phase==='end'&&(!G.st.winner||G.st.winner==='none'))return;   // 還不知道誰贏就先不記
-  const opp=G.players[XQ.other(G.me)];const k=`${G.type==='aq'?'aq':''}${G.pin}_${G.created||0}_${G.st.g||1}`;if(G.rec===k)return;G.rec=k;
+  const opp=G.players[XQ.other(G.me)];const k=`${gPre()}${G.pin}_${G.created||0}_${G.st.g||1}`;if(G.rec===k)return;G.rec=k;
   P.xqResult({k,o:opp&&opp.seat||0,w:win,r:reason||'',n:n||0,g:G.type});
   if(win===false&&G.charged!==k){G.charged=k;payTicket()}   // 連線對戰:輸的人才扣 1 張券(贏的、和局不扣)
   sendTk();
@@ -353,7 +426,7 @@ async function paintRec(){const e=$('#rec');if(!e)return;if(!inPlat()||!P.xqStat
    ・在平台裡按「回平台」或上一頁：平台會先問「現在離開算你輸」，確定就跟認輸一樣。
    ・跑掉的人：平台記得「有一局還沒下完」，下次登入時補記輸、補扣券。 */
 const OFF_MS=20000;
-const gameKey=()=>`${G.type==='aq'?'aq':''}${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;
+const gameKey=()=>`${gPre()}${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;
 function guard(st){
   const playing=st.phase==='play'&&!!(G.players.r&&G.players.b);
   /* 再來一局時我已經沒有遊戲券了：這局不算，回去練習 */
@@ -386,7 +459,7 @@ function paintAgain(){const why=againBlock();$('#bAgain').disabled=!!why;$('#ovN
 /* 給平台用：現在是不是正在連線對戰中、要離開時先算輸 */
 window.__xqBusy=()=>G.mode==='net'&&!!G.st&&G.st.phase==='play'&&!!(G.players.r&&G.players.b);
 window.__xqQuit=()=>leave();
-function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='game')fit()}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='game')fit();if(id!=='game')PDV.stop()}
 function fit(){/* SVG 用 aspect-ratio 自己縮放,這裡只在換方向時重畫 */render()}
 addEventListener('resize',()=>{if($('#game').classList.contains('on'))fit()});
 
@@ -395,13 +468,14 @@ const msg=t=>{$('#msg').textContent=t||''};
 function listen(){G.un.forEach(f=>f());G.un=[
   Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&$('#game').classList.contains('on')&&G.st&&G.st.phase!=='end'){G.st.phase='end';G.st.winner=G.me;G.st.reason='對手離開了';onState()}return}
     G.st=v;if(v.phase!=='wait'&&$('#wait').classList.contains('on')){uninvite();startGame()}if($('#game').classList.contains('on'))onState()}),
+  Net.on(`rooms/${G.pin}/live`,v=>{if(G.type==='pd')PDV.setLive(v)}),
   Net.on(`rooms/${G.pin}/players`,v=>{G.players=v||{};const mine=Object.keys(G.players).find(k=>G.players[k]&&G.players[k].id===myId);if(mine&&mine!==G.me){G.me=mine;G.flip=G.me==='b';drawGrid()}if($('#game').classList.contains('on')){render();if(G.st)guard(G.st);if($('#over').classList.contains('on'))paintAgain()}})]}
 function startGame(){G.flip=G.me==='b';G.lastLen=-1;drawGrid();show('game');onState()}
 async function needName(){if(!hasTicket()){msg(NO_TK);return null}let n=myName();if(!n)n=askName();if(!n){msg('先輸入名字');return null}return n}
 $('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('建立中…');await netReady;
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/state`)))pin=p}
     if(!pin)return msg('房間滿了，等一下再試');
-    G.newCreated=Date.now();await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...(G.type==='aq'?{deck:AQ.deal()}:{})},players:{r:{id:myId,name,seat:mySeat()}}});
+    G.newCreated=Date.now();await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...fresh()},players:{r:{id:myId,name,seat:mySeat()}}});
     Object.assign(G,{mode:'net',pin,me:'r',st:null,players:{},paid:0,created:G.newCreated});$('#pinBig').textContent=pin;msg('');show('wait');listen();
   }catch(e){msg('連不上網路，請檢查網路或改用「同一台平板」')}};
 $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');const name=await needName();if(!name)return;
@@ -416,12 +490,12 @@ $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.t
     msg('');listen();startGame();
   }catch(e){msg('連不上網路，請再試一次')}};
 $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bJoin').onclick()});
-$('#bLocal').onclick=()=>{if(!hasTicket())return msg(NO_TK);Object.assign(G,{mode:'solo',pin:'',me:'r',players:{},st:{phase:'play',moves:'',turn:'r',g:1,...(G.type==='aq'?{deck:AQ.deal()}:{})},paid:0});startGame()};
+$('#bLocal').onclick=()=>{if(!hasTicket())return msg(NO_TK);Object.assign(G,{mode:'solo',pin:'',me:'r',players:{},st:{phase:'play',moves:'',turn:'r',g:1,...fresh()},paid:0});startGame()};
 $('#bCancel').onclick=async()=>{uninvite();G.un.forEach(f=>f());G.un=[];try{await Net.remove(`rooms/${G.pin}`)}catch(e){}show('home')};
 $('#bUndo').onclick=()=>{if(G.mode!=='solo'||!G.st.moves)return;const a=G.st.moves.split(',');a.pop();G.st={...G.st,phase:'play',moves:a.join(',')};G.sel=-1;onState()};
 $('#bResign').onclick=async()=>{if(!G.st||G.st.phase!=='play')return;
   const loser=G.mode==='solo'?G.R.turn:G.me;if(!confirm(G.mode==='solo'?`${loser==='r'?'紅方':'黑方'}要認輸嗎？`:'確定要認輸嗎？'))return;
-  const lc=G.type==='aq'?(G.R.col&&G.R.col[loser])||loser:loser;const upd={phase:'end',winner:XQ.other(loser),reason:(lc==='r'?'紅方':'黑方')+'認輸',t:Date.now()};
+  const lc=G.type==='aq'?(G.R.col&&G.R.col[loser])||loser:loser;const upd={phase:'end',winner:XQ.other(loser),reason:(G.type==='pd'?sideName(loser):lc==='r'?'紅方':'黑方')+'認輸',t:Date.now()};
   if(G.mode==='solo'){G.st={...G.st,...upd};onState()}else{try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){}}};
 async function leave(){$('#over').classList.remove('on');uninvite();clearTimeout(G.offT);G.offT=0;if(G.armed&&G.pin){Net.cancelDisc(`rooms/${G.pin}/players/${G.me}/off`);G.armed=''}
   if(G.mode==='net'){if(G.st&&G.st.phase==='play'){const len=(G.st.moves||'').split(',').filter(Boolean).length;record(false,'中途離開',len)}G.un.forEach(f=>f());G.un=[];
@@ -434,9 +508,9 @@ $('#bOut').onclick=leave;
 $('#bAgain').onclick=async()=>{if(G.mode==='net'){try{const pl=await Net.get(`rooms/${G.pin}/players`);if(pl)G.players=pl}catch(e){}}
   if(againBlock())return paintAgain();   // 有人沒券(或對手走了)就不能再來一局
   $('#over').classList.remove('on');
-  if(G.mode==='solo'){G.st={phase:'play',moves:'',g:(G.st.g||1)+1,...(G.type==='aq'?{deck:AQ.deal()}:{})};G.lastLen=-1;onState();return}
+  if(G.mode==='solo'){G.st={phase:'play',moves:'',g:(G.st.g||1)+1,...fresh()};G.lastLen=-1;onState();return}
   const pl=G.players;if(!pl.r||!pl.b){msg('');return leave()}
-  try{await Net.set(`rooms/${G.pin}/players`,{r:pl.b,b:pl.r});await Net.update(`rooms/${G.pin}/state`,{phase:'play',moves:'',turn:'r',g:(G.st.g||1)+1,winner:null,reason:null,t:Date.now(),...(G.type==='aq'?{deck:AQ.deal()}:{})})}catch(e){}};
+  try{await Net.set(`rooms/${G.pin}/players`,{r:pl.b,b:pl.r});await Net.update(`rooms/${G.pin}/state`,{phase:'play',moves:'',turn:'r',g:(G.st.g||1)+1,winner:null,reason:null,t:Date.now(),...fresh()})}catch(e){}};
 
 /* ═════════════ 邀請同學（在學習平台裡） ═════════════
    選同學 → 先開好房間 → 平台送出邀請；對方在平台按「接受」就會自動加入（chess.html?join=房號）。
