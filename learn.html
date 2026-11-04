@@ -397,6 +397,8 @@ body{background:
 /* 題目卡片:題目區不會被壓得比內容還矮(以前短文太長時會往上下溢出,蓋到畫筆列和下面的提示);真的放不下就在卡片裡上下捲 */
 #bigc{flex:1 0 auto}
 #steps{flex:none}
+
+#seats .tbw{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
 </style>
 </head><body>
 
@@ -776,6 +778,9 @@ const FIREBASE_CONFIG={
 /* 座號:男生 1～15、女生 21～33 */
 const SEATS=[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],[21,22,23,24,25,26,27,28,29,30,31,32,33]];
 const TEST_SEAT=99;                 // 老師測試用帳號(密碼 0000):不上排行榜
+/* 測試帳號兩個(99、98,密碼都是 0000):不上排行榜、遊戲券無限(不用刷題),兩個帳號可以互相測象棋對戰 */
+const TEST_SEATS=[99,98],isTest=s=>TEST_SEATS.includes(+s),testName=s=>'🧪 測試帳號 '+(TEST_SEATS.indexOf(+s)+1);
+const tkN=()=>user&&isTest(user.seat)?'∞':(sum&&sum.tk||0);   // 畫面上顯示的遊戲券張數
 const GOAL=10, ROOT='learn';
 /* 單元:practice 有 g 才有練習;tools 是教具;tt 是「題型 → 對應教具」 */
 const UN=[
@@ -922,11 +927,11 @@ function logPush(v){if(!user)return;enqueue(`${base()}/log/${uid()}`,Object.assi
 /* ===================== 登入 ===================== */
 const seats=document.getElementById('seats');
 SEATS.forEach((grp,gi)=>{const G=el('div','sg'+(gi?' girl':''));grp.forEach(i=>{const b=el('button','',String(i));tap(b,()=>openPin(i));G.appendChild(b)});seats.appendChild(G)});
-{const tb=el('button','tbtn','🧪 測試帳號');tap(tb,()=>openPin(TEST_SEAT));seats.appendChild(tb)}
+{const tw=el('div');tw.className='tbw';TEST_SEATS.forEach(s=>{const tb=el('button','tbtn',testName(s));tap(tb,()=>openPin(s));tw.appendChild(tb)});seats.appendChild(tw)}
 let pinSeat=0,pinVal='',pinBusy=false;
 const pinpad=document.getElementById('pinpad');
 ['1','2','3','4','5','6','7','8','9','✕','0','⌫'].forEach(k=>{const b=el('button',k==='✕'?'x':'',k==='✕'?'取消':k);tap(b,()=>pinKey(k));pinpad.appendChild(b)});
-function openPin(s){pinSeat=s;pinVal='';document.getElementById('pinseat').textContent=s===TEST_SEAT?'🧪 測試帳號':`${s} 號`;document.getElementById('pinmsg').textContent='密碼＝生日 4 碼（3月5日 → 0305）';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
+function openPin(s){pinSeat=s;pinVal='';document.getElementById('pinseat').textContent=isTest(s)?testName(s):`${s} 號`;document.getElementById('pinmsg').textContent='密碼＝生日 4 碼（3月5日 → 0305）';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
 function paintPin(){[...document.querySelectorAll('#pindots i')].forEach((d,i)=>d.classList.toggle('f',i<pinVal.length))}
 function pinMsg(t,bad){const m=document.getElementById('pinmsg');m.textContent=t;m.style.color=bad?'#e03131':'#888'}
 async function pinKey(k){if(pinBusy)return;
@@ -985,7 +990,7 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
-function enterHome(){show$('home');const isT=user.seat===TEST_SEAT;document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
+function enterHome(){show$('home');const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
   const M=mixOf(subj),items=[{key:'home',no:'🏠',ic:'🏠',nav:'首頁',c:'#495057'},...UN.filter(u=>u.g&&u.s===subj),...(M?[M]:[]),WB,GM];
@@ -1009,11 +1014,11 @@ function render(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='game')return renderGame(P);
   const u=UN.find(x=>x.key===view);if(!u){view='home';paintNavs();return render()}renderUnit(P,u,UN.indexOf(u))}
 function renderHome(P){const n=todayN(),done=n>=GOAL;
-  P.appendChild(el('div','hello',`<span class="mascot">🦉</span><div><div class="hi">${user.seat===TEST_SEAT?'測試帳號':user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div>`));
+  P.appendChild(el('div','hello',`<span class="mascot">🦉</span><div><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div>`));
   const g=el('div','grid2');
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div><div class="t1">今天的任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const SM=mixOf(subj),gb=el('button','go',(done?'再練一回':'開始練習')+(SM?'':'（數學）')+' ▶');tap(gb,()=>startPractice((SM||MIX).key));t.lastChild.appendChild(gb);
-  const tk=el('button','tkc',`🎟️ 遊戲券 × ${sum.tk||0}　<small>${tkInfo()}</small>`);tap(tk,()=>{view='game';paintNavs();render()});t.lastChild.appendChild(tk);g.appendChild(t);
+  const tk=el('button','tkc',`🎟️ 遊戲券 × ${tkN()}　<small>${tkInfo()}</small>`);tap(tk,()=>{view='game';paintNavs();render()});t.lastChild.appendChild(tk);g.appendChild(t);
   const f=el('div','cd');f.id='fire';const st=streak();f.innerHTML=`<div class="n">🔥 ${st}</div><div class="l">連續完成天數</div>`;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
@@ -1074,8 +1079,8 @@ const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;i
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
-  const left=playLeft();c.innerHTML=`<div class="tkn">🎟️<b>${sum.tk||0}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
-  const can=left>0||(sum.tk||0)>0;const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
+  const left=playLeft();c.innerHTML=`<div class="tkn">🎟️<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
+  const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
   const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">♟️</div><div><div class="t">象棋對戰</div><div class="s">兩台平板連線對下・一局用 1 張遊戲券</div></div>';
   const xb=el('button','go','開始 ▶');tap(xb,()=>openTool(XQ_TOOL));x.appendChild(xb);P.appendChild(x);
   P.appendChild(el('div','sec','🏆 全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
@@ -1092,7 +1097,7 @@ async function lbAll(){await fbReady;if(!db||!online)return null;const v=(await 
   GLIST.forEach(([g])=>{out[g]=DK.map((_,d)=>{const m={};
     Object.entries(v[g]||{}).forEach(([st,o])=>{if(ok(o)&&o.d===d)m[st]=o.s});
     Object.entries(v[bKey(g,d)]||{}).forEach(([st,o])=>{if(ok(o)&&(m[st]==null||sBetter(g,o.s,m[st])))m[st]=o.s});
-    const arr=Object.entries(m).map(([st,sc])=>({seat:+st,d,s:sc})).filter(r=>r.seat!==TEST_SEAT);
+    const arr=Object.entries(m).map(([st,sc])=>({seat:+st,d,s:sc})).filter(r=>!isTest(r.seat));
     arr.sort((x,y)=>sBetter(g,x.s,y.s)?-1:sBetter(g,y.s,x.s)?1:x.seat-y.seat);
     arr.forEach(r=>{r.rank=1+arr.filter(x=>sBetter(g,x.s,r.s)).length;r.k=starred(g,r)});return arr})});
   return out}
@@ -1107,13 +1112,15 @@ async function loadBoard(L){const g=bg;let all;
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */
 window.__learn601={
   seat:()=>user?user.seat:null,
-  tickets:()=>sum?(sum.tk||0):0,
+  tickets:()=>tkN(),
+  isTest:()=>!!user&&isTest(user.seat),
   left:()=>playLeft(),
   /* 開一局:5 分鐘還沒用完就直接玩;用完了才扣 1 張券、重新給 5 分鐘 */
   startPlay(g,d){if(!user||!sum)return {ok:false};if(playLeft()>0)return {ok:true};
+    if(isTest(user.seat)){sum.se=Date.now()+PLAY_MS;saveSum(true);return {ok:true}}   // 測試帳號:不用券,時間到了自動再給 5 分鐘
     if(!((sum.tk||0)>0))return {ok:false};sum.tk--;sum.se=Date.now()+PLAY_MS;saveSum(true);logPush({k:'g',game:g,diff:d});return {ok:true,fresh:true}},
   /* 象棋:一局用 1 張遊戲券(老師測試帳號不用) */
-  useTicket(g){if(!user||!sum)return false;if(user.seat===TEST_SEAT)return true;if(!((sum.tk||0)>0))return false;
+  useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
     sum.tk--;saveSum(true);logPush({k:'g',game:g});return true},
   board:()=>lbAll().catch(()=>null),
   async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;
@@ -1121,7 +1128,7 @@ window.__learn601={
     let all=null;try{all=await lbAll()}catch(e){}
     /* 先以雲端上自己的紀錄為準(換平板、清過資料時不會用比較差的成績蓋掉) */
     const rm=all&&(all[g][d]||[]).find(r=>r.seat===user.seat);if(rm&&(sum.gb3[k]==null||sBetter(g,rm.s,sum.gb3[k])))sum.gb3[k]=rm.s;
-    if(s>0&&(sum.gb3[k]==null||sBetter(g,s,sum.gb3[k]))){sum.gb3[k]=s;saveSum(true);if(user.seat!==TEST_SEAT)enqueue(`${ROOT}/lb/${k}/${user.seat}`,{d,s,t:Date.now()},true)}
+    if(s>0&&(sum.gb3[k]==null||sBetter(g,s,sum.gb3[k]))){sum.gb3[k]=s;saveSum(true);if(!isTest(user.seat))enqueue(`${ROOT}/lb/${k}/${user.seat}`,{d,s,t:Date.now()},true)}
     const mine=sum.gb3[k];if(mine==null)return null;const best={d,s:mine};if(!all)return {best};
     const others=(all[g][d]||[]).filter(r=>r.seat!==user.seat);return {rank:1+others.filter(x=>sBetter(g,x.s,mine)).length,best}}
 };
@@ -1210,7 +1217,7 @@ function newRound(){let qs;
   N=qs.length;
   round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false};cur=0;showQ()}
 function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
-  const t=document.getElementById('ptk');if(t)t.innerHTML=`🎟️ × ${sum.tk||0}<small>這輪 ${sum.tc||0}/10・答對 ${sum.tco||0}</small>`}
+  const t=document.getElementById('ptk');if(t)t.innerHTML=`🎟️ × ${tkN()}<small>這輪 ${sum.tc||0}/10・答對 ${sum.tco||0}</small>`}
 const tkLeft=()=>TK_EVERY-(sum.tc||0);
 const tkInfo=()=>`這輪做了 ${sum.tc||0}/10 題，答對 ${sum.tco||0} 題`;
 function toast(t){if(/🎟️ 答對/.test(t)){sfx.ticket();confetti(40)}const e=document.getElementById('toast');e.textContent=t;e.classList.remove('on');void e.offsetWidth;e.classList.add('on')}
@@ -1344,7 +1351,7 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   const U=unitOf(pu);$('#endt').textContent=`${U.name}　完成！`;$('#ends').textContent=stars(first)||'💪';
   $('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`;
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
-  mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0)mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
+  mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
   else mb('再練一回 ▶',()=>newRound(),'go');
   $('#end').classList.add('on');if(first>=8){sfx.win();confetti(70)}else sfx.done()}
 

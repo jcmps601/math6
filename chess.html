@@ -125,10 +125,10 @@ const netReady=(async()=>{
 
 /* ---- 我是誰：在學習平台裡就用座號 ---- */
 let P=null;try{P=window.parent!==window&&window.parent.__learn601}catch(e){}
-function myName(){const s=P&&P.seat&&P.seat();if(s)return s===99?'老師測試':s+' 號';return LS.get('xq_name','')}
+function myName(){const s=P&&P.seat&&P.seat();if(s)return s>=98?'測試帳號 '+(s===99?1:2):s+' 號';return LS.get('xq_name','')}
 /* 遊戲券:在平台裡一局用 1 張 */
 const inPlat=()=>!!(P&&P.useTicket&&P.seat&&P.seat());
-const hasTicket=()=>!inPlat()||P.seat()===99||(P.tickets()||0)>0;
+const hasTicket=()=>!inPlat()||(P.isTest&&P.isTest())||P.seat()===99||(P.tickets()||0)>0;
 const payTicket=()=>!inPlat()||P.useTicket('xq');
 const NO_TK='遊戲券不夠：下一局象棋要用 1 張遊戲券，回平台練習 10 題答對 8 題就能拿到！';
 function paintMe(){const n=myName();$('#me').innerHTML=(n?`我是 <b>${n}</b>`+(inPlat()?'':' <button id="bName">改名字</button>'):'<button id="bName">先輸入你的名字</button>')
