@@ -42,6 +42,7 @@ button{font-family:inherit;cursor:pointer}
 #over.on{display:flex}
 #over .box{background:#fffaf0;border-radius:28px;padding:1.6rem 2.2rem;text-align:center;display:flex;flex-direction:column;gap:.8rem;animation:pop .3s;max-width:92vw}
 #over .t{font-size:2.6rem;font-weight:900}#over .s{font-size:1.3rem;font-weight:800;color:#9a7a52}
+#ovN{color:#e8590c!important;font-size:1.15rem!important}#ovN:empty{display:none}#bAgain:disabled{opacity:.38;filter:grayscale(1);cursor:not-allowed;box-shadow:none}
 #over .row{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
 /* 棋盤 SVG */
 .pc text{font-family:'Kaiti TC','BiauKai','DFKai-SB','STKaiti','PingFang TC',serif;font-weight:900;pointer-events:none}
@@ -130,7 +131,7 @@ button{font-family:inherit;cursor:pointer}
   </aside>
 </section>
 
-<div id="over"><div class="box"><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="row"><button class="btn" id="bAgain">🔁 再來一局（換邊）</button><button class="btn g" id="bOut">離開</button></div></div></div>
+<div id="over"><div class="box"><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="s" id="ovN"></div><div class="row"><button class="btn" id="bAgain">🔁 再來一局（換邊）</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
 <div id="pick"><div class="box"><div class="t">📨 邀請誰一起下<span id="pickG">象棋</span>？</div><div id="pickT" class="types"><button data-t="xq">♟️ 象棋</button><button data-t="aq">🀄 暗棋</button></div><div class="s">綠色的同學現在在平台上，按一下就會邀請他</div><div id="pickList"></div><button class="btn g" id="pickX">取消</button></div></div>
 <script src="xq.js"></script><script src="aq.js"></script>
@@ -326,14 +327,14 @@ function onState(){
   if(G.mode==='net')guard(st);const R=replayNow(st),len=(st.moves||'').split(',').filter(Boolean).length;
   if(len!==G.lastLen){if(len>G.lastLen&&R.check&&G.type==='xq')setTimeout(sfx.chk,150);G.lastLen=len;G.sel=-1}
   render();
-  if(st.phase==='end'&&st.winner==='none'){$('#ovT').textContent='⏸️ 這局不算';$('#ovT').style.color='#7a5a32';$('#ovS').textContent=st.reason||'';$('#over').classList.add('on');if(inPlat()&&P.xqPending)P.xqPending(null)}
+  if(st.phase==='end'&&st.winner==='none'){$('#ovT').textContent='⏸️ 這局不算';$('#ovT').style.color='#7a5a32';$('#ovS').textContent=st.reason||'';$('#over').classList.add('on');if(inPlat()&&P.xqPending)P.xqPending(null);sendTk();paintAgain()}
   else if(st.phase==='end'){const w=st.winner,draw=w==='draw',mine=G.mode==='net'&&w===G.me;record(draw?2:w===G.me,st.reason,len);
     /* 暗棋:玩家是 r(先下)/b(後下),顏色要看翻到什麼 */
     const cw=G.type==='aq'&&!draw?(R.col&&R.col[w])||w:w,side=x=>x==='r'?'紅方':'黑方';
     $('#ovT').textContent=draw?'🤝 和局':G.mode==='net'?(mine?'🎉 你贏了！':'再接再厲！'):(cw==='r'?'🔴 紅方勝！':'⚫ 黑方勝！');
     $('#ovT').style.color=draw?'#7a5a32':cw==='r'?'#c0392b':'#222';
     $('#ovS').textContent=(G.mode==='net'&&!draw?side(cw)+'勝・':'')+(st.reason||'')+(G.mode==='net'&&inPlat()&&!draw&&!mine&&!(P.isTest&&P.isTest())?'（用掉 1 張遊戲券）':'');
-    if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(mine||G.mode==='solo')sfx.win()}}
+    if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(mine||G.mode==='solo')sfx.win()}paintAgain()}
   else $('#over').classList.remove('on');
 }
 /* 戰績:在平台裡、兩台連線下完一局,把勝負記到雲端(同一局只記一次;中途離開算輸) */
@@ -341,6 +342,7 @@ function record(win,reason,n){if(G.mode!=='net'||!inPlat()||!P.xqResult||!G.st)r
   const opp=G.players[XQ.other(G.me)];const k=`${G.type==='aq'?'aq':''}${G.pin}_${G.created||0}_${G.st.g||1}`;if(G.rec===k)return;G.rec=k;
   P.xqResult({k,o:opp&&opp.seat||0,w:win,r:reason||'',n:n||0,g:G.type});
   if(win===false&&G.charged!==k){G.charged=k;payTicket()}   // 連線對戰:輸的人才扣 1 張券(贏的、和局不扣)
+  sendTk();
   if(P.xqPending)P.xqPending(null);paintRec()}
 async function paintRec(){const e=$('#rec');if(!e)return;if(!inPlat()||!P.xqStats){e.textContent='';return}
   try{const s=await P.xqStats(G.type);e.innerHTML=s.n?`我的${GNAME[G.type]}戰績：<b>${s.w}</b> 勝 ${s.l} 敗${s.d?` ${s.d} 和`:''}（共 ${s.n} 局）`:`還沒有下過${GNAME[G.type]}對戰，快邀請同學吧！`}catch(x){}}
@@ -356,7 +358,7 @@ function guard(st){
   const playing=st.phase==='play'&&!!(G.players.r&&G.players.b);
   /* 再來一局時我已經沒有遊戲券了：這局不算，回去練習 */
   if(playing&&G.armed!==gameKey()&&!st.moves&&!hasTicket()){Net.update(`rooms/${G.pin}/state`,{phase:'end',winner:'none',reason:`${inPlat()&&P.seatName?P.seatName(P.seat()):'對手'}的遊戲券用完了，這局不算`,t:Date.now()}).catch(()=>{});return}
-  if(playing&&G.armed!==gameKey()){G.armed=gameKey();
+  if(playing&&G.armed!==gameKey()){G.armed=gameKey();sendTk();
     const p=`rooms/${G.pin}/players/${G.me}/off`;Net.set(p,null).catch(()=>{});Net.onDisc(p);
     if(!G.unConn){G.unConn=Net.conn(on=>{if(on&&G.mode==='net'&&G.st&&G.st.phase==='play'){Net.set(`rooms/${G.pin}/players/${G.me}/off`,null).catch(()=>{});Net.onDisc(`rooms/${G.pin}/players/${G.me}/off`)}})}
     if(inPlat()&&P.xqPending){const opp=G.players[XQ.other(G.me)];P.xqPending({k:gameKey(),pin:G.pin,me:G.me,o:opp&&opp.seat||0,g:G.type,t:Date.now()})}}
@@ -372,6 +374,15 @@ function watchOpp(){const opp=G.players[XQ.other(G.me)],st=G.st,b=$('#offMsg');
       if(G.st&&G.st.phase==='play')Net.update(`rooms/${G.pin}/state`,{phase:'end',winner:G.me,reason:'對手中途離開',t:Date.now()}).catch(()=>{});return}
     if(e)e.innerHTML=`📴 對手離線了<br><b>${left}</b> 秒內沒回來就算你贏`;G.offT=setTimeout(tick,250)};
   G.offT=setTimeout(tick,0)}
+/* 再來一局：兩個人都要有遊戲券才能按。每個人把「我還有沒有券」寫在房間裡(players/我/tk)，對方看得到 */
+function sendTk(){if(G.mode!=='net'||!G.pin||!G.me)return;const t=hasTicket();if(G.tkSent===G.pin+G.me+t)return;G.tkSent=G.pin+G.me+t;
+  Net.update(`rooms/${G.pin}/players/${G.me}`,{tk:t}).catch(()=>{G.tkSent=''})}
+const nameOf=k=>{const p=G.players[k];return p?(p.seat&&inPlat()&&P.seatName?P.seatName(p.seat):p.name||'對手'):'對手'};
+function againBlock(){if(!hasTicket())return '你的遊戲券用完了，不能再來一局。回平台練習 10 題答對 8 題就能拿到！';
+  if(G.mode!=='net')return '';const opp=XQ.other(G.me),pl=G.players;
+  if(!pl[opp])return '對手已經離開了，不能再來一局';
+  if(pl[opp].tk===false)return `${nameOf(opp)}的遊戲券用完了，不能再來一局`;return ''}
+function paintAgain(){const why=againBlock();$('#bAgain').disabled=!!why;$('#ovN').textContent=why?'🎟️ '+why:''}
 /* 給平台用：現在是不是正在連線對戰中、要離開時先算輸 */
 window.__xqBusy=()=>G.mode==='net'&&!!G.st&&G.st.phase==='play'&&!!(G.players.r&&G.players.b);
 window.__xqQuit=()=>leave();
@@ -384,7 +395,7 @@ const msg=t=>{$('#msg').textContent=t||''};
 function listen(){G.un.forEach(f=>f());G.un=[
   Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&$('#game').classList.contains('on')&&G.st&&G.st.phase!=='end'){G.st.phase='end';G.st.winner=G.me;G.st.reason='對手離開了';onState()}return}
     G.st=v;if(v.phase!=='wait'&&$('#wait').classList.contains('on')){uninvite();startGame()}if($('#game').classList.contains('on'))onState()}),
-  Net.on(`rooms/${G.pin}/players`,v=>{G.players=v||{};const mine=Object.keys(G.players).find(k=>G.players[k]&&G.players[k].id===myId);if(mine&&mine!==G.me){G.me=mine;G.flip=G.me==='b';drawGrid()}if($('#game').classList.contains('on')){render();if(G.st)guard(G.st)}})]}
+  Net.on(`rooms/${G.pin}/players`,v=>{G.players=v||{};const mine=Object.keys(G.players).find(k=>G.players[k]&&G.players[k].id===myId);if(mine&&mine!==G.me){G.me=mine;G.flip=G.me==='b';drawGrid()}if($('#game').classList.contains('on')){render();if(G.st)guard(G.st);if($('#over').classList.contains('on'))paintAgain()}})]}
 function startGame(){G.flip=G.me==='b';G.lastLen=-1;drawGrid();show('game');onState()}
 async function needName(){if(!hasTicket()){msg(NO_TK);return null}let n=myName();if(!n)n=askName();if(!n){msg('先輸入名字');return null}return n}
 $('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('建立中…');await netReady;
@@ -420,8 +431,9 @@ async function leave(){$('#over').classList.remove('on');uninvite();clearTimeout
 $('#bLeave').onclick=()=>{if(G.st&&G.st.phase==='play'&&G.mode==='net'&&!confirm('現在離開算認輸，確定嗎？'))return;leave()};
 $('#bOut').onclick=leave;
 /* 再來一局：紅黑交換，紅方先下 */
-$('#bAgain').onclick=async()=>{$('#over').classList.remove('on');
-  if(!hasTicket()){alert(NO_TK);return leave()}
+$('#bAgain').onclick=async()=>{if(G.mode==='net'){try{const pl=await Net.get(`rooms/${G.pin}/players`);if(pl)G.players=pl}catch(e){}}
+  if(againBlock())return paintAgain();   // 有人沒券(或對手走了)就不能再來一局
+  $('#over').classList.remove('on');
   if(G.mode==='solo'){G.st={phase:'play',moves:'',g:(G.st.g||1)+1,...(G.type==='aq'?{deck:AQ.deal()}:{})};G.lastLen=-1;onState();return}
   const pl=G.players;if(!pl.r||!pl.b){msg('');return leave()}
   try{await Net.set(`rooms/${G.pin}/players`,{r:pl.b,b:pl.r});await Net.update(`rooms/${G.pin}/state`,{phase:'play',moves:'',turn:'r',g:(G.st.g||1)+1,winner:null,reason:null,t:Date.now(),...(G.type==='aq'?{deck:AQ.deal()}:{})})}catch(e){}};
