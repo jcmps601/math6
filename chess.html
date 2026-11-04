@@ -415,7 +415,7 @@ $('#bResign').onclick=async()=>{if(!G.st||G.st.phase!=='play')return;
 async function leave(){$('#over').classList.remove('on');uninvite();clearTimeout(G.offT);G.offT=0;if(G.armed&&G.pin){Net.cancelDisc(`rooms/${G.pin}/players/${G.me}/off`);G.armed=''}
   if(G.mode==='net'){if(G.st&&G.st.phase==='play'){const len=(G.st.moves||'').split(',').filter(Boolean).length;record(false,'中途離開',len)}G.un.forEach(f=>f());G.un=[];
     try{if(G.st&&G.st.phase==='play')await Net.update(`rooms/${G.pin}/state`,{phase:'end',winner:XQ.other(G.me),reason:sideName(G.me)+'離開了',t:Date.now()});
-      await Net.remove(`rooms/${G.pin}/players/${G.me}`);const pl=await Net.get(`rooms/${G.pin}/players`);if(!pl||!Object.keys(pl).length)await Net.remove(`rooms/${G.pin}`)/* 兩個人都走了就刪掉房間 */}catch(e){}}
+      await Net.remove(`rooms/${G.pin}/players/${G.me}`);const pl=await Net.get(`rooms/${G.pin}/players`);if(!pl||!Object.values(pl).some(x=>x&&!x.off))await Net.remove(`rooms/${G.pin}`)/* 兩個人都走了(或對方已經斷線)就刪掉房間 */}catch(e){}}
   G.mode='';show('home');paintMe()}
 $('#bLeave').onclick=()=>{if(G.st&&G.st.phase==='play'&&G.mode==='net'&&!confirm('現在離開算認輸，確定嗎？'))return;leave()};
 $('#bOut').onclick=leave;
