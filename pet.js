@@ -486,7 +486,8 @@
     const Sg = el('div', 'cd pstage' + (night() ? ' night' : '')); Sg.id = 'pstage';
     Sg.innerHTML = `${roomArt(p.room)}<div class="ptag"><b>${nameOf(p)}</b><small>${S.f[st]}（${S.n}）${S.r ? `<i class="ptier r${S.r}">${TIER[S.r]}</i>` : ''}</small></div><div class="pcoin">🪙 <b id="pcoin">${p.coin || 0}</b></div>
       <div class="pbub" id="pbub">${moodLine(p)}</div><div class="ppet" id="ppet">${petArt(look(p, { mood: moodOf(p), cls: 'big' }))}</div><div id="pfx"></div><div id="plikes"></div>`;
-    Pn.appendChild(Sg);
+    /* 寬版：左邊場景（約 60%）、右邊照顧資訊（約 40%）；窄版上下排 */
+    const TOP = el('div', 'ptop'), R = el('div', 'pright'); TOP.appendChild(Sg); TOP.appendChild(R); Pn.appendChild(TOP);
     tap(Sg.querySelector('#ppet'), () => act('pat'));
     /* 狀態 */
     const nx = EVO.find(v => v > L.lv), today = dkey(), dn = p.dd === today ? p.dn || 0 : 0;
@@ -497,14 +498,14 @@
       <div class="prow"><span class="pl">💖 開心</span><div class="pbar"><i class="j" id="pbj" style="width:${joyNow(p)}%"></i><b id="pbjt">${joyNow(p)}</b></div></div>
       <div class="pcare" id="pcare">${careLine(p)}</div>
       <div class="pday"><span>⚡ 元氣加倍 <b>${Math.min(dn, BOOST_N)}</b> / ${BOOST_N}</span><span>${p.gd === today ? '✅' : '⬜'} 每日任務獎勵 +30 經驗</span></div>`;
-    Pn.appendChild(B);
+    R.appendChild(B);
     const A = el('div', 'pacts');
     [['pat', '🖐️', '摸摸頭'], ['play', '⚽', '一起玩'], ['food', '🍽️', '餵點心'], ['wear', '👒', '換造型'], ['name', '✏️', '改名字']].forEach(([k, i, n]) => {
       const b = el('button', 'pact', `<span>${i}</span>${n}`); b.dataset.k = k;
       tap(b, () => { if (k === 'food' || k === 'wear') { tab = k; paintTab(); document.getElementById('ptabs').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } else if (k === 'name') pickName(null); else act(k); });
       A.appendChild(b);
     });
-    Pn.appendChild(A); paintPlay();
+    R.appendChild(A); paintPlay();
     /* 分頁：點心、衣櫃、寵物屋、全班的寵物 */
     const er = p.eggs[0] && (p.eggs[0].ex || 0) >= EGG_NEED[p.eggs[0].t | 0];
     const T = el('div', 'ptabs'); T.id = 'ptabs';
@@ -974,6 +975,11 @@
   @keyframes pevl{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(1.4)}}
   .pevt{font-size:1.5rem;font-weight:900;color:#fff;min-height:3.4rem}.pevt b{color:#ffe066}.pevt small{display:block;font-size:1rem;color:#d0bfff;margin-top:.3rem}
   .petend{color:#e67700}.pboost{display:block;font-size:.95rem;color:#f08c00;margin-top:.2rem}
+  .ptop{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,4fr);gap:1rem;align-items:start}
+  .ptop .pright{display:flex;flex-direction:column;gap:.8rem}.ptop .pstat,.ptop .pacts{margin-top:0}
+  .ptop .pacts{grid-template-columns:repeat(3,minmax(0,1fr))}.ptop .pact{min-height:4.6rem;justify-content:center}
+  @media (max-width:1099px){.ptop{grid-template-columns:minmax(0,1fr)}.ptop .pacts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (max-width:700px){.ptop .pstage{height:15rem}}
   @media (max-width:700px){.pacts{grid-template-columns:repeat(3,minmax(0,1fr))}.pstage{height:min(22rem,48vh)}.pstage .ppet{height:calc(100% - 8.2rem)}.pbub{font-size:1rem;top:4.6rem}.ptag b{font-size:1.2rem}.pcoin{font-size:1.1rem}
     .pspg{grid-template-columns:repeat(2,minmax(0,1fr))}.pspg .pa{width:5.4rem;height:5.4rem}.ptabs button{font-size:1rem;padding:.6rem .15rem}.pdex{grid-template-columns:repeat(auto-fill,minmax(6.6rem,1fr))}}`;
   const S = document.createElement('style'); S.textContent = css + `

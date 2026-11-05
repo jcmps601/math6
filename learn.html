@@ -519,6 +519,61 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #sndBtn.mute img{filter:grayscale(1);opacity:.6}
 @media (max-width:900px),(orientation:portrait){.nv b.im img{width:2rem;height:2rem}.uc .ui img{width:3.4rem;height:3.4rem}.mascot.big img{width:4.2rem;height:4.2rem}#boss .bmon img{width:4.4rem;height:4.4rem}#endm{width:7rem;height:7rem}}
 @media (orientation:landscape) and (max-height:560px){.mascot.big img{width:3rem;height:3rem}#endm{width:5rem;height:5rem;margin-top:-.4rem}}
+
+/* ═══ 2026-11-05 版面改版：選單、首頁 ═══ */
+.nvsec{font-size:.85rem;font-weight:900;color:#aaa;margin:.5rem .4rem 0}
+.nv.sub{padding:.3rem .5rem;font-size:1.05rem}.nv.sub b.im img{width:1.8rem;height:1.8rem}
+.nv{position:relative}.nvn{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);background:#c92a2a;color:#fff;border-radius:999px;font-style:normal;font-size:.8rem;font-weight:900;padding:.05rem .45rem}
+#res{display:none;gap:.35rem;align-items:center}
+.rp{display:inline-flex;align-items:center;gap:.2rem;background:#fff;border:2px solid #e7ddcc;border-radius:999px;padding:.15rem .6rem .15rem .35rem;font-size:1.1rem;font-weight:900;color:#33443b;white-space:nowrap}.rp .ii{width:1.4em;height:1.4em;vertical-align:middle;margin:0}
+.hello .hw{flex:1;min-width:0}.hello .hres{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
+#bnav{display:none}
+/* 今日任務＋連續天數 */
+#today{flex-wrap:wrap;row-gap:.6rem}
+#today .tinfo{flex:1;min-width:13rem}
+#today #fire{flex:none;background:none;box-shadow:none;border-left:2px dashed #f1e3cf;padding-left:1.2rem;align-items:flex-start;gap:.2rem}
+#today #fire .n{font-size:2.6rem;display:flex;align-items:center;gap:.2rem}#today #fire .n .fi{width:2.4rem;height:2.4rem;margin:0}
+#today #fire .l{font-size:1.05rem;color:#888;margin-left:.5rem}
+#today #week{margin-top:.2rem}#today #week i{width:1.9rem;height:1.9rem;font-size:1rem}
+.hsec{display:flex;align-items:center;justify-content:space-between;gap:.5rem}.hmore{border:0;background:#fff;border-radius:12px;box-shadow:0 3px 0 #e7ddcc;font-size:1rem;font-weight:900;color:#1c7ed6;padding:.3rem .7rem;font-family:inherit}
+@media (min-width:1100px){#ucards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.hsum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;align-items:stretch}.hsum>*{margin-top:0!important}.hsum #boss{grid-column:1/-1}   /* 魔王一整排，寵物、農場並排 */
+/* 更多 */
+.moresheet{max-width:30rem}.mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin-bottom:.6rem}
+.mgrid button{display:flex;flex-direction:column;align-items:center;gap:.15rem;background:#fff;border:3px solid #e7ddcc;border-radius:18px;padding:.6rem .4rem;font-family:inherit;min-height:6.5rem}
+.mgrid img.ico{width:2.8rem;height:2.8rem}.mgrid b{font-size:1.15rem;color:#33443b}.mgrid small{font-size:.9rem;color:#657065;font-weight:800}
+.msync{font-size:.95rem;color:#888;font-weight:800;margin-bottom:.5rem}
+@media (max-width:900px),(orientation:portrait){
+ #side{flex-direction:row;align-items:center;justify-content:space-between;overflow:visible;padding:.45rem .7rem;background:#fffdf8!important;backdrop-filter:none}
+ #navs{display:none!important}.sidebtns{display:none!important}
+ #me .nm{display:block;font-size:1.05rem}#me .nm small{font-size:.8rem}
+ #res{display:flex}.hello .hres{display:none}
+ #bnav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.97);border-top:3px solid #e7ddcc;padding:.3rem .3rem calc(.3rem + env(safe-area-inset-bottom));box-shadow:0 -4px 14px rgba(120,90,40,.08)}
+ #bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:.1rem;font-family:inherit;font-size:.9rem;font-weight:900;color:#657065;border-radius:14px;padding:.25rem 0;min-height:3.6rem}
+ #bnav button img.ico{width:2rem;height:2rem}#bnav button.on{background:var(--cb,#eaf4de);color:var(--c)}
+ #bnav .bmore{font-style:normal;font-size:1.6rem;line-height:2rem;height:2rem;color:#6d5a99;font-weight:900}
+ #pane{padding-bottom:calc(5.5rem + env(safe-area-inset-bottom))}
+ #ucards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .hsum{grid-template-columns:minmax(0,1fr)}
+ .uc{padding:.6rem .7rem}.uc .b{font-size:1.12rem;padding-right:1.6rem}.uc .a{font-size:.9rem}.uc .ui img{width:2.6rem!important;height:2.6rem!important}
+ #today #fire{border-left:0;border-top:2px dashed #f1e3cf;padding:.6rem 0 0;width:100%;align-items:center}
+ #today{gap:.8rem;padding:.9rem}#today #ring{width:5.6rem;height:5.6rem}#today .tinfo{min-width:0}#today .t2{font-size:1.9rem}#today .go{font-size:1.25rem;padding:.45rem .9rem}#today .tkc{font-size:1rem;padding:.25rem .6rem}#today .tkc small{font-size:.8rem}
+ #today #fire .n{font-size:2rem}#today #fire .n .fi{width:1.9rem;height:1.9rem}
+}
+@media (max-width:420px){.rp{font-size:.95rem;padding:.1rem .45rem .1rem .25rem}#me .nm{display:none}}
+
+/* ═══ 2026-11-05 版面改版：登入、密碼、錯題本 ═══ */
+#login h1{background:none!important;color:#2e7554!important;-webkit-background-clip:initial;background-clip:initial}
+#seats .sg button{min-height:3rem}
+#seats .sg button.sel{outline:4px solid #2e7554;outline-offset:2px}
+@media (max-width:480px){#login h1{font-size:2.1rem!important}}
+#pinbox .box{border-color:#eaf4de}#pinseat{color:#2e7554}
+#pinpad button{min-height:3.2rem;background:#fff;border:2px solid #e7ddcc;box-shadow:0 3px 0 #e7ddcc;color:#33443b}
+#pinpad .x{background:#fff!important;color:#657065!important;font-size:1.2rem;border-style:dashed}
+#pinpad .pdel img.pbk{width:2rem;height:2rem;vertical-align:middle}
+#practice .bi img.wbi,#practice .bi img.wbm{width:4.4rem;height:4.4rem}
+#practice .wbn{color:#b44949}
+#practice.wbempty{background:linear-gradient(135deg,#fff,#eaf4de)}
 </style>
 </head><body>
 
@@ -536,6 +591,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 <section class="scr" id="home">
  <aside id="side">
   <div id="me"><div class="av" id="meav"></div><div class="nm" id="menm"></div></div>
+  <div id="res"></div>
   <div id="navs"></div>
   <div class="sp"></div>
   <div id="sync"></div>
@@ -543,6 +599,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
   <button id="logout"><img class="ico bi" src="img/ui/nav-out.webp" alt="">登出</button>
  </aside>
  <div id="pane"></div>
+ <nav id="bnav"></nav>
 </section>
 
 <section class="scr" id="prac">
@@ -1080,8 +1137,8 @@ SEATS.forEach((grp,gi)=>{const G=el('div','sg'+(gi?' girl':''));grp.forEach(i=>{
 {const tw=el('div');tw.className='tbw';TEST_SEATS.forEach(s=>{const tb=el('button','tbtn',testName(s));tap(tb,()=>openPin(s));tw.appendChild(tb)});seats.appendChild(tw)}
 let pinSeat=0,pinVal='',pinBusy=false;
 const pinpad=document.getElementById('pinpad');
-['1','2','3','4','5','6','7','8','9','✕','0','⌫'].forEach(k=>{const b=el('button',k==='✕'?'x':'',k==='✕'?'取消':k);tap(b,()=>pinKey(k));pinpad.appendChild(b)});
-function openPin(s){pinSeat=s;pinVal='';document.getElementById('pinseat').textContent=isTest(s)?testName(s):`${s} 號`;document.getElementById('pinmsg').textContent='請輸入 4 碼密碼';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
+['1','2','3','4','5','6','7','8','9','✕','0','⌫'].forEach(k=>{const b=el('button',k==='✕'?'x':k==='⌫'?'pdel':'',k==='✕'?'取消':k==='⌫'?ico('ic-arrow-back','pbk'):k);if(k==='⌫')b.setAttribute('aria-label','刪除');tap(b,()=>pinKey(k));pinpad.appendChild(b)});
+function openPin(s){pinSeat=s;document.querySelectorAll('#seats .sel').forEach(b=>b.classList.remove('sel'));document.querySelectorAll('#seats button').forEach(b=>{if(b.textContent.trim()===String(s))b.classList.add('sel')});pinVal='';document.getElementById('pinseat').textContent=isTest(s)?testName(s):`${s} 號`;document.getElementById('pinmsg').textContent='請輸入 4 碼密碼';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
 function paintPin(){[...document.querySelectorAll('#pindots i')].forEach((d,i)=>d.classList.toggle('f',i<pinVal.length))}
 function pinMsg(t,bad){const m=document.getElementById('pinmsg');m.textContent=t;m.style.color=bad?'#e03131':'#888'}
 async function pinKey(k){if(pinBusy)return;
@@ -1142,10 +1199,45 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
 function enterHome(){show$('home');presence();listenInv();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
-function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
-  const M=mixOf(subj),items=[{key:'home',no:'🏠',ic:'🏠',img:'nav-home',nav:'首頁',c:'#495057'},PETNAV,FARMNAV,...UN.filter(u=>u.g&&u.s===subj),...(M?[M]:[]),WB,GM];
-  items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b${u.img?' class="im"':''}>${u.img?ico(u.img):(u.ic||u.no)}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);b.style.setProperty('--cb',u.cb||'#f1f3f5');tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
-  N2.style.display='contents'}
+/* 選單（2026-11-05 改版）
+   ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
+   ・窄版（手機、直拿平板）：上方只留頭像和資源（金幣、水、遊戲券），底部固定 5 個：首頁、學習、寵物、農場、更多
+   ・單元、綜合複習都算在「學習」底下 */
+const LEARNNAV={key:'learn',img:'pr-pen',nav:'學習',c:'#1c7ed6',cb:'#e7f5ff'};
+const NAVMAIN=()=>[{key:'home',img:'nav-home',nav:'首頁',c:'#495057',cb:'#f1f3f5'},LEARNNAV,PETNAV,FARMNAV,GM];
+const navKey=v=>['home','pet','farm','game','wb'].includes(v)?v:'learn';
+function goView(k){view=k;closeMore();paintNavs();render();try{scrollTo(0,0)}catch(e){}}
+function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';const cur=navKey(view),wbn=wbLoad().length;
+  const mk=(u,cls)=>{const b=el('button','nv'+(cls?' '+cls:'')+(cur===u.key?' on':''),`<b class="im">${ico(u.img==='unit-wb'?'nav-wb':u.img)}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);b.style.setProperty('--cb',u.cb||'#f1f3f5');tap(b,()=>goView(u.key));return b};
+  NAVMAIN().forEach(u=>N2.appendChild(mk(u)));
+  N2.appendChild(el('div','nvsec','其他'));const w=mk(WB,'sub');if(wbn)w.insertAdjacentHTML('beforeend',`<i class="nvn">${wbn}</i>`);N2.appendChild(w);
+  N2.style.display='contents';
+  /* 窄版底部 */
+  const B=document.getElementById('bnav');if(B){B.innerHTML='';
+    NAVMAIN().slice(0,4).forEach(u=>{const b=el('button',cur===u.key?'on':'',`${ico(u.img)}<span>${u.nav}</span>`);b.style.setProperty('--c',u.c);tap(b,()=>goView(u.key));B.appendChild(b)});
+    const m=el('button',cur==='game'||cur==='wb'?'on':'',`<i class="bmore">⋯</i><span>更多</span>`);m.style.setProperty('--c','#6d5a99');tap(m,openMore);B.appendChild(m)}
+  paintRes()}
+/* 資源：金幣、水、遊戲券（窄版在上方、寬版在問候旁邊） */
+function resPills(){const p=PET.P(),f=FARM.F();return `<span class="rp" title="金幣">${ico('rw-coin','ii')}<b>${p?p.coin||0:0}</b></span><span class="rp" title="農場的水">${ico('ic-water-drop','ii')}<b>${f?f.water||0:0}</b></span><span class="rp" title="遊戲券">${ico('rw-ticket','ii')}<b>${tkN()}</b></span>`}
+function paintRes(){const r=document.getElementById('res');if(r&&user&&sum)r.innerHTML=resPills()}
+/* 「更多」：遊戲、錯題、音效、全螢幕、登出 */
+function closeMore(){const m=document.getElementById('more');if(m)m.remove()}
+function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  const m=el('div','pmod','');m.id='more';m.innerHTML=`<div class="pmc moresheet"><div class="pmh">更多</div><div class="mgrid">
+    <button data-k="game">${ico('nav-game')}<b>挑戰樂園</b><small>遊戲・排行榜・對戰</small></button>
+    <button data-k="wb">${ico('nav-wb')}<b>錯題再練</b><small>${wbn?`${wbn} 題待練`:'目前沒有錯題'}</small></button>
+    <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>音效</b><small>${sndOn?'開著':'關著'}</small></button>
+    <button data-k="fs">${ico(full?'ic-fullscreen-exit':'nav-fs')}<b>全螢幕</b><small>${full?'離開全螢幕':'畫面變大'}</small></button>
+    <button data-k="out">${ico('nav-out')}<b>登出</b><small>換別人用</small></button></div>
+    <div class="msync">${(document.getElementById('sync')||{}).textContent||''}</div><button class="pmx">關閉</button></div>`;
+  document.body.appendChild(m);
+  const fire=id=>{const b=document.getElementById(id);if(b)b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}))};   // 跟左側原本的按鈕做一樣的事
+  m.querySelectorAll('[data-k]').forEach(b=>tap(b,()=>{const k=b.dataset.k;
+    if(k==='game'||k==='wb')return goView(k);
+    if(k==='snd'){fire('sndBtn');return openMore()}
+    if(k==='fs'){closeMore();return fire('fsBtn')}
+    if(k==='out'){closeMore();return fire('logout')}}));
+  tap(m.querySelector('.pmx'),closeMore);tap(m,e=>{if(e.target===m)closeMore()})}
 function todayN(){return sum.days[dkey()]||0}
 function streak(){let n=0;const d=new Date();if((sum.days[dkey(d)]||0)<GOAL)d.setDate(d.getDate()-1);
   while((sum.days[dkey(d)]||0)>=GOAL){n++;d.setDate(d.getDate()-1)}return n}
@@ -1154,7 +1246,7 @@ function ringSVG(p){const r=52,C=2*Math.PI*r;return `<svg id="ring" viewBox="0 0
 /* 科目切換:換科目時,如果正在看別科的單元就回首頁 */
 function subjBar(){const B=el('div');B.id='subj';
   SUBJ.forEach(S=>{const n=UN.some(u=>u.s===S.k&&u.g);const b=el('button',S.k===subj?'on':'',`${ico(S.img,'si')}${S.n}${n?'':'<small>準備中</small>'}`);b.style.setProperty('--c',S.c);
-    tap(b,()=>{if(subj===S.k)return;subj=S.k;LS.set('learn601_subj',subj);const u=UN.find(x=>x.key===view)||mixByKey(view);if(u&&u.s!==subj)view='home';paintNavs();render()});B.appendChild(b)});
+    tap(b,()=>{if(subj===S.k)return;subj=S.k;LS.set('learn601_subj',subj);const u=UN.find(x=>x.key===view)||mixByKey(view);if(u&&u.s!==subj)view='learn';paintNavs();render()});B.appendChild(b)});
   return B}
 /* 同一頁重畫時，保留捲動的位置（不會跳回最上面） */
 function render(){const P=document.getElementById('pane'),k=view+'|'+subj,same=render.k===k,st=same?P.scrollTop:0,ws=same?scrollY:0;
@@ -1170,31 +1262,42 @@ function render(){const P=document.getElementById('pane'),k=view+'|'+subj,same=r
 function render0(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='pet')return PET.page(P);
   if(view==='farm')return FARM.view(P);
-  if(view!=='wb'&&view!=='game')P.appendChild(subjBar());
   if(view==='home')return renderHome(P);
+  if(view==='learn')return renderLearn(P);
+  if(view!=='wb'&&view!=='game')P.appendChild(subjBar());
   const M=mixByKey(view);if(M)return renderUnit(P,M,null);
   if(view==='wb')return renderWB(P);
   if(view==='game')return renderGame(P);
   const u=UN.find(x=>x.key===view);if(!u){view='home';paintNavs();return render()}renderUnit(P,u,UN.indexOf(u))}
 function renderHome(P){const n=todayN(),done=n>=GOAL;
-  P.appendChild(el('div','hello',`<span class="mascot">${ico(PET.night()?'mascot-sleep':done?'mascot-yay':'mascot-hi')}</span><div><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div>`));
-  const g=el('div','grid2');
-  const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div><div class="t1">今天的任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
-  const SM=mixOf(subj),gb=el('button','go',(done?'再練一回':'開始練習')+(SM?'':'（數學）')+' ▶');tap(gb,()=>startPractice((SM||MIX).key));t.lastChild.appendChild(gb);
-  const tk=el('button','tkc',`${ico('rw-ticket','ii')}遊戲券 × ${tkN()}　<small>${tkInfo()}</small>`);tap(tk,()=>{view='game';paintNavs();render()});t.lastChild.appendChild(tk);g.appendChild(t);
-  const f=el('div','cd');f.id='fire';const st=streak();f.innerHTML=`<div class="n">${ico('rw-fire','fi')}${st}</div><div class="l">連續完成天數</div>`;
+  P.appendChild(el('div','hello',`<span class="mascot">${ico(PET.night()?'mascot-sleep':done?'mascot-yay':'mascot-hi')}</span><div class="hw"><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div><div class="hres">${resPills()}</div>`));
+  /* 今日任務＋連續天數：同一張卡片 */
+  const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div class="tinfo"><div class="t1">今日任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
+  const SM=mixOf(subj),gb=el('button','go',(done?'再練一回':'繼續練習')+(SM?'':'（數學）')+' ▶');tap(gb,()=>startPractice((SM||MIX).key));t.querySelector('.tinfo').appendChild(gb);
+  const tk=el('button','tkc',`${ico('rw-ticket','ii')}遊戲券 × ${tkN()}　<small>${tkInfo()}</small>`);tap(tk,()=>goView('game'));t.querySelector('.tinfo').appendChild(tk);
+  const f=el('div');f.id='fire';const st=streak();f.innerHTML=`<div class="n">${ico('rw-fire','fi')}${st}<span class="l">連續完成天數</span></div>`;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
-  f.appendChild(W);g.appendChild(f);P.appendChild(g);
-  const SJ=subjOf(subj);P.appendChild(el('div','sec',`${ico(SJ.img,'hi2')}${SJ.n}`));const G=el('div');G.id='ucards';
-  if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;P.appendChild(c)}
+  f.appendChild(W);t.appendChild(f);P.appendChild(t);
+  /* 單元（目前的科目；換科目到「學習」） */
+  const SJ=subjOf(subj),hd=el('div','sec hsec',`<span>${ico(SJ.img,'hi2')}${SJ.n}・學習單元</span>`),sw=el('button','hmore',`換科目 ▶`);tap(sw,()=>goView('learn'));hd.appendChild(sw);P.appendChild(hd);
+  P.appendChild(unitCards());
+  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}全班挑戰・寵物・農場`));
+  const H=el('div','hsum');H.appendChild(bossCard());H.appendChild(PET.homeCard());H.appendChild(FARM.homeCard());P.appendChild(H);
+  P.appendChild(statCard())}
+/* 單元卡片（首頁、學習頁共用）：目前科目的單元＋綜合＋錯題 */
+function unitCards(){const SM=mixOf(subj),SJ=subjOf(subj),G=el('div');G.id='ucards';
+  if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;G.appendChild(c)}
   [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
-    b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});G.appendChild(b)});P.appendChild(G);
-  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}本週挑戰・寵物・農場`));P.appendChild(bossCard());P.appendChild(PET.homeCard());P.appendChild(FARM.homeCard());
-  const rate=sum.total?Math.round(sum.first/sum.total*100):0;
+    b.style.setProperty('--c',u.c);tap(b,()=>goView(u.key));G.appendChild(b)});
+  return G}
+function statCard(){const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
-  const c=el('div','cd');c.style.marginTop='1rem';c.appendChild(S);P.appendChild(c)}
+  const c=el('div','cd');c.style.marginTop='1rem';c.appendChild(S);return c}
+/* 學習頁：科目 → 單元 */
+function renderLearn(P){const h=el('div','h1',`<span class="tag">${ico('pr-pen','hi2')}</span>學習`);h.style.setProperty('--c','#1c7ed6');P.appendChild(h);
+  P.appendChild(subjBar());P.appendChild(unitCards());P.appendChild(statCard())}
 function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${isMix(u)?'★':uTag(u)}</span>${u.name}`);h.style.setProperty('--c',u.c);P.appendChild(h);
   if(u.g||isMix(u)){const c=el('div','cd');c.id='practice';c.style.setProperty('--c',u.c);const b=sum.best[u.key]||0;
     c.innerHTML=`<div class="bi">✏️</div><div><div class="t">練習 ${N} 題</div><div class="s">${b?`最佳 ${b} / ${N}　${stars(b)}`:'還沒練習過'}</div></div>`;
@@ -1219,8 +1322,9 @@ function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.find
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
 function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題再練`);h.style.setProperty('--c',WB.c);P.appendChild(h);
   const W=wbLoad();const c=el('div','cd');c.id='practice';c.style.setProperty('--c',WB.c);
-  c.innerHTML=W.length?`<div class="bi">📕</div><div><div class="t">錯題本有 ${W.length} 題</div><div class="s">一次就答對，就會從錯題本拿掉</div></div>`:`<div class="bi">🎉</div><div><div class="t">錯題本是空的</div><div class="s">答錯的題目會自動存到這裡</div></div>`;
-  if(W.length){const g=el('button','go',`再練 ${Math.min(10,W.length)} 題 ▶`);tap(g,()=>startPractice('wb'));c.appendChild(g)}P.appendChild(c);
+  c.innerHTML=W.length?`<div class="bi">${ico('nav-wb','wbi')}</div><div><div class="t">錯題本有 <b class="wbn">${W.length}</b> 題待練</div><div class="s">一次就答對，就會從錯題本拿掉</div></div>`:`<div class="bi">${ico('mascot-yay','wbm')}</div><div><div class="t">錯題本是空的，太棒了！</div><div class="s">答錯的題目會自動存到這裡，之後可以再練一次</div></div>`;
+  if(W.length){const g=el('button','go',`再練 ${Math.min(10,W.length)} 題 ▶`);tap(g,()=>startPractice('wb'));c.appendChild(g)}
+  else{c.classList.add('wbempty');const g=el('button','go','去練習 ▶');tap(g,()=>startPractice((mixOf(subj)||MIX).key));c.appendChild(g)}P.appendChild(c);
   if(!W.length)return;P.appendChild(el('div','sec','錯過的題目'));const L=el('div','cd');L.id='wblist';
   W.slice().reverse().forEach(x=>{const U=UN[x.q.u]||UN[0];L.appendChild(el('div','wbi',`<span class="wu" style="--c:${U.c}">${uLab(U)}</span><span class="wq">${x.q.text}</span><span class="wn">錯 ${x.n} 次</span>`))});P.appendChild(L)}
 

@@ -175,7 +175,7 @@ button{font-family:inherit;cursor:pointer}
   <div id="me"></div>
   <div class="menu">
     <button class="btn" id="bNew">🏠 建立房間（我先下・紅方）</button>
-    <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin">加入</button></div>
+    <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin"><img class="ti" src="img/ui/ic-room-join.webp" alt="" draggable="false">加入</button></div>
     <button class="btn g" id="bLocal">👥 同一台平板兩人輪流下</button>
     <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="">邀請同學對戰</button>
   </div>
@@ -199,7 +199,7 @@ button{font-family:inherit;cursor:pointer}
     <div id="status"></div>
     <div class="pl r" id="plBot"><i>帥</i><div><b id="nmBot"></b><small id="smBot"></small></div></div>
     <div id="pdCtl"></div>
-    <div id="acts"><button class="btn g" id="bUndo" hidden>↩ 悔棋</button><button class="btn b" id="bResign">🏳 認輸</button><button class="btn g" id="bLeave">離開</button></div>
+    <div id="acts"><button class="btn g" id="bUndo" hidden><img class="ti" src="img/ui/ic-undo.webp" alt="" draggable="false">悔棋</button><button class="btn b" id="bResign"><img class="ti" src="img/ui/ic-resign.webp" alt="" draggable="false">認輸</button><button class="btn g" id="bLeave">離開</button></div>
     <div class="code" id="code"></div>
   </aside>
 </section>
@@ -207,7 +207,7 @@ button{font-family:inherit;cursor:pointer}
 <div id="over"><div class="box"><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="s" id="ovN"></div><div class="row"><button class="btn" id="bAgain">🔁 再來一局（換邊）</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
 <div id="pick"><div class="box"><div class="t"><img class="ti big" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請誰一起下<span id="pickG">軍棋</span>？</div><div id="pickT" class="types"><button data-t="xq"><img class="ti" src="img/ui/vs-xq.webp" alt="" draggable="false">軍棋</button><button data-t="aq"><img class="ti" src="img/ui/vs-aq.webp" alt="" draggable="false">暗棋</button><button data-t="pd"><img class="ti" src="img/ui/vs-pd.webp" alt="" draggable="false">大砲對轟</button></div><div class="s">綠色的同學現在在平台上，按一下就會邀請他</div><div id="pickList"></div><button class="btn g" id="pickX">取消</button></div></div>
-<script src="xq.js"></script><script src="aq.js"></script><script src="pd.js"></script><script src="pdv.js"></script>
+<script src="ico.js"></script><script src="xq.js"></script><script src="aq.js"></script><script src="pd.js"></script><script src="pdv.js"></script>
 <script>
 /* ═════════════ 601 象棋對戰 ═════════════
    兩台平板連線對下：建立房間的人拿紅方先下，另一人輸入 4 位數房號加入。
@@ -284,7 +284,7 @@ G.type=(q=>GNAME[q]?q:(t=>GNAME[t]?t:'xq')(LS.get('xq_type','xq')))(new URLSearc
 function setType(t){G.type=t;LS.set('xq_type',t);document.querySelectorAll('#types button,#pickT button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   $('#logoT').textContent=t==='pd'?GNAME[t]:GNAME[t]+'對戰';$('#aqRule').hidden=t!=='aq';$('#pdRule').hidden=t!=='pd';document.title='601 '+$('#logoT').textContent;$('#pickG').textContent=GNAME[t];
   document.querySelectorAll('.logo span').forEach((s,i)=>s.textContent=t==='aq'?(i?'暗':'翻'):t==='pd'?(i?'轟':'砰'):(i?'將':'帥'));
-  $('#bNew').textContent=t==='pd'?'🏠 建立房間（我先打・紅隊）':'🏠 建立房間（我先下・紅方）';$('#bLocal').textContent=t==='pd'?'👥 同一台平板兩人輪流打':'👥 同一台平板兩人輪流下'}
+  $('#bNew').innerHTML='<img class="ti" src="img/ui/ic-room-create.webp" alt="" draggable="false">'+(t==='pd'?'建立房間（我先打・紅隊）':'建立房間（我先下・紅方）');$('#bLocal').textContent=t==='pd'?'👥 同一台平板兩人輪流打':'👥 同一台平板兩人輪流下'}
 document.querySelectorAll('#types button,#pickT button').forEach(b=>b.onclick=()=>{if(G.mode)return;setType(b.dataset.t);paintRec()});
 const view=i=>{const c=i%9,r=(i/9)|0;return G.flip?[8-c,9-r]:[c,r]};
 function drawGrid(){

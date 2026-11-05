@@ -144,9 +144,12 @@
     C.innerHTML = `<div class="fhead"><div class="flv"><b>🌾 我的農場 Lv.${L.lv}</b><div class="pbar s"><i style="width:${L.cur / L.need * 100}%;background:linear-gradient(90deg,#a9e34b,#74b816)"></i></div><small>經驗 ${L.cur} / ${L.need}</small></div>
         <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧴 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div><button class="fsm${f.sm ? ' on' : ''}" id="fsm">🥷 偷菜模式：${f.sm ? '開' : '關'}</button></div>
       ${night() ? '<div class="fnight">🌙 晚上 9 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
-      <div class="fbox" id="fbox"><div id="fsvg"></div></div><div class="fbar" id="fbar"></div><div class="finfo" id="finfo">👆 點空的田可以種菜；點 💧 的田澆水、點 ✨ 的田收成</div><div class="fpinfo" id="fpinfo"></div>
+      <div class="fmain"><div class="fbox" id="fbox"><div id="fsvg"></div><button class="fzoom" id="fzoom"></button></div>
+        <div class="fside"><div class="finfo" id="finfo"></div><div class="fpinfo" id="fpinfo"></div></div></div>
+      <div class="fbar" id="fbar"></div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
-    paint(); paintBar(); paintStore(); paintLog();
+    paint(); paintBar(); paintStore(); paintLog(); info(curK);
+    tap(C.querySelector('#fzoom'), () => { zoomSet(!zoomOn()); paint(); paintZoom(); }); paintZoom();
     tap(C.querySelector('#fstore'), storeModal); tap(C.querySelector('#fsm'), smToggle);
     WK = walker(C.querySelector('#fbox'), () => { const p = PET.P(); return p && p.st === 'pet' ? p : null; }, { own: 1, zoom: zoomOn }); paintPetInfo();
     tap(C.querySelector('#fbox'), e => {   // tap：用手指捲動畫面時不會按到田
@@ -163,20 +166,28 @@
     box.innerHTML = farmSVG(F(), { zoom: zoomOn() });
     const nf = document.getElementById('ffx'); if (nf) kids.forEach(k => nf.appendChild(k));
     if (WK) WK.redraw();
+    markSel();
     const q = id => document.getElementById(id), f = F();
     if (q('fwater')) { q('fwater').textContent = f.water || 0; q('ffert').textContent = f.fert || 0; q('fcoin').textContent = coins(); }
   }
   function paintBar() {
     const B = document.getElementById('fbar'); if (!B) return; B.innerHTML = '';
-    [['all', '🧺 全部收成'], ['water', '💧 全部澆水'], ['store', '📦 倉庫'], ['seed', '🌱 種子一覽'], ['zoom', zoomOn() ? '🔎 看整個農場' : '🔍 放大田地']].forEach(([k, n]) => { const b = el('button', 'fbtn', n); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'zoom' ? (zoomSet(!zoomOn()), paint(), paintBar(), WK && WK.place()) : seedModal(-1)); B.appendChild(b); });
+    [['all', '🧺', '全部收成'], ['water', '💧', '全部澆水'], ['store', '📦', '倉庫'], ['seed', '🌱', '種子一覽']].forEach(([k, i, n]) => { const b = el('button', 'fbtn big', `<span class="fbi">${i}</span>${n}`); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : seedModal(-1)); B.appendChild(b); });
   }
+  function paintZoom() { const b = document.getElementById('fzoom'); if (b) b.innerHTML = zoomOn() ? '🔎 看全景' : '🔍 放大田地'; }
+  /* 選中的田：場景上加綠框，旁邊顯示作物、狀態和能做的事 */
+  function markSel() { document.querySelectorAll('#fsvg [data-k].fsel').forEach(g => g.classList.remove('fsel')); if (curK >= 0) { const g = document.querySelector(`#fsvg [data-k="${curK}"]`); if (g) g.classList.add('fsel'); } }
   function info(k) {
-    const e = document.getElementById('finfo'); if (!e) return; const f = F(), P = f.p[k], S = stat(P);
-    if (k >= plotsFor(lvOf(f.xp).lv)) { e.innerHTML = `🔒 農場升到 Lv.${k >= 10 ? 7 : k >= 8 ? 5 : 3} 就能用這塊田`; return; }
-    if (S.empty) { e.innerHTML = '這塊田是空的，點一下就能種菜'; return; }
-    e.innerHTML = `<b>${S.C.n}</b>　${S.ripe ? '✨ 可以收成了！' : `還要 ${mmss(S.left)}${S.thirsty ? '・💧 口渴了，要澆水才會繼續長' : ''}`}${S.weed ? '・🌿 有雜草' : ''}${S.bug ? '・🐛 有蟲' : ''}　<small>預計收成 ${S.yieldN} 個${P.s ? `（被同學摘走 ${P.s} 個）` : ''}</small>
-      ${!S.ripe && !P.fz && (F().fert || 0) > 0 ? ' <button class="fmini" id="fuse">🧴 施肥（剩下的時間減半）</button>' : ''}`;
-    const b = document.getElementById('fuse'); if (b) tap(b, () => fertilize(k));
+    const e = document.getElementById('finfo'); if (!e) return; markSel();
+    if (k == null || k < 0) { e.innerHTML = '<div class="fsh">👆 點一塊田</div><div class="fss">空的田可以種菜；點 💧 的田澆水、點 ✨ 的田收成，蟲和雜草點一下就清掉</div>'; return; }
+    const f = F(), P = f.p[k], S = stat(P);
+    if (k >= plotsFor(lvOf(f.xp).lv)) { e.innerHTML = `<div class="fsh">🔒 還沒開放的田</div><div class="fss">農場升到 Lv.${k >= 10 ? 7 : k >= 8 ? 5 : 3} 就能用這塊田</div>`; return; }
+    if (S.empty) { e.innerHTML = '<div class="fsh">空的田</div><div class="fss">選一種種子種下去吧！</div><div class="fact"><button class="fgo" id="fdo">🌱 種菜</button></div>'; tap(e.querySelector('#fdo'), () => seedModal(k)); return; }
+    const chips = [S.ripe ? '<i class="ok">✨ 可以收成</i>' : `<i>⏰ 還要 ${mmss(S.left)}</i>`, S.thirsty ? '<i class="wt">💧 口渴了</i>' : '', S.weed ? '<i class="bd">🌿 有雜草</i>' : '', S.bug ? '<i class="bd">🐛 有蟲</i>' : ''].join('');
+    const acts = [S.bug ? ['bug', '🐛 捉蟲'] : null, S.weed ? ['weed', '🌿 拔草'] : null, S.ripe ? ['har', '🧺 收成'] : null, S.thirsty ? ['wat', '💧 澆水'] : null, !S.ripe && !P.fz && (f.fert || 0) > 0 ? ['fer', '🧴 施肥（時間減半）'] : null].filter(Boolean);
+    e.innerHTML = `<div class="fsel2">${cropImg(P.c, S.stage, 'fsci')}<div><div class="fsh">${S.C.n}</div><div class="fchips">${chips}</div><div class="fss">預計收成 ${S.yieldN} 個${P.s ? `（被同學摘走 ${P.s} 個）` : ''}</div></div></div>
+      ${acts.length ? `<div class="fact">${acts.map(([a, t], n) => `<button class="${n ? 'fgo2' : 'fgo'}" data-a="${a}">${t}</button>`).join('')}</div>` : ''}`;
+    e.querySelectorAll('[data-a]').forEach(b => tap(b, () => { const a = b.dataset.a; if (a === 'fer') return fertilize(k); if (a === 'wat') return water(k); if (a === 'har') return harvest(k); tapPlot(k); }));
   }
   function tapPlot(k) {
     curK = k; const f = F();
@@ -527,6 +538,21 @@
   .fpb.on{opacity:1;transform:translateX(-50%) scale(1)}.fpb small{display:block;font-size:.75em;color:#999}.fpb .fbi{width:1.5em;height:1.5em;vertical-align:-.4em}
   .fpinfo{margin-top:.5rem;background:#fff0f6;border-radius:14px;padding:.5rem .8rem;font-size:1.05rem;font-weight:900;color:#d6336c}.fpinfo b{color:#ae3ec9}.fpinfo small{display:block;color:#f783ac;font-size:.9rem;margin-top:.15rem}
   .fsi .fpf{background:#ffdeeb;color:#d6336c}
+
+  .fmain{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:.8rem;align-items:start}
+  .fside{display:flex;flex-direction:column;gap:.5rem}.fside .finfo,.fside .fpinfo{margin-top:0}
+  .fzoom{position:absolute;right:.6rem;top:.6rem;z-index:3;border:0;border-radius:12px;background:rgba(255,255,255,.92);box-shadow:0 2px 6px rgba(0,0,0,.12);font-size:1rem;font-weight:900;color:#2e7554;padding:.3rem .7rem;font-family:inherit}
+  .finfo{background:#fff;border:3px solid #eaf4de;color:#33443b}
+  .fsh{font-size:1.35rem;font-weight:900;color:#2e7554}.fss{font-size:1rem;color:#657065;font-weight:800;margin-top:.15rem}
+  .fsel2{display:flex;gap:.6rem;align-items:center}.fsel2 .fsci{width:4.6rem;height:4.6rem;object-fit:contain;flex:none}
+  .fchips{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.2rem}.fchips i{font-style:normal;font-size:.9rem;font-weight:900;border-radius:10px;padding:.1rem .5rem;background:#f1f3f5;color:#657065}.fchips i.ok{background:#fff3bf;color:#e67700}.fchips i.wt{background:#e7f5ff;color:#397cab}.fchips i.bd{background:#fff0f0;color:#b44949}
+  .fact{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem}.fact button{flex:1 1 8rem;min-height:3rem;border:0;border-radius:14px;font-size:1.15rem;font-weight:900;font-family:inherit}
+  .fgo{background:#2e7554;color:#fff;box-shadow:0 4px 0 #1f5139}.fgo2{background:#fff;color:#2e7554;border:3px solid #cfe5c4!important}
+  .farm [data-k].fsel{filter:drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 6px #9be37a)}
+  .fbar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem}
+  .fbtn.big{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:3.4rem;font-size:1.2rem;border:3px solid #eaf4de}
+  .fbtn .fbi{font-size:1.4rem}
+  @media (max-width:900px),(orientation:portrait){.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (max-width:700px){.frow2{grid-template-columns:1fr}.fseeds{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr))}.fvg{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
