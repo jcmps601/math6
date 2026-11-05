@@ -176,7 +176,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="menu">
     <button class="btn" id="bNew">🏠 建立房間（我先下・紅方）</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin"><img class="ti" src="img/ui/ic-room-join.webp" alt="" draggable="false">加入</button></div>
-    <button class="btn g" id="bLocal">👥 同一台平板兩人輪流下</button>
+    <button class="btn g" id="bLocal" hidden style="display:none">👥 同一台平板兩人輪流下</button><!-- 學生喜歡各自用自己的平板：拿掉同一台輪流下 -->
     <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="">邀請同學對戰</button>
   </div>
   <div id="msg"></div>
@@ -510,7 +510,7 @@ $('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('�
     G.newCreated=Date.now();await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...fresh()},players:{r:{id:myId,name,seat:mySeat()}}});
     Net.onDiscRm(`rooms/${pin}`);   // 還沒人加入就關掉、回平台:雲端自動刪掉房間
     Object.assign(G,{mode:'net',pin,me:'r',st:null,players:{},paid:0,created:G.newCreated});$('#pinBig').textContent=pin;msg('');show('wait');listen();
-  }catch(e){msg('連不上網路，請檢查網路或改用「同一台平板」')}};
+  }catch(e){msg('連不上網路，請檢查網路後再試一次')}};
 $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');const name=await needName();if(!name)return;
   msg('加入中…');await netReady;
   try{const room=await Net.get(`rooms/${pin}`);
@@ -523,7 +523,7 @@ $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.t
     msg('');listen();startGame();
   }catch(e){msg('連不上網路，請再試一次')}};
 $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bJoin').onclick()});
-$('#bLocal').onclick=()=>{if(!hasTicket())return msg(NO_TK);Object.assign(G,{mode:'solo',pin:'',me:'r',players:{},st:{phase:'play',moves:'',turn:'r',g:1,...fresh()},paid:0});startGame()};
+$('#bLocal').onclick=()=>{return;if(!hasTicket())return msg(NO_TK);Object.assign(G,{mode:'solo',pin:'',me:'r',players:{},st:{phase:'play',moves:'',turn:'r',g:1,...fresh()},paid:0});startGame()};
 $('#bCancel').onclick=async()=>{uninvite();G.un.forEach(f=>f());G.un=[];Net.cancelDisc(`rooms/${G.pin}`);try{await Net.remove(`rooms/${G.pin}`)}catch(e){}G.mode='';show('home')};   // 取消「斷線就刪」:以後別人用到同一個房號才不會被刪
 $('#bUndo').onclick=()=>{if(G.mode!=='solo'||!G.st.moves)return;const a=G.st.moves.split(',');a.pop();G.st={...G.st,phase:'play',moves:a.join(',')};G.sel=-1;onState()};
 $('#bResign').onclick=async()=>{if(!G.st||G.st.phase!=='play')return;
