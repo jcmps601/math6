@@ -121,7 +121,7 @@ button{font-family:inherit;cursor:pointer}
     <button class="btn" id="bNew"><img class="ti" src="img/ui/ic-room-create.webp" alt="" draggable="false">建立房間</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin"><img class="ti" src="img/ui/ic-room-join.webp" alt="" draggable="false">加入</button></div>
     <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請同學一起玩</button>
-    <button class="btn g" id="bSolo">👥 同一台平板輪流打（2～4 人）</button>
+    <button class="btn g" id="bSolo" hidden style="display:none">👥 同一台平板輪流打（2～4 人）</button><!-- 學生喜歡各自用自己的平板：拿掉同一台輪流打 -->
   </div>
   <div id="msg"></div>
   <div id="rec"></div>
@@ -398,7 +398,7 @@ async function create(){const name=await needName();if(!name)return false;msg('�
     const created=Date.now();
     await Net.set(`rooms/${pin}`,{meta:{game:'pm',created},state:{phase:'wait',mode:'ffa',g:0,t:created},players:{p0:{id:myId,name,seat:mySeat(),tk:hasTicket()}}});
     Object.assign(G,{mode:'net',pin,slot:'p0',st:null,players:{},created,arm:'',rec:'',ovHide:''});msg('');listen();armLobby();return true
-  }catch(e){msg('連不上網路，請檢查網路或改用「同一台平板」');return false}}
+  }catch(e){msg('連不上網路，請檢查網路後再試一次');return false}}
 async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');const name=await needName();if(!name)return;
   msg('加入中…');await netReady;
   try{for(let tries=0;tries<4;tries++){
@@ -424,7 +424,7 @@ function paintSolo(){document.querySelectorAll('#soloN button').forEach(b=>b.cla
   document.querySelectorAll('#soloM button').forEach(b=>b.classList.toggle('on',b.dataset.m===soloM))}
 document.querySelectorAll('#soloN button').forEach(b=>b.onclick=()=>{soloN=+b.dataset.n;paintSolo()});
 document.querySelectorAll('#soloM button').forEach(b=>b.onclick=()=>{if(b.disabled)return;soloM=b.dataset.m;paintSolo()});
-$('#bSolo').onclick=()=>{if(!hasTicket())return msg(NO_TK);paintSolo();$('#soloBox').classList.add('on')};
+$('#bSolo').onclick=()=>{return;if(!hasTicket())return msg(NO_TK);paintSolo();$('#soloBox').classList.add('on')};
 $('#soloX').onclick=()=>$('#soloBox').classList.remove('on');
 $('#soloGo').onclick=()=>{$('#soloBox').classList.remove('on');soloStart(soloN,soloM)};
 function soloStart(n,m){if(!hasTicket()){show('home');return msg(NO_TK)}const ng=PM.newGame(n,m),g=((G.st&&G.st.g)||0)+1;
