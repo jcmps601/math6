@@ -574,6 +574,23 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #practice .bi img.wbi,#practice .bi img.wbm{width:4.4rem;height:4.4rem}
 #practice .wbn{color:#b44949}
 #practice.wbempty{background:linear-gradient(135deg,#fff,#eaf4de)}
+
+/* ═══ 2026-11-05 V2：學生看得懂的提示 ═══ */
+#sync{display:flex;align-items:center;justify-content:center;gap:.2rem;line-height:1.3}#sync .ii{width:1.5em;height:1.5em;flex:none}
+#fb .fbm{width:2.4em;height:2.4em;vertical-align:-.8em;margin-right:.2em}
+.uc .s{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.ust{font-size:.85rem;font-weight:900;border-radius:999px;padding:.05rem .55rem;color:#657065;background:#eef1ec}.ust.d{color:#2e7554;background:#eaf4de}
+.srow{display:inline-flex;gap:.05rem}.srow img.st{width:1.25rem;height:1.25rem}
+#prog{margin-top:1rem}.pgt{font-size:1.25rem;font-weight:900;color:#2e7554;display:flex;align-items:center;gap:.3rem}.pgt .pgi{width:1.8rem;height:1.8rem}
+.pgs{font-size:1.1rem;font-weight:800;color:#33443b;margin-top:.2rem}.pgs b{color:#2e7554;font-size:1.25rem}
+.pgw{display:flex;align-items:flex-end;gap:.8rem;margin-top:.4rem}.pgb{display:flex;flex-direction:column;align-items:center;gap:.2rem}.pgb .bar{width:2.6rem;height:4.2rem;background:#f1f3f5;border-radius:10px;display:flex;align-items:flex-end;overflow:hidden}
+.pgb .bar i{display:block;width:100%;background:#b6d3c2;border-radius:10px 10px 0 0}.pgb.now .bar i{background:#51cf66}.pgb small{font-size:.85rem;font-weight:900;color:#657065}
+.pgm{flex:1;min-width:0;padding-bottom:.3rem}.pgu{font-size:.95rem;color:#657065;font-weight:800}
+.rwbtn{border:2px solid #e7ddcc;background:#fff;border-radius:999px;font-size:1rem;font-weight:900;color:#657065;padding:.15rem .7rem .15rem .4rem;font-family:inherit}
+.rwh{max-width:24rem}.rwr{display:flex;align-items:center;gap:.7rem;background:#fffaf0;border-radius:16px;padding:.5rem .8rem;margin-bottom:.5rem;text-align:left}.rwr img.ico{width:2.6rem;height:2.6rem}.rwr b{font-size:1.25rem;color:#33443b;width:4.2rem}.rwr span{font-size:1.1rem;font-weight:800;color:#657065}
+.rws{font-size:.95rem;color:#888;font-weight:800;margin:.3rem 0 .7rem}.rwok{font-size:1.3rem}
+/* 裝置設定「減少動態效果」時，動畫都停下來 */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head><body>
 
@@ -612,7 +629,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
   <div id="top"><span id="qno">第 1 題</span><span id="utag"></span><span id="dots"></span></div>
   <div id="q"></div>
   <div id="body">
-   <div class="card" id="figc"><canvas id="scr"></canvas><div id="pens"><button data-p="b" class="on" title="藍筆"><img class="ico" src="img/ui/pr-pen.webp" alt="藍筆"></button><button data-p="r" title="紅筆"><img class="ico" src="img/ui/pr-marker.webp" alt="紅筆"></button><button data-p="e" title="橡皮擦"><img class="ico" src="img/ui/pr-eraser.webp" alt="橡皮擦"></button><button data-p="c" title="全部擦掉"><img class="ico" src="img/ui/pr-trash.webp" alt="全部擦掉"></button><button data-p="h" title="關掉畫筆"><img class="ico" src="img/ui/pr-hand.webp" alt="關掉畫筆"></button></div><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
+   <div class="card" id="figc"><canvas id="scr"></canvas><div id="pens"><button data-p="b" class="on" title="藍筆"><img class="ico" src="img/ui/pr-pen.webp" alt="藍筆"></button><button data-p="r" title="紅筆"><img class="ico" src="img/ui/pr-marker.webp" alt="紅筆"></button><button data-p="e" title="橡皮擦"><img class="ico" src="img/ui/pr-eraser.webp" alt="橡皮擦"></button><button data-p="c" title="全部擦掉"><img class="ico" src="img/ui/pr-trash.webp" alt="全部擦掉"></button><button data-p="h" title="停止畫筆" aria-label="停止畫筆"><img class="ico" src="img/ui/pr-pen-off.webp" alt="停止畫筆"></button></div><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
    <div class="card" id="ansc">
     <div id="ansline"><span class="pre" id="pre"></span><span id="box" class="ib"></span>
      <span id="fbx"><span class="ib" id="bw" data-k="w"></span><span class="stk"><span class="ib" id="bn" data-k="n"></span><hr><span class="ib" id="bd" data-k="d"></span></span></span>
@@ -1105,8 +1122,8 @@ async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true
     catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
   flushing=false;paintSync()}
 addEventListener('online',()=>flush());
-function paintSync(){const s=document.getElementById('sync');if(!s)return;
-  s.textContent=Q.length?`⏳ ${Q.length} 筆等待上傳`:(db&&online?'☁️ 已同步':'📴 離線中（會先存在平板）')}
+function paintSync(){const s=document.getElementById('sync');if(!s)return;   // 只有上傳佇列清空（真的寫進雲端）才說已儲存
+  s.innerHTML=!(db&&online)?`${ico('st-offline','ii')}離線中，進度先存在這台裝置${Q.length?`（${Q.length} 筆待上傳）`:''}`:Q.length?`${ico('ic-sync-pending','ii')}還有 ${Q.length} 筆進度等待上傳`:`${ico('ic-sync-done','ii')}進度已儲存`}
 
 /* ===================== 使用者與紀錄 ===================== */
 let user=LS.get('learn601_user',null);              // {seat,pin}
@@ -1228,12 +1245,14 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     <button data-k="wb">${ico('nav-wb')}<b>錯題再練</b><small>${wbn?`${wbn} 題待練`:'目前沒有錯題'}</small></button>
     <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>音效</b><small>${sndOn?'開著':'關著'}</small></button>
     <button data-k="fs">${ico(full?'ic-fullscreen-exit':'nav-fs')}<b>全螢幕</b><small>${full?'離開全螢幕':'畫面變大'}</small></button>
+    <button data-k="help">${ico('pr-hint')}<b>獎勵說明</b><small>金幣、水滴、遊戲券</small></button>
     <button data-k="out">${ico('nav-out')}<b>登出</b><small>換別人用</small></button></div>
     <div class="msync">${(document.getElementById('sync')||{}).textContent||''}</div><button class="pmx">關閉</button></div>`;
   document.body.appendChild(m);
   const fire=id=>{const b=document.getElementById(id);if(b)b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}))};   // 跟左側原本的按鈕做一樣的事
   m.querySelectorAll('[data-k]').forEach(b=>tap(b,()=>{const k=b.dataset.k;
     if(k==='game'||k==='wb')return goView(k);
+    if(k==='help'){closeMore();return rewardHelp()}
     if(k==='snd'){fire('sndBtn');return openMore()}
     if(k==='fs'){closeMore();return fire('fsBtn')}
     if(k==='out'){closeMore();return fire('logout')}}));
@@ -1270,7 +1289,8 @@ function render0(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='game')return renderGame(P);
   const u=UN.find(x=>x.key===view);if(!u){view='home';paintNavs();return render()}renderUnit(P,u,UN.indexOf(u))}
 function renderHome(P){const n=todayN(),done=n>=GOAL;
-  P.appendChild(el('div','hello',`<span class="mascot">${ico(PET.night()?'mascot-sleep':done?'mascot-yay':'mascot-hi')}</span><div class="hw"><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div><div class="hres">${resPills()}</div>`));
+  P.appendChild(el('div','hello',`<span class="mascot">${ico(PET.night()?'mascot-sleep':done?'mascot-yay':'mascot-hi')}</span><div class="hw"><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div><div class="hres">${resPills()}<button class="rwbtn" id="rwbtn">${ico('pr-hint','ii')}獎勵說明</button></div>`));
+  {const b=P.querySelector('#rwbtn');if(b)tap(b,rewardHelp)}
   /* 今日任務＋連續天數：同一張卡片 */
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div class="tinfo"><div class="t1">今日任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const SM=mixOf(subj),gb=el('button','go',(done?'再練一回':'繼續練習')+(SM?'':'（數學）')+' ▶');tap(gb,()=>startPractice((SM||MIX).key));t.querySelector('.tinfo').appendChild(gb);
@@ -1279,7 +1299,8 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
-  f.appendChild(W);t.appendChild(f);P.appendChild(t);
+  f.appendChild(W);t.appendChild(f);P.appendChild(t);P.appendChild(progCard());
+  if(!LS.get('learn601_rwseen',0))setTimeout(()=>{if(view==='home'&&!document.getElementById('rwhelp'))rewardHelp()},600);
   /* 單元（目前的科目；換科目到「學習」） */
   const SJ=subjOf(subj),hd=el('div','sec hsec',`<span>${ico(SJ.img,'hi2')}${SJ.n}・學習單元</span>`),sw=el('button','hmore',`換科目 ▶`);tap(sw,()=>goView('learn'));hd.appendChild(sw);P.appendChild(hd);
   P.appendChild(unitCards());
@@ -1289,9 +1310,27 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
 /* 單元卡片（首頁、學習頁共用）：目前科目的單元＋綜合＋錯題 */
 function unitCards(){const SM=mixOf(subj),SJ=subjOf(subj),G=el('div');G.id='ucards';
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;G.appendChild(c)}
-  [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
+  [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?unitState(u.key):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>goView(u.key));G.appendChild(b)});
   return G}
+/* 單元狀態：有完成過一回合（或以前有最佳成績）＝已完成；不然＝還沒開始。星星照最佳成績，沒拿到的是空心星 */
+const starN=b=>b>=9?3:b>=7?2:b>=5?1:0;
+const starRow=b=>{const n=starN(b);return `<span class="srow">${[0,1,2].map(i=>ico(i<n?'rw-star':'rw-star0','st')).join('')}</span>`};
+function unitState(k){const done=(sum.dn&&sum.dn[k])||sum.best[k]!=null;return `<span class="ust ${done?'d':'n'}">${done?'已完成':'還沒開始'}</span>${starRow(sum.best[k]||0)}`}
+/* 我的進步：最近練的那個單元，比較最後兩次「一次就答對」的題數（同單元、同題數） */
+function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let key=null,t=0;for(const k in R){const a=R[k],x=a[a.length-1];if(x&&x.t>t){t=x.t;key=k}}
+  const U=key?(UN.find(u=>u.key===key)||mixByKey(key)):null;let h=`<div class="pgt">${ico('ic-thumbs-up','pgi')}我的進步</div>`;
+  if(!key||!U){c.innerHTML=h+'<div class="pgs">完成第一次練習，就能看到自己的紀錄</div>';return c}
+  const a=R[key].filter(x=>x.n===R[key][R[key].length-1].n),now=a[a.length-1],prev=a.length>1?a[a.length-2]:null,nm=U.name;
+  if(!prev){c.innerHTML=h+`<div class="pgs">${nm}：這次一次答對 <b>${now.f}</b> 題</div>`;return c}
+  const d=now.f-prev.f,msg=d>0?`比上次多答對 <b>${d}</b> 題`:d===0?'和上次一樣，繼續累積':'這次練習完成了，一起看看需要再練的地方',mx=Math.max(now.n,1);
+  c.innerHTML=h+`<div class="pgw"><div class="pgb"><div class="bar"><i style="height:${prev.f/mx*100}%"></i></div><small>上次 ${prev.f} 題</small></div><div class="pgb now"><div class="bar"><i style="height:${now.f/mx*100}%"></i></div><small>這次 ${now.f} 題</small></div>
+    <div class="pgm"><div class="pgu">${nm}（一次就答對）</div><div class="pgs">${msg}</div></div></div>`;return c}
+/* 獎勵說明：第一次在首頁出現，之後從「獎勵說明」再看 */
+function rewardHelp(){const m=el('div','pmod','');m.id='rwhelp';m.innerHTML=`<div class="pmc rwh"><div class="pmh">學習獎勵</div>
+  <div class="rwr">${ico('rw-coin')}<b>金幣</b><span>買點心與造型</span></div><div class="rwr">${ico('ic-water-drop')}<b>水滴</b><span>照顧農場</span></div><div class="rwr">${ico('rw-ticket')}<b>遊戲券</b><span>進入挑戰樂園</span></div>
+  <div class="rws">練習答對就會拿到；每 10 題答對 8 題拿 1 張遊戲券</div><button class="go rwok">我知道了</button></div>`;document.body.appendChild(m);
+  const close=()=>{m.remove();LS.set('learn601_rwseen',1)};tap(m.querySelector('.rwok'),close);tap(m,e=>{if(e.target===m)close()})}
 function statCard(){const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
   const c=el('div','cd');c.style.marginTop='1rem';c.appendChild(S);return c}
@@ -1316,7 +1355,7 @@ const wbKey=()=>'learn601_wb_'+user.seat;
 function wbLoad(){return user?LS.get(wbKey(),[]):[]}
 function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,t:x.q.t,n:x.n,d:x.d})),true)}
 function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
-  if(res==='ok'){if(i>=0){W.splice(i,1);wbSave(W);try{PET.note('wb')}catch(e){}if(pu==='wb')toast('📕 這題練會了！')}return}
+  if(res==='ok'){if(i>=0){W.splice(i,1);wbSave(W);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！繼續練習，鞏固這個方法。')}return}
   if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();W.push(x)}
   else{const c=JSON.parse(JSON.stringify(q));W.push({k,q:c,n:1,d:dkey()})}
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
@@ -1533,7 +1572,7 @@ addEventListener('popstate',()=>{if(vt){
 
 /* ===================== 計算紙 =====================
    題目卡片上蓋一層透明畫布,學生可以用平板的筆直接在題目上計算。
-   用過筆之後,手指和手掌碰到不會畫(防誤觸);✋ 可以關掉畫筆,回到用手點按;換題會自動清空。 */
+   用過筆之後,手指和手掌碰到不會畫(防誤觸);「停止畫筆」可以關掉畫筆,回到用手點按;換題會自動清空。 */
 const SCR={on:LS.get('learn601_draw',true),pen:'b',strokes:[],cur:null,penSeen:false};
 const scrCv=$('#scr'),scrCx=scrCv.getContext('2d');
 function scrFit(){const f=$('#figc'),w=f.clientWidth,h=f.clientHeight,d=Math.min(2,devicePixelRatio||1);
@@ -1660,10 +1699,10 @@ function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]
   if(tries>=2){round.res[cur]='no';finish(q,false);return}
   sfx.no();
   if(q.id){bankTry(q,msg);return}   // 國語、英語…:不用數學的「看一題例子」
-  fb.innerHTML=msg||pick(['再想想看','差一點點！','沒關係，再試一次']);$('#hint').classList.add('pulse');showTeach(q,msg)}
+  fb.innerHTML=`${ico('mascot-think','fbm')}<b>再想一想</b> `+(msg||pick(['差一點點！','沒關係，再試一次']));$('#hint').classList.add('pulse');showTeach(q,msg)}
 /* 題庫題答錯一次:錯的選項劃掉,依題型告訴學生該怎麼再試(聽力→再聽一次、短文→回去找線索、看圖→再看圖),順便給第一個提示 */
-const KIND_TRY={listen:'不對喔，再按 🔊 聽一次',read:'不對喔，回到短文裡找線索',look:'不對喔，再仔細看一次圖',think:'不對喔，再想一想'};
-function bankTry(q,msg){const fb=$('#fb');fb.innerHTML=msg||KIND_TRY[q.kind]||KIND_TRY.think;
+const KIND_TRY={listen:'再按 🔊 聽一次',read:'回到短文裡找線索',look:'再仔細看一次圖',think:'看看提示，再選一次'};
+function bankTry(q,msg){const fb=$('#fb');fb.innerHTML=`${ico('mascot-think','fbm')}<b>再想一想</b> `+(msg||KIND_TRY[q.kind]||KIND_TRY.think);
   /* 聽力題:上面已經說「再聽一次」,提示就不要再重複一樣的話 */
   if(q.kind==='listen')while(hintK<q.hints.length&&/聽一次/.test(q.hints[hintK]))hintK++;
   if(hintK<q.hints.length){addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;if(hintK>=q.hints.length)$('#hint').disabled=true}
@@ -1736,7 +1775,9 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   if(pu!=='wb'&&first>(sum.best[bk]||0))sum.best[bk]=first;
   const got=round.got||0;
   logRound(false);
-  const U=unitOf(pu);$('#endt').textContent=`${U.name}　完成！`;$('#ends').textContent=stars(first)||'💪';
+  const U=unitOf(pu);$('#endt').textContent=`這次練習完成了！`;
+  /* 我的進步：同一個單元、同樣題數的完整回合才記（錯題本不算） */
+  if(pu!=='wb'){sum.rh=sum.rh||{};const a=(sum.rh[bk]=sum.rh[bk]||[]);a.push({t:Date.now(),f:first,n:N});sum.rh[bk]=a.slice(-5);sum.dn=sum.dn||{};sum.dn[bk]=(sum.dn[bk]||0)+1;saveSum(true)}$('#ends').textContent=stars(first)||'💪';
   $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(first,N);
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}

@@ -648,7 +648,7 @@
         h += `<div class="psec">${n}</div><div class="pgrid">`;
         Object.entries(ITEMS).filter(([, I]) => I.k === k).forEach(([id, I]) => {
           const on = p[k] === id, has = own[id], lock = !has && ML < I.lv;
-          h += `<button class="pitem w${on ? ' on' : ''}${lock ? ' lock' : ''}" data-i="${id}">${itemSVG(id)}<b>${I.n}</b><em>${on ? '✅ 穿著' : has ? '換上' : lock ? `🔒 Lv.${I.lv}` : `🪙 ${I.p}`}</em></button>`;
+          h += `<button class="pitem w${on ? ' on' : ''}${lock ? ' lock' : ''}" data-i="${id}">${itemSVG(id)}<b>${I.n}</b><em>${on ? '✅ 穿著' : has ? '換上' : lock ? (I.lv - L === 1 ? '🔒 再升 1 級，就能使用' : `🔒 升到 Lv.${I.lv} 解鎖`) : `🪙 ${I.p}`}</em></button>`;
         });
         h += '</div>';
       });

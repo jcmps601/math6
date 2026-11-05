@@ -242,7 +242,7 @@
   function modal(html) { const m = el('div', 'pmod', `<div class="pmc fmc">${html}</div>`); document.body.appendChild(m); tap(m, e => { if (e.target === m) m.remove(); }); return m; }
   function seedModal(k) {
     const f = F(), lv = lvOf(f.xp).lv, empty = f.p.slice(0, plotsFor(lv)).filter(x => !x).length;
-    const m = modal(`<div class="pmh">🌱 ${k >= 0 ? '要種什麼？' : '種子一覽'}　<small>🪙 ${coins()}</small></div><div class="fseeds">${CK.map(id => { const C = CROPS[id], lock = lv < C.lv; return `<button data-c="${id}" class="${lock ? 'lock' : ''}">${cropImg(id, 3, 'fsc')}<b>${C.n}</b><small>⏰ ${mmss(C.m * 60000)}・💧×${C.w}</small><small>收成 ${C.y} 個・一個賣 🪙${C.s}</small><em>${lock ? `🔒 農場 Lv.${C.lv}` : `種子 🪙 ${C.p}`}</em></button>`; }).join('')}</div>
+    const m = modal(`<div class="pmh">🌱 ${k >= 0 ? '要種什麼？' : '種子一覽'}　<small>🪙 ${coins()}</small></div><div class="fseeds">${CK.map(id => { const C = CROPS[id], lock = lv < C.lv; return `<button data-c="${id}" class="${lock ? 'lock' : ''}">${cropImg(id, 3, 'fsc')}<b>${C.n}</b><small>⏰ ${mmss(C.m * 60000)}・💧×${C.w}</small><small>收成 ${C.y} 個・一個賣 🪙${C.s}</small><em>${lock ? (C.lv - lv === 1 ? '🔒 農場再升 1 級就能種' : `🔒 農場升到 Lv.${C.lv} 解鎖`) : `種子 🪙 ${C.p}`}</em></button>`; }).join('')}</div>
       ${k >= 0 && empty > 1 ? `<label class="fall"><input type="checkbox" id="fallchk"> 空的田（${empty} 塊）全部種一樣的</label>` : ''}<button class="pmx">關閉</button>`);
     m.querySelectorAll('[data-c]').forEach(b => tap(b, () => {
       const id = b.dataset.c, C = CROPS[id]; if (lv < C.lv) { toast(`農場升到 Lv.${C.lv} 才能種${C.n}`); return; }
