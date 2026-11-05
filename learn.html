@@ -975,7 +975,16 @@ const WB_MAX=40;
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const pad2=n=>String(n).padStart(2,'0');
 const dkey=(t=new Date())=>`${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
-const tap=(el,fn)=>el.addEventListener('pointerdown',e=>{e.preventDefault();fn(e)});
+/* 點一下：滑鼠一按下就算（反應快）；手指、觸控筆要「放開而且沒有滑動」才算——
+   這樣在平板、手機上用手指捲動畫面時，不會順便按到底下的按鈕（例如買點心、種菜、澆水） */
+const TAP_MOVE=12;let tapGhost=0;
+document.addEventListener('click',e=>{if(Date.now()<tapGhost){e.preventDefault();e.stopPropagation()}},true);   // 放開手指後瀏覽器補發的 click 不要再按到新畫面上的東西
+const tap=(el,fn)=>{let st=null;
+  el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.pointerType==='pen'){st={id:e.pointerId,x:e.clientX,y:e.clientY};return}e.preventDefault();fn(e)});
+  el.addEventListener('pointermove',e=>{if(st&&e.pointerId===st.id&&Math.hypot(e.clientX-st.x,e.clientY-st.y)>TAP_MOVE)st=null});
+  el.addEventListener('pointerup',e=>{if(!st||e.pointerId!==st.id)return;const ok=Math.hypot(e.clientX-st.x,e.clientY-st.y)<=TAP_MOVE;st=null;if(!ok)return;e.preventDefault();tapGhost=Date.now()+450;fn(e)});
+  el.addEventListener('pointercancel',()=>{st=null});   // 瀏覽器開始捲動畫面＝不是點
+  return el};
 const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e};
 const timeout=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),ms))]);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -1630,14 +1639,15 @@ const BOSS_RULE=`"boss": {
 }`;
 /* 讀全班打了多少(記 20 秒) */
 let BOSSC=null;
-async function bossLoad(wk){if(BOSSC&&BOSSC.wk===wk&&Date.now()-BOSSC.at<20000)return BOSSC;
+const BOSSL={};   // 上週的(已經不會再變):讀一次就記著
+async function bossLoad(wk){if(BOSSC&&BOSSC.wk===wk&&Date.now()-BOSSC.at<20000)return BOSSC;if(BOSSL[wk]&&Date.now()-BOSSL[wk].at<600000)return BOSSL[wk];
   await fbReady;let v=null,denied=false;if(db&&online){try{v=(await timeout(db.ref(`${ROOT}/boss/${wk}`).get(),8000)).val()||{}}catch(e){v=null;denied=/permission/i.test(String(e&&(e.code||e.message)))}}
   const rows=[];if(v)for(const [st,o] of Object.entries(v)){const s=+st;if(o&&typeof o.s==='number'&&isFinite(o.s)&&o.s>0)rows.push({seat:s,s:o.s,t:o.t||0})}
   /* 自己的用平板上的(可能還沒上傳完) */
   if(user){const me=rows.find(r=>r.seat===user.seat),m=myBoss(wk);if(me)me.s=Math.max(me.s,m);else if(m)rows.push({seat:user.seat,s:m,t:Date.now()})}
   const cls=rows.filter(r=>!isTest(r.seat)).sort((a,b)=>b.s-a.s||a.seat-b.seat);
   let tot=cls.reduce((a,r)=>a+r.s,0);if(user&&isTest(user.seat))tot+=myBoss(wk);   // 測試帳號:自己打的也看得到效果
-  const R={wk,at:Date.now(),ok:!!v,denied,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP()};if(wk===bossWk())BOSSC=R;return R}
+  const R={wk,at:Date.now(),ok:!!v,denied,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP()};if(wk===bossWk())BOSSC=R;else if(v)BOSSL[wk]=R;return R}
 const bossClaimed=wk=>!!(sum&&sum.bossR&&sum.bossR[wk]);
 function bossClaim(wk){if(!sum||bossClaimed(wk))return;sum.bossR=sum.bossR||{};sum.bossR[wk]=1;
   if(!isTest(user.seat))sum.tk=(sum.tk||0)+1;saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);

@@ -230,9 +230,9 @@
       <div class="fbox" id="fbox"></div><div class="fbar" id="fbar"></div><div class="finfo" id="finfo">👆 點空的田可以種菜；點 💧 的田澆水、點 ✨ 的田收成</div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
     paint(); paintBar(); paintStore(); paintLog();
-    C.querySelector('#fbox').addEventListener('pointerdown', e => {
-      if (e.target.closest('#fbarn')) { e.preventDefault(); return storeModal(); }
-      const g = e.target.closest('[data-k]'); if (!g) return; e.preventDefault(); tapPlot(+g.dataset.k);
+    tap(C.querySelector('#fbox'), e => {   // tap：用手指捲動畫面時不會按到田
+      if (e.target.closest('#fbarn')) return storeModal();
+      const g = e.target.closest('[data-k]'); if (!g) return; tapPlot(+g.dataset.k);
     });
     clearInterval(tickT); tickT = setInterval(() => { if (!document.getElementById('fbox')) return clearInterval(tickT); paint(); if (curK >= 0) info(curK); }, 15000);
     applyInbox();
@@ -391,8 +391,8 @@
     const paintV = () => { m.querySelector('#fvbox').innerHTML = farmSVG(Fm, { pet: pv && PET.SPECIES[pv.sp] ? PET.petSVG(Object.assign({}, pv, { mood: 'happy' })) : null }); m.querySelector('#fvw').textContent = F().water || 0; m.querySelector('#fvc').textContent = coins(); };
     paintV();
     const msg = t => m.querySelector('#fvinfo').innerHTML = t;
-    m.querySelector('#fvbox').addEventListener('pointerdown', e => {
-      const g = e.target.closest('[data-k]'); if (!g) return; e.preventDefault(); const k = +g.dataset.k, P = Fm.p[k], S = stat(P);
+    tap(m.querySelector('#fvbox'), e => {
+      const g = e.target.closest('[data-k]'); if (!g) return; const k = +g.dataset.k, P = Fm.p[k], S = stat(P);
       if (night()) return msg('🌙 晚上農場在休息，明天再來吧');
       if (S.empty) return msg('這塊田是空的');
       const act = S.bug ? 'b' : S.weed ? 'g' : S.thirsty ? 'w' : S.ripe ? 's' : '';
