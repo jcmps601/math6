@@ -6,6 +6,9 @@
   const COL = { r: { main: '#ef4444', dark: '#b91c1c', light: '#fca5a5', name: '紅隊' }, b: { main: '#3b82f6', dark: '#1d4ed8', light: '#93c5fd', name: '藍隊' } };
   const TURN_MS = 40000;
   const FONT = "'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif";
+  /* V3 圖示：砲彈、燃料、風向（風的大小、方向還是用數字和箭頭表示） */
+  const WIMG = { n: 'ammo-normal', t: 'ammo-triple', s: 'ammo-super' };
+  const WIND_IMG = new Image(); WIND_IMG.src = 'img/game/wind-direction.webp';
   let cv, ctx, ctl, host, dpr = 1, K = 1, raf = 0, running = false;
   /* 目前畫面上的狀態 */
   let key = '', shown = null, shownN = 0, queue = [], anim = null, pendingFire = false;
@@ -342,7 +345,8 @@
     /* 風：箭頭越多風越大 */
     const wd = V.wind, cx = W / 2, cy = 12; c.save(); c.shadowColor = 'rgba(0,0,0,.18)'; c.shadowBlur = 8; c.fillStyle = 'rgba(255,255,255,.92)'; rr(c, cx - 120, cy, 240, 62, 18); c.fill(); c.restore();
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillStyle = '#475569'; c.font = `900 20px ${FONT}`; c.fillText('風', cx - 92, cy + 22);
+    if (WIND_IMG.complete && WIND_IMG.naturalWidth) { c.save(); c.translate(cx - 92, cy + 22); if (wd < 0) c.scale(-1, 1); c.drawImage(WIND_IMG, -20, -15.5, 40, 31); c.restore(); }
+    else { c.fillStyle = '#475569'; c.font = `900 20px ${FONT}`; c.fillText('風', cx - 92, cy + 22); }
     c.font = `900 12px ${FONT}`; c.fillStyle = '#64748b'; c.fillText(`${Math.min(PD.MAXT / 2, Math.floor(shownN / 2) + 1)}/${PD.MAXT / 2} 回合`, cx - 92, cy + 46);
     c.fillStyle = '#e2e8f0'; c.fillRect(cx - 64, cy + 10, 2, 42);
     const n = Math.abs(wd), dir = Math.sign(wd), col = n >= 6 ? '#ef4444' : n >= 3 ? '#f59e0b' : '#0ea5e9';
@@ -407,10 +411,10 @@
   /* ───────── 操作 ───────── */
   function buildCtl() {
     ctl.innerHTML = `
-      <div class="pdw" id="pdW">${Object.entries(PD.WEAP).map(([k, w]) => `<button data-w="${k}"><span>${w.icon}</span><b>${w.name}</b><em></em></button>`).join('')}</div>
+      <div class="pdw" id="pdW">${Object.entries(PD.WEAP).map(([k, w]) => `<button data-w="${k}"><span><img src="img/game/${WIMG[k]}.webp" alt="" style="width:1.7rem;height:1.7rem;object-fit:contain;display:block"></span><b>${w.name}</b><em></em></button>`).join('')}</div>
       <div class="pdk"><label>角度</label><button data-k="a-" aria-label="角度變小">▼</button><b id="pdA">45°</b><button data-k="a+" aria-label="角度變大">▲</button></div>
       <div class="pdk"><label>力道</label><button data-k="p-" aria-label="力道變小">−</button><div class="pdbar" id="pdPB"><i></i><b id="pdP">60</b></div><button data-k="p+" aria-label="力道變大">＋</button></div>
-      <div class="pdk"><label>移動</label><button data-k="x-" aria-label="往左開">◀</button><div class="pdbar fuel" id="pdFB"><i></i><b>⛽</b></div><button data-k="x+" aria-label="往右開">▶</button></div>
+      <div class="pdk"><label>移動</label><button data-k="x-" aria-label="往左開">◀</button><div class="pdbar fuel" id="pdFB"><i></i><b><img src="img/game/fuel-can.webp" alt="燃料" style="height:1.5rem;width:auto;display:block"></b></div><button data-k="x+" aria-label="往右開">▶</button></div>
       <button id="pdFire">🔥 發射</button>
       <div id="pdWait"></div>`;
     ctl.querySelectorAll('[data-w]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (!myInput()) return; const s = shown.turn; if (PD.left(shown, s, b.dataset.w) <= 0) return; aim[s].w = b.dataset.w; snd.click(); paintCtl(); }));
