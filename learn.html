@@ -594,6 +594,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 
 /* 大砲混戰：雙人對戰卡片裡最顯眼的一顆（占兩格） */
 #xqcard .xbtns .go.xparty{grid-column:1/-1;background:linear-gradient(#ff8a3d,#e8590c);box-shadow:0 4px 0 #a0400a}
+#xqcard .xbtns .go.xcoop{background:linear-gradient(#60a5fa,#2563eb);box-shadow:0 4px 0 #1e40af}
 #xqcard .xbtns .go.xparty small{font-size:.8em;margin-left:.4em;opacity:.9}
 </style>
 </head><body>
@@ -1398,7 +1399,8 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const xa=el('button','go gray',ico('vs-aq','bi')+'暗棋');tap(xa,()=>openTool({...XQ_TOOL,f:'chess.html?g=aq'}));
   const xp=el('button','go gray',ico('vs-pd','bi')+'大砲對轟');tap(xp,()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'}));
   const xm=el('button','go xparty',ico('vs-pd','bi')+'大砲混戰<small>2～4 人</small>');tap(xm,()=>openTool({...XQ_TOOL,f:'party.html'}));
-  [xv,xb,xa,xp,xm].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
+  const xc=el('button','go xparty xcoop','🤝 雙人合作過關<small>一起闖關</small>');tap(xc,()=>openTool({...XQ_TOOL,f:'coop.html'}));
+  [xv,xb,xa,xp,xm,xc].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜<small>（下滿 ${WR_MIN} 局才上榜）</small>`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
@@ -1517,13 +1519,14 @@ async function listenInv(){if(invRef&&invCb)invRef.off('value',invCb);invRef=nul
     if(!list.length){if(invNow&&!v[invNow.f])hideInv();return}
     const [f,x]=list[0];if(invNow&&invNow.f===+f&&invNow.p===x.p)return;const iv={f:+f,p:x.p,t:x.t,g:GK(x.g)};
     if(chessBusy()){invNow=iv;return declineInv('busy')}   // 正在跟別人下棋:自動回覆
+    if(iv.g==='pm'){invNow=iv;db.ref(`rooms/${iv.p}/meta/game`).get().then(s=>{if(s.val()==='co')iv.co=1;if(invNow===iv)showInv(iv)}).catch(()=>{if(invNow===iv)showInv(iv)});return}   // 雙人合作過關也用 pm 的邀請
     showInv(iv)};
   invRef.on('value',invCb)}
 function invBox(){let b=document.getElementById('xqinv');if(b)return b;b=el('div');b.id='xqinv';
   b.innerHTML='<div class="xiv"><div class="xit"></div><div class="xis"></div><div class="xir"><button class="xok" id="invYes">✅ 接受</button><button class="xno" id="invNo">下次再說</button></div></div>';document.body.appendChild(b);
   tap(b.querySelector('#invYes'),()=>acceptInv());tap(b.querySelector('#invNo'),()=>declineInv('no'));return b}
-function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=`${GAMES[x.g].i} ${seatName(x.f)} 邀請你${GAMES[x.g].v}${GAMES[x.g].n}！`;
-  b.querySelector('.xis').textContent=(GAMES[x.g].many?'接受就會直接進到房間，大家到齊就開打':'接受就會直接進到棋盤')+'（輸的人用掉 1 張遊戲券，贏了不用）';b.classList.add('on');try{sfx.ok()}catch(e){}
+function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=x.co?`🤝 ${seatName(x.f)} 邀請你一起玩雙人合作過關！`:`${GAMES[x.g].i} ${seatName(x.f)} 邀請你${GAMES[x.g].v}${GAMES[x.g].n}！`;
+  b.querySelector('.xis').textContent=x.co?'接受就會直接進到房間（開始時兩個人各用 1 張遊戲券）':(GAMES[x.g].many?'接受就會直接進到房間，大家到齊就開打':'接受就會直接進到棋盤')+'（輸的人用掉 1 張遊戲券，贏了不用）';b.classList.add('on');try{sfx.ok()}catch(e){}
   clearTimeout(showInv.t);showInv.t=setTimeout(()=>{if(invNow===x)hideInv()},Math.max(5000,INV_MS-(Date.now()-x.t)))}
 function hideInv(){invNow=null;const b=document.getElementById('xqinv');if(b)b.classList.remove('on')}
 function dropInv(x){try{db.ref(`${ROOT}/inv/${user.seat}/${x.f}`).remove()}catch(e){}}
@@ -1532,7 +1535,7 @@ function acceptInv(){const x=invNow;if(!x)return;
   if(!isTest(user.seat)&&!((sum.tk||0)>0)){declineInv('noticket');toast('🎟️ 你的遊戲券用完了，先練習 10 題再來下棋吧！');return}
   hideInv();dropInv(x);
   if($('#prac').classList.contains('on'))leavePractice();
-  const t={...XQ_TOOL,f:(x.g==='pm'?'party.html':'chess.html')+'?join='+x.p};
+  const t={...XQ_TOOL,f:(x.co?'coop.html':x.g==='pm'?'party.html':'chess.html')+'?join='+x.p};
   if(vt){vt=XQ_TOOL;document.getElementById('vtitle').textContent=t.n;frameGo(t.f)}else openTool(t)}
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */
 window.__learn601={
@@ -1548,6 +1551,7 @@ window.__learn601={
     if(isTest(user.seat)){sum.se=Date.now()+PLAY_MS;saveSum(true);return {ok:true}}   // 測試帳號:不用券,時間到了自動再給 5 分鐘
     if(!((sum.tk||0)>0))return {ok:false};sum.tk--;sum.se=Date.now()+PLAY_MS;saveSum(true);logPush({k:'g',game:g,diff:d});return {ok:true,fresh:true}},
   /* 象棋:連線對戰輸的人用 1 張、同一台平板一局用 1 張(老師測試帳號不用) */
+  myPet:()=>{try{const p=PET.P();return p&&p.st==='pet'&&p.sp?{sp:p.sp,st:PET.stageOf(PET.lvOf(p.xp||0).lv)}:null}catch(e){return null}},
   useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
     sum.tk--;saveSum(true);logPush({k:'g',game:g});return true},
   board:()=>lbAll().catch(()=>null),
