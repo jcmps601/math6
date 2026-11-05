@@ -1211,7 +1211,7 @@ const wbKey=()=>'learn601_wb_'+user.seat;
 function wbLoad(){return user?LS.get(wbKey(),[]):[]}
 function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,t:x.q.t,n:x.n,d:x.d})),true)}
 function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
-  if(res==='ok'){if(i>=0){W.splice(i,1);wbSave(W);if(pu==='wb')toast('📕 這題練會了！')}return}
+  if(res==='ok'){if(i>=0){W.splice(i,1);wbSave(W);try{PET.note('wb')}catch(e){}if(pu==='wb')toast('📕 這題練會了！')}return}
   if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();W.push(x)}
   else{const c=JSON.parse(JSON.stringify(q));W.push({k,q:c,n:1,d:dkey()})}
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}

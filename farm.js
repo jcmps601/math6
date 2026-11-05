@@ -46,7 +46,7 @@
 
   /* ───────── 畫畫：用 img/farm 裡的圖 ─────────
      背景 bg.webp（1536×1024）正中間的空草地放 4 × 3 塊田（等角視角）；作物 4 個階段、田地、蟲、雜草都是圖片 */
-  const IMG = 'img/farm/', BGW = 1536, BGH = 1024;
+  const IMG = 'img/farm/', BGW = 1536, BGH = 1024, VB_FULL = [0, 0, BGW, BGH], VB_ZOOM = [350, 90, 880, 690], VB_MINI = [30, 20, 1476, 960];
   const CROPDIM = {"cabbage":[[190,94],[214,184],[441,383],[720,629]],"carrot":[[199,102],[209,210],[421,417],[748,632]],"strawberry":[[174,107],[210,222],[473,408],[724,638]],"tomato":[[239,120],[232,222],[387,479],[640,684]],"corn":[[129,84],[144,149],[280,340],[331,552]],"eggplant":[[160,86],[223,192],[378,400],[623,604]],"sunflower":[[176,119],[193,192],[285,443],[413,678]],"pumpkin":[[183,100],[215,198],[501,432],[709,556]],"watermelon":[[212,113],[234,220],[476,424],[738,611]],"grape":[[197,99],[212,211],[362,508],[651,678]]};   // 每張作物圖的原始大小（同一種作物 4 個階段同一個比例）
   const TW = 196, TH = .345, DX = TW / 2 / .94, DY = TW * TH / .94, CX = 790, CY = 495;   // 田的寬、上面菱形的一半高(÷寬)、間距、中心
   const plotC = k => { const c = k % COLS, r = (k / COLS) | 0; return [CX + ((c - 1.5) - (r - 1)) * DX, CY + ((c - 1.5) + (r - 1)) * DY]; };
@@ -91,10 +91,9 @@
       out.push(`<g data-k="${k}" class="fplot">${g}</g>`);
     }
     out.push(tops.join(''));   // 頭上的小泡泡最後畫，才不會被後面的作物擋住
-    if (o.pet) out.push(`<svg x="400" y="268" width="140" height="140" viewBox="0 0 200 200" overflow="visible" pointer-events="none">${o.pet}</svg>`);
     if (night() && !o.mini) out.push(`<rect width="${BGW}" height="${BGH}" fill="#1b1f4b" opacity=".38" pointer-events="none"/><g fill="#fff8d6" pointer-events="none">${[[140, 70], [420, 40], [760, 90], [1180, 60], [1450, 120], [60, 300], [1490, 420]].map(([a, b], i) => `<circle cx="${a}" cy="${b}" r="${i % 2 ? 3 : 4.5}"/>`).join('')}</g>`);
     if (!o.mini) out.push('<g id="ffx" pointer-events="none"></g>');
-    const vb = o.mini ? '30 20 1476 960' : o.zoom ? '350 90 880 690' : `0 0 ${BGW} ${BGH}`;
+    const vb = (o.mini ? VB_MINI : o.zoom ? VB_ZOOM : VB_FULL).join(' ');
     return `<svg class="farm${o.mini ? ' mini' : ''}" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">${out.join('')}</svg>`;
   }
 
@@ -143,25 +142,31 @@
     C.innerHTML = `<div class="fhead"><div class="flv"><b>🌾 我的農場 Lv.${L.lv}</b><div class="pbar s"><i style="width:${L.cur / L.need * 100}%;background:linear-gradient(90deg,#a9e34b,#74b816)"></i></div><small>經驗 ${L.cur} / ${L.need}</small></div>
         <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧪 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div></div>
       ${night() ? '<div class="fnight">🌙 晚上 9 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
-      <div class="fbox" id="fbox"></div><div class="fbar" id="fbar"></div><div class="finfo" id="finfo">👆 點空的田可以種菜；點 💧 的田澆水、點 ✨ 的田收成</div>
+      <div class="fbox" id="fbox"><div id="fsvg"></div></div><div class="fbar" id="fbar"></div><div class="finfo" id="finfo">👆 點空的田可以種菜；點 💧 的田澆水、點 ✨ 的田收成</div><div class="fpinfo" id="fpinfo"></div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
     paint(); paintBar(); paintStore(); paintLog();
+    tap(C.querySelector('#fstore'), storeModal);
+    WK = walker(C.querySelector('#fbox'), () => { const p = PET.P(); return p && p.st === 'pet' ? p : null; }, { own: 1, zoom: zoomOn }); paintPetInfo();
     tap(C.querySelector('#fbox'), e => {   // tap：用手指捲動畫面時不會按到田
+      if (e.target.closest('.fpet')) return petTap();
       if (e.target.closest('#fbarn')) return storeModal();
       const g = e.target.closest('[data-k]'); if (!g) return; tapPlot(+g.dataset.k);
     });
-    clearInterval(tickT); tickT = setInterval(() => { if (!document.getElementById('fbox')) return clearInterval(tickT); paint(); if (curK >= 0) info(curK); }, 15000);
+    clearInterval(tickT); tickT = setInterval(() => { if (!document.getElementById('fbox')) return clearInterval(tickT); paint(); paintPetInfo(); if (curK >= 0) info(curK); }, 15000);
     applyInbox();
   }
   function paint() {
-    const box = document.getElementById('fbox'); if (!box) return; const p = PET.P();
-    box.innerHTML = farmSVG(F(), { zoom: zoomOn(), pet: p && p.st === 'pet' ? PET.petSVG(PET.look(p, { mood: PET.moodOf(p) })) : null });
+    const box = document.getElementById('fsvg'); if (!box) return;
+    const old = document.getElementById('ffx'), kids = old ? [...old.childNodes] : [];   // 還在飛的小特效留下來（不然一重畫就不見）
+    box.innerHTML = farmSVG(F(), { zoom: zoomOn() });
+    const nf = document.getElementById('ffx'); if (nf) kids.forEach(k => nf.appendChild(k));
+    if (WK) WK.redraw();
     const q = id => document.getElementById(id), f = F();
     if (q('fwater')) { q('fwater').textContent = f.water || 0; q('ffert').textContent = f.fert || 0; q('fcoin').textContent = coins(); }
   }
   function paintBar() {
     const B = document.getElementById('fbar'); if (!B) return; B.innerHTML = '';
-    [['all', '🧺 全部收成'], ['water', '💧 全部澆水'], ['store', '🏠 倉庫'], ['seed', '🌱 種子一覽'], ['zoom', zoomOn() ? '🔍 看整個農場' : '🔍 放大田地']].forEach(([k, n]) => { const b = el('button', 'fbtn', n); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'zoom' ? (zoomSet(!zoomOn()), paint(), paintBar()) : seedModal(-1)); B.appendChild(b); });
+    [['all', '🧺 全部收成'], ['water', '💧 全部澆水'], ['store', '🏠 倉庫'], ['seed', '🌱 種子一覽'], ['zoom', zoomOn() ? '🔍 看整個農場' : '🔍 放大田地']].forEach(([k, n]) => { const b = el('button', 'fbtn', n); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'zoom' ? (zoomSet(!zoomOn()), paint(), paintBar(), WK && WK.place()) : seedModal(-1)); B.appendChild(b); });
   }
   function info(k) {
     const e = document.getElementById('finfo'); if (!e) return; const f = F(), P = f.p[k], S = stat(P);
@@ -196,12 +201,13 @@
   }
   function harvest(k, quiet) {
     const f = F(), P = f.p[k], S = stat(P); if (!S.ripe) return 0;
-    f.store[P.c] = (f.store[P.c] || 0) + S.yieldN; addXp(S.C.xp); f.p[k] = 0;
-    if (!quiet) { fx(k, `${S.C.n} ×${S.yieldN}`, 'har', P.c); snd(880); setTimeout(() => snd(1100), 120); save(); paint(); paintStore(); info(k); }
+    f.store[P.c] = (f.store[P.c] || 0) + S.yieldN; addXp(S.C.xp); f.p[k] = 0; try { PET.note('hv', 1); } catch (e) { }
+    if (!quiet) { cheer(k); fx(k, `${S.C.n} ×${S.yieldN}`, 'har', P.c); snd(880); setTimeout(() => snd(1100), 120); save(); paint(); paintStore(); info(k); }
     return S.yieldN;
   }
   function harvestAll() {
-    if (night()) return; const f = F(); let n = 0; for (let k = 0; k < MAXP; k++) { const c = f.p[k] && f.p[k].c; const y = harvest(k, true); if (y) { n += y; fx(k, `+${y}`, 'har', c); } }
+    if (night()) return; const f = F(); let n = 0, k0 = -1; for (let k = 0; k < MAXP; k++) { const c = f.p[k] && f.p[k].c; const y = harvest(k, true); if (y) { n += y; if (k0 < 0) k0 = k; fx(k, `+${y}`, 'har', c); } }
+    if (k0 >= 0) cheer(k0);
     const e = document.getElementById('finfo');
     if (n) { save(); paint(); paintStore(); snd(880); setTimeout(() => snd(1100), 120); try { confetti(30); } catch (x) { } if (e) e.innerHTML = `🧺 收成了 ${n} 個，都放進倉庫了！`; } else if (e) e.innerHTML = '還沒有成熟的作物';
   }
@@ -236,19 +242,19 @@
     tap(m.querySelector('.pmx'), () => m.remove());
   }
   function storeModal() {
-    const f = F(), list = CK.filter(id => f.store[id] > 0), tot = list.reduce((a, id) => a + f.store[id] * CROPS[id].s, 0);
-    const m = modal(`<div class="pmh">🏠 倉庫　<small>🪙 ${coins()}</small></div>${list.length ? `<div class="fsto">${list.map(id => `<div class="fsi">${produceImg(id)}<b>${CROPS[id].n} ×${f.store[id]}</b><small>一個 🪙${CROPS[id].s}</small><button data-s="${id}">賣 1 個</button><button data-a="${id}">全部賣</button></div>`).join('')}</div>
+    const f = F(), list = CK.filter(id => f.store[id] > 0), tot = list.reduce((a, id) => a + f.store[id] * CROPS[id].s, 0), pp = PET.P(), pet = pp && pp.st === 'pet';
+    const m = modal(`<div class="pmh">🏠 倉庫　<small>🪙 ${coins()}${pet ? `・🐾 ${PET.nameOf(pp)} 🍙${PET.fullNow(pp)}` : ''}</small></div>${list.length ? `<div class="fsto">${list.map(id => `<div class="fsi">${produceImg(id)}<b>${CROPS[id].n} ×${f.store[id]}</b><small>一個 🪙${CROPS[id].s}</small>${pet ? `<button class="fpf" data-f="${id}">🐾 餵</button>` : ''}<button data-s="${id}">賣 1 個</button><button data-a="${id}">全部賣</button></div>`).join('')}</div>
       <button class="go fsell" id="fsellall">💰 全部賣掉（🪙 ${tot}）</button>` : '<div class="ld">倉庫是空的，快去收成吧！</div>'}<button class="pmx">關閉</button>`);
     const sell = (id, n) => { n = Math.min(n, f.store[id] || 0); if (!n) return; f.store[id] -= n; if (!f.store[id]) delete f.store[id]; addCoin(n * CROPS[id].s); save(); try { sfx.ok(); } catch (e) { } m.remove(); storeModal(); paint(); paintStore(); };
     m.querySelectorAll('[data-s]').forEach(b => tap(b, () => sell(b.dataset.s, 1)));
     m.querySelectorAll('[data-a]').forEach(b => tap(b, () => sell(b.dataset.a, 999)));
+    m.querySelectorAll('[data-f]').forEach(b => tap(b, () => { const t = PET.feedCrop(b.dataset.f); toast(t || '現在不能餵'); if (t.startsWith('😋')) { m.remove(); storeModal(); paintStore(); if (WK) { WK.hop(); WK.say('好好吃！'); } } }));
     const all = m.querySelector('#fsellall'); if (all) tap(all, () => { list.forEach(id => { addCoin(f.store[id] * CROPS[id].s); delete f.store[id]; }); save(); try { sfx.ticket(); confetti(40); } catch (e) { } toast(`💰 賣了 ${tot} 枚金幣！`); m.remove(); paint(); paintStore(); });
     tap(m.querySelector('.pmx'), () => m.remove());
   }
   function paintStore() {
     const e = document.getElementById('fstore'); if (!e) return; const f = F(), list = CK.filter(id => f.store[id] > 0);
     e.innerHTML = `<div class="fst">🏠 倉庫</div>${list.length ? `<div class="fstl">${list.map(id => `<span>${produceImg(id)}×${f.store[id]}</span>`).join('')}</div>` : '<div class="fsmall">還沒有東西，收成後會放在這裡</div>'}`;
-    tap(e, storeModal);
   }
   function paintLog() {
     const e = document.getElementById('flog'); if (!e) return; const f = F();
@@ -256,6 +262,100 @@
   }
   const ago = t => { const m = Math.floor((Date.now() - t) / 60000); return m < 1 ? '剛剛' : m < 60 ? `${m} 分鐘前` : m < 1440 ? `${Math.floor(m / 60)} 小時前` : `${Math.floor(m / 1440)} 天前`; };
   function snd(f) { try { if (typeof tone === 'function' && sndOn) tone(f, .07, 'triangle', .06); } catch (e) { } }
+
+  /* ───────── 農場裡的寵物：走來走去、提醒要照顧的田；進化以後會幫忙 ─────────
+     走的路線是田地外圍一圈草地（農場座標）；晚上回房子旁邊睡覺。
+     幫忙次數（每天）：寶寶 0 次（只會提醒）、第一次進化 3 次（捉蟲、拔草）、最終進化 6 次（還會澆水，不用花水） */
+  const RING = [[450, 410], [620, 290], [930, 300], [1180, 462], [1100, 612], [940, 722], [700, 742], [560, 672], [400, 522]];
+  const SLEEP = [520, 300], PW = 150, SPEED = 120, HELP_N = [0, 3, 6];
+  const IDLE = ['♪', '💗', '🌼', '✨', '😊', '🎵'];
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  let WK = null;
+  function walker(box, get, o) {
+    const L = el('div', 'fpetL'), w = el('div', 'fpet', '<div class="fpa"></div><div class="fpb"></div>'); L.appendChild(w); box.appendChild(L);
+    let pos = RING[0].slice(), idx = 0, T = 0, busy = 0, alive = 1, key = '', lastK = -1, lastT = 0;   // lastK：剛剛提醒過的田（不要一直跑回同一塊）
+    const V = () => o.zoom() ? VB_ZOOM : VB_FULL;
+    function place(ms) { const v = V(); w.style.transitionDuration = (ms || 0) + 'ms'; w.style.left = ((pos[0] - v[0]) / v[2] * 100) + '%'; w.style.top = ((pos[1] - v[1]) / v[3] * 100) + '%'; w.style.width = (PW / v[2] * 100) + '%'; }
+    function redraw() {
+      const p = get(); if (!p) { w.style.display = 'none'; return; } w.style.display = '';
+      const lk = PET.look(p, { mood: night() ? 'sleep' : o.own ? PET.moodOf(p) : 'happy' }), k = JSON.stringify(lk);
+      if (k !== key) { key = k; w.querySelector('.fpa').innerHTML = PET.petArt(lk); }
+    }
+    function go(x, y, cb) {
+      const d = Math.hypot(x - pos[0], y - pos[1]), ms = Math.max(250, d / SPEED * 1000);
+      if (Math.abs(x - pos[0]) > 4) w.classList.toggle('flip', x > pos[0]);
+      w.classList.add('walk'); pos = [x, y]; place(ms);
+      clearTimeout(go.t); go.t = setTimeout(() => { w.classList.remove('walk'); if (cb) cb(); }, ms);
+      return ms;
+    }
+    function say(t, ms) { const b = w.querySelector('.fpb'); b.innerHTML = t; b.classList.add('on'); clearTimeout(say.t); say.t = setTimeout(() => b.classList.remove('on'), ms || 2600); }
+    function hop() { w.classList.remove('hop'); void w.offsetWidth; w.classList.add('hop'); clearTimeout(hop.t); hop.t = setTimeout(() => w.classList.remove('hop'), 700); }
+    function sched(ms) { clearTimeout(T); T = setTimeout(tick, ms || 2600 + Math.random() * 4200); }
+    function tick() {
+      if (!alive || !w.isConnected) return stop();
+      if (busy) return sched(1500);
+      redraw();
+      if (night()) { w.classList.add('zz'); if (Math.hypot(pos[0] - SLEEP[0], pos[1] - SLEEP[1]) > 5) go(SLEEP[0], SLEEP[1]); say('💤', 6000); return sched(9000); }
+      w.classList.remove('zz');
+      const Fm = o.F ? o.F() : F();
+      if (o.own && Math.random() < .4) { const k = needPlot(Fm); if (k >= 0 && !(k === lastK && Date.now() - lastT < 25000)) { lastK = k; lastT = Date.now(); const [x, y] = plotC(k), ms = go(x, y + 26, () => say(hint(Fm, k), 3200)); return sched(ms + 4200); } }
+      if (Math.random() < .22) { say(pick(IDLE), 1600); return sched(); }
+      idx = (idx + (Math.random() < .5 ? 1 : RING.length - 1)) % RING.length;
+      const ms = go(RING[idx][0], RING[idx][1]); sched(ms + 1200 + Math.random() * 3600);
+    }
+    function stop() { alive = 0; clearTimeout(T); clearTimeout(go.t); }
+    place(0); redraw(); sched(900);
+    return { place: () => place(0), redraw, go, say, hop, stop, busy: v => { busy = v; }, el: w, pos: () => pos.slice() };
+  }
+  /* 哪塊田需要照顧（給寵物提醒用） */
+  function needPlot(Fm) {
+    const n = plotsFor(lvOf(Fm.xp).lv), ks = [];
+    for (let k = 0; k < n; k++) { const S = stat(Fm.p[k]); if (!S.empty && (S.ripe || S.thirsty || S.bug || S.weed)) ks.push(k); }
+    return ks.length ? pick(ks) : -1;
+  }
+  function hint(Fm, k) {
+    const S = stat(Fm.p[k]), i = n => `<img class="fbi" src="${IMG}ic-${n}.webp" alt="">`;
+    return S.bug ? `${i('bug')} 這裡有蟲！` : S.weed ? `${i('weed')} 長雜草了！` : S.ripe ? `${i('spark')} 可以收成了！` : S.thirsty ? `${i('drop')} 口渴了～` : '♪';
+  }
+  /* 寵物能幫忙的田：蟲、雜草；最終進化還會澆水 */
+  function helpPlot(f, st) {
+    const n = plotsFor(lvOf(f.xp).lv);
+    for (let k = 0; k < n; k++) { const S = stat(f.p[k]); if (!S.empty && (S.bug || S.weed)) return k; }
+    if (st >= 2) for (let k = 0; k < n; k++) { const S = stat(f.p[k]); if (!S.empty && S.thirsty) return k; }
+    return -1;
+  }
+  const helpLeft = (f, st) => { const today = dkey(); if (!f.ph || f.ph.d !== today) f.ph = { d: today, n: 0 }; return Math.max(0, HELP_N[st] - f.ph.n); };
+  function petTap() {
+    const p = PET.P(); if (!p || p.st !== 'pet' || !WK) return;
+    if (night()) { WK.say('💤 呼嚕…明天見'); return; }
+    const st = PET.stageOf(PET.lvOf(p.xp).lv), f = F(), left = helpLeft(f, st), k = helpPlot(f, st);
+    if (st >= 1 && k >= 0 && left > 0) {
+      WK.busy(1); WK.say('交給我！', 1500); const [x, y] = plotC(k);
+      WK.go(x, y + 26, () => {
+        const P2 = f.p[k], S = stat(P2); let t = '';
+        if (S.bug) { P2.b = 2; t = '🐛 捉到蟲了'; } else if (S.weed) { P2.g = 2; t = '🌿 拔掉雜草了'; } else if (st >= 2 && S.thirsty) { P2.w = (P2.w || 0) + 1; t = '💧 澆好水了'; }
+        if (t) { f.ph.n++; addXp(1); fx(k, `🐾 ${t}`, t[0] === '💧' ? 'water' : ''); snd(760); save(); paint(); if (curK === k) info(k); WK.hop(); WK.say(t + '！'); paintPetInfo(); }
+        WK.busy(0);
+      });
+      return;
+    }
+    WK.hop(); PET.patJoy(); snd(880);
+    WK.say(st === 0 && needPlot(f) >= 0 ? `有田要照顧喔！<small>我 Lv.${PET.EVO[0]} 進化以後就能幫忙</small>`
+      : st >= 1 && k >= 0 && left <= 0 ? '今天幫好多次了～明天再幫你！' : pick(['💗 嘿嘿～', '今天也一起加油！', '農場好漂亮！', PET.SPECIES[p.sp].say]), 2800);
+  }
+  /* 收成的時候寵物跑過來一起開心 */
+  function cheer(k) {
+    if (!WK || night()) return; const [x, y] = plotC(k);
+    WK.go(x - 70, y + 40, () => { WK.hop(); WK.say('🎉 豐收！', 1800); });
+  }
+  function paintPetInfo() {
+    const e = document.getElementById('fpinfo'); if (!e) return; const p = PET.P();
+    if (!p || p.st !== 'pet') { e.innerHTML = '🥚 孵出寵物以後，牠會來農場陪你、幫你顧田！'; return; }
+    const st = PET.stageOf(PET.lvOf(p.xp).lv), nm = PET.nameOf(p), left = helpLeft(F(), st);
+    e.innerHTML = st === 0 ? `🐾 ${nm}會在農場走來走去，提醒你哪塊田要照顧。<b>Lv.${PET.EVO[0]} 進化</b>以後會幫忙捉蟲、拔草！`
+      : `🐾 點${nm}，牠會幫忙捉蟲、拔草${st >= 2 ? '、澆水' : ''}（今天還能 <b>${left}</b> 次）${st < 2 ? `。Lv.${PET.EVO[1]} 最終進化以後還會幫忙澆水！` : ''}`;
+    e.innerHTML += '<small>倉庫裡的菜可以拿去餵牠，比賣掉划算喔</small>';
+  }
 
   /* ───────── 同學做的事：主人打開農場時算進去 ───────── */
   async function applyInbox() {
@@ -303,11 +403,13 @@
     /* 已經有人幫過（主人還沒打開）也先算進去，畫面才會對 */
     const mine = new Set();
     for (const [id, a] of Object.entries(inbox)) { const P = Fm.p[a.k]; if (!P || P.t !== a.pt) continue; if (a.a === 'w') P.w = (P.w || 0) + 1; if (a.a === 'g') P.g = 2; if (a.a === 'b') P.b = 2; if (a.a === 's') P.s = (P.s || 0) + 1; if (a.f === user.seat) mine.add(a.k + a.a); }
-    const m = modal(`<div class="pmh">🌾 ${seatName(s)}的農場　<small>Lv.${lvOf(Fm.xp).lv}</small></div><div class="fbox vis" id="fvbox"></div><div class="finfo" id="fvinfo">👆 點有 💧🌿🐛 的田幫忙，點 ✨ 的田偷摘 1 個</div><div class="fres c"><span>💧 <b id="fvw">${F().water || 0}</b></span><span>🪙 <b id="fvc">${coins()}</b></span></div><button class="pmx">回去</button>`);
-    const paintV = () => { m.querySelector('#fvbox').innerHTML = farmSVG(Fm, { pet: pv && PET.SPECIES[pv.sp] ? PET.petSVG(Object.assign({}, pv, { mood: 'happy' })) : null }); m.querySelector('#fvw').textContent = F().water || 0; m.querySelector('#fvc').textContent = coins(); };
+    const m = modal(`<div class="pmh">🌾 ${seatName(s)}的農場　<small>Lv.${lvOf(Fm.xp).lv}</small></div><div class="fbox vis" id="fvbox"><div id="fvsvg"></div></div><div class="finfo" id="fvinfo">👆 點有 💧🌿🐛 的田幫忙，點 ✨ 的田偷摘 1 個</div><div class="fres c"><span>💧 <b id="fvw">${F().water || 0}</b></span><span>🪙 <b id="fvc">${coins()}</b></span></div><button class="pmx">回去</button>`);
+    const paintV = () => { m.querySelector('#fvsvg').innerHTML = farmSVG(Fm, {}); m.querySelector('#fvw').textContent = F().water || 0; m.querySelector('#fvc').textContent = coins(); };
     paintV();
+    const VW = pv && PET.SPECIES[pv.sp] ? walker(m.querySelector('#fvbox'), () => Object.assign({}, pv, { mood: 'happy' }), { zoom: () => false, F: () => Fm }) : null;
     const msg = t => m.querySelector('#fvinfo').innerHTML = t;
     tap(m.querySelector('#fvbox'), e => {
+      if (e.target.closest('.fpet')) { if (VW) { VW.hop(); VW.say(`嗨！我是${PET.NAMES[pv.nm | 0]}`); } return; }
       const g = e.target.closest('[data-k]'); if (!g) return; const k = +g.dataset.k, P = Fm.p[k], S = stat(P);
       if (night()) return msg('🌙 晚上農場在休息，明天再來吧');
       if (S.empty) return msg('這塊田是空的');
@@ -326,7 +428,7 @@
       else { addXp(1); if ((f.hc || 0) < HELP_COIN_MAX) { f.hc = (f.hc || 0) + 1; addCoin(1); } msg(`${act === 'w' ? '💧 幫忙澆水' : act === 'g' ? '🌿 幫忙拔雜草' : '🐛 幫忙捉蟲'}了！謝謝你 ❤️${(f.hc || 0) <= HELP_COIN_MAX ? '　🪙+1' : ''}`); snd(700); }
       saveSum(true); paintV(); VC = null;
     });
-    tap(m.querySelector('.pmx'), () => { m.remove(); if (view === 'farm') render(); });
+    tap(m.querySelector('.pmx'), () => { if (VW) VW.stop(); m.remove(); if (view === 'farm') render(); });
   }
 
   /* ───────── 農場頁（左邊選單「農場」）：我的農場、同學的農場 ───────── */
@@ -395,6 +497,16 @@
   #farmmini{display:flex;align-items:center;gap:.9rem;width:100%;margin-top:1rem;text-align:left;border:0;background:linear-gradient(135deg,#fff,#f4fce3);cursor:pointer;font-family:inherit}
   #farmmini .fmv{width:7.5rem;flex:none}#farmmini .fmi{flex:1;min-width:0}#farmmini .fmt{font-size:1.4rem;font-weight:900;color:#5c940d}#farmmini .fmt small{font-size:1rem;color:#94d82d}#farmmini .fms{font-size:1.05rem;color:#666;font-weight:800;margin-top:.2rem}#farmmini .pgo{font-size:1.6rem;color:#94d82d}
   .farmend{color:#5c940d}
+  .fbox{position:relative}.fpetL{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .fpet{position:absolute;aspect-ratio:1;transform:translate(-50%,-90%);transition-property:left,top;transition-timing-function:linear;pointer-events:auto;cursor:pointer;z-index:2;touch-action:manipulation}
+  .fpet .fpa{width:100%;height:100%;transition:transform .25s}.fpet.flip .fpa{transform:scaleX(-1)}
+  .fpet.walk .fpa>.pa{animation:fpw .3s ease-in-out infinite alternate}@keyframes fpw{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-7%) rotate(4deg)}}
+  .fpet.hop .fpa>.pa{animation:fph .6s ease-out}@keyframes fph{40%{transform:translateY(-32%) scale(.96,1.05)}80%{transform:translateY(0) scale(1.08,.92)}}
+  .fpet.zz .fpa>.pa{animation:fpz 3.6s ease-in-out infinite}@keyframes fpz{50%{transform:scale(1.04,.96)}}
+  .fpb{position:absolute;left:50%;bottom:88%;transform:translateX(-50%) scale(.6);opacity:0;transition:opacity .2s,transform .2s;background:#fff;border-radius:14px;padding:.25rem .6rem;font-size:clamp(.8rem,1.5vw,1.1rem);font-weight:900;color:#555;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.18);pointer-events:none;text-align:center;line-height:1.3}
+  .fpb.on{opacity:1;transform:translateX(-50%) scale(1)}.fpb small{display:block;font-size:.75em;color:#999}.fpb .fbi{width:1.5em;height:1.5em;vertical-align:-.4em}
+  .fpinfo{margin-top:.5rem;background:#fff0f6;border-radius:14px;padding:.5rem .8rem;font-size:1.05rem;font-weight:900;color:#d6336c}.fpinfo b{color:#ae3ec9}.fpinfo small{display:block;color:#f783ac;font-size:.9rem;margin-top:.15rem}
+  .fsi .fpf{background:#ffdeeb;color:#d6336c}
   @media (max-width:700px){.frow2{grid-template-columns:1fr}.fseeds{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr))}.fvg{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
