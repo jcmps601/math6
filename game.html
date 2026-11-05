@@ -377,7 +377,7 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
 .wm i{position:absolute; left:50%; bottom:0; transform:translate(-50%,115%); font-style:normal; line-height:1;
   font-size:calc(var(--ws)*.62); transition:transform .11s ease-out; filter:drop-shadow(0 .3cqw 0 #0003)}
 .wcell.up .wm i{transform:translate(-50%,6%)}
-.wcell.gold .wm i{filter:drop-shadow(0 0 1.2cqw #ffd43b) drop-shadow(0 0 .5cqw #fab005) sepia(.6) saturate(3) hue-rotate(-10deg)}
+.wcell.gold .wm i{filter:drop-shadow(0 0 1.2cqw #ffd43b) drop-shadow(0 0 .5cqw #fab005)}
 .wfx{position:absolute; left:50%; top:4%; transform:translateX(-50%); font-weight:900; font-size:calc(var(--ws)*.26); color:#fff;
   text-shadow:0 .3cqw 0 #0006; white-space:nowrap; pointer-events:none; z-index:3; animation:wfx .7s ease-out forwards}
 .wfx.bad{color:#ffe3e3}
@@ -449,6 +449,106 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
     color:#5f3dc4; font-weight:900; font-size:17px; padding:8px 16px; border-radius:999px; box-shadow:0 4px 0 #0002; white-space:nowrap; pointer-events:none}
 }
 
+/* ═══ V3：手機 HUD、舞台比例、開始前說明、遊戲圖片 ═══ */
+.chip .cic{width:1.5em; height:1.5em; object-fit:contain; flex:none}
+.hic{width:1.1em; height:1.1em; object-fit:contain; vertical-align:-.15em}
+.bic{width:1.35em; height:1.35em; object-fit:contain; vertical-align:-.3em; margin-right:.25em; pointer-events:none}
+#gRound{display:none!important; min-width:0; white-space:nowrap}
+@media (max-width:700px), (max-height:560px){
+  .rdots:not(.hearts){display:none!important}
+  #gRound:not([hidden]){display:flex!important}
+  .rdots.hearts{gap:4px; padding:0 8px; height:42px} .rdots.hearts i.heart{width:24px; height:24px}
+}
+@media (max-width:560px){
+  .hud{flex-wrap:wrap; height:auto; padding:8px 64px 6px 10px; row-gap:6px; align-content:center}
+  .hud .grow{flex:1 0 100%; height:0}
+  .hud .chip{flex:0 1 auto; min-width:0; overflow:hidden; white-space:nowrap}
+  .hud .stat,.hud .rdots{height:38px}
+  .rdots.hearts i.heart{width:22px; height:22px}
+}
+#game.tallon .rotate{display:none!important}
+/* 直立的螢幕：方格類遊戲改成接近正方形的舞台 */
+.stage.tall .ngrid{height:auto; width:min(94cqw,92cqh)}
+#nPane{--nsz:30cqw} .stage.tall #nPane{--nsz:min(54cqw,53cqh)}
+.stage.tall .wgrid{height:auto; width:min(94cqw,92cqh)}
+#wPane{--wsz:45cqw} .stage.tall #wPane{--wsz:min(86cqw,84cqh)}
+#hPane{--hsz:48cqw} .stage.tall #hPane{--hsz:min(90cqw,72cqh)}
+.stage.tall .hgrid{top:14%; height:auto; width:min(92cqw,74cqh)}
+.stage.tall .hshov{left:3%; top:6.5%; flex-direction:row; align-items:center; font-size:4.4cqw}
+.stage.tall .hlad{left:50%; right:auto; top:auto; bottom:2%; transform:translateX(-50%); flex-direction:row; font-size:4.2cqw; gap:1.6cqw}
+.stage.tall .hlamp{font-size:4.4cqw}
+.stage.tall .spads.p4{grid-template-columns:repeat(2,min(34cqw,26cqh)); grid-template-rows:repeat(2,min(34cqw,26cqh))}
+.stage.tall .spads.p6{grid-template-columns:repeat(2,min(30cqw,21cqh)); grid-template-rows:repeat(3,min(30cqw,21cqh))}
+.stage.tall .lamp{font-size:5cqw}
+.stage.tall .krule{font-size:5cqw}
+.stage.tall .kword{font-size:min(24cqw,20cqh); top:33%}
+.stage.tall .kbtns{flex-wrap:wrap; justify-content:center; width:96%; gap:2.4cqw}
+.stage.tall .kbtn{width:min(21cqw,16cqh); height:min(21cqw,16cqh); font-size:min(10cqw,7.5cqh)}
+.stage.tall .xmsg{font-size:13cqw}
+.stage.tall #xPane.go .xmsg{font-size:19cqw}
+.stage.tall .xsub{font-size:5cqw; width:94%; white-space:normal; text-align:center}
+.stage.tall .xdot{width:20cqw}
+/* 遊戲裡的圖片 */
+.gsp{display:block; pointer-events:none; -webkit-user-drag:none; user-select:none}
+.wm i{width:calc(var(--ws)*.86)}
+.wm i .gsp{width:100%; height:auto}
+.wcell.hit .wm i .gsp{animation:wbonk .3s ease-out forwards}
+@keyframes wbonk{0%{transform:scale(1,1)}35%{transform:scale(1.18,.72); filter:brightness(1.3)}100%{transform:scale(1,.85); filter:grayscale(.4) brightness(.9)}}
+.wcell.boom .wm i .gsp{animation:wboom .32s ease-out forwards}
+@keyframes wboom{0%{transform:scale(1)}50%{transform:scale(1.35); filter:brightness(2) saturate(2)}100%{transform:scale(.6); opacity:0}}
+.wcell.boom .wm::after{content:''; position:absolute; left:50%; bottom:10%; width:90%; aspect-ratio:1; transform:translateX(-50%); border-radius:50%;
+  background:radial-gradient(circle,#fff6 0%,#ffd166cc 30%,#ff6b3d88 55%,#0000 70%); animation:wburst .32s ease-out forwards; pointer-events:none}
+@keyframes wburst{from{transform:translateX(-50%) scale(.3); opacity:1}to{transform:translateX(-50%) scale(1.2); opacity:0}}
+.cupb{background:url(img/game/cup-red.webp) center bottom/100% 100% no-repeat; filter:drop-shadow(0 .6cqw .5cqw #0005)}
+.cupb::before,.cupb::after,.cupb s{display:none}
+.cup .cshadow{left:50%; bottom:-4%; width:92%; height:10%; z-index:0}
+.hshov .hpk{width:1.25em; height:1.25em; object-fit:contain}
+.hshov b{font-weight:900; color:#8a5a20; white-space:nowrap; font-size:.7em; text-align:center; background:rgba(255,255,255,.6); border-radius:999px; padding:.1em .45em}
+.stage.tall .hshov b{font-size:.95em}
+#game.prepping .hud>*:not(#gameBack){visibility:hidden}
+#game.prepping .rotate{display:none!important}
+.hshov b.low{color:#d9480f}
+.htile b .gsp{width:100%; height:100%; object-fit:contain}
+.htile.gem b{width:calc(var(--ts)*.9); height:calc(var(--ts)*.9)}
+.fdg .gsp{width:1.2em; height:1.2em; object-fit:contain}
+.hdnote{white-space:normal; width:90%; text-align:center}
+/* 開始前說明 */
+#prep{position:absolute; inset:0; z-index:40; display:flex; align-items:center; justify-content:center; padding:12px; background:#1b1f3b99; backdrop-filter:blur(2px); overflow-y:auto}
+#prep .pcard{background:#fff; border-radius:28px; padding:20px 24px 16px; width:min(560px,100%); box-shadow:0 10px 0 #0002; margin:auto; display:flex; flex-direction:column; gap:12px}
+#prep .ptop{display:flex; align-items:center; gap:14px}
+#prep .ptop img{width:72px; height:72px; object-fit:contain; flex:none}
+#prep .pnm{font-size:30px; font-weight:900; color:#333}
+#prep .pdf{display:inline-block; margin-top:2px; color:#fff; font-weight:900; font-size:18px; padding:2px 14px; border-radius:999px}
+#prep .pbody{display:flex; align-items:center; gap:14px; background:#f6f7fb; border-radius:20px; padding:12px 14px}
+#prep .pges{width:78px; height:78px; object-fit:contain; flex:none}
+#prep ul{margin:0; padding-left:1.1em; font-size:20px; font-weight:800; color:#444; line-height:1.45}
+#prep .ptouch{display:flex; flex-direction:column; align-items:center; gap:8px; border:3px dashed #b197fc; border-radius:20px; padding:10px}
+#prep .ptouch>img{width:64px; height:auto}
+#prep .ptbox{width:100%; min-height:110px; border-radius:16px; background:#f3f0ff; display:grid; place-items:center; touch-action:none; user-select:none; -webkit-user-select:none; text-align:center; padding:8px; font-size:19px; color:#5f3dc4}
+#prep .ptbox.ok{background:#d3f9d8; color:#2b8a3e}
+#prep .ptmsg{font-size:17px; font-weight:800; color:#c2255c; text-align:center}
+#prep .ptmsg:empty{display:none}
+#prep .ptmsg.ok{color:#2b8a3e}
+#prep .pbtns{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+#prep .pbtns .pbtn{flex:1 1 0; max-width:260px}
+#prep .pskip{display:flex; align-items:center; justify-content:center; gap:6px; font-size:16px; color:#888; font-weight:700}
+#prep .pskip input{width:20px; height:20px}
+@media (max-width:560px), (max-height:560px){
+  #prep .pcard{padding:14px 14px 12px; gap:9px; border-radius:22px}
+  #prep .ptop img{width:52px; height:52px} #prep .pnm{font-size:23px} #prep .pdf{font-size:15px}
+  #prep .pges{width:56px; height:56px} #prep ul{font-size:16px}
+  #prep .ptbox{min-height:84px; font-size:16px}
+}
+@media (max-height:560px) and (min-width:561px){
+  #prep{padding-top:58px}
+  #prep .pcard{width:min(720px,100%)}
+  #prep .pcard.hold{display:grid; grid-template-columns:1fr 1fr; column-gap:14px}
+  #prep .pcard.hold .ptouch{grid-column:2; grid-row:1/3} #prep .pcard.hold .ptouch>img{display:none}
+  #prep .pcard.hold .pbtns,#prep .pcard.hold .pskip{grid-column:1/-1}
+}
+@media (max-width:560px){ #prep{padding-top:64px} }
+.hud{position:relative; z-index:41}
+
 /* ═══ 遊戲圖示（img/ui） ═══ */
 body{background:url(img/ui/bg-park.webp) center bottom/cover no-repeat,linear-gradient(160deg,var(--sky1),var(--sky2))}
 .gcard .ic img{display:block;width:clamp(64px,min(7.4vw,12vh),118px);height:clamp(64px,min(7.4vw,12vh),118px);object-fit:contain;margin:0 auto;filter:drop-shadow(0 6px 6px rgba(0,0,0,.14));-webkit-user-drag:none;pointer-events:none}
@@ -480,11 +580,11 @@ body{background:url(img/ui/bg-park.webp) center bottom/cover no-repeat,linear-gr
     <button class="gcard x" data-game="react"><div class="ic"><img src="img/ui/game-react.webp" alt="" draggable="false"></div><div class="nm">反應王</div><div class="bests" id="hb_react"></div></button>
     <button class="gcard d" data-game="spot"><div class="ic"><img src="img/ui/game-spot.webp" alt="" draggable="false"></div><div class="nm">找不同</div><div class="bests" id="hb_spot"></div></button>
     <button class="gcard b" data-game="bridge"><div class="ic"><img src="img/ui/game-bridge.webp" alt="" draggable="false"></div><div class="nm">搭橋小英雄</div><div class="bests" id="hb_bridge"></div></button>
-    <button class="gcard m" data-game="melon"><div class="ic">🍉</div><div class="nm">合成大西瓜</div><div class="bests" id="hb_melon"></div></button>
+    <button class="gcard m" data-game="melon"><div class="ic"><img src="img/game/game-melon.webp" alt="" draggable="false"></div><div class="nm">合成大西瓜</div><div class="bests" id="hb_melon"></div></button>
     <button class="gcard w" data-game="mole"><div class="ic"><img src="img/ui/game-mole.webp" alt="" draggable="false"></div><div class="nm">打地鼠</div><div class="bests" id="hb_mole"></div></button>
     <button class="gcard l" data-game="slice"><div class="ic"><img src="img/ui/game-slice.webp" alt="" draggable="false"></div><div class="nm">切禮物</div><div class="bests" id="hb_slice"></div></button>
     <button class="gcard p" data-game="hold"><div class="ic"><img src="img/ui/game-hold.webp" alt="" draggable="false"></div><div class="nm">按住別放</div><div class="bests" id="hb_hold"></div></button>
-    <button class="gcard g" data-game="g2048"><div class="ic"><span class="t2048"></span></div><div class="nm">2048</div><div class="bests" id="hb_g2048"></div></button>
+    <button class="gcard g" data-game="g2048"><div class="ic"><img src="img/game/game-2048.webp" alt="" draggable="false"></div><div class="nm">2048</div><div class="bests" id="hb_g2048"></div></button>
   </div>
 </section>
 
@@ -502,6 +602,7 @@ body{background:url(img/ui/bg-park.webp) center bottom/cover no-repeat,linear-gr
     <div class="chip" id="gChip"></div>
     <div class="grow"></div>
     <div class="rdots" id="gDots" hidden></div>
+    <div class="stat rtxt" id="gRound" hidden></div>
     <div class="stat" id="gScore"></div>
     <div class="stat" id="gTime" hidden></div>
   </div>
@@ -527,6 +628,13 @@ body{background:url(img/ui/bg-park.webp) center bottom/cover no-repeat,linear-gr
       <div class="count" id="count"></div>
     </div>
   </div>
+  <div id="prep" hidden><div class="pcard">
+    <div class="ptop"><img id="pIc" alt=""><div><div class="pnm" id="pNm"></div><div class="pdf" id="pDf"></div></div></div>
+    <div class="pbody"><img class="pges" id="pGes" alt=""><ul id="pTxt"></ul></div>
+    <div class="ptouch" id="pTouch" hidden><img src="img/game/device-touch.webp" alt=""><div class="ptbox" id="pTBox"><b id="pTN">用兩根手指同時按住這裡試試看</b></div><div class="ptmsg" id="pTMsg"></div></div>
+    <div class="pbtns"><button class="pbtn" id="pBack"><img class="bic" src="img/game/game-difficulty.webp" alt="">換難度</button><button class="pbtn main" id="pGo"><img class="bic" src="img/ui/ic-play.webp" alt="">開始</button></div>
+    <label class="pskip"><input type="checkbox" id="pSkip"> 這個遊戲下次直接開始</label>
+  </div></div>
 </section>
 
 <!-- 結果 -->
@@ -539,9 +647,9 @@ body{background:url(img/ui/bg-park.webp) center bottom/cover no-repeat,linear-gr
     <div class="rbest" id="rBest"></div>
     <div class="rnext" id="rNext"></div>
     <div class="rbtns">
-      <button class="pbtn main" id="rAgain">🔁 再玩一次</button>
-      <button class="pbtn" id="rDiff">🎚️ 換難度</button>
-      <button class="pbtn" id="rHome">🏠 首頁</button>
+      <button class="pbtn main" id="rAgain"><img class="bic" src="img/game/game-retry.webp" alt="">再玩一次</button>
+      <button class="pbtn" id="rDiff"><img class="bic" src="img/game/game-difficulty.webp" alt="">換難度</button>
+      <button class="pbtn" id="rHome"><img class="bic" src="img/ui/nav-home.webp" alt="">首頁</button>
     </div>
   </div>
 </div>
@@ -693,6 +801,15 @@ function bgmCompile(spec,sepLead){
 const GAMES={tower:{ic:'🧱',nm:'疊高塔'},cups:{ic:'🥤',nm:'三杯追星'},flappy:{ic:'🐤',nm:'小雞跳跳'},hunt:{ic:'🗺️',nm:'尋寶'},num:{ic:'🔢',nm:'數字快手'},simon:{ic:'🎹',nm:'記憶燈光'},color:{ic:'🎨',nm:'顏色陷阱'},react:{ic:'⚡',nm:'反應王'},spot:{ic:'👀',nm:'找不同'},bridge:{ic:'🌉',nm:'搭橋小英雄'},melon:{ic:'🍉',nm:'合成大西瓜'},g2048:{ic:'🔶',nm:'2048'},mole:{ic:'🔨',nm:'打地鼠'},slice:{ic:'🎁',nm:'切禮物'},hold:{ic:'🖐️',nm:'按住別放'}};
 const GAME_KEYS=Object.keys(GAMES);
 const GIMG=new Set(['tower','cups','flappy','hunt','num','simon','color','react','spot','bridge','mole','slice','hold']);   // 有圖示的遊戲（img/ui/game-*.webp）
+/* V3 遊戲圖片（img/game）：先載入；畫布遊戲在圖還沒載好時用原本的程式圖形 */
+const GSP=n=>`img/game/${n}.webp`;
+const SPR={};
+['chick-wing-up','chick-wing-mid','chick-wing-down','bridge-owl-right','gift-red','gift-blue','gift-gold','bomb','mole-normal','mole-gold','cup-red','pickaxe','treasure-gem','game-clock']
+  .forEach(n=>{ const im=new Image(); im.decoding='async'; im.src=GSP(n); SPR[n]=im; });
+const sprOK=n=>{ const im=SPR[n]; return !!(im&&im.complete&&im.naturalWidth); };
+const gimg=(n,cls)=>`<img class="gsp${cls?' '+cls:''}" src="${GSP(n)}" alt="" draggable="false">`;
+const gIcon=g=>GIMG.has(g)?`img/ui/game-${g}.webp`:(g==='melon'||g==='g2048')?GSP(g==='melon'?'game-melon':'game-2048'):'';
+const CLOCK='<img class="hic" src="img/game/game-clock.webp" alt="">';
 const DIFFS=[{k:'easy',ic:'🌱',nm:'簡單'},{k:'normal',ic:'⭐',nm:'普通'},{k:'hard',ic:'🔥',nm:'困難'},{k:'boss',ic:'👑',nm:'魔王'}];
 const DIFF_COL={easy:'#2fb36d',normal:'#2f8cf0',hard:'#f28a1c',boss:'#9b3fe0'};
 /* 疊高塔：30 秒能疊幾層。速度＝起始＋每層加快＋時間加快；完美判定範圍、底座寬度依難度不同。
@@ -913,7 +1030,7 @@ const sfx={
 
 /* ═════════════ 畫面切換 ═════════════ */
 let curGame='tower', curDiff='normal';
-function show(id){ $$('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); }
+function show(id){ if(id!=='game'){ const p=document.getElementById('prep'); if(p) p.hidden=true; } document.getElementById('game').classList.remove('prepping'); $$('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); }
 let audioReady=false;
 function firstTouch(){ if(audioReady) return; audioReady=true; acGet(); if($('#home').classList.contains('on')||$('#diff').classList.contains('on')) playSong('menu'); }
 document.addEventListener('pointerdown',firstTouch,true);
@@ -940,8 +1057,8 @@ function goDiff(){
 }
 $$('.gcard').forEach(b=>b.onclick=()=>{ sfx.click(); curGame=b.dataset.game; goDiff(); });
 $('#diffBack').onclick=()=>{ sfx.click(); goHome(); };
-$('#dGrid').addEventListener('click',e=>{ const b=e.target.closest('.dbtn'); if(!b) return; sfx.click(); curDiff=b.dataset.d; startGame(); });
-$('#gameBack').onclick=()=>{ sfx.click(); goDiff(); };
+$('#dGrid').addEventListener('click',e=>{ const b=e.target.closest('.dbtn'); if(!b) return; sfx.click(); curDiff=b.dataset.d; prepGame(); });
+$('#gameBack').onclick=()=>{ sfx.click(); $('#prep').hidden=true; goDiff(); };
 $('#rAgain').onclick=()=>{ sfx.click(); $('#result').classList.remove('on'); startGame(); };
 $('#rDiff').onclick=()=>{ sfx.click(); goDiff(); };
 $('#rHome').onclick=()=>{ sfx.click(); goHome(); };
@@ -949,12 +1066,18 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){ if($('#game').classList.contains('on')||$('#result').classList.contains('on')) goDiff(); else if($('#diff').classList.contains('on')) goHome(); }
 });
 
-/* 舞台：保持 16:9，塞滿可用空間 */
+/* 舞台：平常保持 16:9，塞滿可用空間。
+   直立的螢幕（手機、平板直拿）上，方格類遊戲改成比較方的舞台（最窄到 STAGE_TALL 的寬高比），
+   動作類遊戲（疊高塔、小雞、搭橋、切禮物…）照舊保持 16:9，避免改到遊戲世界的比例。 */
+const STAGE_TALL={num:0.8,hunt:0.7,spot:0.72,simon:0.8,color:0.75,react:0.75,mole:0.8};
 function fitStage(){
   const w=$('#stageWrap'), s=$('#stage'); if(!w.clientWidth) return;
-  const aw=w.clientWidth-32, ah=w.clientHeight-16;
-  let W=aw, H=W*9/16; if(H>ah){ H=ah; W=H*16/9; }
+  const sw=w.clientWidth<=560?20:32, aw=w.clientWidth-sw, ah=w.clientHeight-(w.clientWidth<=560?10:16), r=aw/ah, mn=STAGE_TALL[curGame];
+  let W=aw, H=W*9/16, tall=false;
+  if(mn&&r<1.3){ const k=Math.max(mn,r); W=aw; H=W/k; if(H>ah){ H=ah; W=H*k; } tall=true; }
+  else if(H>ah){ H=ah; W=H*16/9; }
   s.style.width=Math.floor(W)+'px'; s.style.height=Math.floor(H)+'px';
+  s.classList.toggle('tall',tall); $('#game').classList.toggle('tallon',tall);
 }
 window.addEventListener('resize',fitStage);
 
@@ -969,15 +1092,24 @@ function stopGame(){
 const HEART_PATH='M12 21s-7.5-4.6-9.6-9.2C.9 8.6 2.6 4.5 6.4 4.1c2.2-.2 4 1 5.6 3 1.6-2 3.4-3.2 5.6-3 3.8.4 5.5 4.5 4 7.7C19.5 16.4 12 21 12 21z';
 function heartsHtml(n,max){ return [...Array(max)].map((_,i)=>`<i class="heart${i<n?'':' lost'}"><svg viewBox="0 0 24 24"><path d="${HEART_PATH}"/></svg></i>`).join(''); }
 function bigMsg(t,ms){ const e=$('#bigMsg'); e.textContent=''; void e.offsetWidth; e.textContent=t||''; if(t&&ms) later(()=>{ e.textContent=''; },ms); }
+/* 窄螢幕：局數圓點改成「第 N／M 局」文字（圓點本身照舊由各遊戲更新） */
+(function(){
+  const d=$('#gDots'), r=$('#gRound');
+  const up=()=>{ const is=[...d.children], hearts=!!(is[0]&&is[0].classList.contains('heart')); d.classList.toggle('hearts',hearts);
+    if(d.hidden||hearts||!is.length){ r.hidden=true; return; }
+    const N=is.length, done=is.filter(i=>/(^|\s)(ok|no|s0|s1|s2|s3)(\s|$)/.test(i.className)).length, cur=is.findIndex(i=>i.classList.contains('cur'));
+    const k=Math.max(1,Math.min(N,cur>=0?cur+1:done)); r.hidden=false; r.textContent=`第 ${k}／${N} 局`; };
+  new MutationObserver(up).observe(d,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
+})();
 function countdown(done){
   const c=$('#count'); const seq=['3','2','1','開始！'];
   seq.forEach((t,i)=>later(()=>{ c.innerHTML=`<span class="${i===3?'go':''}">${t}</span>`; i===3?sfx.go():sfx.count(); },i*720));
   later(()=>{ c.innerHTML=''; done(); },seq.length*720-180);
 }
 function startGame(){
-  stopGame(); show('game'); $('#result').classList.remove('on');
+  stopGame(); show('game'); $('#prep').hidden=true; $('#result').classList.remove('on');
   const D=DIFFS.find(d=>d.k===curDiff), Gm=GAMES[curGame];
-  const chip=$('#gChip'); chip.innerHTML=`${Gm.ic} ${Gm.nm}　${D.ic} ${D.nm}`; chip.style.background=DIFF_COL[curDiff];
+  const chip=$('#gChip'), gi=gIcon(curGame); chip.innerHTML=`${gi?`<img class="cic" src="${gi}" alt="">`:Gm.ic}<span>${Gm.nm}</span><img class="cic" src="img/ui/diff-${curDiff}.webp" alt=""><span>${D.nm}</span>`; chip.style.background=DIFF_COL[curDiff];
   const pane={tower:'tPane',cups:'cPane',flappy:'fPane',hunt:'hPane',num:'nPane',simon:'sPane',color:'kPane',react:'xPane',spot:'dPane',bridge:'bPane',melon:'mPane',g2048:'gPane',mole:'wPane',slice:'lPane',hold:'hdPane'};
   $$('.pane').forEach(p=>p.classList.toggle('on',p.id===pane[curGame]));
   $('#gTime').hidden=!['tower','flappy','num','color','spot','g2048','mole','slice'].includes(curGame); $('#gDots').hidden=!['cups','hunt','simon','react','bridge'].includes(curGame);
@@ -987,12 +1119,61 @@ function startGame(){
   ({tower:twStart,cups:cuStart,flappy:fpStart,hunt:htStart,num:nmStart,simon:smStart,color:ctStart,react:rxStart,spot:fdStart,bridge:brStart,melon:melStart,g2048:g2Start,mole:wmStart,slice:slStart,hold:hdStart})[curGame]();
 }
 
+/* ═════════════ 開始前說明（可勾選下次略過）═════════════
+   按「開始」才呼叫 startGame()：平台的遊戲券、倒數、計時都從那裡開始，看說明不會用掉時間。
+   按住別放：先試兩根手指，裝置偵測不到多點觸控就建議換遊戲（不改規則、不改星星門檻）。 */
+const PREP={
+  tower:['gesture-tap',['積木會左右滑，點畫面放下','沒對齊的部分會被切掉','對得剛好是「完美」，積木不會變窄']],
+  cups:['gesture-tap',['先看清楚星星在哪一杯','杯子換位置時眼睛跟著它','停下來後，點你覺得有星星的杯子']],
+  flappy:['gesture-tap',['點一下，小雞就往上飛','穿過水管中間的縫','撞到會暈一下，損失時間']],
+  hunt:['gesture-tap',['點一格沙地挖挖看','沒挖到會顯示「離寶藏幾步」','只算上下左右走的步數，用數字推理']],
+  num:['gesture-tap',['從 1 開始，照順序點數字','點錯會加秒數','越快點完越好']],
+  simon:['gesture-tap',['先看燈亮的順序，這時候不能按','看到「輪到你」再照順序按','按錯會少一顆愛心']],
+  color:['gesture-tap',['先看上面的規則','「選顏色」：選字的顏色','「選字」：選字的意思']],
+  react:['gesture-tap',['等畫面變成綠色或出現目標再點','太早點算犯規','小心假的訊號']],
+  spot:['gesture-tap',['找出跟其他格不一樣的那一格','點到就換下一題','點錯會停一下下']],
+  bridge:['gesture-hold',['按住，棍子會變長','放開，棍子倒下變成橋','剛好落在紅色區有加分']],
+  melon:['gesture-swipe-horizontal',['左右移動，放開就丟下水果','一樣的水果碰在一起會合成','水果堆過紅線就結束']],
+  g2048:['gesture-swipe-fourway',['上下左右滑','一樣的數字撞在一起會合併','沒地方可以動就結束']],
+  mole:['gesture-tap',['地鼠冒出來就點牠','戴皇冠的金色地鼠分數比較多','困難以上，小心別點到炸彈']],
+  slice:['gesture-swipe-horizontal',['手指劃過禮物就能切開','一刀連切 3 個有加分','切到炸彈會扣分']],
+  hold:['gesture-multitouch',['圓圈出現就用一根手指按住','按住的手指都不能放開','全部按住才會出現下一個']]};
+let prepSkip={}; try{ prepSkip=JSON.parse(localStorage.getItem('g601prep')||'{}')||{}; }catch(e){}
+const pt={ids:new Set(),max:0};
+function prepGame(){
+  const P=PREP[curGame], multi=(navigator.maxTouchPoints||0)>=2;
+  if(!P||(prepSkip[curGame]&&(curGame!=='hold'||multi))){ startGame(); return; }
+  stopGame(); show('game'); $('#result').classList.remove('on');
+  $$('.pane').forEach(p=>p.classList.remove('on')); $('#gChip').innerHTML=''; $('#gScore').innerHTML=''; $('#gTime').hidden=true; $('#gDots').hidden=true;
+  const D=DIFFS.find(d=>d.k===curDiff), Gm=GAMES[curGame];
+  $('#pIc').src=gIcon(curGame)||'img/ui/ic-play.webp'; $('#pNm').textContent=Gm.nm;
+  const df=$('#pDf'); df.textContent=D.nm; df.style.background=DIFF_COL[curDiff];
+  $('#pGes').src=GSP(P[0]); $('#pTxt').innerHTML=P[1].map(t=>`<li>${t}</li>`).join('');
+  $('#pSkip').checked=!!prepSkip[curGame];
+  const hold=curGame==='hold'; $('#pTouch').hidden=!hold; $('#prep .pcard').classList.toggle('hold',hold); pt.ids.clear(); pt.max=0;
+  if(hold){ $('#pTBox').className='ptbox'; $('#pTN').textContent='用兩根手指同時按住這裡試試看';
+    $('#pTMsg').className='ptmsg'; $('#pTMsg').textContent=multi?'':'這台裝置偵測不到多根手指（可能是滑鼠或觸控板），只能按住 1 個，建議用平板玩，或換別的遊戲。'; }
+  $('#pGo').innerHTML=`<img class="bic" src="img/ui/ic-play.webp" alt="">${hold&&!multi?'還是要玩':'開始'}`;
+  $('#prep').hidden=false; $('#game').classList.add('prepping'); fitStage();
+}
+$('#pGo').onclick=()=>{ sfx.click(); $('#prep').hidden=true; startGame(); };
+$('#pBack').onclick=()=>{ sfx.click(); $('#prep').hidden=true; goDiff(); };
+$('#pSkip').onchange=e=>{ if(e.target.checked) prepSkip[curGame]=1; else delete prepSkip[curGame]; try{ localStorage.setItem('g601prep',JSON.stringify(prepSkip)); }catch(_){} };
+(function(){
+  const b=$('#pTBox');
+  const upd=()=>{ const n=pt.ids.size; pt.max=Math.max(pt.max,n);
+    if(pt.max>=2){ b.className='ptbox ok'; $('#pTN').textContent=`可以！同時按住了 ${pt.max} 根手指`; const m=$('#pTMsg'); m.className='ptmsg ok'; m.textContent='這台裝置可以玩，按「開始」吧！'; $('#pGo').innerHTML='<img class="bic" src="img/ui/ic-play.webp" alt="">開始'; }
+    else $('#pTN').textContent=n?'再放一根手指上來…':'用兩根手指同時按住這裡試試看'; };
+  b.addEventListener('pointerdown',e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){} pt.ids.add(e.pointerId); upd(); });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>b.addEventListener(n,e=>{ pt.ids.delete(e.pointerId); upd(); }));
+})();
+
 /* ═════════════ 結果 ═════════════ */
 function showResult(g,score){
   const d=curDiff, prev=best[g][d], isNew=score>0&&(prev==null||(gInfo(g,d).low?score<prev:score>prev));
   if(isNew){ best[g][d]=score; saveBest(); }
   const n=starsOf(g,d,score), D=DIFFS.find(x=>x.k===d), Gm=GAMES[g];
-  $('#rTop').innerHTML=`${Gm.ic} ${Gm.nm} <span class="chip" style="background:${DIFF_COL[d]};height:40px;font-size:20px">${D.ic} ${D.nm}</span>`;
+  const gi=gIcon(g); $('#rTop').innerHTML=`${gi?`<img class="bic" src="${gi}" alt="" style="width:1.5em;height:1.5em">`:Gm.ic} ${Gm.nm} <span class="chip" style="background:${DIFF_COL[d]};height:40px;font-size:20px"><img class="bic" src="img/ui/diff-${d}.webp" alt="">${D.nm}</span>`;
   const I=gInfo(g,d);
   $('#rNum').innerHTML=I.big(score);
   const nx=I.th.find(x=>I.low?score>x:score<x);
@@ -1070,7 +1251,7 @@ function twDrop(){
   twSpawn();
 }
 function twHud(){ $('#gScore').innerHTML=`${tw.floors}<small>層</small>`; }
-function setTime(n,play){ const e=$('#gTime'); e.innerHTML=`⏱️ ${n}`; e.classList.toggle('warn',n<=5&&n>0&&play); }
+function setTime(n,play){ const e=$('#gTime'); e.innerHTML=`${CLOCK} ${n}`; e.classList.toggle('warn',n<=5&&n>0&&play); }
 const twTime=n=>setTime(n,tw.phase==='play');
 function twStep(now){
   const dt=Math.min(0.033,(now-tw.last)/1000||1/60); tw.last=now;
@@ -1376,6 +1557,9 @@ function fpStep(now){
   fp.floats=fp.floats.filter(f=>now-f.t0<800);
 }
 function fpBird(c,x,y,r,now,ang){
+  const fl=now-fp.flapT, pose=fl<300?(Math.floor(fl/70)%2?'chick-wing-down':'chick-wing-up'):'chick-wing-mid';
+  if(sprOK(pose)){                                         // 三個姿勢共用同一個中心和大小，碰撞仍是原本的圓
+    const S=r*2.75; c.save(); c.translate(x,y); c.rotate(ang); c.drawImage(SPR[pose],-S*0.56,-S*0.52,S,S); c.restore(); return; }
   c.save(); c.translate(x,y); c.rotate(ang);
   c.fillStyle='#ffd23f'; c.beginPath(); c.arc(0,0,r,0,6.283); c.fill();
   c.lineWidth=r*0.08; c.strokeStyle='rgba(150,100,0,.35)'; c.stroke();
@@ -1459,7 +1643,7 @@ function htBuild(){
   const n=ht.n=ht.cfg.n; ht.digs=ht.cfg.digs;
   const g=$('#hGrid'), cols='ABCDEFGH';
   g.style.gridTemplateColumns=`.55fr repeat(${n},1fr)`; g.style.gridTemplateRows=`.55fr repeat(${n},1fr)`;
-  $('#hPane').style.setProperty('--ts',(48/(n+0.55)).toFixed(2)+'cqw');
+  $('#hPane').style.setProperty('--ts',`calc(var(--hsz) / ${(n+0.55).toFixed(2)})`);
   let h='<span class="hax"></span>'+[...cols.slice(0,n)].map(c=>`<span class="hax">${c}</span>`).join('');
   for(let r=0;r<n;r++){ h+=`<span class="hax">${r+1}</span>`;
     for(let c=0;c<n;c++) h+=`<div class="htile" data-i="${r*n+c}"></div>`; }
@@ -1472,7 +1656,7 @@ function htBuild(){
 function htLamp(t,good){ const e=$('#hLamp'); e.textContent=t||''; e.classList.toggle('good',!!good); }
 function htUI(){
   const used=ht.dug.length;
-  $('#hShov').innerHTML=[...Array(ht.digs)].map((_,k)=>`<i class="${k<used?'used':''}">⛏️</i>`).join('');
+  const left=Math.max(0,ht.digs-used); $('#hShov').innerHTML=`<img class="hpk" src="${GSP('pickaxe')}" alt=""><b class="${left<=1?'low':''}">剩 ${left} 次</b>`;
   const next=ht.found?ht.found:used+1;
   $$('#hLad [data-k]').forEach(r=>{ const ks=r.dataset.k.split(',').map(Number);
     r.classList.toggle('now',ks.includes(next)&&(ht.phase==='dig'||ht.found>0));
@@ -1499,7 +1683,7 @@ function htDig(i){
   ht.dug.push(i);
   const k=ht.dug.length, t=htTiles()[i];
   if(i===ht.treasure){
-    ht.found=k; t.className='htile dug gem'; t.innerHTML='<b>💎</b>';
+    ht.found=k; t.className='htile dug gem'; t.innerHTML='<b>'+gimg('treasure-gem')+'</b>';
     [784,988,1319,1568].forEach((f,n)=>tone(f,0.13,'triangle',0.06,n*0.07));
     const st=htStarsFor(k); ht.res[ht.round]=st; ht.total+=st;
     ht.phase='reveal'; $('#hPane').classList.remove('play');
@@ -1512,7 +1696,7 @@ function htDig(i){
   htUI();
   if(k>=ht.digs){
     ht.phase='reveal'; $('#hPane').classList.remove('play'); ht.res[ht.round]=0; htUI();
-    later(()=>{ const g=htTiles()[ht.treasure]; g.className='htile gem ghost'; g.innerHTML='<b>💎</b>';
+    later(()=>{ const g=htTiles()[ht.treasure]; g.className='htile gem ghost'; g.innerHTML='<b>'+gimg('treasure-gem')+'</b>';
       htLamp('寶藏在這裡！'); sfx.lose(); },500);
     later(htNext,2400);
   }
@@ -1528,13 +1712,13 @@ const nm={phase:'idle',cfg:NM_CFG.normal,n:4,next:1,t0:0,pen:0,tick:0,miss:0};
 const NM_COLS=['#ff6b6b','#ffa94d','#ffd43b','#69db7c','#4dabf7','#9775fa','#f783ac','#38d9a9'];
 function nmTime(){ return nm.t0?((performance.now()-nm.t0)/1000+nm.pen):0; }
 function nmHud(){ const N=nm.n*nm.n; $('#gScore').innerHTML=nm.next<=N?`👉 ${nm.next}`:'🏁'; }
-function nmShowTime(t){ $('#gTime').innerHTML=`⏱️ ${t.toFixed(1)}`; }
+function nmShowTime(t){ $('#gTime').innerHTML=`${CLOCK} ${t.toFixed(1)}`; }
 function nmBuild(){
   const n=nm.n=nm.cfg.n, N=n*n, g=$('#nGrid');
   const nums=[...Array(N)].map((_,i)=>i+1);
   for(let i=N-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nums[i],nums[j]]=[nums[j],nums[i]]; }
   g.style.gridTemplateColumns=`repeat(${n},1fr)`; g.style.gridTemplateRows=`repeat(${n},1fr)`;
-  $('#nPane').style.setProperty('--nf',(30/n).toFixed(2)+'cqw');
+  $('#nPane').style.setProperty('--nf',`calc(var(--nsz) / ${n})`);
   g.innerHTML=nums.map(v=>{
     let st='';
     if(nm.cfg.wild){ const r=Math.round((Math.random()*2-1)*32), sc=(0.72+Math.random()*0.5).toFixed(2), c=NM_COLS[Math.floor(Math.random()*NM_COLS.length)];
@@ -1788,7 +1972,7 @@ const FD_CHARS=[
   [['大','太'],['人','八'],['王','玉'],['木','本'],['日','目'],['口','回'],['上','下'],['天','夫']],
   [['人','入'],['土','士'],['未','末'],['刀','力'],['住','往'],['太','犬'],['田','由'],['千','干']],
   [['己','已'],['已','巳'],['戊','戌'],['戌','戍'],['日','曰'],['折','拆'],['候','侯'],['鳥','烏'],['貝','見'],['免','兔']]];
-const FD_DIR=['🐟','🐢','🦆','🐌','🐎','🐕','🐈','🦖','🐓','🐘','🚲','🛵','🐳','🦒'];
+const FD_DIR=['fish','turtle','duck','snail','horse','dog','cat','dinosaur','rooster','elephant','bicycle','scooter','whale','giraffe'].map(n=>gimg(`spot-${n}-right`));   // 同一張圖只做翻轉／旋轉／縮放
 const FD_TYPES=['emoji','char','color','flip','turn','size'];
 const FD_GRID=[[4,3],[4,3],[5,3],[5,4],[5,4],[6,4],[6,4],[7,4],[7,5],[8,5],[8,5],[9,5]];
 const fds={phase:'idle',cfg:FD_CFG.normal,t0:0,tick:0,found:0,odd:-1,lock:0,cols:4,rows:3,last:'',ltype:''};
@@ -1801,7 +1985,7 @@ function fdFit(){
 }
 window.addEventListener('resize',()=>{ if(curGame==='spot') fdFit(); });
 function fdDeal(n){                                     // 第 n 關（0 起算）
-  const C=fds.cfg, gi=Math.min(C.g1,C.g0+n), [cols,rows]=FD_GRID[gi], diff=C.tier(n), N=cols*rows;
+  const C=fds.cfg, gi=Math.min(C.g1,C.g0+n), [c0,r0]=FD_GRID[gi], tall=$('#stage').classList.contains('tall'), cols=tall?r0:c0, rows=tall?c0:r0, diff=C.tier(n), N=cols*rows;
   const rnd=a=>a[Math.floor(Math.random()*a.length)];
   const types=n===0&&diff===0?['emoji','color']:FD_TYPES.filter(t=>t!==fds.ltype);
   const type=rnd(types); fds.ltype=type;
@@ -1951,6 +2135,9 @@ function brStep(now){
 }
 function brHero(c,x,y,now){
   const r=0.02, walking=br.phase==='walk', leg=walking?Math.sin(now/60)*0.006:0;
+  if(sprOK('bridge-owl-right')){                           // 貓頭鷹：腳底貼平台，位置與移動照原本
+    const H=0.064, W=H*224/256, b=walking?Math.abs(Math.sin(now/60))*0.004:0;
+    c.drawImage(SPR['bridge-owl-right'],x-W*0.5,y-H-b,W,H); return; }
   c.save(); c.translate(x,y);
   c.strokeStyle='#2b2140'; c.lineWidth=0.005; c.lineCap='round';
   c.beginPath(); c.moveTo(-0.007,-0.012); c.lineTo(-0.007+leg,0); c.moveTo(0.007,-0.012); c.lineTo(0.007-leg,0); c.stroke();
@@ -2318,7 +2505,7 @@ const SL_COLORS=['#ff5b7a','#ffb13b','#3fc97f','#4fb0ff','#a77bff','#ff7ad9','#2
 const sl={phase:'idle',cfg:SL_CFG.normal,objs:[],parts:[],floats:[],trail:[],ptr:new Map(),t0:0,tick:0,
   score:0,raf:0,last:0,stun:0,nextWave:0,ctx:null,W:0,Hp:0,HU:0.5625,dpr:1};
 const slProg=()=>Math.min(1,(performance.now()-sl.t0)/(SL_SECS*1000));
-function slHud(){ $('#gScore').innerHTML=`🎁 ${sl.score}`; }
+function slHud(){ $('#gScore').innerHTML=`<img class="hic" src="${GSP('gift-red')}" alt=""> ${sl.score}`; }
 function slAdd(d,before){ sl.score=Math.max(0,sl.score+d); slHud();
   sl.cfg.stars.forEach((x,j)=>{ if(before<x&&sl.score>=x) later(()=>sfx.star(j),80); }); }
 function slCanvas(){
@@ -2341,7 +2528,7 @@ function slWave(now){
     const rise=y-apex, tUp=Math.sqrt(2*rise/g), xEnd=0.12+Math.random()*0.76;
     sl.objs.push({bomb,gold,x,y,vx:(xEnd-x)/(2*tUp),vy:-Math.sqrt(2*g*rise),g,r,
       rot:(Math.random()-0.5)*0.8,spin:(Math.random()-0.5)*4,
-      c:gold?'#ffc933':SL_COLORS[Math.floor(Math.random()*SL_COLORS.length)],born:now+k*(90+Math.random()*130)});
+      c:gold?'#ffc933':(Math.random()<0.5?'#ff5b7a':'#4fb0ff'),born:now+k*(90+Math.random()*130)});
   }
   tone(260+Math.random()*80,0.06,'sine',0.02);
   sl.nextWave=now+(C.gap0-(C.gap0-C.gap1)*p)*(0.8+0.4*Math.random());
@@ -2406,6 +2593,10 @@ function slRR(c,x,y,w,h,r){ r=Math.min(r,w/2,h/2);
 function slGift(c,x,y,r,rot,col,side,gold){
   c.save(); c.translate(x,y); c.rotate(rot);
   if(side){ c.beginPath(); c.rect(side<0?-r*1.7:0,-r*1.7,r*1.7,r*3.4); c.clip(); }
+  const sp=gold?'gift-gold':col==='#4fb0ff'?'gift-blue':'gift-red';
+  if(sprOK(sp)){                                           // 兩半都從同一張圖裁切；判定半徑照舊是 r
+    const H=r*2.25, W=H*247/256; if(gold){ c.shadowColor='#ffd43b'; c.shadowBlur=r*900; }
+    c.drawImage(SPR[sp],-W/2,-H*0.53,W,H); c.restore(); return; }
   const s=r*0.95;
   if(gold){ c.shadowColor='#ffd43b'; c.shadowBlur=r*900; }
   slRR(c,-s,-s*0.72,2*s,1.72*s,s*0.2); c.fillStyle=col; c.fill(); c.shadowBlur=0;
@@ -2418,6 +2609,8 @@ function slGift(c,x,y,r,rot,col,side,gold){
   c.restore();
 }
 function slBomb(c,x,y,r,now){
+  if(sprOK('bomb')){ const H=r*2/0.74, W=H*245/256, f=1+0.04*Math.sin(now/60);
+    c.save(); c.translate(x,y); c.scale(f,f); c.drawImage(SPR.bomb,-W*0.4,-H*0.62,W,H); c.restore(); return; }
   c.save(); c.translate(x,y);
   const g=c.createRadialGradient(-r*0.35,-r*0.35,r*0.1,0,0,r);
   g.addColorStop(0,'#77778a'); g.addColorStop(1,'#141419');
@@ -2592,10 +2785,10 @@ const WM_CFG={
   hard:  {n:3,up:800, gap:[380,620],max:2,gold:0.1, bomb:0.2, stars:[15,25,35]},
   boss:  {n:4,up:650, gap:[280,500],max:3,gold:0.12,bomb:0.25,stars:[15,26,36]}};
 const wm={phase:'idle',cfg:WM_CFG.normal,tick:0,t0:0,score:0,cells:[]};
-function wmHud(){ $('#gScore').innerHTML=`🔨 ${wm.score}`; }
+function wmHud(){ $('#gScore').innerHTML=`<img class="hic" src="${GSP('mole-normal')}" alt=""> ${wm.score}`; }
 function wmBuild(){
   const C=wm.cfg, g=$('#wGrid');
-  g.style.gridTemplateColumns=`repeat(${C.n},1fr)`; g.style.setProperty('--ws',C.n===3?'15cqw':'11cqw');
+  g.style.gridTemplateColumns=`repeat(${C.n},1fr)`; g.style.setProperty('--ws',`calc(var(--wsz) / ${C.n})`);
   g.innerHTML=[...Array(C.n*C.n)].map((_,i)=>`<div class="wcell" data-i="${i}"><div class="wm"><i></i></div></div>`).join('');
   wm.cells=[...g.children].map(el=>({el,kind:null,tok:0}));
 }
@@ -2606,7 +2799,7 @@ function wmSpawn(){
     const c=free[Math.floor(Math.random()*free.length)], r=Math.random(), tok=++c.tok;
     c.kind=r<C.bomb?'bomb':r<C.bomb+C.gold?'gold':'mole';
     c.el.querySelector('.wfx')?.remove();
-    c.el.querySelector('i').textContent=c.kind==='bomb'?'💣':'🐹'; c.el.className='wcell up '+c.kind;
+    c.el.querySelector('i').innerHTML=gimg(c.kind==='bomb'?'bomb':c.kind==='gold'?'mole-gold':'mole-normal'); c.el.className='wcell up '+c.kind;
     later(()=>{ if(c.tok===tok&&c.kind){ c.kind=null; c.el.className='wcell'; } },c.kind==='gold'?C.up*0.75:C.up);
   }
   later(wmSpawn,C.gap[0]+Math.random()*(C.gap[1]-C.gap[0]));
@@ -2618,7 +2811,7 @@ function wmHit(c){
   else{ tone(k==='gold'?1320:880,0.08,'triangle',0.07); tone(k==='gold'?1760:1175,0.08,'triangle',0.05,0.05); }
   wm.score=Math.max(0,wm.score+d); wmHud();
   wm.cfg.stars.forEach((x,j)=>{ if(before<x&&wm.score>=x) later(()=>sfx.star(j),80); });
-  c.el.className='wcell up'; c.el.querySelector('i').textContent=k==='bomb'?'💥':'😵';
+  c.el.className='wcell up '+(k==='bomb'?'boom':'hit');
   const fx=document.createElement('b'); fx.className='wfx'+(d<0?' bad':''); fx.textContent=d<0?'−2':k==='gold'?'⭐ +3':'+1'; c.el.appendChild(fx);
   later(()=>{ if(c.tok===tok) c.el.className='wcell'; },320);
   later(()=>fx.remove(),700);
@@ -2674,7 +2867,9 @@ $('#wGrid').addEventListener('pointerdown',e=>{ const el=e.target.closest('.wcel
 #lbBox .col>b{font-size:19px;color:var(--dc)}#lbBox .col .r{font-size:18px;overflow:hidden;text-overflow:ellipsis}#lbBox .r.none{color:#bbb;font-size:17px}
 #lbBox .r{font-size:21px;font-weight:900;color:#444;white-space:nowrap}#lbBox .r.me{color:#e8590c}
 #lbBox .r small{font-size:16px;color:#888;margin:0 4px}
-.lbme{display:block;margin-top:4px;font-size:15px;font-weight:900;color:#ffe14d}`;
+.lbme{display:block;margin-top:4px;font-size:15px;font-weight:900;color:#ffe14d}
+#game.on~#tkChip{display:none}
+@media (max-width:560px){#game.on .stagewrap{padding-bottom:58px}#tLeft{font-size:20px;padding:4px 14px}}`;
   document.head.appendChild(st);
   const mk=(id,html)=>{ const e=document.createElement('div'); e.id=id; if(html) e.innerHTML=html; document.body.appendChild(e); return e; };
   const chip=mk('tkChip'), tl=mk('tLeft'), toast=mk('tkToast');
@@ -2688,7 +2883,7 @@ $('#wGrid').addEventListener('pointerdown',e=>{ const el=e.target.closest('.wcel
   function tick(){
     chip.innerHTML='<img class="tki" src="img/ui/rw-ticket.webp" alt="">× '+L.tickets();
     const left=L.left();
-    if(left>0){ tl.textContent='⏱ '+mmss(left); tl.classList.add('on'); tl.classList.toggle('warn',left<=30000); wasOn=true; return; }
+    if(left>0){ tl.innerHTML='<img class="tki" src="img/ui/rw-ticket.webp" alt="">剩 '+mmss(left); tl.classList.add('on'); tl.classList.toggle('warn',left<=30000); wasOn=true; return; }
     tl.classList.remove('on','warn');
     if(wasOn){ wasOn=false; upPending=true;
       if(inGame()&&curGame==='bridge'&&br.phase!=='end'&&br.phase!=='ready'){ br.phase='end'; bgmStop(); bigMsg('時間到！'); later(()=>showResult('bridge',br.score),1600); }
