@@ -51,8 +51,27 @@
   const SP_KEYS = Object.keys(SPECIES), STARTERS = SP_KEYS.filter(k => !SPECIES[k].r);
   const TIER = ['', '稀有', '傳說'], EGG_N = ['普通蛋', '稀有蛋', '傳說蛋'];
   /* 有圖的寵物（img/pet/種類-0/1/2.webp）。圖還沒來之前是空的，全部用 SVG 畫 */
-  const ART = new Set([]);
-  const ROOM_ART = new Set([]);   // img/pet/room-房間.webp
+  const ART = new Set(Object.keys(SPECIES));
+  const ROOM_ART = new Set(['home', 'meadow', 'beach', 'space']);   // img/pet/room-房間.webp
+  const IMG = 'img/pet/';
+  const PA = {"chick":[[101.6,136.2,22.2,62.6,99.4,136.7,185.8],[94.1,109.7,23.7,37.7,60.6,161.6,185.8],[89.4,78.1,23.1,6.2,20.9,188.1,185.8]],"cat":[[94.6,120.8,37.6,48.7,76.2,151.0,186.1],[83.0,90.2,39.8,27.5,36.3,172.2,186.1],[73.1,63.4,36.1,18.0,5.6,184.9,186.1]],"dragon":[[93.6,114.2,28.2,48.9,83.0,150.8,185.3],[63.8,104.3,27.5,36.6,65.0,162.7,185.6],[82.0,86.2,25.5,6.0,50.7,193.6,185.6]],"bunny":[[81.8,120.5,34.0,43.5,30.4,155.9,185.9],[65.4,100.2,34.3,29.7,5.8,169.7,185.9],[71.0,91.9,31.5,37.3,6.1,179.7,185.9]],"blob":[[103.5,131.8,46.2,41.2,71.1,158.5,186.0],[104.4,109.9,46.4,28.1,44.9,171.3,186.0],[103.8,104.8,51.8,10.4,22.5,182.3,185.7]],"bear":[[107.7,95.6,43.1,40.6,48.1,159.1,185.9],[111.5,75.1,40.5,38.8,17.1,161.2,185.9],[110.5,61.8,35.9,14.7,6.4,178.2,185.9]],"dog":[[89.3,101.6,40.8,25.6,55.9,160.1,185.9],[83.1,83.2,43.6,15.6,17.0,183.8,185.9],[67.9,60.1,34.6,6.1,20.6,193.9,185.9]],"penguin":[[106.1,111.9,44.6,35.8,57.3,163.9,186.0],[109.3,86.8,44.8,27.6,27.1,172.1,186.0],[109.1,69.4,41.3,14.3,6.0,185.4,186.0]],"otter":[[109.8,88.1,41.4,38.4,43.8,161.3,185.9],[90.9,68.8,43.6,23.9,16.8,175.8,185.9],[80.3,64.0,44.4,12.6,5.8,188.3,185.9]],"fox":[[90.2,118.1,31.6,36.9,61.0,162.5,185.6],[75.5,103.1,33.4,16.2,40.8,183.5,185.9],[66.1,100.7,33.4,10.5,31.9,186.8,185.6]],"hedgehog":[[88.8,131.0,36.7,37.3,73.6,162.7,185.9],[73.7,114.3,39.5,23.6,48.3,175.8,185.9],[77.2,102.3,35.6,23.6,32.6,175.8,185.9]],"deer":[[87.2,99.2,31.9,52.1,54.7,147.2,185.7],[87.7,82.4,26.8,42.6,24.9,156.7,185.7],[75.0,72.7,21.9,28.9,6.0,170.8,185.7]],"panda":[[103.7,90.1,41.7,41.8,42.1,157.3,185.9],[113.3,73.3,51.5,15.3,17.3,183.8,185.6],[95.3,51.1,47.8,29.8,5.8,190.2,185.9]],"octopus":[[104.8,117.8,38.4,39.5,69.6,159.9,186.0],[104.2,102.5,41.9,21.2,50.7,178.2,186.0],[101.0,95.2,41.8,5.7,40.0,194.0,186.0]],"robot":[[95.9,115.5,46.9,44.5,47.4,155.2,186.0],[97.0,93.1,43.2,27.3,21.6,172.7,186.0],[89.7,82.6,37.1,6.5,33.7,192.9,186.0]],"mushroom":[[99.8,114.6,35.1,40.5,53.4,158.9,185.9],[96.0,108.7,35.9,23.0,20.5,176.7,185.6],[92.9,102.3,33.3,5.8,11.7,193.9,185.6]],"whale":[[83.1,151.5,36.5,41.9,89.7,157.5,186.0],[61.6,136.8,28.0,21.8,61.4,177.7,186.2],[60.9,130.4,21.7,5.5,63.2,194.0,186.2]],"lion":[[109.5,105.7,33.9,43.3,54.8,156.4,186.2],[83.1,89.4,38.0,22.2,35.3,177.3,186.2],[87.5,76.1,35.3,21.7,25.3,188.9,186.2]],"unicorn":[[81.7,99.4,34.8,44.5,50.1,155.2,185.7],[65.9,68.8,33.4,20.2,12.2,179.5,185.7],[86.9,66.3,31.6,5.9,10.9,193.7,185.7]],"turtle":[[122.1,72.5,44.3,43.8,40.5,155.5,185.8],[114.6,50.1,40.6,27.0,19.5,172.3,185.8],[108.2,46.5,35.6,9.6,6.9,189.8,185.8]]};   // 每隻寵物三個型態：[眼睛中心x, 眼睛y, 兩眼距離, 身體左, 上, 右, 下]（200×200 座標，由切圖程式算出）
+  const AR = {"bow":0.668,"flower":0.578,"cap":0.723,"party":1.128,"beret":0.656,"tophat":0.715,"magic":0.859,"chef":0.801,"crown":0.727,"helmet":0.848,"halo":0.496,"grad":0.668,"round":0.434,"heart":0.418,"sun":0.406,"star":0.465,"goggle":0.707,"bowtie":0.613,"bell":0.922,"scarf":1.02,"medal":1.099,"lei":0.926,"rainbow":0.949,"balloon":1.326,"wings-l":1.163,"wings-r":1.176,"wings":0.555,"cape-l":1.381,"cape-r":1.349,"cape":0.645,"rocket-l":1.494,"rocket-r":1.513,"rocket":0.707,"swings-l":1.146,"swings-r":1.153,"swings":0.543};   // 配件圖的高÷寬
+  /* 有圖的配件放哪裡：用眼睛的位置和兩眼距離 d 來算。w 寬（幾個 d），x/y 中心（離眼睛幾個 d）；t＝y 是上緣、b＝y 是下緣 */
+  const AP = {
+    bow: { w: 1.25, x: .95, y: -1.05 }, flower: { w: 1.15, x: .95, y: -1.0 }, cap: { w: 2.3, x: 0, y: -.6, a: 'b' }, party: { w: 1.35, x: .15, y: -.95, a: 'b' },
+    beret: { w: 2.4, x: .1, y: -.8, a: 'b' }, tophat: { w: 2.2, x: 0, y: -.85, a: 'b' }, magic: { w: 2.5, x: 0, y: -.8, a: 'b' }, chef: { w: 2.1, x: 0, y: -.9, a: 'b' },
+    crown: { w: 1.9, x: 0, y: -.95, a: 'b' }, helmet: { w: 3.5, x: 0, y: .25 }, halo: { w: 2.0, x: 0, y: -1.9 }, grad: { w: 2.6, x: 0, y: -.8, a: 'b' },
+    round: { w: 2.15, x: 0, y: 0 }, heart: { w: 2.2, x: 0, y: 0 }, sun: { w: 2.25, x: 0, y: 0 }, star: { w: 2.35, x: 0, y: 0 }, goggle: { w: 2.45, x: .22, y: .05 },
+    bowtie: { w: 1.2, x: 0, y: 1.2 }, bell: { w: 1.5, x: 0, y: 1.15 }, scarf: { w: 1.85, x: 0, y: .78, a: 't' }, medal: { w: 1.3, x: 0, y: .9, a: 't' }, lei: { w: 1.9, x: 0, y: 1.2 }, rainbow: { w: 1.85, x: 0, y: .78, a: 't' },
+    balloon: { w: 1.6, x: 1.55, y: -1.05 }, wings: { w: 1.45, x: 1.3, y: .9, p: 1 }, cape: { w: 1.1, x: .75, y: 1.55, p: 1 }, rocket: { w: .85, x: 1.25, y: 1.4, p: 1 }, swings: { w: 1.5, x: 1.3, y: .85, p: 1 }
+  };
+  function accImg(id, q) {
+    const P = AP[id]; if (!P) return ''; const [ex, ey, d] = q;
+    const one = (name, cx) => { const w = P.w * d, h = w * (AR[name] || 1), cy = ey + P.y * d; let y = P.a === 'b' ? cy - h : P.a === 't' ? cy : cy - h / 2;
+      if (P.p) y = Math.min(y, q[6] - h - 2);   // 背後的東西不要超出腳底
+      return `<image href="${IMG}acc-${name}.webp" x="${(cx - w / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/>`; };
+    return P.p ? one(id + '-l', ex - P.x * d) + one(id + '-r', ex + P.x * d) : one(id, ex + P.x * d);
+  }
 
   /* ───────── 配件：k 部位（h 帽子、g 眼鏡、k 脖子、b 背後），lv 最高等級要到幾級才能買，p 價錢 ───────── */
   const ITEMS = {
@@ -106,18 +125,19 @@
   const SC = [.8, .91, 1], HY = { bunny: 4, blob: -4 };
   function petArt(o) {
     const sp = SPECIES[o.sp] ? o.sp : 'chick', st = o.stage != null ? o.stage : stageOf(o.lv || 1), mood = o.mood || 'ok', id = 'p' + (++uid);
-    const T = `translate(100 182) scale(${SC[st]}) translate(-100 -182)`, xs = XS[o.x | 0] || XS[0];
+    const pic = ART.has(sp), q = pic && PA[sp] && PA[sp][st], T = pic ? '' : `translate(100 182) scale(${SC[st]}) translate(-100 -182)`, xs = XS[o.x | 0] || XS[0];
+    const AC = id => q ? accImg(id, q) : acc(id, sp);
     const fil = o.sil ? 'brightness(0) opacity(.2)' : xs.f;
     const L = [];
-    if (st === 2 && !o.sil) L.push(`<svg class="pal" viewBox="0 0 200 200"><defs><radialGradient id="${id}a"><stop offset=".55" stop-color="#fff7c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient></defs><circle cx="100" cy="118" r="84" fill="url(#${id}a)"/></svg>`);
-    if (!o.sil && o.b && ITEMS[o.b] && ITEMS[o.b].k === 'b') L.push(`<svg class="pal" viewBox="0 0 200 200"><g transform="${T}">${acc(o.b, sp)}</g></svg>`);
-    if (ART.has(sp)) L.push(`<svg class="pab" viewBox="0 0 200 200"${fil ? ` style="filter:${fil}"` : ''}><ellipse cx="100" cy="184" rx="${46 * SC[st] + 4}" ry="8" fill="#000" opacity=".12"/><g transform="${T}"><image href="img/pet/${sp}-${st}.webp" x="6" y="8" width="188" height="178" preserveAspectRatio="xMidYMax meet"/></g></svg>`
+    if (st === 2 && !o.sil && !pic) L.push(`<svg class="pal" viewBox="0 0 200 200"><defs><radialGradient id="${id}a"><stop offset=".55" stop-color="#fff7c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient></defs><circle cx="100" cy="118" r="84" fill="url(#${id}a)"/></svg>`);
+    if (!o.sil && o.b && ITEMS[o.b] && ITEMS[o.b].k === 'b') L.push(`<svg class="pal" viewBox="0 0 200 200"><g transform="${T}">${AC(o.b)}</g></svg>`);
+    if (pic) L.push(`<svg class="pab" viewBox="0 0 200 200"${fil ? ` style="filter:${fil}"` : ''}><ellipse cx="100" cy="186" rx="${q ? Math.min(80, (q[5] - q[3]) * .42).toFixed(1) : 60}" ry="7" fill="#000" opacity=".13"/><image href="${IMG}${sp}-${st}.webp" x="4" y="4" width="192" height="184" preserveAspectRatio="xMidYMax meet"/></svg>`
       + (mood === 'sleep' ? '<span class="pmood">💤</span>' : mood === 'sad' ? '<span class="pmood">💧</span>' : ''));
     else L.push(bodySVG(sp, st, o.sil ? 'ok' : mood, id, fil, T));
     if (!o.sil) {
-      const fr = ['k', 'g', 'h'].filter(k => o[k] && ITEMS[o[k]] && ITEMS[o[k]].k === k).map(k => acc(o[k], sp)).join('');
+      const fr = ['k', 'g', 'h'].filter(k => o[k] && ITEMS[o[k]] && ITEMS[o[k]].k === k).map(k => AC(o[k])).join('');
       if (fr) L.push(`<svg class="pal" viewBox="0 0 200 200"><g transform="${T}">${fr}</g></svg>`);
-      if ((o.x | 0) === 4) L.push('<span class="pspk"><i></i><i></i><i></i></span>');
+      if ((o.x | 0) === 4) L.push(`<span class="pspk"><i style="background-image:url(${IMG}fx-shine.webp)"></i><i style="background-image:url(${IMG}fx-shine.webp)"></i><i style="background-image:url(${IMG}fx-shine.webp)"></i></span>`);
     }
     return `<div class="pa${o.cls ? ' ' + o.cls : ''}">${L.join('')}</div>`;
   }
@@ -241,12 +261,17 @@
   function starPath(cx, cy, R, r) { let d = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; d += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1); } return d + 'Z'; }
   /* 一個配件單獨畫在小框框裡（商店用） */
   function itemSVG(k) {
+    if (AR[k]) return `<img class="isvg" src="${IMG}acc-${k}.webp" alt="" draggable="false">`;
     const I = ITEMS[k], VB = { bow: '100 50 56 48', flower: '106 52 48 48', bowtie: '72 134 56 40', helmet: '30 16 140 168', halo: '60 20 80 36', lei: '46 132 108 40', balloon: '116 30 84 110', grad: '40 24 120 72', cape: '24 112 152 90' };
     const vb = VB[k] || (I.k === 'h' ? '50 8 100 80' : I.k === 'g' ? '40 92 120 38' : I.k === 'k' ? '50 132 100 58' : '6 74 188 116');
     return `<svg class="isvg" viewBox="${vb}">${acc(k)}</svg>`;
   }
   /* 蛋：p＝孵化進度 0～1（越接近越多裂痕）；t＝0 普通、1 稀有、2 傳說 */
   function eggSVG(p, cls, t) {
+    const tt = t | 0;
+    return `<svg class="psvg${cls ? ' ' + cls : ''}" viewBox="0 0 200 200">${p >= 1 ? '<circle cx="100" cy="112" r="84" fill="#fff3bf" opacity=".55"/>' : ''}<ellipse cx="100" cy="184" rx="44" ry="8" fill="#000" opacity=".12"/><image href="${IMG}egg-${tt}${p >= .6 ? 'c' : ''}.webp" x="24" y="14" width="152" height="172" preserveAspectRatio="xMidYMax meet"/></svg>`;
+  }
+  function eggSVGold(p, cls, t) {
     const id = 'e' + (++uid), cr = [], tt = t | 0;
     if (p >= .3) cr.push('M76 96 l8 6 l-4 8 l9 5');
     if (p >= .6) cr.push('M126 110 l-8 4 l5 8 l-9 6');
@@ -522,7 +547,7 @@
     if (f >= 100) { say('吃不下了啦～肚子好飽！', 2000); return; }
     if ((p.coin || 0) < F.p) { say(`金幣不夠…還差 ${F.p - (p.coin || 0)} 枚，去練習賺金幣吧！`, 2600); return; }
     p.coin -= F.p; setFull(p, f + F.f); if (F.j) setJoy(p, joyNow(p) + F.j);
-    eatFx(F.i, F.n); save(p); refresh(); paintTab();
+    eatFx(`<img src="${IMG}food-${F.id}.webp" alt="">`, F.n); save(p); refresh(); paintTab();
   }
   function eatFx(icon, n) {
     const S = document.getElementById('pstage'); if (S) { const e = el('div', 'pfood', icon); S.appendChild(e); setTimeout(() => e.remove(), 1100); }
@@ -553,10 +578,10 @@
     document.querySelectorAll('#ptabs button').forEach(b => b.classList.toggle('on', b.dataset.k === tab));
     if (tab === 'food') {
       const Fm = window.FARM && FARM.F(), crops = Fm ? Object.keys(FARM.CROPS).filter(id => Fm.store[id] > 0) : [];
-      C.innerHTML = `<div class="pgrid">${FOODS.map((F, i) => `<button class="pitem${(p.coin || 0) < F.p ? ' poor' : ''}" data-f="${i}"><span class="fi">${F.i}</span><b>${F.n}</b><small>🍙+${F.f}${F.j ? ` 💖+${F.j}` : ''}</small><em>🪙 ${F.p}</em></button>`).join('')}</div>
+      C.innerHTML = `<div class="pgrid">${FOODS.map((F, i) => `<button class="pitem${(p.coin || 0) < F.p ? ' poor' : ''}" data-f="${i}"><img class="fii" src="${IMG}food-${F.id}.webp" alt=""><b>${F.n}</b><small>🍙+${F.f}${F.j ? ` 💖+${F.j}` : ''}</small><em>🪙 ${F.p}</em></button>`).join('')}</div>
         <div class="psec">🌾 農場收成的菜 <small>比賣掉划算喔</small></div>${crops.length ? `<div class="pgrid">${crops.map(id => { const V = cropFood(id); return `<button class="pitem" data-c="${id}"><img class="fci" src="img/farm/pr-${id}.webp" alt=""><b>${FARM.CROPS[id].n} ×${Fm.store[id]}</b><small>🍙+${V.f}${V.j ? ` 💖+${V.j}` : ''}</small><em>免費</em></button>`; }).join('')}</div>` : '<div class="pnone">倉庫裡還沒有菜。去「農場」種菜，收成以後可以拿來餵寵物！</div>'}`;
       C.querySelectorAll('[data-f]').forEach(b => tap(b, () => feed(FOODS[+b.dataset.f])));
-      C.querySelectorAll('[data-c]').forEach(b => tap(b, () => { const id = b.dataset.c, t = feedCrop(id); if (t.startsWith('😋')) { eatFx('', FARM.CROPS[id].n); refresh(); paintTab(); } else say(t, 2200); }));
+      C.querySelectorAll('[data-c]').forEach(b => tap(b, () => { const id = b.dataset.c, t = feedCrop(id); if (t.startsWith('😋')) { eatFx(`<img src="img/farm/pr-${id}.webp" alt="">`, FARM.CROPS[id].n); refresh(); paintTab(); } else say(t, 2200); }));
     } else if (tab === 'wear') {
       const own = p.own, ML = maxLv(p), L = lvOf(p.xp || 0).lv; let h = '';
       SLOTS.forEach(([k, n]) => {
@@ -661,7 +686,7 @@
     const p = P(); if (!p || !p.evo || mod) return false;
     const e = p.evo; delete p.evo; save(p);
     const S = SPECIES[p.sp], a = look(p, { stage: e.f, mood: 'happy' }), b = look(p, { stage: e.t, mood: 'happy' });
-    const m = modal(`<div class="pevo"><div class="pmh" id="pevh">咦？${nameOf(p)}的樣子……</div><div class="pevs"><div class="pev0">${petArt(a)}</div><div class="pev1">${petArt(b)}</div><i class="pevl"></i></div><div class="pevt" id="pevt">　</div><button class="go" id="pevok">太棒了！</button></div>`);
+    const m = modal(`<div class="pevo"><div class="pmh" id="pevh">咦？${nameOf(p)}的樣子……</div><div class="pevs"><div class="pev0">${petArt(a)}</div><div class="pev1">${petArt(b)}</div><i class="pevl" style="background-image:url(${IMG}fx-evo.webp)"></i><i class="pevu" style="background-image:url(${IMG}fx-up.webp)"></i></div><div class="pevt" id="pevt">　</div><button class="go" id="pevok">太棒了！</button></div>`);
     m.classList.add('evo'); [0, 400, 800, 1200, 1600, 2000, 2400].forEach((t, i) => setTimeout(() => tone2(440 + i * 70, .09), t));
     const ok = m.querySelector('#pevok'); ok.style.visibility = 'hidden';
     setTimeout(() => {
@@ -761,7 +786,7 @@
   const css = `
   .pa{position:relative;width:100%;height:100%}.pa>svg,.pa>.pspk{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
   .pa .pmood{position:absolute;right:8%;top:18%;font-size:1.6em}
-  .pspk i{position:absolute;width:16%;height:16%;background:radial-gradient(circle,#fff 0 18%,#ffe066 30%,transparent 62%);animation:pspk 1.8s ease-in-out infinite}
+  .pspk i{position:absolute;width:22%;height:22%;background:center/contain no-repeat;animation:pspk 1.8s ease-in-out infinite}
   .pspk i:nth-child(1){left:12%;top:24%}.pspk i:nth-child(2){right:10%;top:40%;animation-delay:.6s}.pspk i:nth-child(3){left:40%;top:6%;animation-delay:1.2s}
   @keyframes pspk{0%,100%{transform:scale(.2) rotate(0);opacity:0}50%{transform:scale(1) rotate(45deg);opacity:1}}
   .psvg{display:block;width:100%;height:100%;overflow:visible}
@@ -783,7 +808,7 @@
   .pbar b{position:relative;display:block;text-align:center;font-size:.95rem;line-height:1.5rem;color:#333}.pbar.x b{line-height:1.7rem}
   .pstage{position:relative;height:min(25rem,52vh);padding:0;overflow:hidden;border-radius:28px}
   .pstage .proom{position:absolute;inset:0;width:100%;height:100%}.proom.pimg{background-size:cover;background-position:50% 100%}.proom .pnight{position:absolute;inset:0;background:#1b1f4b;opacity:.35}
-  .pstage .ppet{position:absolute;left:50%;bottom:2%;width:min(21rem,74%,48vh);height:min(21rem,74%,48vh);transform:translateX(-50%);cursor:pointer;touch-action:manipulation}
+  .pstage .ppet{position:absolute;left:50%;bottom:2%;height:calc(100% - 5.6rem);aspect-ratio:1;max-width:82%;transform:translateX(-50%);cursor:pointer;touch-action:manipulation}
   .pstage .ppet>.pa,.pstage .ppet>.psvg{animation:pbob 2.6s ease-in-out infinite;transform-origin:50% 92%}
   .pstage.night .ppet>.pa{animation:pbreath 3.6s ease-in-out infinite}
   @keyframes pbob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-6px) scale(.98,1.02)}}
@@ -831,10 +856,10 @@
   .pnone{font-size:1rem;font-weight:800;color:#999;background:#f8f9fa;border-radius:14px;padding:.6rem .8rem}
   .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(7.2rem,1fr));gap:.6rem}
   .pitem{background:#fff9fb;border:3px solid #ffdeeb;border-radius:18px;padding:.5rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;font-family:inherit}
-  .pitem .fi{font-size:2.6rem;line-height:1.1}.pitem .fci{width:3rem;height:3rem;object-fit:contain}.pitem b{font-size:1.05rem;color:#444}.pitem small{font-size:.85rem;color:#888;font-weight:800}
+  .pitem .fi{font-size:2.6rem;line-height:1.1}.pitem .fii{width:3.2rem;height:3.2rem;object-fit:contain}.pfood img{width:4rem;height:4rem;object-fit:contain}.pitem .fci{width:3rem;height:3rem;object-fit:contain}.pitem b{font-size:1.05rem;color:#444}.pitem small{font-size:.85rem;color:#888;font-weight:800}
   .pitem em{font-style:normal;font-size:.95rem;font-weight:900;color:#e67700;margin-top:.15rem}
   .pitem.poor{opacity:.55}.pitem.lock{opacity:.5;filter:grayscale(.7)}.pitem.on{border-color:#f06595;background:#fff0f6}.pitem.on em{color:#2b8a3e}
-  .pitem .isvg{width:100%;height:3.6rem}
+  .pitem .isvg{width:100%;height:3.6rem;object-fit:contain}
   .pgrid.cols{grid-template-columns:repeat(auto-fill,minmax(5.6rem,1fr))}
   .pcol{background:#fff;border:3px solid #f1f3f5;border-radius:16px;padding:.4rem .2rem;display:flex;flex-direction:column;align-items:center;font-family:inherit}
   .pcol i{width:2.4rem;height:2.4rem;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--m) 55%);border:3px solid #fff;box-shadow:0 0 0 2px var(--m);font-style:normal;display:flex;align-items:center;justify-content:center}
@@ -864,7 +889,7 @@
   .pmod.pask{z-index:55}
   .pmc{background:#fff;border-radius:28px;padding:1.2rem;max-width:42rem;width:100%;max-height:92vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);text-align:center}
   .pask .pmc{max-width:26rem}.pmh2{font-size:1.3rem;font-weight:900;color:#444;margin-bottom:.8rem}.pmh2 small{display:block;font-size:.95rem;color:#888;margin-top:.3rem}
-  .paski .isvg{width:7rem;height:5rem}.paskp{width:8rem;height:8rem;margin:0 auto .4rem}
+  .paski .isvg{width:7rem;height:5rem;object-fit:contain}.paskp{width:8rem;height:8rem;margin:0 auto .4rem}
   .pbtns{display:flex;gap:.6rem;justify-content:center}.pbtns .go{margin:0;font-size:1.3rem}.pbtns .pmx{margin:0}
   .pmh{font-size:1.6rem;font-weight:900;color:#d6336c;margin-bottom:.8rem}.pmh small{font-size:1rem;color:#999}
   .pspg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem}
@@ -883,13 +908,16 @@
   @keyframes pev0{0%{filter:none}18%{filter:brightness(0) invert(1)}30%,46%,62%,74%,84%,90%{opacity:1;filter:brightness(0) invert(1)}38%,54%,68%,79%,87%,93%,100%{opacity:0;filter:brightness(0) invert(1)}}
   @keyframes pev1{0%,30%,46%,62%,74%,84%,90%{opacity:0}38%,54%,68%,79%,87%,93%,99%{opacity:1}100%{opacity:1}}
   .pevs.done .pev0{display:none}.pevs.done .pev1{animation:pev2 .9s forwards}@keyframes pev2{0%{opacity:1;filter:brightness(0) invert(1)}100%{opacity:1;filter:none}}
-  .pevl{position:absolute;inset:-30%;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff3bf 25%,transparent 62%);opacity:0;pointer-events:none}.pevs.done .pevl{animation:pevl 1.1s ease-out}
+  .pevl,.pevu{position:absolute;inset:-30%;background:center/contain no-repeat;opacity:0;pointer-events:none}.pevs.done .pevl{animation:pevl 1.1s ease-out}.pevs.done .pevu{animation:pevu 1.6s ease-out .2s}
+  .pev0{animation:pev0 3.3s forwards}.pevs:not(.done) .pevl{animation:pevg 3.3s ease-in forwards}@keyframes pevg{0%{opacity:0;transform:scale(.4) rotate(0)}100%{opacity:.75;transform:scale(1) rotate(90deg)}}
+  @keyframes pevu{0%{opacity:0;transform:scale(.5) rotate(0)}30%{opacity:1}100%{opacity:0;transform:scale(1.3) rotate(40deg)}}
   @keyframes pevl{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(1.4)}}
   .pevt{font-size:1.5rem;font-weight:900;color:#fff;min-height:3.4rem}.pevt b{color:#ffe066}.pevt small{display:block;font-size:1rem;color:#d0bfff;margin-top:.3rem}
   .petend{color:#e67700}.pboost{display:block;font-size:.95rem;color:#f08c00;margin-top:.2rem}
-  @media (max-width:700px){.pacts{grid-template-columns:repeat(3,minmax(0,1fr))}.pstage{height:min(22rem,48vh)}.pbub{font-size:1rem;top:4.6rem}.ptag b{font-size:1.2rem}.pcoin{font-size:1.1rem}
+  @media (max-width:700px){.pacts{grid-template-columns:repeat(3,minmax(0,1fr))}.pstage{height:min(22rem,48vh)}.pstage .ppet{height:calc(100% - 8.2rem)}.pbub{font-size:1rem;top:4.6rem}.ptag b{font-size:1.2rem}.pcoin{font-size:1.1rem}
     .pspg{grid-template-columns:repeat(2,minmax(0,1fr))}.pspg .pa{width:5.4rem;height:5.4rem}.ptabs button{font-size:1rem;padding:.6rem .15rem}.pdex{grid-template-columns:repeat(auto-fill,minmax(6.6rem,1fr))}}`;
-  const S = document.createElement('style'); S.textContent = css; document.head.appendChild(S);
+  const S = document.createElement('style'); S.textContent = css + `
+  @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
   window.PET = { night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();
