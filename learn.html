@@ -591,6 +591,10 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .rws{font-size:.95rem;color:#888;font-weight:800;margin:.3rem 0 .7rem}.rwok{font-size:1.3rem}
 /* 裝置設定「減少動態效果」時，動畫都停下來 */
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* 大砲混戰：雙人對戰卡片裡最顯眼的一顆（占兩格） */
+#xqcard .xbtns .go.xparty{grid-column:1/-1;background:linear-gradient(#ff8a3d,#e8590c);box-shadow:0 4px 0 #a0400a}
+#xqcard .xbtns .go.xparty small{font-size:.8em;margin-left:.4em;opacity:.9}
 </style>
 </head><body>
 
@@ -680,7 +684,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
   <button class="gray" id="hcopy">📋 複製</button>
  </div>
  <div class="cd">
-  <div>⑤ ♟️ 雙人對戰紀錄（軍棋・暗棋・大砲對轟）</div>
+  <div>⑤ ♟️ 對戰紀錄（軍棋・暗棋・大砲對轟・大砲混戰）</div>
   <button id="xqload">讀取</button><span id="xqmsg"></span>
   <div id="xqout"></div>
  </div>
@@ -1388,12 +1392,13 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">${ico('rw-ticket','tki')}<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
   const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
-  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s"><span>兩台平板連線對戰</span><span>輸的人用 1 張遊戲券</span><span>中途離開算輸</span></div><div class="xr" id="xqrec"></div></div>';
+  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s"><span>跟同學連線對戰</span><span>輸的人用 1 張遊戲券</span><span>中途離開算輸</span></div><div class="xr" id="xqrec"></div></div>';
   const xw=el('div');xw.className='xbtns';const xv=el('button','go',ico('vs-inv','bi')+'邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
   const xb=el('button','go gray',ico('vs-xq','bi')+'軍棋');tap(xb,()=>openTool({...XQ_TOOL,f:'chess.html?g=xq'}));
   const xa=el('button','go gray',ico('vs-aq','bi')+'暗棋');tap(xa,()=>openTool({...XQ_TOOL,f:'chess.html?g=aq'}));
   const xp=el('button','go gray',ico('vs-pd','bi')+'大砲對轟');tap(xp,()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'}));
-  [xv,xb,xa,xp].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
+  const xm=el('button','go xparty',ico('vs-pd','bi')+'大砲混戰<small>2～4 人</small>');tap(xm,()=>openTool({...XQ_TOOL,f:'party.html'}));
+  [xv,xb,xa,xp,xm].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜<small>（下滿 ${WR_MIN} 局才上榜）</small>`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
@@ -1421,7 +1426,7 @@ async function wrAll(){if(!(await fbOnline()))return null;const v=(await timeout
   return out}
 async function loadWR(L){let all;try{all=await wrAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
-  const COLS={xq:'#c0392b',aq:'#8e5a2b',pd:'#2563eb'};
+  const COLS={xq:'#c0392b',aq:'#8e5a2b',pd:'#2563eb',pm:'#e8590c'};
   L.innerHTML=Object.entries(GAMES).map(([g,G0])=>{const B=all[g],me=user&&B.all.find(x=>x.seat===user.seat),mine=me&&B.on.find(x=>x.seat===me.seat);
     let rows='';B.on.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;
       rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${Math.round(r.r*100)}%<small>${r.w}勝${r.l}敗${r.d?r.d+'和':''}</small></i></div>`});
@@ -1459,7 +1464,7 @@ async function loadBoard(L,fresh){const g=bg;let all;
    邀請:A 在象棋選同學 → 先開好房間 → learn/inv/對方座號/A 的座號 = {p:房號, t:時間};B 的平台跳出邀請,按「接受」就自動加入那個房間 */
 const INV_MS=2*60*1000, ON_MS=75*1000;
 /* 對戰遊戲的種類 */
-const GAMES={xq:{n:'軍棋',i:'♟️',v:'下',img:'vs-xq'},aq:{n:'暗棋',i:'🀄',v:'下',img:'vs-aq'},pd:{n:'大砲對轟',i:'🎯',v:'玩',img:'vs-pd'}},GK=g=>GAMES[g]?g:'xq';
+const GAMES={xq:{n:'軍棋',i:'♟️',v:'下',img:'vs-xq'},aq:{n:'暗棋',i:'🀄',v:'下',img:'vs-aq'},pd:{n:'大砲對轟',i:'🎯',v:'玩',img:'vs-pd'},pm:{n:'大砲混戰',i:'💥',v:'玩',img:'vs-pd',many:1}},GK=g=>GAMES[g]?g:'xq';
 const seatName=s=>isTest(s)?testName(s).replace('🧪 ',''):s+' 號';
 const allSeats=()=>[...SEATS.flat(),...(user&&isTest(user.seat)?TEST_SEATS:[])];   // 測試帳號只會看到、邀請到測試帳號和全班
 function xqLocal(){return user?LS.get('learn601_xqh_'+user.seat,[]):[]}
@@ -1495,8 +1500,10 @@ async function resolveXqPending(){const p=user&&LS.get(xqpKey(),null);if(!p||!p.
     let st=null,meta=null;if(db&&online){try{st=(await timeout(db.ref(`rooms/${p.pin}/state`).get(),8000)).val();meta=(await timeout(db.ref(`rooms/${p.pin}/meta`).get(),8000)).val()}catch(e){return}}else return;
     const gn=+String(p.k).split('_').pop()||1,same=st&&meta&&p.k===`${meta.game&&meta.game!=='xq'?meta.game:''}${p.pin}_${meta.created||0}_${st.g||1}`;
     let w=0,r='中途離開';
-    if(same&&st.phase==='end'&&st.winner){if(st.winner==='none'){xqPending(null);return}w=st.winner==='draw'?2:st.winner===p.me?1:0;if(w!==0)r=st.reason||r}
-    else if(same&&st.phase==='play'){try{await timeout(db.ref(`rooms/${p.pin}/state`).update({phase:'end',winner:p.me==='r'?'b':'r',reason:'對手中途離開',t:Date.now()}),8000)}catch(e){}}
+    const pm=meta&&meta.game==='pm';   // 大砲混戰：winner＝贏的人（0,2）或平手（d:1,3）；中途離開＝state/out 記一筆，其他人的平板會接著算
+    if(same&&st.phase==='end'&&st.winner){if(st.winner==='none'){xqPending(null);return}
+      if(pm){const s0=String(st.winner),d=s0.startsWith('d:'),L=(d?s0.slice(2):s0).split(',').map(Number);w=L.includes(+p.me)?(d?2:1):0}else w=st.winner==='draw'?2:st.winner===p.me?1:0;if(w!==0)r=st.reason||r}
+    else if(same&&st.phase==='play'){try{await timeout(db.ref(`rooms/${p.pin}/state`).update(pm?{['out/i'+p.me]:String(st.moves||'').split(',').filter(Boolean).length,t:Date.now()}:{phase:'end',winner:p.me==='r'?'b':'r',reason:'對手中途離開',t:Date.now()}),8000)}catch(e){}}
     const fresh=xqResult({k:p.k,o:p.o,w,r,n:0,g:p.g});xqPending(null);
     if(fresh&&w===0&&!isTest(user.seat)){sum.tk=Math.max(0,(sum.tk||0)-1);saveSum(true);logPush({k:'g',game:'xq'});paintNavs();render();
       toast(`${GAMES[GK(p.g)].i} ${GAMES[GK(p.g)].n}上一局沒下完就離開，算輸，用掉 1 張遊戲券`)}
@@ -1516,7 +1523,7 @@ function invBox(){let b=document.getElementById('xqinv');if(b)return b;b=el('div
   b.innerHTML='<div class="xiv"><div class="xit"></div><div class="xis"></div><div class="xir"><button class="xok" id="invYes">✅ 接受</button><button class="xno" id="invNo">下次再說</button></div></div>';document.body.appendChild(b);
   tap(b.querySelector('#invYes'),()=>acceptInv());tap(b.querySelector('#invNo'),()=>declineInv('no'));return b}
 function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=`${GAMES[x.g].i} ${seatName(x.f)} 邀請你${GAMES[x.g].v}${GAMES[x.g].n}！`;
-  b.querySelector('.xis').textContent='接受就會直接進到棋盤（輸的人用掉 1 張遊戲券，贏了不用）';b.classList.add('on');try{sfx.ok()}catch(e){}
+  b.querySelector('.xis').textContent=(GAMES[x.g].many?'接受就會直接進到房間，大家到齊就開打':'接受就會直接進到棋盤')+'（輸的人用掉 1 張遊戲券，贏了不用）';b.classList.add('on');try{sfx.ok()}catch(e){}
   clearTimeout(showInv.t);showInv.t=setTimeout(()=>{if(invNow===x)hideInv()},Math.max(5000,INV_MS-(Date.now()-x.t)))}
 function hideInv(){invNow=null;const b=document.getElementById('xqinv');if(b)b.classList.remove('on')}
 function dropInv(x){try{db.ref(`${ROOT}/inv/${user.seat}/${x.f}`).remove()}catch(e){}}
@@ -1525,7 +1532,7 @@ function acceptInv(){const x=invNow;if(!x)return;
   if(!isTest(user.seat)&&!((sum.tk||0)>0)){declineInv('noticket');toast('🎟️ 你的遊戲券用完了，先練習 10 題再來下棋吧！');return}
   hideInv();dropInv(x);
   if($('#prac').classList.contains('on'))leavePractice();
-  const t={...XQ_TOOL,f:'chess.html?join='+x.p};
+  const t={...XQ_TOOL,f:(x.g==='pm'?'party.html':'chess.html')+'?join='+x.p};
   if(vt){vt=XQ_TOOL;document.getElementById('vtitle').textContent=t.n;frameGo(t.f)}else openTool(t)}
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */
 window.__learn601={
@@ -1902,7 +1909,7 @@ function paintXqAll(sel){const A=XQALL||{},rows=[...SEATS.flat(),...TEST_SEATS].
   const d=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`};
   let h=`<table class="at"><tr><th>座號</th><th>局數</th><th>勝</th><th>敗</th><th>和</th><th>勝率</th><th class="l">最近的對手</th></tr>`;
   rows.forEach(r=>{h+=`<tr class="st${sel===r.s?' sel':''}" data-s="${r.s}"><td><b>${isTest(r.s)?testName(r.s):r.s}</b></td><td>${r.g.length||'—'}</td><td>${r.g.length?r.w:''}</td><td>${r.g.length?r.l:''}</td><td>${r.g.length?r.d:''}</td><td>${r.g.length?pc(r.w,r.g.length)+'%':''}</td>
-    <td class="l">${r.g.slice(0,3).map(x=>`${{xq:'軍',aq:'暗',pd:'砲'}[xqG(x)]}${x.w===1?'勝':x.w===2?'和':'敗'} ${x.o?seatName(x.o):'?'}`).join('、')}</td></tr>`;
+    <td class="l">${r.g.slice(0,3).map(x=>`${{xq:'軍',aq:'暗',pd:'砲',pm:'混'}[xqG(x)]}${x.w===1?'勝':x.w===2?'和':'敗'} ${x.o?seatName(x.o):'?'}`).join('、')}</td></tr>`;
     if(sel===r.s&&r.g.length)h+=`<tr><td colspan="7"><div id="adet">${r.g.map(x=>`${d(x.t)}　${GAMES[xqG(x)].n}　對 ${x.o?seatName(x.o):'?'}　<b>${x.w===1?'勝':x.w===2?'和':'敗'}</b>　${x.r||''}${x.n?`（${x.n} 步）`:''}`).join('<br>')}</div></td></tr>`});
   const tot=rows.reduce((a,r)=>a+r.g.length,0);
   $('#xqout').innerHTML=`<div style="margin:.4rem 0;color:#888;font-weight:800">全班共記錄 ${tot} 筆（每一局兩個人各記一筆）</div>`+h+'</table>';
