@@ -1,6 +1,6 @@
 /* 601 快樂農場（原創的種菜遊戲）
    ・自己的農場：一開始 6 塊田，農場升級最多 12 塊。買種子 → 種下去 → 澆水 → 等時間長大 → 收成放進倉庫 → 賣掉換金幣
-   ・澆水的 💧 要靠練習：每答對 1 題 +1 💧；作物沒水就停在那裡不長。10 題答對 8 題送 1 包 🧪 肥料（剩下的時間減半）
+   ・澆水的 💧 要靠練習：每答對 1 題 +1 💧；作物沒水就停在那裡不長。10 題答對 8 題送 1 包 🧴 肥料（剩下的時間減半）
    ・長大途中可能長雜草 🌿、來蟲 🐛：沒處理的話，收成少 1 個
    ・拜訪同學：幫忙澆水、除草、捉蟲（自己拿經驗和金幣）；成熟的菜可以偷摘 1 個（每塊田最多被摘 2 個，主人看得到是誰）
    ・晚上 9 點到早上 6 點農場休息：作物照樣長，但不能操作（不要半夜爬起來偷菜）
@@ -76,7 +76,7 @@
       const dia = `${x},${y - TW * TH} ${x + TW / 2},${y} ${x},${y + TW * TH} ${x - TW / 2},${y}`;
       if (lock) {
         out.push(`<g data-k="${k}" class="flock">${imgT(IMG + 'soil-lock.webp', x - TW / 2, y - TW * .367, TW, TW * .79)}<polygon points="${dia}" fill="transparent"/>`
-          + (o.mini ? '' : `<g transform="translate(${x + 4} ${y - 30})"><rect x="-30" y="-15" width="60" height="26" rx="13" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="17" font-weight="900" fill="#7a4f22">🔒Lv${k >= 10 ? 7 : k >= 8 ? 5 : 3}</text></g>`) + '</g>');
+          + (o.mini ? '' : `<g transform="translate(${x + 4} ${y - 30})"><rect x="-30" y="-15" width="60" height="26" rx="13" fill="#fff" opacity=".92"/><image href="img/ui/ic-lock-closed.webp" x="-27" y="-12" width="20" height="20"/><text x="8" y="5" text-anchor="middle" font-size="16" font-weight="900" fill="#7a4f22">Lv${k >= 10 ? 7 : k >= 8 ? 5 : 3}</text></g>`) + '</g>');
         continue;
       }
       const wet = S && !S.empty && !S.thirsty;
@@ -133,7 +133,7 @@
     const f = F(); if (!f) return '';
     let fert = 0; if (N >= 10 && first >= 8) { f.fert = (f.fert || 0) + 1; fert = 1; saveSum(true); }
     const w = round && round.fw || 0; if (!w && !fert) return '';
-    return `<div class="tkget farmend">🌾 農場：💧 拿到 ${w} 滴水${fert ? '・🧪 拿到 1 包肥料！' : ''}</div>`;
+    return `<div class="tkget farmend">🌾 農場：💧 拿到 ${w} 滴水${fert ? '・🧴 拿到 1 包肥料！' : ''}</div>`;
   }
 
   /* ───────── 我的農場 ───────── */
@@ -142,7 +142,7 @@
   function page(C) {
     const f = F(), L = lvOf(f.xp);
     C.innerHTML = `<div class="fhead"><div class="flv"><b>🌾 我的農場 Lv.${L.lv}</b><div class="pbar s"><i style="width:${L.cur / L.need * 100}%;background:linear-gradient(90deg,#a9e34b,#74b816)"></i></div><small>經驗 ${L.cur} / ${L.need}</small></div>
-        <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧪 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div><button class="fsm${f.sm ? ' on' : ''}" id="fsm">🥷 偷菜模式：${f.sm ? '開' : '關'}</button></div>
+        <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧴 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div><button class="fsm${f.sm ? ' on' : ''}" id="fsm">🥷 偷菜模式：${f.sm ? '開' : '關'}</button></div>
       ${night() ? '<div class="fnight">🌙 晚上 9 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
       <div class="fbox" id="fbox"><div id="fsvg"></div></div><div class="fbar" id="fbar"></div><div class="finfo" id="finfo">👆 點空的田可以種菜；點 💧 的田澆水、點 ✨ 的田收成</div><div class="fpinfo" id="fpinfo"></div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
@@ -168,14 +168,14 @@
   }
   function paintBar() {
     const B = document.getElementById('fbar'); if (!B) return; B.innerHTML = '';
-    [['all', '🧺 全部收成'], ['water', '💧 全部澆水'], ['store', '🏠 倉庫'], ['seed', '🌱 種子一覽'], ['zoom', zoomOn() ? '🔍 看整個農場' : '🔍 放大田地']].forEach(([k, n]) => { const b = el('button', 'fbtn', n); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'zoom' ? (zoomSet(!zoomOn()), paint(), paintBar(), WK && WK.place()) : seedModal(-1)); B.appendChild(b); });
+    [['all', '🧺 全部收成'], ['water', '💧 全部澆水'], ['store', '📦 倉庫'], ['seed', '🌱 種子一覽'], ['zoom', zoomOn() ? '🔎 看整個農場' : '🔍 放大田地']].forEach(([k, n]) => { const b = el('button', 'fbtn', n); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'zoom' ? (zoomSet(!zoomOn()), paint(), paintBar(), WK && WK.place()) : seedModal(-1)); B.appendChild(b); });
   }
   function info(k) {
     const e = document.getElementById('finfo'); if (!e) return; const f = F(), P = f.p[k], S = stat(P);
     if (k >= plotsFor(lvOf(f.xp).lv)) { e.innerHTML = `🔒 農場升到 Lv.${k >= 10 ? 7 : k >= 8 ? 5 : 3} 就能用這塊田`; return; }
     if (S.empty) { e.innerHTML = '這塊田是空的，點一下就能種菜'; return; }
     e.innerHTML = `<b>${S.C.n}</b>　${S.ripe ? '✨ 可以收成了！' : `還要 ${mmss(S.left)}${S.thirsty ? '・💧 口渴了，要澆水才會繼續長' : ''}`}${S.weed ? '・🌿 有雜草' : ''}${S.bug ? '・🐛 有蟲' : ''}　<small>預計收成 ${S.yieldN} 個${P.s ? `（被同學摘走 ${P.s} 個）` : ''}</small>
-      ${!S.ripe && !P.fz && (F().fert || 0) > 0 ? ' <button class="fmini" id="fuse">🧪 施肥（剩下的時間減半）</button>' : ''}`;
+      ${!S.ripe && !P.fz && (F().fert || 0) > 0 ? ' <button class="fmini" id="fuse">🧴 施肥（剩下的時間減半）</button>' : ''}`;
     const b = document.getElementById('fuse'); if (b) tap(b, () => fertilize(k));
   }
   function tapPlot(k) {
@@ -215,7 +215,7 @@
   }
   function fertilize(k) {
     const f = F(), P = f.p[k], S = stat(P); if (S.empty || S.ripe || P.fz || (f.fert || 0) < 1) return;
-    f.fert--; P.f = (P.f || 0) + Math.round(S.left / 2); P.fz = 1; addXp(1); fx(k, '🧪 長得更快了！', 'water'); snd(760); save(); paint(); info(k);
+    f.fert--; P.f = (P.f || 0) + Math.round(S.left / 2); P.fz = 1; addXp(1); fx(k, '🧴 長得更快了！', 'water'); snd(760); save(); paint(); info(k);
   }
   function plant(k, id) {
     const f = F(), C = CROPS[id]; if (coins() < C.p) { toast(`🪙 金幣不夠，${C.n}的種子要 ${C.p} 枚`); return false; }
@@ -245,7 +245,7 @@
   }
   function storeModal() {
     const f = F(), list = CK.filter(id => f.store[id] > 0), tot = list.reduce((a, id) => a + f.store[id] * CROPS[id].s, 0), pp = PET.P(), pet = pp && pp.st === 'pet';
-    const m = modal(`<div class="pmh">🏠 倉庫　<small>🪙 ${coins()}${pet ? `・🐾 ${PET.nameOf(pp)} 🍙${PET.fullNow(pp)}` : ''}</small></div>${list.length ? `<div class="fsto">${list.map(id => `<div class="fsi">${produceImg(id)}<b>${CROPS[id].n} ×${f.store[id]}</b><small>一個 🪙${CROPS[id].s}</small>${pet ? `<button class="fpf" data-f="${id}">🐾 餵</button>` : ''}<button data-s="${id}">賣 1 個</button><button data-a="${id}">全部賣</button></div>`).join('')}</div>
+    const m = modal(`<div class="pmh">📦 倉庫　<small>🪙 ${coins()}${pet ? `・🐾 ${PET.nameOf(pp)} 🍙${PET.fullNow(pp)}` : ''}</small></div>${list.length ? `<div class="fsto">${list.map(id => `<div class="fsi">${produceImg(id)}<b>${CROPS[id].n} ×${f.store[id]}</b><small>一個 🪙${CROPS[id].s}</small>${pet ? `<button class="fpf" data-f="${id}">🐾 餵</button>` : ''}<button data-s="${id}">賣 1 個</button><button data-a="${id}">全部賣</button></div>`).join('')}</div>
       <button class="go fsell" id="fsellall">💰 全部賣掉（🪙 ${tot}）</button>` : '<div class="ld">倉庫是空的，快去收成吧！</div>'}<button class="pmx">關閉</button>`);
     const sell = (id, n) => { n = Math.min(n, f.store[id] || 0); if (!n) return; f.store[id] -= n; if (!f.store[id]) delete f.store[id]; addCoin(n * CROPS[id].s); save(); try { sfx.ok(); } catch (e) { } m.remove(); storeModal(); paint(); paintStore(); };
     m.querySelectorAll('[data-s]').forEach(b => tap(b, () => sell(b.dataset.s, 1)));
@@ -256,7 +256,7 @@
   }
   function paintStore() {
     const e = document.getElementById('fstore'); if (!e) return; const f = F(), list = CK.filter(id => f.store[id] > 0);
-    e.innerHTML = `<div class="fst">🏠 倉庫</div>${list.length ? `<div class="fstl">${list.map(id => `<span>${produceImg(id)}×${f.store[id]}</span>`).join('')}</div>` : '<div class="fsmall">還沒有東西，收成後會放在這裡</div>'}`;
+    e.innerHTML = `<div class="fst">📦 倉庫</div>${list.length ? `<div class="fstl">${list.map(id => `<span>${produceImg(id)}×${f.store[id]}</span>`).join('')}</div>` : '<div class="fsmall">還沒有東西，收成後會放在這裡</div>'}`;
   }
   function paintLog() {
     const e = document.getElementById('flog'); if (!e) return; const f = F();
