@@ -416,6 +416,9 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 #xqcard .xi{flex:1;min-width:12rem}#xqcard .xr{font-size:1.15rem;font-weight:800;color:#7a5a32;margin-top:.25rem}#xqcard .xr b{color:#c0392b}
 #xqcard .xbtns{display:flex;gap:.5rem;flex-wrap:wrap;margin-left:auto}#xqcard .xbtns .go{margin:0}
 @media (max-width:760px){#xqcard{flex-wrap:wrap}#xqcard .xbtns{width:100%;margin-left:0}#xqcard .xbtns .go{flex:1 1 40%;font-size:1.15rem}}#xqcard .go.gray{background:#868e96;box-shadow:0 4px 0 #495057}
+#xqcard .s span{display:inline-block;margin-right:.6em}#xqcard .xi{min-width:14rem}#xqcard .xbtns{display:grid;grid-template-columns:repeat(2,minmax(9.5rem,1fr));flex:0 1 auto}#xqcard .xbtns .go{white-space:nowrap;justify-content:center}
+.sec small{font-size:.8em;color:#aaa;font-weight:800;white-space:nowrap}
+@media (max-width:760px){#xqcard .xbtns{grid-template-columns:repeat(2,minmax(0,1fr));width:100%}#xqcard .xbtns .go{font-size:1.15rem}}
 #xqhist .xht{font-size:1.2rem;font-weight:900;color:#7a5a32;margin-bottom:.3rem}
 #xqhist .xhr{display:flex;align-items:center;gap:.6rem;font-size:1.1rem;font-weight:800;padding:.25rem 0;border-bottom:2px solid #f8f1e4}
 #xqhist .xhr span{flex:none;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900}
@@ -1076,7 +1079,7 @@ SEATS.forEach((grp,gi)=>{const G=el('div','sg'+(gi?' girl':''));grp.forEach(i=>{
 let pinSeat=0,pinVal='',pinBusy=false;
 const pinpad=document.getElementById('pinpad');
 ['1','2','3','4','5','6','7','8','9','✕','0','⌫'].forEach(k=>{const b=el('button',k==='✕'?'x':'',k==='✕'?'取消':k);tap(b,()=>pinKey(k));pinpad.appendChild(b)});
-function openPin(s){pinSeat=s;pinVal='';document.getElementById('pinseat').textContent=isTest(s)?testName(s):`${s} 號`;document.getElementById('pinmsg').textContent='密碼＝生日 4 碼（3月5日 → 0305）';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
+function openPin(s){pinSeat=s;pinVal='';document.getElementById('pinseat').textContent=isTest(s)?testName(s):`${s} 號`;document.getElementById('pinmsg').textContent='請輸入 4 碼密碼';document.getElementById('pinmsg').style.color='#888';paintPin();document.getElementById('pinbox').classList.add('on')}
 function paintPin(){[...document.querySelectorAll('#pindots i')].forEach((d,i)=>d.classList.toggle('f',i<pinVal.length))}
 function pinMsg(t,bad){const m=document.getElementById('pinmsg');m.textContent=t;m.style.color=bad?'#e03131':'#888'}
 async function pinKey(k){if(pinBusy)return;
@@ -1181,11 +1184,12 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
-  f.appendChild(W);g.appendChild(f);P.appendChild(g);P.appendChild(bossCard());P.appendChild(PET.homeCard());P.appendChild(FARM.homeCard());
+  f.appendChild(W);g.appendChild(f);P.appendChild(g);
   const SJ=subjOf(subj);P.appendChild(el('div','sec',`${ico(SJ.img,'hi2')}${SJ.n}`));const G=el('div');G.id='ucards';
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;P.appendChild(c)}
   [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});G.appendChild(b)});P.appendChild(G);
+  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}本週挑戰・寵物・農場`));P.appendChild(bossCard());P.appendChild(PET.homeCard());P.appendChild(FARM.homeCard());
   const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
   const c=el('div','cd');c.style.marginTop='1rem';c.appendChild(S);P.appendChild(c)}
@@ -1239,14 +1243,14 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">${ico('rw-ticket','tki')}<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
   const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
-  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s">軍棋・暗棋・大砲對轟｜兩台平板連線對戰・輸的人用 1 張遊戲券（中途離開算輸）</div><div class="xr" id="xqrec"></div></div>';
+  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s"><span>兩台平板連線對戰</span><span>輸的人用 1 張遊戲券</span><span>中途離開算輸</span></div><div class="xr" id="xqrec"></div></div>';
   const xw=el('div');xw.className='xbtns';const xv=el('button','go',ico('vs-inv','bi')+'邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
   const xb=el('button','go gray',ico('vs-xq','bi')+'軍棋');tap(xb,()=>openTool({...XQ_TOOL,f:'chess.html?g=xq'}));
   const xa=el('button','go gray',ico('vs-aq','bi')+'暗棋');tap(xa,()=>openTool({...XQ_TOOL,f:'chess.html?g=aq'}));
   const xp=el('button','go gray',ico('vs-pd','bi')+'大砲對轟');tap(xp,()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'}));
   [xv,xb,xa,xp].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
-  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜（下滿 ${WR_MIN} 局才上榜）`));
+  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜<small>（下滿 ${WR_MIN} 局才上榜）</small>`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
   P.appendChild(el('div','sec',ico('rw-trophy','hi2')+'全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
   /* 切換遊戲只換下面的排行榜，不重畫整頁（頁面不會跳） */
