@@ -164,10 +164,11 @@ button{font-family:inherit;cursor:pointer}
  #types{grid-column:1/-1;grid-row:1}
  #home .logo{grid-column:1;grid-row:2}#aqRule,#pdRule{grid-column:1;grid-row:3}#me{grid-column:1;grid-row:4}#mode{grid-column:1;grid-row:5}#rec{grid-column:1;grid-row:6}
  #home .menu{grid-column:2;grid-row:2/span 4;align-self:center;width:100%;max-width:26rem}#msg{grid-column:2;grid-row:6}}
+#types button .ti,.types button .ti,.btn .ti,#me .ti{width:1.6em;height:1.6em;vertical-align:-.45em;margin-right:.3em;pointer-events:none}#pick .t .ti.big{width:1.5em;height:1.5em;vertical-align:-.35em;margin-right:.3em}
 </style></head><body>
 
 <section class="scr on" id="home">
-  <div id="types"><button data-t="xq">♟️ 軍棋</button><button data-t="aq">🀄 暗棋</button><button data-t="pd">🎯 大砲對轟</button></div>
+  <div id="types"><button data-t="xq"><img class="ti" src="img/ui/vs-xq.webp" alt="" draggable="false">軍棋</button><button data-t="aq"><img class="ti" src="img/ui/vs-aq.webp" alt="" draggable="false">暗棋</button><button data-t="pd"><img class="ti" src="img/ui/vs-pd.webp" alt="" draggable="false">大砲對轟</button></div>
   <div class="logo"><span>帥</span><em id="logoT">軍棋對戰</em><span>將</span></div>
   <div class="note" id="aqRule" hidden>32 顆棋全部蓋著：輪到你就<b>翻一顆</b>或<b>走一格</b>。第一顆翻到什麼顏色，你就是那一方。<br>大吃小（兵卒可以吃帥將）；炮要<b>隔一顆</b>才能吃。對方的棋被吃光就贏了！</div>
   <div class="note" id="pdRule" hidden>輪到你：可以先<b>開車</b>移動一下，再調<b>角度</b>和<b>力道</b>發射砲彈（也可以直接在畫面上拖）。<br>注意上面的<b>風向</b>！先把對方的血打到 0 就贏了。</div>
@@ -176,7 +177,7 @@ button{font-family:inherit;cursor:pointer}
     <button class="btn" id="bNew">🏠 建立房間（我先下・紅方）</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin">加入</button></div>
     <button class="btn g" id="bLocal">👥 同一台平板兩人輪流下</button>
-    <button class="btn" id="bInv" hidden>📨 邀請同學對戰</button>
+    <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="">邀請同學對戰</button>
   </div>
   <div id="msg"></div>
   <div class="note" id="mode"></div>
@@ -205,7 +206,7 @@ button{font-family:inherit;cursor:pointer}
 
 <div id="over"><div class="box"><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="s" id="ovN"></div><div class="row"><button class="btn" id="bAgain">🔁 再來一局（換邊）</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
-<div id="pick"><div class="box"><div class="t">📨 邀請誰一起下<span id="pickG">軍棋</span>？</div><div id="pickT" class="types"><button data-t="xq">♟️ 軍棋</button><button data-t="aq">🀄 暗棋</button><button data-t="pd">🎯 大砲對轟</button></div><div class="s">綠色的同學現在在平台上，按一下就會邀請他</div><div id="pickList"></div><button class="btn g" id="pickX">取消</button></div></div>
+<div id="pick"><div class="box"><div class="t"><img class="ti big" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請誰一起下<span id="pickG">軍棋</span>？</div><div id="pickT" class="types"><button data-t="xq"><img class="ti" src="img/ui/vs-xq.webp" alt="" draggable="false">軍棋</button><button data-t="aq"><img class="ti" src="img/ui/vs-aq.webp" alt="" draggable="false">暗棋</button><button data-t="pd"><img class="ti" src="img/ui/vs-pd.webp" alt="" draggable="false">大砲對轟</button></div><div class="s">綠色的同學現在在平台上，按一下就會邀請他</div><div id="pickList"></div><button class="btn g" id="pickX">取消</button></div></div>
 <script src="xq.js"></script><script src="aq.js"></script><script src="pd.js"></script><script src="pdv.js"></script>
 <script>
 /* ═════════════ 601 象棋對戰 ═════════════
@@ -264,7 +265,7 @@ const payTicket=()=>!inPlat()||P.useTicket('xq');
 const mySeat=()=>inPlat()?P.seat():0;
 const NO_TK='要有 1 張遊戲券才能下棋（輸的人用掉 1 張，贏的人不用）。回平台練習 10 題答對 8 題就能拿到！';
 function paintMe(){const n=myName();$('#me').innerHTML=(n?`我是 <b>${n}</b>`+(inPlat()?'':' <button id="bName">改名字</button>'):'<button id="bName">先輸入你的名字</button>')
-    +(inPlat()?`<div style="margin-top:.3rem">🎟️ 遊戲券 × ${P.tickets()||0}　<small>（連線對戰：輸的人用 1 張）</small></div>`:'');
+    +(inPlat()?`<div style="margin-top:.3rem"><img class="ti" src="img/ui/rw-ticket.webp" alt="">遊戲券 × ${P.tickets()||0}　<small>（連線對戰：輸的人用 1 張）</small></div>`:'');
   const b=$('#bName');if(b)b.onclick=askName}
 function askName(){const v=(prompt('你的名字或座號：',LS.get('xq_name',''))||'').trim().slice(0,10);if(v){LS.set('xq_name',v);paintMe()}return v}
 

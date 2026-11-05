@@ -447,6 +447,18 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
   #game.on .rotate{display:block; position:absolute; left:50%; bottom:16%; transform:translateX(-50%); z-index:5; background:#fff;
     color:#5f3dc4; font-weight:900; font-size:17px; padding:8px 16px; border-radius:999px; box-shadow:0 4px 0 #0002; white-space:nowrap; pointer-events:none}
 }
+
+/* ═══ 遊戲圖示（img/ui） ═══ */
+body{background:url(img/ui/bg-park.webp) center bottom/cover no-repeat,linear-gradient(160deg,var(--sky1),var(--sky2))}
+.gcard .ic img{display:block;width:clamp(64px,min(7.4vw,12vh),118px);height:clamp(64px,min(7.4vw,12vh),118px);object-fit:contain;margin:0 auto;filter:drop-shadow(0 6px 6px rgba(0,0,0,.14));-webkit-user-drag:none;pointer-events:none}
+.dtitle .ic img{display:block;width:1.6em;height:1.6em;object-fit:contain;filter:drop-shadow(0 4px 4px rgba(0,0,0,.2))}
+.dbtn .ic img{display:block;width:clamp(64px,8vw,110px);height:clamp(64px,8vw,110px);object-fit:contain;filter:drop-shadow(0 5px 4px rgba(0,0,0,.2));pointer-events:none}
+.tki{width:1.5em;height:1.5em;vertical-align:-.4em;margin-right:.15em}
+@media (max-width:560px){.gcard .ic img{width:56px;height:56px}.dbtn .ic img{width:62px;height:62px}}
+/* 13 個遊戲：一排 6 個或 3 個時，最後一個自己一排要置中；一排 7 個剛好 7＋6 */
+.gcard[data-game=hold]{grid-column:1/-1;justify-self:center}
+@media (min-aspect-ratio:16/9), (max-height:620px) and (min-aspect-ratio:4/3){ .gcard[data-game=hold]{grid-column:auto;justify-self:auto} }
+@media (max-width:560px){ .gcard[data-game=hold]{grid-column:1/-1;justify-self:center;width:calc((100% - 20px)/3)} }
 </style>
 </head>
 <body>
@@ -457,20 +469,20 @@ button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; t
 <section class="screen on" id="home">
   <div class="logo"><b>601</b>挑戰樂園</div>
   <div class="cards">
-    <button class="gcard t" data-game="tower"><div class="ic">🧱</div><div class="nm">疊高塔</div><div class="bests" id="hb_tower"></div></button>
-    <button class="gcard c" data-game="cups"><div class="ic"><span class="mini"><i class="ms"></i><i class="mc"></i></span></div><div class="nm">三杯追星</div><div class="bests" id="hb_cups"></div></button>
-    <button class="gcard f" data-game="flappy"><div class="ic">🐤</div><div class="nm">小雞跳跳</div><div class="bests" id="hb_flappy"></div></button>
-    <button class="gcard h" data-game="hunt"><div class="ic">🗺️</div><div class="nm">尋寶</div><div class="bests" id="hb_hunt"></div></button>
-    <button class="gcard n" data-game="num"><div class="ic">🔢</div><div class="nm">數字快手</div><div class="bests" id="hb_num"></div></button>
-    <button class="gcard s" data-game="simon"><div class="ic">🎹</div><div class="nm">記憶燈光</div><div class="bests" id="hb_simon"></div></button>
-    <button class="gcard k" data-game="color"><div class="ic">🎨</div><div class="nm">顏色陷阱</div><div class="bests" id="hb_color"></div></button>
-    <button class="gcard x" data-game="react"><div class="ic">⚡</div><div class="nm">反應王</div><div class="bests" id="hb_react"></div></button>
-    <button class="gcard d" data-game="spot"><div class="ic">👀</div><div class="nm">找不同</div><div class="bests" id="hb_spot"></div></button>
-    <button class="gcard b" data-game="bridge"><div class="ic">🌉</div><div class="nm">搭橋小英雄</div><div class="bests" id="hb_bridge"></div></button>
+    <button class="gcard t" data-game="tower"><div class="ic"><img src="img/ui/game-tower.webp" alt="" draggable="false"></div><div class="nm">疊高塔</div><div class="bests" id="hb_tower"></div></button>
+    <button class="gcard c" data-game="cups"><div class="ic"><img src="img/ui/game-cups.webp" alt="" draggable="false"></div><div class="nm">三杯追星</div><div class="bests" id="hb_cups"></div></button>
+    <button class="gcard f" data-game="flappy"><div class="ic"><img src="img/ui/game-flappy.webp" alt="" draggable="false"></div><div class="nm">小雞跳跳</div><div class="bests" id="hb_flappy"></div></button>
+    <button class="gcard h" data-game="hunt"><div class="ic"><img src="img/ui/game-hunt.webp" alt="" draggable="false"></div><div class="nm">尋寶</div><div class="bests" id="hb_hunt"></div></button>
+    <button class="gcard n" data-game="num"><div class="ic"><img src="img/ui/game-num.webp" alt="" draggable="false"></div><div class="nm">數字快手</div><div class="bests" id="hb_num"></div></button>
+    <button class="gcard s" data-game="simon"><div class="ic"><img src="img/ui/game-simon.webp" alt="" draggable="false"></div><div class="nm">記憶燈光</div><div class="bests" id="hb_simon"></div></button>
+    <button class="gcard k" data-game="color"><div class="ic"><img src="img/ui/game-color.webp" alt="" draggable="false"></div><div class="nm">顏色陷阱</div><div class="bests" id="hb_color"></div></button>
+    <button class="gcard x" data-game="react"><div class="ic"><img src="img/ui/game-react.webp" alt="" draggable="false"></div><div class="nm">反應王</div><div class="bests" id="hb_react"></div></button>
+    <button class="gcard d" data-game="spot"><div class="ic"><img src="img/ui/game-spot.webp" alt="" draggable="false"></div><div class="nm">找不同</div><div class="bests" id="hb_spot"></div></button>
+    <button class="gcard b" data-game="bridge"><div class="ic"><img src="img/ui/game-bridge.webp" alt="" draggable="false"></div><div class="nm">搭橋小英雄</div><div class="bests" id="hb_bridge"></div></button>
     <button class="gcard m" data-game="melon"><div class="ic">🍉</div><div class="nm">合成大西瓜</div><div class="bests" id="hb_melon"></div></button>
-    <button class="gcard w" data-game="mole"><div class="ic">🔨</div><div class="nm">打地鼠</div><div class="bests" id="hb_mole"></div></button>
-    <button class="gcard l" data-game="slice"><div class="ic">🎁</div><div class="nm">切禮物</div><div class="bests" id="hb_slice"></div></button>
-    <button class="gcard p" data-game="hold"><div class="ic">🖐️</div><div class="nm">按住別放</div><div class="bests" id="hb_hold"></div></button>
+    <button class="gcard w" data-game="mole"><div class="ic"><img src="img/ui/game-mole.webp" alt="" draggable="false"></div><div class="nm">打地鼠</div><div class="bests" id="hb_mole"></div></button>
+    <button class="gcard l" data-game="slice"><div class="ic"><img src="img/ui/game-slice.webp" alt="" draggable="false"></div><div class="nm">切禮物</div><div class="bests" id="hb_slice"></div></button>
+    <button class="gcard p" data-game="hold"><div class="ic"><img src="img/ui/game-hold.webp" alt="" draggable="false"></div><div class="nm">按住別放</div><div class="bests" id="hb_hold"></div></button>
     <button class="gcard g" data-game="g2048"><div class="ic"><span class="t2048"></span></div><div class="nm">2048</div><div class="bests" id="hb_g2048"></div></button>
   </div>
 </section>
@@ -679,6 +691,7 @@ function bgmCompile(spec,sepLead){
 /* ═════════════ 設定 ═════════════ */
 const GAMES={tower:{ic:'🧱',nm:'疊高塔'},cups:{ic:'🥤',nm:'三杯追星'},flappy:{ic:'🐤',nm:'小雞跳跳'},hunt:{ic:'🗺️',nm:'尋寶'},num:{ic:'🔢',nm:'數字快手'},simon:{ic:'🎹',nm:'記憶燈光'},color:{ic:'🎨',nm:'顏色陷阱'},react:{ic:'⚡',nm:'反應王'},spot:{ic:'👀',nm:'找不同'},bridge:{ic:'🌉',nm:'搭橋小英雄'},melon:{ic:'🍉',nm:'合成大西瓜'},g2048:{ic:'🔶',nm:'2048'},mole:{ic:'🔨',nm:'打地鼠'},slice:{ic:'🎁',nm:'切禮物'},hold:{ic:'🖐️',nm:'按住別放'}};
 const GAME_KEYS=Object.keys(GAMES);
+const GIMG=new Set(['tower','cups','flappy','hunt','num','simon','color','react','spot','bridge','mole','slice','hold']);   // 有圖示的遊戲（img/ui/game-*.webp）
 const DIFFS=[{k:'easy',ic:'🌱',nm:'簡單'},{k:'normal',ic:'⭐',nm:'普通'},{k:'hard',ic:'🔥',nm:'困難'},{k:'boss',ic:'👑',nm:'魔王'}];
 const DIFF_COL={easy:'#2fb36d',normal:'#2f8cf0',hard:'#f28a1c',boss:'#9b3fe0'};
 /* 疊高塔：30 秒能疊幾層。速度＝起始＋每層加快＋時間加快；完美判定範圍、底座寬度依難度不同。
@@ -915,11 +928,11 @@ function renderHome(){
 function goHome(){ stopGame(); $('#result').classList.remove('on'); show('home'); renderHome(); if(audioReady&&(!bgm.on||bgm.name!=='menu')) playSong('menu'); }
 function goDiff(){
   stopGame(); $('#result').classList.remove('on');
-  const G=GAMES[curGame]; $('#dIc').textContent=G.ic; $('#dNm').textContent=G.nm;
+  const G=GAMES[curGame]; $('#dIc').innerHTML=GIMG.has(curGame)?`<img src="img/ui/game-${curGame}.webp" alt="">`:G.ic; $('#dNm').textContent=G.nm;
   $('#dGrid').innerHTML=DIFFS.map(d=>{
     const b=best[curGame][d.k], n=b==null?0:starsOf(curGame,d.k,b);
     const bs=b==null?'':`最佳 ${gInfo(curGame,d.k).txt(b)}`;
-    return `<button class="dbtn d-${d.k}" data-d="${d.k}"><div class="ic">${d.ic}</div><div class="nm">${d.nm}</div>
+    return `<button class="dbtn d-${d.k}" data-d="${d.k}"><div class="ic"><img src="img/ui/diff-${d.k}.webp" alt="" draggable="false"></div><div class="nm">${d.nm}</div>
       <div class="st"><b>${'★'.repeat(n)}</b>${'★'.repeat(3-n)}</div><div class="bs">${bs}</div></button>`; }).join('');
   show('diff');
   if(audioReady&&(!bgm.on||bgm.name!=='menu')) playSong('menu');
@@ -2672,7 +2685,7 @@ $('#wGrid').addEventListener('pointerdown',e=>{ const el=e.target.closest('.wcel
   /* 計時：每 0.25 秒更新；時間到時，搭橋直接結算，其他遊戲這局玩完就結束 */
   let wasOn=false, upPending=false;
   function tick(){
-    chip.textContent='🎟️ × '+L.tickets();
+    chip.innerHTML='<img class="tki" src="img/ui/rw-ticket.webp" alt="">× '+L.tickets();
     const left=L.left();
     if(left>0){ tl.textContent='⏱ '+mmss(left); tl.classList.add('on'); tl.classList.toggle('warn',left<=30000); wasOn=true; return; }
     tl.classList.remove('on','warn');

@@ -316,6 +316,7 @@ body{background:
   radial-gradient(circle at 4% 88%,#d3f9d8 0 3.8rem,transparent 3.9rem),
   radial-gradient(circle at 50% -10%,#fff3bf 0 9rem,transparent 9.1rem),
   #fff8ec;background-attachment:fixed}
+body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* 平台底圖（很淡，不搶字） */
 .mascot{display:inline-block;font-size:2.6rem;animation:bob 2.4s ease-in-out infinite;transform-origin:50% 90%}
 .mascot.big{font-size:4.2rem}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
@@ -493,12 +494,34 @@ body{background:
 .bend{color:#7048e8}
 #tbout .tbrule{background:#f8f9fa;border-radius:12px;padding:.7rem;font-size:.95rem;white-space:pre;overflow:auto;user-select:text}
 #tbout .tbh{font-size:1.2rem;font-weight:900;margin:.4rem 0}#tbout .chip{cursor:default}#tbout .chip.z{opacity:.45}#tbout .chip.z small{color:#999}
+
+/* ═══ 介面圖示 ═══ */
+@media (max-width:700px){#subj{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-left:-.7rem;margin-right:-.7rem;padding:0 .7rem .3rem}#subj::-webkit-scrollbar{display:none}#subj button{flex:none;font-size:1.1rem;padding:.25rem .8rem}}   /* 手機：科目一行、左右滑 */
+.sec .hi2{width:2rem;height:2rem;margin:-.25rem .4rem 0 0}
+img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-user-drag:none;pointer-events:none}
+.nv b.im{background:none!important;border:0!important;box-shadow:none}.nv b.im img{width:2.3rem;height:2.3rem}
+#subj button .si{width:1.7rem;height:1.7rem;margin:-.2rem .35rem 0 -.3rem}
+.uc .ui img{width:4.4rem;height:4.4rem;filter:drop-shadow(0 4px 4px rgba(0,0,0,.12))}.uc .ui{opacity:1}
+.mascot img{width:3.4rem;height:3.4rem}.mascot.big img{width:5.6rem;height:5.6rem}
+.tkc .ii,#ptk .ii{width:1.6rem;height:1.6rem;margin:-.2rem .3rem 0 0}
+#fire .n .fi{width:3rem;height:3rem;margin:-.4rem .2rem 0 0}
+.tkn .tki{width:4rem;height:4rem;vertical-align:middle}
+.go .bi,.gray .bi,button .bi{width:1.6em;height:1.6em;margin:-.25em .35em 0 -.15em}
+.bgb .gi{width:1.7rem;height:1.7rem;margin:-.2rem .35rem 0 -.2rem;border-radius:7px}
+.bcol .bh .hi2{width:2rem;height:2rem;margin:-.25rem .4rem 0 -.1rem}
+#boss .bmon img{width:5.6rem;height:5.6rem;filter:drop-shadow(0 5px 6px rgba(0,0,0,.15))}
+#tbout .tbi{width:2.4rem;height:2.4rem}
+#pens button img{width:1.7rem;height:1.7rem}
+#endm{display:block;width:9rem;height:9rem;margin:-1rem auto .2rem}
+#sndBtn.mute img{filter:grayscale(1);opacity:.6}
+@media (max-width:900px),(orientation:portrait){.nv b.im img{width:2rem;height:2rem}.uc .ui img{width:3.4rem;height:3.4rem}.mascot.big img{width:4.2rem;height:4.2rem}#boss .bmon img{width:4.4rem;height:4.4rem}#endm{width:7rem;height:7rem}}
+@media (orientation:landscape) and (max-height:560px){.mascot.big img{width:3rem;height:3rem}#endm{width:5rem;height:5rem;margin-top:-.4rem}}
 </style>
 </head><body>
 
 <section class="scr" id="login">
  <button class="fsb" id="fsLogin">⛶ 全螢幕</button>
- <div class="lmascot"><span class="mascot big">🦉</span><span class="bubble">點自己的座號，開始練習！</span></div>
+ <div class="lmascot"><span class="mascot big"><img class="ico" src="img/ui/mascot-hi.webp" alt="" draggable="false"></span><span class="bubble">點自己的座號，開始練習！</span></div>
  <h1><small>六年一班</small>601 學習平台</h1>
  <div id="seats"></div>
 </section>
@@ -514,7 +537,7 @@ body{background:
   <div class="sp"></div>
   <div id="sync"></div>
   <div class="sidebtns"><button class="fsb" id="fsBtn">⛶ 全螢幕</button><button id="sndBtn">🔊 音效</button></div>
-  <button id="logout">登出</button>
+  <button id="logout"><img class="ico bi" src="img/ui/nav-out.webp" alt="">登出</button>
  </aside>
  <div id="pane"></div>
 </section>
@@ -529,7 +552,7 @@ body{background:
   <div id="top"><span id="qno">第 1 題</span><span id="utag"></span><span id="dots"></span></div>
   <div id="q"></div>
   <div id="body">
-   <div class="card" id="figc"><canvas id="scr"></canvas><div id="pens"><button data-p="b" class="on" title="藍筆">✏️</button><button data-p="r" title="紅筆">🖍️</button><button data-p="e" title="橡皮擦">🧽</button><button data-p="c" title="全部擦掉">🗑️</button><button data-p="h" title="關掉畫筆">✋</button></div><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
+   <div class="card" id="figc"><canvas id="scr"></canvas><div id="pens"><button data-p="b" class="on" title="藍筆"><img class="ico" src="img/ui/pr-pen.webp" alt="藍筆"></button><button data-p="r" title="紅筆"><img class="ico" src="img/ui/pr-marker.webp" alt="紅筆"></button><button data-p="e" title="橡皮擦"><img class="ico" src="img/ui/pr-eraser.webp" alt="橡皮擦"></button><button data-p="c" title="全部擦掉"><img class="ico" src="img/ui/pr-trash.webp" alt="全部擦掉"></button><button data-p="h" title="關掉畫筆"><img class="ico" src="img/ui/pr-hand.webp" alt="關掉畫筆"></button></div><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
    <div class="card" id="ansc">
     <div id="ansline"><span class="pre" id="pre"></span><span id="box" class="ib"></span>
      <span id="fbx"><span class="ib" id="bw" data-k="w"></span><span class="stk"><span class="ib" id="bn" data-k="n"></span><hr><span class="ib" id="bd" data-k="d"></span></span></span>
@@ -537,7 +560,7 @@ body{background:
     <div id="fb"></div>
     <div id="pad"></div>
     <div id="opts"></div>
-    <div id="acts"><button class="hint" id="hint">💡 提示</button><button id="show" class="hide">看解答</button><button class="next" id="next" disabled>下一題 ▶</button></div>
+    <div id="acts"><button class="hint" id="hint"><img class="ico bi" src="img/ui/pr-hint.webp" alt="">提示</button><button id="show" class="hide">看解答</button><button class="next" id="next" disabled>下一題 ▶</button></div>
    </div>
   </div>
  </main>
@@ -594,7 +617,7 @@ body{background:
  <button id="tbtn">下一步 ▶</button>
 </div></div>
 <div id="toast"></div>
-<div id="end"><div class="box"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
+<div id="end"><div class="box"><img id="endm" class="ico" alt="" draggable="false"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
 <!-- 國語、英語、自然、社會的題庫(數學的題目在下面的程式裡自動出題) -->
 <script src="pet.js"></script><script src="farm.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script>
 <script>
@@ -915,10 +938,12 @@ const UN=[
 /* ===================== 科目 =====================
    數學的單元在上面(UN);國語、英語、自然、社會的題目放在 bank/ 資料夾的題庫檔,題型都是選擇題。
    題庫的單元依科目順序接在數學後面(作答紀錄記的是單元的順序),所以新單元要加在該科目的最後面。 */
-const SUBJ=[{k:'math',ic:'🔢',n:'數學',c:'#22b573'},{k:'zh',ic:'📖',n:'國語',c:'#e8590c'},{k:'en',ic:'🔤',n:'英語',c:'#1c7ed6'},{k:'sci',ic:'🔬',n:'自然',c:'#0ca678'},{k:'soc',ic:'🌏',n:'社會',c:'#ae3ec9'}];
+/* 介面圖示：img/ui/名字.webp（同一套畫風，每台平板、電腦看起來都一樣；沒有圖的地方還是用表情符號） */
+const ico=(n,cls)=>`<img class="ico${cls?' '+cls:''}" src="img/ui/${n}.webp" alt="" draggable="false">`;
+const SUBJ=[{k:'math',ic:'🔢',n:'數學',c:'#22b573',img:'subj-math'},{k:'zh',ic:'📖',n:'國語',c:'#e8590c',img:'subj-zh'},{k:'en',ic:'🔤',n:'英語',c:'#1c7ed6',img:'subj-en'},{k:'sci',ic:'🔬',n:'自然',c:'#0ca678',img:'subj-sci'},{k:'soc',ic:'🌏',n:'社會',c:'#ae3ec9',img:'subj-soc'}];
 const subjOf=k=>SUBJ.find(S=>S.k===k)||SUBJ[0];
 const UCOL=[['#1c7ed6','#e7f5ff'],['#f76707','#fff4e6'],['#7048e8','#f3f0ff'],['#0ca678','#e6fcf5'],['#d6336c','#fff0f6'],['#f59f00','#fff9db']];
-UN.forEach(u=>u.s='math');
+UN.forEach((u,i)=>{u.s='math';if(i<4)u.img='unit-u'+(i+1)});
 /* 題庫的一題 → 練習用的選擇題 */
 const isImg=o=>/\.(jpe?g|png|gif|webp|svg)$/i.test(o);
 const optHtml=o=>isImg(o)?`<img src="${o}" alt="">`:o;   // 選項可以是圖片
@@ -949,14 +974,14 @@ function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);i
 /* 單元標籤:數學的單元對應課本(單元 1～4);國語、英語…題庫的分類是「題型」,不寫單元幾,免得學生以為是課本第幾單元 */
 const uLab=U=>U.s&&U.s!=='math'?`${subjOf(U.s).n}・${U.nav||U.name}`:'單元'+U.no;
 const uTag=U=>U.s&&U.s!=='math'?`${subjOf(U.s).ic} ${subjOf(U.s).n}`:'單元 '+U.no;
-const MIX={key:'mix',s:'math',no:'★',ic:'🌟',name:'1～4 單元綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db',sub:'1～4 單元混合'};
-const MIXES=[MIX,...SUBJ.slice(1).map(S=>({key:'mix_'+S.k,s:S.k,no:'★',ic:'🌟',name:S.n+'綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db'}))];
+const MIX={key:'mix',s:'math',no:'★',ic:'🌟',img:'unit-mix',name:'1～4 單元綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db',sub:'1～4 單元混合'};
+const MIXES=[MIX,...SUBJ.slice(1).map(S=>({key:'mix_'+S.k,s:S.k,no:'★',ic:'🌟',img:'unit-mix',name:S.n+'綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db'}))];
 const mixOf=k=>{const M=MIXES.find(m=>m.s===k);return M&&UN.some(u=>u.s===k&&u.g)?M:null};
 const mixByKey=k=>MIXES.find(m=>m.key===k);
 const isMix=u=>MIXES.includes(u);
-const GM={key:'game',no:'🎮',ic:'🎮',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
-const PETNAV={key:'pet',no:'🐾',ic:'🐾',nav:'寵物',c:'#f06595',cb:'#fff0f6'};   // 我的寵物(pet.js)
-const FARMNAV={key:'farm',no:'🌾',ic:'🌾',nav:'農場',c:'#74b816',cb:'#f4fce3'};   // 快樂農場(farm.js)
+const GM={key:'game',no:'🎮',ic:'🎮',img:'nav-game',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
+const PETNAV={key:'pet',no:'🐾',ic:'🐾',img:'nav-pet',nav:'寵物',c:'#f06595',cb:'#fff0f6'};   // 我的寵物(pet.js)
+const FARMNAV={key:'farm',no:'🌾',ic:'🌾',img:'nav-farm',nav:'農場',c:'#74b816',cb:'#f4fce3'};   // 快樂農場(farm.js)
 const TK_EVERY=10, TK_NEED=8;      // 每做 10 題(不分單元、可以分好幾次做),答對 8 題以上(含看完例題後第二次答對)拿 1 張遊戲券
 /* 601 挑戰樂園的遊戲:[代號, 圖示, 名稱, 單位, 越小越好] */
 const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/ 5'],['flappy','🐤','小雞跳跳','關'],['hunt','🗺️','尋寶','★'],['num','🔢','數字快手','秒',1],['simon','🎹','記憶燈光','個燈'],
@@ -968,7 +993,7 @@ const GAME_TOOL={id:'game',i:'🎮',k:'遊戲',n:'601 挑戰樂園',f:'game.html
 const XQ_TOOL={id:'xq',i:'♟️',k:'對戰',n:'雙人對戰',f:'chess.html'};   // 兩人連線,輸的人用 1 張遊戲券(和局、贏的不用)
 const PU=[0,1,2,3];               // 有練習題的單元
 let N=10;                       // 一回的題數(錯題再練可能少於 10)
-const WB={key:'wb',no:'📕',ic:'📕',name:'錯題再練',nav:'錯題',c:'#c92a2a',cb:'#fff5f5'};
+const WB={key:'wb',no:'📕',ic:'📕',img:'unit-wb',name:'錯題再練',nav:'錯題',c:'#c92a2a',cb:'#fff5f5'};
 const WB_MAX=40;
 
 /* ===================== 小工具 ===================== */
@@ -1082,7 +1107,7 @@ function toggleFS(){const d=document.documentElement;
   if(!fsOK){toast('📲 用瀏覽器的「分享 → 加入主畫面」，就能全螢幕使用');return}
   if(fsEl())(document.exitFullscreen||document.webkitExitFullscreen).call(document);
   else{const r=(d.requestFullscreen||d.webkitRequestFullscreen).call(d);if(r&&r.catch)r.catch(()=>{})}}
-function paintFS(){document.querySelectorAll('.fsb').forEach(b=>{b.style.display=standalone?'none':'';b.textContent=fsEl()?'↙ 離開全螢幕':'⛶ 全螢幕'})}
+function paintFS(){document.querySelectorAll('.fsb').forEach(b=>{b.style.display=standalone?'none':'';b.innerHTML=ico('nav-fs','bi')+(fsEl()?'離開全螢幕':'全螢幕')})}
 document.querySelectorAll('.fsb').forEach(b=>b.addEventListener('click',toggleFS));
 ['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,paintFS));
 /* 鎖右鍵、長按選單、選字、拖曳、雙指縮放(老師頁的文字框例外) */
@@ -1097,7 +1122,7 @@ function tone(f,d,type,v,at){if(!sndOn)return;try{AC=AC||new (window.AudioContex
   o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v||.08,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
 const sfx={ok(){tone(784,.12,'triangle',.09);tone(1175,.18,'triangle',.08,.09)},no(){tone(220,.18,'sine',.07);tone(180,.22,'sine',.06,.1)},
   ticket(){[659,784,988,1319].forEach((f,i)=>tone(f,.16,'triangle',.08,i*.08))},win(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.08,i*.1))},done(){tone(659,.15,'triangle',.07);tone(880,.2,'triangle',.07,.12)}};
-function paintSnd(){const b=document.getElementById('sndBtn');if(b)b.textContent=sndOn?'🔊 音效':'🔇 音效'}
+function paintSnd(){const b=document.getElementById('sndBtn');if(b){b.innerHTML=ico('nav-snd','bi')+(sndOn?'音效':'靜音');b.classList.toggle('mute',!sndOn)}}
 {const b=document.getElementById('sndBtn');if(b)tap(b,()=>{sndOn=!sndOn;LS.set('learn601_snd',sndOn);paintSnd();if(sndOn)sfx.ok()})}
 /* 彩帶 */
 const CCOL=['#ff6b6b','#ffd43b','#51cf66','#339af0','#cc5de8','#ff922b'];
@@ -1113,8 +1138,8 @@ let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj)
 function enterHome(){show$('home');presence();listenInv();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 function paintNavs(){const N2=document.getElementById('navs');N2.innerHTML='';
-  const M=mixOf(subj),items=[{key:'home',no:'🏠',ic:'🏠',nav:'首頁',c:'#495057'},PETNAV,FARMNAV,...UN.filter(u=>u.g&&u.s===subj),...(M?[M]:[]),WB,GM];
-  items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b>${u.ic||u.no}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);b.style.setProperty('--cb',u.cb||'#f1f3f5');tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
+  const M=mixOf(subj),items=[{key:'home',no:'🏠',ic:'🏠',img:'nav-home',nav:'首頁',c:'#495057'},PETNAV,FARMNAV,...UN.filter(u=>u.g&&u.s===subj),...(M?[M]:[]),WB,GM];
+  items.forEach(u=>{const b=el('button','nv'+(view===u.key?' on':''),`<b${u.img?' class="im"':''}>${u.img?ico(u.img):(u.ic||u.no)}</b><span>${u.nav}</span>`);b.style.setProperty('--c',u.c);b.style.setProperty('--cb',u.cb||'#f1f3f5');tap(b,()=>{view=u.key;paintNavs();render()});N2.appendChild(b)});
   N2.style.display='contents'}
 function todayN(){return sum.days[dkey()]||0}
 function streak(){let n=0;const d=new Date();if((sum.days[dkey(d)]||0)<GOAL)d.setDate(d.getDate()-1);
@@ -1123,7 +1148,7 @@ function stars(b){return b>=9?'⭐⭐⭐':b>=7?'⭐⭐':b>=5?'⭐':''}
 function ringSVG(p){const r=52,C=2*Math.PI*r;return `<svg id="ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="#f1f3f5" stroke-width="14"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="${p>=1?'#22b573':'#ff922b'}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C*Math.min(p,1)} ${C}" transform="rotate(-90 60 60)"/><text x="60" y="${p>=1?72:70}" text-anchor="middle" font-size="${p>=1?40:30}" font-weight="900" fill="#333" style="stroke:none">${p>=1?'✔':Math.round(p*100)+'%'}</text></svg>`}
 /* 科目切換:換科目時,如果正在看別科的單元就回首頁 */
 function subjBar(){const B=el('div');B.id='subj';
-  SUBJ.forEach(S=>{const n=UN.some(u=>u.s===S.k&&u.g);const b=el('button',S.k===subj?'on':'',`${S.ic} ${S.n}${n?'':'<small>準備中</small>'}`);b.style.setProperty('--c',S.c);
+  SUBJ.forEach(S=>{const n=UN.some(u=>u.s===S.k&&u.g);const b=el('button',S.k===subj?'on':'',`${ico(S.img,'si')}${S.n}${n?'':'<small>準備中</small>'}`);b.style.setProperty('--c',S.c);
     tap(b,()=>{if(subj===S.k)return;subj=S.k;LS.set('learn601_subj',subj);const u=UN.find(x=>x.key===view)||mixByKey(view);if(u&&u.s!==subj)view='home';paintNavs();render()});B.appendChild(b)});
   return B}
 /* 同一頁重畫時，保留捲動的位置（不會跳回最上面） */
@@ -1147,19 +1172,19 @@ function render0(){const P=document.getElementById('pane');P.innerHTML='';
   if(view==='game')return renderGame(P);
   const u=UN.find(x=>x.key===view);if(!u){view='home';paintNavs();return render()}renderUnit(P,u,UN.indexOf(u))}
 function renderHome(P){const n=todayN(),done=n>=GOAL;
-  P.appendChild(el('div','hello',`<span class="mascot">🦉</span><div><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div>`));
+  P.appendChild(el('div','hello',`<span class="mascot">${ico(PET.night()?'mascot-sleep':done?'mascot-yay':'mascot-hi')}</span><div><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div>`));
   const g=el('div','grid2');
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div><div class="t1">今天的任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const SM=mixOf(subj),gb=el('button','go',(done?'再練一回':'開始練習')+(SM?'':'（數學）')+' ▶');tap(gb,()=>startPractice((SM||MIX).key));t.lastChild.appendChild(gb);
-  const tk=el('button','tkc',`🎟️ 遊戲券 × ${tkN()}　<small>${tkInfo()}</small>`);tap(tk,()=>{view='game';paintNavs();render()});t.lastChild.appendChild(tk);g.appendChild(t);
-  const f=el('div','cd');f.id='fire';const st=streak();f.innerHTML=`<div class="n">🔥 ${st}</div><div class="l">連續完成天數</div>`;
+  const tk=el('button','tkc',`${ico('rw-ticket','ii')}遊戲券 × ${tkN()}　<small>${tkInfo()}</small>`);tap(tk,()=>{view='game';paintNavs();render()});t.lastChild.appendChild(tk);g.appendChild(t);
+  const f=el('div','cd');f.id='fire';const st=streak();f.innerHTML=`<div class="n">${ico('rw-fire','fi')}${st}</div><div class="l">連續完成天數</div>`;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
   f.appendChild(W);g.appendChild(f);P.appendChild(g);P.appendChild(bossCard());P.appendChild(PET.homeCard());P.appendChild(FARM.homeCard());
-  const SJ=subjOf(subj);P.appendChild(el('div','sec',`${SJ.ic} ${SJ.n}`));const G=el('div');G.id='ucards';
+  const SJ=subjOf(subj);P.appendChild(el('div','sec',`${ico(SJ.img,'hi2')}${SJ.n}`));const G=el('div');G.id='ucards';
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;P.appendChild(c)}
-  [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.ic||''}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
+  [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?(stars(sum.best[u.key]||0)||'　'):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>{view=u.key;paintNavs();render()});G.appendChild(b)});P.appendChild(G);
   const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
@@ -1212,21 +1237,21 @@ const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;i
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
-  const left=playLeft();c.innerHTML=`<div class="tkn">🎟️<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
+  const left=playLeft();c.innerHTML=`<div class="tkn">${ico('rw-ticket','tki')}<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
   const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
-  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">♟️</div><div class="xi"><div class="t">雙人對戰</div><div class="s">軍棋・暗棋・大砲對轟｜兩台平板連線對戰・輸的人用 1 張遊戲券（中途離開算輸）</div><div class="xr" id="xqrec"></div></div>';
-  const xw=el('div');xw.className='xbtns';const xv=el('button','go','📨 邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
-  const xb=el('button','go gray','♟️ 軍棋');tap(xb,()=>openTool({...XQ_TOOL,f:'chess.html?g=xq'}));
-  const xa=el('button','go gray','🀄 暗棋');tap(xa,()=>openTool({...XQ_TOOL,f:'chess.html?g=aq'}));
-  const xp=el('button','go gray','🎯 大砲對轟');tap(xp,()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'}));
+  const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s">軍棋・暗棋・大砲對轟｜兩台平板連線對戰・輸的人用 1 張遊戲券（中途離開算輸）</div><div class="xr" id="xqrec"></div></div>';
+  const xw=el('div');xw.className='xbtns';const xv=el('button','go',ico('vs-inv','bi')+'邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
+  const xb=el('button','go gray',ico('vs-xq','bi')+'軍棋');tap(xb,()=>openTool({...XQ_TOOL,f:'chess.html?g=xq'}));
+  const xa=el('button','go gray',ico('vs-aq','bi')+'暗棋');tap(xa,()=>openTool({...XQ_TOOL,f:'chess.html?g=aq'}));
+  const xp=el('button','go gray',ico('vs-pd','bi')+'大砲對轟');tap(xp,()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'}));
   [xv,xb,xa,xp].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
-  P.appendChild(el('div','sec',`🏆 雙人對戰勝率排行榜（下滿 ${WR_MIN} 局才上榜）`));
+  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜（下滿 ${WR_MIN} 局才上榜）`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
-  P.appendChild(el('div','sec','🏆 全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
+  P.appendChild(el('div','sec',ico('rw-trophy','hi2')+'全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
   /* 切換遊戲只換下面的排行榜，不重畫整頁（頁面不會跳） */
   const gc=el('div');gc.id='bgames';const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';
-  GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ic} ${nm}`);tap(x,()=>{if(bg===k)return;bg=k;gc.querySelectorAll('.bgb').forEach(b=>b.classList.toggle('on',b===x));loadBoard(L)});gc.appendChild(x)});
+  GLIST.forEach(([k,ic,nm])=>{const x=el('button','bgb'+(bg===k?' on':''),`${ico('game-'+k,'gi')}${nm}`);tap(x,()=>{if(bg===k)return;bg=k;gc.querySelectorAll('.bgb').forEach(b=>b.classList.toggle('on',b===x));loadBoard(L)});gc.appendChild(x)});
   P.appendChild(gc);P.appendChild(L);loadBoard(L)}
 async function paintXq(){const r=document.getElementById('xqrec'),h=document.getElementById('xqhist');if(!r)return;const S=await xqStats();
   const one=(t,n)=>{const H=S.h.filter(x=>xqG(x)===t);if(!H.length)return '';const w=H.filter(x=>x.w===1).length,l=H.filter(x=>x.w===0).length,d=H.filter(x=>x.w===2).length;return `${n} <b>${w}</b> 勝 <b>${l}</b> 敗${d?` ${d} 和`:''}`};
@@ -1252,7 +1277,7 @@ async function loadWR(L){let all;try{all=await wrAll()}catch(e){L.innerHTML='<di
     let rows='';B.on.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;
       rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${Math.round(r.r*100)}%<small>${r.w}勝${r.l}敗${r.d?r.d+'和':''}</small></i></div>`});
     const tip=me&&!mine?`<div class="wrme">我下了 ${me.n} 局，再 ${WR_MIN-me.n} 局就上榜</div>`:'';
-    return `<div class="bcol" style="--dc:${COLS[g]||'#7a5a32'}"><div class="bh">${G0.i} ${G0.n}<small>${B.on.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去對戰！</div>'}${tip}</div>`}).join('')}
+    return `<div class="bcol" style="--dc:${COLS[g]||'#7a5a32'}"><div class="bh">${ico(G0.img,'hi2')}${G0.n}<small>${B.on.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去對戰！</div>'}${tip}</div>`}).join('')}
 /* 排行榜:每個遊戲的 4 個難度各自一個榜,雲端存在 lb/遊戲_難度/座號(例如 lb/tower_easy/12)。
    以前的 lb/遊戲/座號 只存一筆「最好的」,讀的時候放進那一筆的難度,舊成績不會不見。 */
 const DK=['easy','normal','hard','boss'];
@@ -1277,7 +1302,7 @@ async function loadBoard(L,fresh){const g=bg;let all;
   try{if(!fresh&&LBC&&Date.now()-LBC.t<30000)all=LBC.v;else{all=await lbAll();if(all)LBC={t:Date.now(),v:all}}}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(g!==bg)return;L.style.minHeight=Math.max(parseFloat(L.style.minHeight)||0,L.offsetHeight)+'px';   // 高度只會變高不會變矮，畫面不會被往上拉if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   L.innerHTML=GDIFF.map(([k,ic,nm],d)=>{const arr=all[g][d]||[],me=arr.find(r=>r.seat===user.seat);
-    return `<div class="bcol" style="--dc:${DCOL[d]}"><div class="bh">${ic} ${nm}<small>${arr.length} 人${me?`・我第 ${me.rank} 名`:''}</small></div>${boardRows(g,arr,5)}</div>`}).join('')}
+    return `<div class="bcol" style="--dc:${DCOL[d]}"><div class="bh">${ico('diff-'+k,'hi2')}${nm}<small>${arr.length} 人${me?`・我第 ${me.rank} 名`:''}</small></div>${boardRows(g,arr,5)}</div>`}).join('')}
 
 /* ===================== 象棋:戰績、誰在線上、邀請同學 =====================
    戰績:兩台平板連線下完一局,雙方各自把結果存到 learn/xq/座號/局號 = {o:對手座號, w:1 贏 0 輸, r:原因, n:步數, t:時間}(只能寫自己的、寫了不能改)
@@ -1285,7 +1310,7 @@ async function loadBoard(L,fresh){const g=bg;let all;
    邀請:A 在象棋選同學 → 先開好房間 → learn/inv/對方座號/A 的座號 = {p:房號, t:時間};B 的平台跳出邀請,按「接受」就自動加入那個房間 */
 const INV_MS=2*60*1000, ON_MS=75*1000;
 /* 對戰遊戲的種類 */
-const GAMES={xq:{n:'軍棋',i:'♟️',v:'下'},aq:{n:'暗棋',i:'🀄',v:'下'},pd:{n:'大砲對轟',i:'🎯',v:'玩'}},GK=g=>GAMES[g]?g:'xq';
+const GAMES={xq:{n:'軍棋',i:'♟️',v:'下',img:'vs-xq'},aq:{n:'暗棋',i:'🀄',v:'下',img:'vs-aq'},pd:{n:'大砲對轟',i:'🎯',v:'玩',img:'vs-pd'}},GK=g=>GAMES[g]?g:'xq';
 const seatName=s=>isTest(s)?testName(s).replace('🧪 ',''):s+' 號';
 const allSeats=()=>[...SEATS.flat(),...(user&&isTest(user.seat)?TEST_SEATS:[])];   // 測試帳號只會看到、邀請到測試帳號和全班
 function xqLocal(){return user?LS.get('learn601_xqh_'+user.seat,[]):[]}
@@ -1469,7 +1494,7 @@ function newRound(){let qs;
   N=qs.length;
   round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false};cur=0;showQ()}
 function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
-  const t=document.getElementById('ptk');if(t)t.innerHTML=`🎟️ × ${tkN()}<small>這輪 ${sum.tc||0}/10・答對 ${sum.tco||0}</small>`}
+  const t=document.getElementById('ptk');if(t)t.innerHTML=`${ico('rw-ticket','ii')}× ${tkN()}<small>這輪 ${sum.tc||0}/10・答對 ${sum.tco||0}</small>`}
 const tkLeft=()=>TK_EVERY-(sum.tc||0);
 const tkInfo=()=>`這輪做了 ${sum.tc||0}/10 題，答對 ${sum.tco||0} 題`;
 function toast(t){if(/🎟️ 答對/.test(t)){sfx.ticket();confetti(40)}const e=document.getElementById('toast');e.textContent=t;e.classList.remove('on');void e.offsetWidth;e.classList.add('on')}
@@ -1602,7 +1627,7 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   const got=round.got||0;
   logRound(false);
   const U=unitOf(pu);$('#endt').textContent=`${U.name}　完成！`;$('#ends').textContent=stars(first)||'💪';
-  $('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(first,N);
+  $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(first,N);
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
   else mb('再練一回 ▶',()=>newRound(),'go');
@@ -1618,7 +1643,7 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
 const BOSSES=[{i:'🐲',n:'噴火龍・阿焰'},{i:'🐙',n:'墨汁章魚王'},{i:'🦂',n:'沙漠蠍子王'},{i:'👻',n:'搗蛋幽靈'},{i:'🤖',n:'鐵甲機器怪'},{i:'🦈',n:'鯊魚船長'},{i:'🐻‍❄️',n:'冰原大白熊'},{i:'🦖',n:'森林暴龍'}];
 const BOSS_HP_EACH=150,BOSS_MIN=50,BOSS_HIT={ok:10,ok2:5};
 const bossWk=(back=0)=>weekKeys(back)[0];
-const bossOf=wk=>{const n=Math.floor(new Date(wk+'T00:00:00').getTime()/6048e5),L=BOSSES.length;return BOSSES[((n%L)+L)%L]};
+const bossOf=wk=>{const n=Math.floor(new Date(wk+'T00:00:00').getTime()/6048e5),L=BOSSES.length,k=((n%L)+L)%L;return Object.assign({img:'boss-b'+k},BOSSES[k])};   // 圖：img/ui/boss-b0～b7
 const bossHP=()=>SEATS.flat().length*BOSS_HP_EACH;
 const myBoss=wk=>(sum&&sum.bossD&&sum.bossD[wk])||0;
 /* 答完一題:扣魔王的血(在 finish 裡呼叫) */
@@ -1655,7 +1680,7 @@ function bossClaim(wk){if(!sum||bossClaimed(wk))return;sum.bossR=sum.bossR||{};s
 const bossEnd=()=>{const d=new Date(),left=7-((d.getDay()+6)%7);return left<=1?'今天晚上 12 點換新魔王':`還有 ${left} 天`};
 /* 首頁的魔王卡片:先畫平板上的資料,雲端讀回來再更新 */
 function bossCard(){const c=el('div','cd');c.id='boss';const wk=bossWk(),B=bossOf(wk);
-  c.innerHTML=`<div class="bmon" id="bmon">${B.i}</div><div class="binfo"><div class="bt">⚔️ 全班打魔王：<b>${B.n}</b><small>${bossEnd()}</small></div>
+  c.innerHTML=`<div class="bmon" id="bmon">${ico(B.img)}</div><div class="binfo"><div class="bt">⚔️ 全班打魔王：<b>${B.n}</b><small>${bossEnd()}</small></div>
     <div class="bbar"><i id="bbi"></i><b id="bbt">讀取中…</b></div><div class="bsub" id="bbs"></div><div class="btop" id="bbtop"></div></div><div class="brw" id="bbrw"></div>`;
   bossPaint(c,wk);return c}
 async function bossPaint(c,wk){const B=bossOf(wk);let R,L=null;try{[R,L]=await Promise.all([bossLoad(wk),bossLoad(bossWk(1))])}catch(e){return}
@@ -1681,7 +1706,7 @@ async function bossTeacher(){const O=$('#tbout');if(!O)return;O.textContent='讀
   if(R&&R.denied){O.innerHTML=`<div class="dbad">❗ Firebase 規則還沒加上魔王的設定，學生打的點數存不上去。<br>請到 Firebase 主控台 → Realtime Database →「規則」，在 <b>"learn": {</b> 的下一行貼上下面這段（後面要加逗號），按「發布」，再按上面的「🔄 重新整理」。</div><pre class="tbrule">${BOSS_RULE},</pre><button class="gray" id="tbcopy">📋 複製規則</button>`;
     tap($('#tbcopy'),()=>{try{navigator.clipboard.writeText(BOSS_RULE+',');$('#tbcopy').textContent='✅ 已複製'}catch(e){}});return}
   if(!R||!R.ok){O.textContent='📴 連不上 Firebase';return}const m={};R.rows.forEach(r=>m[r.seat]=r.s);const tot=R.rows.reduce((a,r)=>a+r.s,0),left=Math.max(0,R.hp-tot);   // 只算全班(不含測試帳號)
-  O.innerHTML=`<div class="tbh">${B.i} <b>${B.n}</b>　${left?`剩 ${left} / ${R.hp}`:'💥 已經被打倒了'}　全班打了 ${tot} 點・${R.rows.length} 人出手</div>`+
+  O.innerHTML=`<div class="tbh">${ico(B.img,'tbi')} <b>${B.n}</b>　${left?`剩 ${left} / ${R.hp}`:'💥 已經被打倒了'}　全班打了 ${tot} 點・${R.rows.length} 人出手</div>`+
     `<div class="chips">${SEATS.flat().map(s=>`<span class="chip${m[s]?'':' z'}">${s}<small>${m[s]||'還沒'}</small></span>`).join('')}</div>`+
     ((R.tests||[]).length?`<div class="tbh" style="font-size:1rem;color:#888">🧪 ${R.tests.map(r=>`${testName(r.seat).replace('🧪 ','')} ${r.s} 點`).join('、')}（不算進全班）</div>`:'')}
 
