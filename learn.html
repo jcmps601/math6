@@ -493,7 +493,17 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 #boss .brw .go{font-size:1.15rem;display:flex;flex-direction:column;align-items:center}#boss .brw .go small{font-size:.85rem}
 #boss .bnote{font-size:.95rem;color:#868e96;font-weight:800;max-width:11rem}
 @media (max-width:700px){#boss{flex-wrap:wrap}#boss .bmon{font-size:3.4rem}#boss .brw{width:100%}}
-.bhit{display:inline-block;margin-left:.5rem;color:#7048e8;font-weight:900;animation:popin .4s}.bhit.coin{color:#e67700}.bhit.water{color:#1c7ed6}
+.bhit{display:inline-block;margin-left:.5rem;color:#7048e8;font-weight:900;animation:popin .4s}.bhit.coin{color:#e67700}.bhit.water{color:#1c7ed6}.bhit.tkp{color:#e8590c}
+/* 防亂點：選項先等一下才能按（先看題目） */
+#opts{position:relative}
+#opts.wait button{opacity:.4;filter:grayscale(.5);cursor:default}
+#opts.wait::after{content:attr(data-w);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;white-space:nowrap;
+  background:#fff;color:#5f3dc4;border:3px solid #d0bfff;border-radius:999px;padding:.25rem 1rem;font:900 1.25rem 'PingFang TC','Microsoft JhengHei',sans-serif;box-shadow:0 3px 0 #0001}
+#opts.wait::before{content:'';position:absolute;left:0;bottom:-.45rem;height:.3rem;border-radius:999px;background:#b197fc;z-index:2;width:0;animation:optlk var(--lk,2s) linear forwards}
+#opts.wait.au::before{display:none}
+@keyframes optlk{to{width:100%}}
+#rushm .pmc{max-width:26rem;text-align:center}#rushm .rmt{font-size:1.5rem;font-weight:900;color:#c2255c;margin:.3rem 0}#rushm .rms{font-size:1.15rem;color:#555;font-weight:800;line-height:1.6}
+#rushm img{width:6rem;height:6rem;object-fit:contain}#rushm button:disabled{opacity:.5}
 .bend{color:#7048e8}
 #tbout .tbrule{background:#f8f9fa;border-radius:12px;padding:.7rem;font-size:.95rem;white-space:pre;overflow:auto;user-select:text}
 #tbout .tbh{font-size:1.2rem;font-weight:900;margin:.4rem 0}#tbout .chip{cursor:default}#tbout .chip.z{opacity:.45}#tbout .chip.z small{color:#999}
@@ -1064,7 +1074,9 @@ const isMix=u=>MIXES.includes(u);
 const GM={key:'game',no:'🎮',ic:'🎮',img:'nav-game',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
 const PETNAV={key:'pet',no:'🐾',ic:'🐾',img:'nav-pet',nav:'寵物',c:'#f06595',cb:'#fff0f6'};   // 我的寵物(pet.js)
 const FARMNAV={key:'farm',no:'🌾',ic:'🌾',img:'nav-farm',nav:'農場',c:'#74b816',cb:'#f4fce3'};   // 快樂農場(farm.js)
-const TK_EVERY=10, TK_NEED=8;      // 每做 10 題(不分單元、可以分好幾次做),答對 8 題以上(含看完例題後第二次答對)拿 1 張遊戲券
+const TK_EVERY=10, TK_NEED=8;      // 遊戲券分數：第一次就答對 1 分；選擇題第二次才對 0.5 分（兩個選項的題目沒有第二次）；輸入題看完例題再答對 1 分
+const READ_MIN=1500, READ_MAX=4000, RUSH_MS=1500, RUSH_MAX=3;   // 選擇題選項等「讀題時間」才能按；一輪 10 題裡有 3 題在能按後 1.5 秒內就答錯，這輪重新算
+      // 每做 10 題(不分單元、可以分好幾次做),答對 8 題以上(含看完例題後第二次答對)拿 1 張遊戲券
 /* 601 挑戰樂園的遊戲:[代號, 圖示, 名稱, 單位, 越小越好] */
 const GLIST=[['tower','🧱','疊高塔','層'],['cups','🥤','三杯追星','/ 5'],['flappy','🐤','小雞跳跳','關'],['hunt','🗺️','尋寶','★'],['num','🔢','數字快手','秒',1],['simon','🎹','記憶燈光','個燈'],
  ['color','🎨','顏色陷阱','題'],['react','⚡','反應王','毫秒',1],['spot','👀','找不同','個'],['bridge','🌉','搭橋小英雄','分'],
@@ -1140,7 +1152,7 @@ function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();LS.set('learn
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
-  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
+  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   if(r.farm&&(!sum.farm||(r.farm.u||0)>(sum.farm.u||0)))sum.farm=r.farm;
@@ -1334,7 +1346,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
 /* 獎勵說明：第一次在首頁出現，之後從「獎勵說明」再看 */
 function rewardHelp(){const m=el('div','pmod','');m.id='rwhelp';m.innerHTML=`<div class="pmc rwh"><div class="pmh">學習獎勵</div>
   <div class="rwr">${ico('rw-coin')}<b>金幣</b><span>買點心與造型</span></div><div class="rwr">${ico('ic-water-drop')}<b>水滴</b><span>照顧農場</span></div><div class="rwr">${ico('rw-ticket')}<b>遊戲券</b><span>進入挑戰樂園</span></div>
-  <div class="rws">練習答對就會拿到；每 10 題答對 8 題拿 1 張遊戲券</div><button class="go rwok">我知道了</button></div>`;document.body.appendChild(m);
+  <div class="rws">練習答對就會拿到；每 10 題拿到 8 分換 1 張遊戲券（一次就答對 1 分，選擇題第二次才對 0.5 分）</div><button class="go rwok">我知道了</button></div>`;document.body.appendChild(m);
   const close=()=>{m.remove();LS.set('learn601_rwseen',1)};tap(m.querySelector('.rwok'),close);tap(m,e=>{if(e.target===m)close()})}
 function statCard(){const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
@@ -1654,9 +1666,9 @@ function newRound(){let qs;
   N=qs.length;
   round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false};cur=0;showQ()}
 function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
-  const t=document.getElementById('ptk');if(t)t.innerHTML=`${ico('rw-ticket','ii')}× ${tkN()}<small>這輪 ${sum.tc||0}/10・答對 ${sum.tco||0}</small>`}
+  const t=document.getElementById('ptk');if(t)t.innerHTML=`${ico('rw-ticket','ii')}× ${tkN()}<small>這輪 ${sum.tc||0}/10・得 ${sum.tco||0} 分</small>`}
 const tkLeft=()=>TK_EVERY-(sum.tc||0);
-const tkInfo=()=>`這輪做了 ${sum.tc||0}/10 題，答對 ${sum.tco||0} 題`;
+const tkInfo=()=>`這輪做了 ${sum.tc||0}/10 題，得 ${sum.tco||0} 分`;
 function toast(t){if(/🎟️ 答對/.test(t)){sfx.ticket();confetti(40)}const e=document.getElementById('toast');e.textContent=t;e.classList.remove('on');void e.offsetWidth;e.classList.add('on')}
 function paintDots(){const D=document.getElementById('dots');D.innerHTML='';round.res.forEach((r,i)=>{const e=el('i',r||'');if(i===cur)e.classList.add('cur');D.appendChild(e)})}
 function logRound(partial){if(!round||round.logged)return;const n=round.res.filter(x=>x).length;if(!n)return;round.logged=true;
@@ -1691,7 +1703,7 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
   $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';$('#rev').style.display='none';$('#rev').innerHTML='';
   $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
   if(q.type==='mc'){const O=$('#opts');O.innerHTML='';const ml=Math.max(...q.opts.map(o=>isImg(o)?0:String(o).length));
-    O.className=(q.row?'row':'')+(ml>40?' xlong':ml>18?' long':'');q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)})}
+    O.className=(q.row?'row':'')+(ml>40?' xlong':ml>18?' long':'');q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
   else buildPad(q.type==='frac');
   paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
@@ -1752,19 +1764,38 @@ function check(){const q=round.qs[cur];
   if(val===''||val==='.')return;const v=+val,box=$('#box');
   if(near(v,q.ans)){box.className='ib ok';right(q);return}
   box.className='ib';void box.offsetWidth;box.className='ib no';wrong(trapMsg(q,v))}
-function choose(b,o){if(solved||b.classList.contains('no'))return;const q=round.qs[cur];
+/* 防亂點：題目出來後，選項先等「讀題時間」才能按（字越多越久；聽力題等錄音播完）。答錯一次後，剩下的選項也等一下 */
+let lkTok=0,optOpen=0;
+function lockOpts(q,ms){const O=$('#opts'),tok=++lkTok,t0=Date.now();optOpen=Infinity;
+  const txt=[q.text,q.big,...(q.opts||[]).filter(o=>!isImg(o))].join(' ').replace(/<[^>]+>/g,'').replace(/\s+/g,'');
+  const au=!ms&&!!(q.au||q.say), need=ms||Math.min(READ_MAX,Math.max(READ_MIN,800+txt.length*45));
+  O.classList.add('wait');O.classList.toggle('au',au);O.dataset.w=au?'🔊 聽完再選':ms?'再想一想…':'👀 先看題目…';O.style.setProperty('--lk',need+'ms');
+  const open=()=>{if(tok!==lkTok)return;O.classList.remove('wait','au');optOpen=Date.now()};
+  if(!au){setTimeout(open,need);return}
+  /* 聽力題：錄音（或語音）還在播就繼續等；被平板擋住沒播時，等一般讀題時間就好；最多等 9 秒 */
+  const busy=()=>{try{return !!(AUD&&!AUD.paused&&!AUD.ended)||('speechSynthesis' in window&&speechSynthesis.speaking)}catch(e){return false}};
+  const iv=setInterval(()=>{const t=Date.now()-t0;if(tok!==lkTok||t>=9000||(t>=READ_MIN&&!busy())){clearInterval(iv);open()}},200)}
+function choose(b,o){if(solved||b.classList.contains('no')||$('#opts').classList.contains('wait'))return;const q=round.qs[cur];
+  if(tries===0&&o!==q.ans&&Date.now()-optOpen<RUSH_MS)sum.trs=(sum.trs||0)+1;   // 選項能按之後不到 1.5 秒就答錯：算一次「太快作答」
   if(o===q.ans){b.classList.add('ok');right(q);return}
   b.classList.add('no');wrong(q.trapsMC&&q.trapsMC[o]);
-  const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(!solved&&left<=1){round.res[cur]='no';finish(q,false)}}
+  const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(!solved&&left<=1){round.res[cur]='no';finish(q,false)}
+  if(!solved&&q.id)lockOpts(q,1200)}
+function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div class="pmc"><img src="img/ui/mascot-think.webp" alt="">
+  <div class="rmt">慢慢看題目喔！</div><div class="rms">剛剛有 ${RUSH_MAX} 題還沒看完就選，<br>這一輪 10 題重新算。<br>看清楚題目再作答，得 ${TK_NEED} 分就有遊戲券。</div>
+  <button class="go" disabled>3</button></div>`;document.body.appendChild(m);const b=m.querySelector('button');let k=3;
+  const t=setInterval(()=>{k--;if(k>0)b.textContent=k;else{clearInterval(t);b.disabled=false;b.textContent='我知道了'}},1000);tap(b,()=>{if(!b.disabled)m.remove()})}
 function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
   const k=dkey();sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok')sum.first++;
-  sum.tc=(sum.tc||0)+1;if(ok)sum.tco=(sum.tco||0)+1;
-  if(sum.tc>=TK_EVERY){const n=sum.tco||0;sum.tc=0;sum.tco=0;round.last10=n;
-    if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 答對 ${n} 題，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
-    else{round.miss=(round.miss||0)+1;toast(`這 10 題答對 ${n} 題，要答對 ${TK_NEED} 題才有券`)}}
-  const bh=bossHit(round.res[cur]),pc=PET.gain(round.res[cur]),fw=FARM.gain(round.res[cur]);if(bh||pc||fw)$('#fb').insertAdjacentHTML('beforeend',`${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
-  saveSum(round.got>0);wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
+  const tkp=!ok?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):1;   // 這題的遊戲券分數
+  sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;let rushed=false;
+  if((sum.trs||0)>=RUSH_MAX){sum.tc=0;sum.tco=0;sum.trs=0;rushed=true;round.rushed=1;round.miss=0;logPush({k:'rush'})}
+  else if(sum.tc>=TK_EVERY){const n=sum.tco||0;sum.tc=0;sum.tco=0;sum.trs=0;round.last10=n;
+    if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 得 ${n} 分，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
+    else{round.miss=(round.miss||0)+1;toast(`這 10 題得 ${n} 分，要 ${TK_NEED} 分才有券`)}}
+  const bh=bossHit(round.res[cur]),pc=PET.gain(round.res[cur]),fw=FARM.gain(round.res[cur]);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
+  saveSum(round.got>0||rushed);if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.id?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
@@ -1789,7 +1820,7 @@ function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.f
   const U=unitOf(pu);$('#endt').textContent=`這次練習完成了！`;
   /* 我的進步：同一個單元、同樣題數的完整回合才記（錯題本不算） */
   if(pu!=='wb'){sum.rh=sum.rh||{};const a=(sum.rh[bk]=sum.rh[bk]||[]);a.push({t:Date.now(),f:first,n:N});sum.rh[bk]=a.slice(-5);sum.dn=sum.dn||{};sum.dn[bk]=(sum.dn[bk]||0)+1;saveSum(true)}$('#ends').textContent=stars(first)||'💪';
-  $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.miss?`這 10 題答對 ${round.last10} 題，要答對 ${TK_NEED} 題才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，答對 ${TK_NEED} 題就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(first,N);
+  $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.rushed?`有 ${RUSH_MAX} 題太快作答，這輪 10 題重新算；看清楚題目，得 ${TK_NEED} 分就有遊戲券`:round.miss?`這 10 題得 ${round.last10} 分，要 ${TK_NEED} 分才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，得 ${TK_NEED} 分就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(first,N);
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
   else mb('再練一回 ▶',()=>newRound(),'go');
