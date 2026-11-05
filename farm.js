@@ -20,7 +20,8 @@
     grape: { n: '葡萄', lv: 10, p: 25, m: 480, w: 3, y: 6, s: 8, xp: 26, c: '#40c057' }
   };
   const CK = Object.keys(CROPS);
-  const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = 30, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 5, STEAL_PER_PLOT = 2;
+  const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = 30, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 3, STEAL_PER_PLOT = 1, STEAL_WAIT = 60 * 60000;
+  /* 偷菜模式（自己選要不要參加）：兩個人都開才能互偷；一天只能切換一次；成熟 1 小時後才能被偷；每塊田最多被偷 1 個；每天最多偷 3 個；被偷的人拿到 🪙1 回禮 */
   const plotsFor = lv => lv >= 7 ? 12 : lv >= 5 ? 10 : lv >= 3 ? 8 : 6;
   const xpNeed = lv => 15 + 10 * (lv - 1);
   function lvOf(xp) { let lv = 1, x = xp || 0; while (x >= xpNeed(lv) && lv < 50) { x -= xpNeed(lv); lv++; } return { lv, cur: x, need: xpNeed(lv) }; }
@@ -40,7 +41,8 @@
     const stage = ripe ? 3 : prog >= .55 ? 2 : prog >= .15 ? 1 : 0;
     const left = ripe ? 0 : Math.max(0, G - el);
     const yieldN = Math.max(1, C.y - (weed ? 1 : 0) - (bug ? 1 : 0) - (P.s || 0));
-    return { C, prog, ripe, thirsty, weed, bug, stage, left, yieldN, wNeed: C.w - (P.w || 0) };
+    const ripeAt = Math.max(P.t + G - (P.f || 0), P.wt || 0), stealOK = ripe && Date.now() - ripeAt >= STEAL_WAIT && (P.s || 0) < STEAL_PER_PLOT;   // 成熟 1 小時後才能被偷
+    return { C, prog, ripe, thirsty, weed, bug, stage, left, yieldN, wNeed: C.w - (P.w || 0), stealOK, stealIn: ripe ? Math.max(0, STEAL_WAIT - (Date.now() - ripeAt)) : 0 };
   }
   const mmss = ms => { const m = Math.ceil(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)} 小時${m % 60 ? ` ${m % 60} 分` : ''}` : `${m} 分鐘`; };
 
@@ -105,11 +107,11 @@
     return f;
   }
   const coins = () => (PET.P() && PET.P().coin) || 0;
-  function addCoin(n) { const p = PET.P(); if (!p) return; p.coin = Math.max(0, (p.coin || 0) + n); p.u = Date.now(); }
+  function addCoin(n) { const p = PET.P(); if (p) PET.coinAdd(p, n); }   // 記在寵物的金幣帳本（換平板、同步都不會不見）
   let pubT = 0;
   function save() {
     const f = F(); f.u = Date.now(); saveSum(true);
-    clearTimeout(pubT); pubT = setTimeout(() => { if (!user) return; const f = F(); enqueue(`${ROOT}/farm/${user.seat}`, { xp: f.xp | 0, p: f.p.map(x => x || 0), t: Date.now() }, true); }, 1000);
+    clearTimeout(pubT); pubT = setTimeout(() => { if (!user) return; const f = F(); enqueue(`${ROOT}/farm/${user.seat}`, { xp: f.xp | 0, sm: f.sm ? 1 : 0, p: f.p.map(x => x || 0), t: Date.now() }, true); }, 1000);
   }
   function addXp(n) {
     const f = F(), b = lvOf(f.xp).lv; f.xp = (f.xp || 0) + n; const a = lvOf(f.xp).lv;
@@ -140,12 +142,12 @@
   function page(C) {
     const f = F(), L = lvOf(f.xp);
     C.innerHTML = `<div class="fhead"><div class="flv"><b>🌾 我的農場 Lv.${L.lv}</b><div class="pbar s"><i style="width:${L.cur / L.need * 100}%;background:linear-gradient(90deg,#a9e34b,#74b816)"></i></div><small>經驗 ${L.cur} / ${L.need}</small></div>
-        <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧪 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div></div>
+        <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧪 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div><button class="fsm${f.sm ? ' on' : ''}" id="fsm">🥷 偷菜模式：${f.sm ? '開' : '關'}</button></div>
       ${night() ? '<div class="fnight">🌙 晚上 9 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
       <div class="fbox" id="fbox"><div id="fsvg"></div></div><div class="fbar" id="fbar"></div><div class="finfo" id="finfo">👆 點空的田可以種菜；點 💧 的田澆水、點 ✨ 的田收成</div><div class="fpinfo" id="fpinfo"></div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
     paint(); paintBar(); paintStore(); paintLog();
-    tap(C.querySelector('#fstore'), storeModal);
+    tap(C.querySelector('#fstore'), storeModal); tap(C.querySelector('#fsm'), smToggle);
     WK = walker(C.querySelector('#fbox'), () => { const p = PET.P(); return p && p.st === 'pet' ? p : null; }, { own: 1, zoom: zoomOn }); paintPetInfo();
     tap(C.querySelector('#fbox'), e => {   // tap：用手指捲動畫面時不會按到田
       if (e.target.closest('.fpet')) return petTap();
@@ -191,7 +193,7 @@
   function water(k, quiet) {
     const f = F(), P = f.p[k], S = stat(P); if (S.empty || S.ripe || !S.thirsty) return false;
     if ((f.water || 0) < 1) { if (!quiet) { const e = document.getElementById('finfo'); if (e) e.innerHTML = '💧 水用完了！<b>去練習</b>，每答對 1 題就有 1 滴水'; } return false; }
-    f.water--; P.w = (P.w || 0) + 1; addXp(1); if (!quiet) { fx(k, '💧💧💧', 'water'); snd(600); save(); paint(); info(k); }
+    f.water--; P.w = (P.w || 0) + 1; P.wt = Date.now(); addXp(1); if (!quiet) { fx(k, '💧💧💧', 'water'); snd(600); save(); paint(); info(k); }
     return true;
   }
   function waterAll() {
@@ -357,19 +359,30 @@
     e.innerHTML += '<small>倉庫裡的菜可以拿去餵牠，比賣掉划算喔</small>';
   }
 
+  /* 偷菜模式的開關：一天只能切換一次（不能先開著去偷、再關掉保護自己） */
+  function smToggle() {
+    const f = F(), today = dkey();
+    if (f.smd === today) { toast('🥷 偷菜模式今天已經切換過了，明天才能再改'); return; }
+    const on = !f.sm;
+    const txt = on ? '要打開 🥷 偷菜模式嗎？\n\n・你可以去偷「也有打開」的同學的菜\n・別人也可以偷你的菜（成熟 1 小時後、每塊田最多 1 個，會留 🪙1 回禮給你）\n・今天打開以後，明天才能關掉'
+      : '要關掉 🥷 偷菜模式嗎？\n\n・別人就不能偷你的菜了\n・你也不能去偷別人的菜\n・今天關掉以後，明天才能再打開';
+    if (!confirm(txt)) return;
+    f.sm = on; f.smd = today; save(); render(); toast(on ? '🥷 偷菜模式打開了！' : '🛡️ 偷菜模式關掉了，你的菜很安全');
+  }
+
   /* ───────── 同學做的事：主人打開農場時算進去 ───────── */
   async function applyInbox() {
-    await fbReady; if (!db || !online || !user) return; let v = null;
+    if (!(await fbOnline()) || !user) return; let v = null;
     try { v = (await timeout(db.ref(`${ROOT}/farmact/${user.seat}`).get(), 8000)).val(); } catch (e) { return; }
     if (!v) return; const f = F(); let changed = 0;
     for (const [id, a] of Object.entries(v)) {
       const P = f.p[a.k]; const ok = P && P.c && P.t === a.pt;
       if (ok) {
         const S = stat(P), who = seatName(a.f);
-        if (a.a === 'w' && (P.w || 0) < S.C.w) { P.w = (P.w || 0) + 1; logAdd(`💧 ${who}幫你的${S.C.n}澆水`); changed++; }
+        if (a.a === 'w' && (P.w || 0) < S.C.w) { P.w = (P.w || 0) + 1; P.wt = Date.now(); logAdd(`💧 ${who}幫你的${S.C.n}澆水`); changed++; }
         else if (a.a === 'g' && S.weed) { P.g = 2; logAdd(`🌿 ${who}幫你的${S.C.n}拔雜草`); changed++; }
         else if (a.a === 'b' && S.bug) { P.b = 2; logAdd(`🐛 ${who}幫你的${S.C.n}捉蟲`); changed++; }
-        else if (a.a === 's' && (P.s || 0) < STEAL_PER_PLOT) { P.s = (P.s || 0) + 1; logAdd(`😝 ${who}偷摘了 1 個${S.C.n}`); changed++; }
+        else if (a.a === 's' && f.sm && (P.s || 0) < STEAL_PER_PLOT) { P.s = (P.s || 0) + 1; addCoin(1); addXp(1); logAdd(`🥷 ${who}偷摘了 1 個${S.C.n}，留下 🪙1 回禮`); changed++; }
       }
       try { db.ref(`${ROOT}/farmact/${user.seat}/${id}`).remove(); } catch (e) { }
     }
@@ -380,21 +393,21 @@
   let VC = null;
   async function loadFarms() {
     if (VC && Date.now() - VC.at < 20000) return VC;
-    await fbReady; let v = null, pets = null;
+    await fbOnline(); let v = null, pets = null;
     if (db && online) { try { const [a, b] = await Promise.all([db.ref(`${ROOT}/farm`).get(), db.ref(`${ROOT}/pet`).get()].map(x => timeout(x, 8000))); v = a.val() || {}; pets = b.val() || {}; } catch (e) { } }
     VC = { at: Date.now(), ok: !!v, v: v || {}, pets: pets || {} }; return VC;
   }
-  const normFarm = x => ({ xp: (x && x.xp) | 0, p: Array.from({ length: MAXP }, (_, k) => (x && x.p && x.p[k]) || 0) });
+  const normFarm = x => ({ xp: (x && x.xp) | 0, sm: !!(x && x.sm), p: Array.from({ length: MAXP }, (_, k) => (x && x.p && x.p[k]) || 0) });
   async function visitList(C) {
     C.innerHTML = '<div class="ld">讀取中…</div>';
     const R = await loadFarms(); if (!C.isConnected) return;
     if (!R.ok) { C.innerHTML = '<div class="ld">📴 連上網路才看得到同學的農場</div>'; return; }
     const seats = [...SEATS.flat(), ...(isTest(user.seat) ? TEST_SEATS : [])].filter(s => s !== user.seat);
-    const cards = seats.map(s => { const x = R.v[s]; if (!x) return null; const Fm = normFarm(x); let help = 0, ripe = 0; Fm.p.forEach(P => { const S = stat(P); if (S.empty) return; if (S.thirsty || S.weed || S.bug) help++; if (S.ripe && (P.s || 0) < STEAL_PER_PLOT) ripe++; }); return { s, Fm, help, ripe, lv: lvOf(Fm.xp).lv }; }).filter(Boolean)
+    const cards = seats.map(s => { const x = R.v[s]; if (!x) return null; const Fm = normFarm(x); let help = 0, ripe = 0; Fm.p.forEach(P => { const S = stat(P); if (S.empty) return; if (S.thirsty || S.weed || S.bug) help++; if (S.stealOK && Fm.sm && F().sm) ripe++; }); return { s, Fm, help, ripe, lv: lvOf(Fm.xp).lv }; }).filter(Boolean)
       .sort((a, b) => (b.help + b.ripe) - (a.help + a.ripe) || a.s - b.s);
     const f = F(), today = dkey(), hc = f.hd === today ? f.hc || 0 : 0;
-    C.innerHTML = `<div class="fvhead">👫 去同學的農場幫忙：澆水、除草、捉蟲，每次 🪙+1（今天還能拿 ${Math.max(0, HELP_COIN_MAX - hc)} 枚）。成熟的菜可以偷摘 1 個 😝</div>
-      ${cards.length ? `<div class="fvg">${cards.map(c => `<button data-s="${c.s}"><div class="fvm">${farmSVG(c.Fm, { mini: 1 })}</div><b>${seatName(c.s)}　<small>Lv.${c.lv}</small></b><span>${c.help ? `<i class="h">🙋 可以幫忙 ${c.help}</i>` : ''}${c.ripe ? `<i class="r">✨ 成熟 ${c.ripe}</i>` : ''}${!c.help && !c.ripe ? '<i>一切都好</i>' : ''}</span></button>`).join('')}</div>` : '<div class="ld">同學們還沒開始種菜，邀請大家一起來吧！</div>'}`;
+    C.innerHTML = `<div class="fvhead">👫 去同學的農場幫忙：澆水、除草、捉蟲，每次 🪙+1（今天還能拿 ${Math.max(0, HELP_COIN_MAX - hc)} 枚）。${f.sm ? '🥷 你開了偷菜模式：名字旁邊有 🥷 的同學，成熟超過 1 小時的菜可以偷摘 1 個（每天最多 ' + TAKE_MAX + ' 個）' : '想玩偷菜的話，到「我的農場」打開 🥷 偷菜模式（打開以後別人也能偷你的）'}</div>
+      ${cards.length ? `<div class="fvg">${cards.map(c => `<button data-s="${c.s}"><div class="fvm">${farmSVG(c.Fm, { mini: 1 })}</div><b>${seatName(c.s)}${c.Fm.sm ? ' 🥷' : ''}　<small>Lv.${c.lv}</small></b><span>${c.help ? `<i class="h">🙋 可以幫忙 ${c.help}</i>` : ''}${c.ripe ? `<i class="r">🥷 可以偷 ${c.ripe}</i>` : ''}${!c.help && !c.ripe ? '<i>一切都好</i>' : ''}</span></button>`).join('')}</div>` : '<div class="ld">同學們還沒開始種菜，邀請大家一起來吧！</div>'}`;
     C.querySelectorAll('[data-s]').forEach(b => tap(b, () => visit(+b.dataset.s)));
   }
   async function visit(s) {
@@ -403,7 +416,7 @@
     /* 已經有人幫過（主人還沒打開）也先算進去，畫面才會對 */
     const mine = new Set();
     for (const [id, a] of Object.entries(inbox)) { const P = Fm.p[a.k]; if (!P || P.t !== a.pt) continue; if (a.a === 'w') P.w = (P.w || 0) + 1; if (a.a === 'g') P.g = 2; if (a.a === 'b') P.b = 2; if (a.a === 's') P.s = (P.s || 0) + 1; if (a.f === user.seat) mine.add(a.k + a.a); }
-    const m = modal(`<div class="pmh">🌾 ${seatName(s)}的農場　<small>Lv.${lvOf(Fm.xp).lv}</small></div><div class="fbox vis" id="fvbox"><div id="fvsvg"></div></div><div class="finfo" id="fvinfo">👆 點有 💧🌿🐛 的田幫忙，點 ✨ 的田偷摘 1 個</div><div class="fres c"><span>💧 <b id="fvw">${F().water || 0}</b></span><span>🪙 <b id="fvc">${coins()}</b></span></div><button class="pmx">回去</button>`);
+    const m = modal(`<div class="pmh">🌾 ${seatName(s)}的農場　<small>Lv.${lvOf(Fm.xp).lv}</small></div><div class="fbox vis" id="fvbox"><div id="fvsvg"></div></div><div class="finfo" id="fvinfo">👆 點有 💧🌿🐛 的田幫忙${F().sm && Fm.sm ? '，點 ✨ 的田可以偷摘 1 個 🥷' : ''}</div><div class="fres c"><span>💧 <b id="fvw">${F().water || 0}</b></span><span>🪙 <b id="fvc">${coins()}</b></span></div><button class="pmx">回去</button>`);
     const paintV = () => { m.querySelector('#fvsvg').innerHTML = farmSVG(Fm, {}); m.querySelector('#fvw').textContent = F().water || 0; m.querySelector('#fvc').textContent = coins(); };
     paintV();
     const VW = pv && PET.SPECIES[pv.sp] ? walker(m.querySelector('#fvbox'), () => Object.assign({}, pv, { mood: 'happy' }), { zoom: () => false, F: () => Fm }) : null;
@@ -415,18 +428,24 @@
       if (S.empty) return msg('這塊田是空的');
       const act = S.bug ? 'b' : S.weed ? 'g' : S.thirsty ? 'w' : S.ripe ? 's' : '';
       if (!act) return msg(`${S.C.n}：還要 ${mmss(S.left)}，現在不需要幫忙`);
+      if (act === 's') {   // 偷菜：兩個人都要開偷菜模式、成熟超過 1 小時、每塊田只能被偷 1 個
+        if (!F().sm) return msg('🥷 你還沒開偷菜模式，不能偷菜。想玩的話到「我的農場」打開（打開以後別人也能偷你的）');
+        if (!Fm.sm) return msg(`${seatName(s)}沒有開偷菜模式，不能偷他的菜喔`);
+        if ((P.s || 0) >= STEAL_PER_PLOT) return msg('這塊田已經被偷過了，留給主人吧！');
+        if (!S.stealOK) return msg(`${S.C.n}剛成熟，先讓主人收成吧！${mmss(S.stealIn)}後才能偷`);
+      }
       if (mine.has(k + act)) return msg('你已經幫過這塊田了');
       const f = F(), today = dkey(); if (f.hd !== today) { f.hd = today; f.hc = 0; f.tk = 0; }
       if (act === 'w' && (f.water || 0) < 1) return msg('💧 你的水用完了，去練習拿水吧！');
-      if (act === 's') { if ((P.s || 0) >= STEAL_PER_PLOT) return msg('這塊田已經被摘太多了，留一點給主人吧！'); if ((f.tk || 0) >= TAKE_MAX) return msg(`今天已經摘了 ${TAKE_MAX} 個，明天再來吧`); }
+      if (act === 's' && (f.tk || 0) >= TAKE_MAX) return msg(`今天已經偷了 ${TAKE_MAX} 個，明天再來吧`);
       const id = `${user.seat}_${k}_${act}_${P.t}`;
       enqueue(`${ROOT}/farmact/${s}/${id}`, { f: user.seat, a: act, k, pt: P.t, t: Date.now() });
       mine.add(k + act);
       if (act === 'w') { f.water--; P.w = (P.w || 0) + 1; }
       if (act === 'g') P.g = 2; if (act === 'b') P.b = 2;
-      if (act === 's') { P.s = (P.s || 0) + 1; f.tk = (f.tk || 0) + 1; f.store[P.c] = (f.store[P.c] || 0) + 1; msg(`😝 偷摘了 1 個${S.C.n}，放進你的倉庫了！`); snd(900); }
+      if (act === 's') { P.s = (P.s || 0) + 1; f.tk = (f.tk || 0) + 1; f.store[P.c] = (f.store[P.c] || 0) + 1; msg(`🥷 偷摘了 1 個${S.C.n}，放進你的倉庫了！（會自動留 🪙1 回禮給主人）`); snd(900); }
       else { addXp(1); if ((f.hc || 0) < HELP_COIN_MAX) { f.hc = (f.hc || 0) + 1; addCoin(1); } msg(`${act === 'w' ? '💧 幫忙澆水' : act === 'g' ? '🌿 幫忙拔雜草' : '🐛 幫忙捉蟲'}了！謝謝你 ❤️${(f.hc || 0) <= HELP_COIN_MAX ? '　🪙+1' : ''}`); snd(700); }
-      saveSum(true); paintV(); VC = null;
+      save(); paintV(); VC = null;
     });
     tap(m.querySelector('.pmx'), () => { if (VW) VW.stop(); m.remove(); if (view === 'farm') render(); });
   }
@@ -453,6 +472,7 @@
   /* ───────── 樣式 ───────── */
   const css = `
   .ptabs.fk button.on{color:#5c940d}.fkc{border-top-left-radius:0;border-top-right-radius:0}
+  .fsm{border:0;border-radius:14px;padding:.35rem .8rem;font-size:1.05rem;font-weight:900;background:#f1f3f5;color:#868e96;font-family:inherit}.fsm.on{background:#343a40;color:#fff}
   .fhead{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem}
   .flv{flex:1;min-width:12rem}.flv b{font-size:1.4rem;color:#5c940d;display:block}.flv small{font-size:.9rem;color:#888;font-weight:800}.flv .pbar{margin:.25rem 0 .1rem}
   .fres{display:flex;gap:.5rem;flex-wrap:wrap}.fres span{background:#fff;border:3px solid #e9ecef;border-radius:14px;padding:.2rem .7rem;font-size:1.25rem;font-weight:900;color:#495057}

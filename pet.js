@@ -323,16 +323,36 @@
      其他：st 'egg'|'pet'、ex 第一顆蛋的經驗、coin、full/ft、joy/jt、own 買過的配件、box 其他寵物、eggs 蛋籃、dex 圖鑑、got 拿過的成就蛋、
      ach 成就計數 {wb 錯題練會、bw 打魔王幾週、bk 上次是哪一週、hv 收成次數}、rooms/room 房間、dd/dn 今天答對幾題、gd 每日任務獎勵、evo 等著看進化 */
   const PF = ['nm', 'xp', 'h', 'g', 'k', 'b', 'x', 'xo', 'e18', 'e30'];
+  /* 金幣帳本：每台裝置各記一本（cl.e 賺了多少、cl.s 花了多少，以裝置分開），金幣＝起始 b＋全部賺的－全部花的。
+     同一個學生用兩台平板、或打開時還沒跟雲端對好資料，兩邊的帳合起來（各裝置取大的那個數字），金幣就不會被另一台蓋掉。 */
+  const dev = () => { let d = LS.get('learn601_dev', ''); if (!d) { d = 'd' + Math.random().toString(36).slice(2, 9); LS.set('learn601_dev', d); } return d; };
+  const sumOf = o => Object.values(o || {}).reduce((a, n) => a + (+n || 0), 0);
+  const coinOf = p => Math.max(0, Math.round((p.cl.b || 0) + sumOf(p.cl.e) - sumOf(p.cl.s)));
+  function coinAdd(p, n) {
+    if (!p.cl) p.cl = { b: p.coin || 0, e: {}, s: {} };
+    p.cl.e = p.cl.e || {}; p.cl.s = p.cl.s || {}; const d = dev();
+    if (n > 0) p.cl.e[d] = (p.cl.e[d] || 0) + n; else if (n < 0) p.cl.s[d] = (p.cl.s[d] || 0) - n;
+    p.coin = coinOf(p); p.u = Date.now();
+  }
+  /* 平板上的和雲端的寵物資料合在一起：其他東西用比較新的那一份，金幣帳本兩邊合起來 */
+  function mergePet(a, b) {
+    if (!a) return b; if (!b) return a;
+    const pick = (b.u || 0) > (a.u || 0) ? b : a, other = pick === a ? b : a;
+    const la = pick.cl || { b: pick.coin || 0 }, lb = other.cl || { b: other.coin || 0 }, mx = (x, y) => { const o = Object.assign({}, x); for (const k in y || {}) o[k] = Math.max(o[k] || 0, y[k] || 0); return o; };
+    pick.cl = { b: Math.max(la.b || 0, lb.b || 0), e: mx(la.e, lb.e), s: mx(la.s, lb.s) }; pick.coin = coinOf(pick);
+    return pick;
+  }
   function P() {
     if (!sum) return null;
     if (!sum.pet) sum.pet = { st: 'egg', ex: 0, coin: START_COIN, xp: 0, own: {}, v: 2, u: Date.now() };
-    const p = sum.pet; if (p.v !== 2) migrate(p);
+    const p = sum.pet; if (!p.cl) p.cl = { b: p.coin || 0, e: {}, s: {} }; p.cl.e = p.cl.e || {}; p.cl.s = p.cl.s || {};   // 雲端存回來時空的 {} 會不見
+    if (p.v !== 2) migrate(p);
     if (!p.iv) {   // 配件改版（脖子、背後 → 腳下、身邊）：買過的退錢、穿著的脫下來
       p.iv = 1; let n = 0; p.own = p.own || {};
       Object.keys(OLD_ITEMS).forEach(id => { if (p.own[id]) { n += OLD_ITEMS[id]; delete p.own[id]; } });
       const off = r => { if (r && OLD_ITEMS[r.k]) r.k = ''; if (r && (OLD_ITEMS[r.b] || (r.b && !ITEMS[r.b]))) r.b = ''; };
       off(p); Object.values(p.box || {}).forEach(off);
-      if (n) { p.coin = (p.coin || 0) + n; p.refund2 = n; } p.u = Date.now();
+      if (n) { coinAdd(p, n); p.refund2 = n; } p.u = Date.now();
     }
     p.box = p.box || {}; p.eggs = p.eggs || []; p.dex = p.dex || {}; p.got = p.got || {}; p.ach = p.ach || {}; p.own = p.own || {}; p.rooms = p.rooms || {};
     return p;
@@ -344,7 +364,7 @@
       const frac = x / on(lv); lv = Math.min(MAXLV, lv); p.xp = cum(lv) + Math.round(frac * xpNeed(lv));
       p.dex = Object.assign({}, p.dex, { [p.sp]: 1 });
     }
-    if (p.cols) { const n = Object.keys(p.cols).filter(i => p.cols[i] && +i !== OLD_DEF[p.sp]).length; if (n) { p.coin = (p.coin || 0) + n * OLD_COLOR_PRICE; p.refund = n * OLD_COLOR_PRICE; } delete p.cols; }
+    if (p.cols) { const n = Object.keys(p.cols).filter(i => p.cols[i] && +i !== OLD_DEF[p.sp]).length; if (n) { coinAdd(p, n * OLD_COLOR_PRICE); p.refund = n * OLD_COLOR_PRICE; } delete p.cols; }
     delete p.c; p.x = 0; p.xo = {}; p.v = 2; p.u = Date.now();
   }
   const hours = t => t ? Math.max(0, (Date.now() - t) / 3600e3) : 0;
@@ -379,7 +399,7 @@
     let coin = G[0], xp = G[1];
     if (((sum.days || {})[today] || 0) >= GOAL && p.gd !== today) { p.gd = today; xp += DAY_XP; coin += DAY_COIN; if (round) round.pday = 1; }
     try { const wk = bossWk(); if (p.ach.bk !== wk) { p.ach.bk = wk; p.ach.bw = (p.ach.bw || 0) + 1; } } catch (e) { }
-    p.coin = (p.coin || 0) + coin; if (round) round.pc = (round.pc || 0) + coin;
+    coinAdd(p, coin); if (round) round.pc = (round.pc || 0) + coin;
     if (p.st === 'egg') {
       const was = p.ex || 0; p.ex = was + xp;
       if (was < EGG_NEED[0] && p.ex >= EGG_NEED[0]) toast('🥚 你的蛋在動了！快去「寵物」看看');
@@ -410,11 +430,11 @@
     const lv = lvOf(p.xp || 0).lv;
     if (lv >= EVO[1] && !p.e18) {
       p.e18 = 1; const left = STARTERS.filter(k => !p.dex[k] && !p.eggs.some(e => e.t === 0));
-      if (left.length) { p.eggs.push({ t: 0, ex: 0 }); got.push('🥚 養到最終進化，得到一顆普通蛋！'); } else { p.coin = (p.coin || 0) + 100; got.push('🎁 養到最終進化，得到 🪙100！'); }
+      if (left.length) { p.eggs.push({ t: 0, ex: 0 }); got.push('🥚 養到最終進化，得到一顆普通蛋！'); } else { coinAdd(p, 100); got.push('🎁 養到最終進化，得到 🪙100！'); }
     }
     if (lv >= MAXLV && !p.e30) {
       p.e30 = 1; const left = SP_KEYS.filter(k => SPECIES[k].r === 1 && !p.dex[k] && !p.got[k]);
-      if (left.length) { const sp = left[Math.floor(Math.random() * left.length)]; p.got[sp] = 1; p.eggs.push({ t: 1, sp, ex: 0 }); got.push('🥚 滿級了！得到一顆稀有蛋！'); } else { p.coin = (p.coin || 0) + 200; got.push('🎁 滿級了！得到 🪙200！'); }
+      if (left.length) { const sp = left[Math.floor(Math.random() * left.length)]; p.got[sp] = 1; p.eggs.push({ t: 1, sp, ex: 0 }); got.push('🥚 滿級了！得到一顆稀有蛋！'); } else { coinAdd(p, 200); got.push('🎁 滿級了！得到 🪙200！'); }
     }
     SP_KEYS.forEach(sp => {
       const S = SPECIES[sp]; if (!S.r || p.got[sp] || p.dex[sp]) return;
@@ -585,7 +605,7 @@
     if (night()) { say('😴 牠睡著了，明天早上再吃吧', 2200); return; }
     if (f >= 100) { say('吃不下了啦～肚子好飽！', 2000); return; }
     if ((p.coin || 0) < F.p) { say(`金幣不夠…還差 ${F.p - (p.coin || 0)} 枚，去練習賺金幣吧！`, 2600); return; }
-    p.coin -= F.p; setFull(p, f + F.f); if (F.j) setJoy(p, joyNow(p) + F.j);
+    coinAdd(p, -F.p); setFull(p, f + F.f); if (F.j) setJoy(p, joyNow(p) + F.j);
     eatFx(`<img src="${IMG}food-${F.id}.webp" alt="">`, F.n); save(p); refresh(); paintTab();
   }
   function eatFx(icon, n) {
@@ -649,7 +669,7 @@
       if (maxLv(p) < I.lv) { say(`寵物升到 Lv.${I.lv} 才能買${I.n}喔！`, 2200); return; }
       if ((p.coin || 0) < I.p) { say(`金幣不夠…還差 ${I.p - (p.coin || 0)} 枚`, 2200); return; }
       if (!(await ask(`<div class="paski">${itemSVG(id)}</div>用 🪙${I.p} 買「${I.n}」嗎？<small>買了以後每一隻寵物都可以戴</small>`, '買！'))) return;
-      p.coin -= I.p; p.own[id] = 1; try { sfx.ticket(); } catch (e) { }
+      coinAdd(p, -I.p); p.own[id] = 1; try { sfx.ticket(); } catch (e) { }
     }
     p[I.k] = id; save(p); refresh(); paintTab(); bounce('spin', 'happy', 1000); fx('✨', 'star', 4); say(pick2(['好看嗎？', '我變漂亮了！', '酷吧！']), 2200);
   }
@@ -660,7 +680,7 @@
       if (L < x.lv) { say(`${nameOf(p)}升到 Lv.${x.lv} 才能變成${x.n}色喔！`, 2200); return; }
       if ((p.coin || 0) < x.p) { say(`金幣不夠…還差 ${x.p - (p.coin || 0)} 枚`, 2200); return; }
       if (!(await ask(`<div class="paskp">${petArt(look(p, { x: i, mood: 'happy' }))}</div>用 🪙${x.p} 讓${nameOf(p)}變成「${x.n}」異色嗎？`, '變身！'))) return;
-      p.coin -= x.p; p.xo[i] = 1;
+      coinAdd(p, -x.p); p.xo[i] = 1;
     }
     p.x = i; save(p); refresh(); paintTab(); bounce('spin', 'happy', 1000); fx(i === 4 ? '✨' : '🎨', 'star', 4);
   }
@@ -670,7 +690,7 @@
       if (maxLv(p) < r.lv) { say(`寵物升到 Lv.${r.lv} 才能搬到${r.n}喔！`, 2200); return; }
       if ((p.coin || 0) < r.p) { say(`金幣不夠…還差 ${r.p - (p.coin || 0)} 枚`, 2200); return; }
       if (!(await ask(`用 🪙${r.p} 買「${r.n}」房間嗎？`, '買！'))) return;
-      p.coin -= r.p; p.rooms[id] = 1;
+      coinAdd(p, -r.p); p.rooms[id] = 1;
     }
     p.room = id; save(p); render();
   }
@@ -785,7 +805,7 @@
   let CLS = null;
   async function loadClass() {
     if (CLS && Date.now() - CLS.at < 30000) return CLS;
-    await fbReady; let v = null; if (db && online) { try { v = (await timeout(db.ref(`${ROOT}/pet`).get(), 8000)).val() || {}; } catch (e) { v = null; } }
+    await fbOnline(); let v = null; if (db && online) { try { v = (await timeout(db.ref(`${ROOT}/pet`).get(), 8000)).val() || {}; } catch (e) { v = null; } }
     CLS = { at: Date.now(), ok: !!v, v: v || {} }; return CLS;
   }
   async function classPets(C) {
@@ -813,7 +833,7 @@
   }
   /* 自己今天收到的貼圖 */
   async function loadLikes() {
-    await fbReady; if (!db || !online || !user) return; let v = null;
+    if (!(await fbOnline()) || !user) return; let v = null;
     try { v = (await timeout(db.ref(`${ROOT}/petlike/${user.seat}`).get(), 8000)).val() || {}; } catch (e) { return; }
     const B = document.getElementById('plikes'); if (!B) return;
     const today = dkey(), got = Object.entries(v).filter(([f, x]) => x && x.d === today && STICKERS[x.e] && (!isTest(+f) || isTest(user.seat)));
@@ -959,5 +979,5 @@
   const S = document.createElement('style'); S.textContent = css + `
   @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
-  window.PET = { night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { coinAdd, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();
