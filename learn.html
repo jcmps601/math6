@@ -1400,7 +1400,7 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const xp=el('button','go gray',ico('vs-pd','bi')+'大砲對轟');tap(xp,()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'}));
   const xm=el('button','go xparty',ico('vs-pd','bi')+'大砲混戰<small>2～4 人</small>');tap(xm,()=>openTool({...XQ_TOOL,f:'party.html'}));
   const xc=el('button','go xparty xcoop','🤝 雙人合作過關<small>一起闖關</small>');tap(xc,()=>openTool({...XQ_TOOL,f:'coop.html'}));
-  [xv,xb,xa,xp,xm,xc].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
+  [xv,xb,xa,xp,xm].forEach(b=>xw.appendChild(b));   // 雙人合作過關（xc）等美術圖好了再打開：改回 [xv,xb,xa,xp,xm,xc]x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜<small>（下滿 ${WR_MIN} 局才上榜）</small>`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
