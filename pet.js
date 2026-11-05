@@ -54,7 +54,7 @@
   const ART = new Set(Object.keys(SPECIES));
   const ROOM_ART = new Set(['home', 'meadow', 'beach', 'space']);   // img/pet/room-房間.webp
   const IMG = 'img/pet/';
-  const PA = {"chick":[[101.9,140.7,19.2,117.0,53.8,157.6,185.8],[95.2,110.3,25.0,90.0,59.5,130.5,185.8],[90.4,81.5,23.0,64.6,51.8,103.5,185.8]],"cat":[[96.4,125.4,36.5,96.0,80.2,151.2,186.1],[82.7,99.7,34.7,68.4,72.9,125.4,186.1],[70.8,72.1,29.2,44.5,65.7,96.0,186.1]],"dragon":[[96.2,118.3,26.9,93.3,61.4,136.4,185.3],[63.5,104.4,26.9,84.9,53.8,121.1,185.6],[81.8,86.3,25.0,72.4,42.2,98.8,185.6]],"bunny":[[80.3,119.9,32.8,92.3,72.2,143.8,185.9],[63.1,107.0,31.2,77.6,68.9,132.8,185.9],[70.5,94.2,32.8,73.9,67.3,116.2,185.9]],"blob":[[103.8,131.1,46.1,91.0,107.5,157.9,186.0],[106.7,109.4,48.0,70.9,111.4,137.8,186.0],[103.8,104.4,53.8,67.6,130.6,134.5,185.7]],"bear":[[104.4,94.2,40.3,59.2,94.7,123.6,185.9],[107.0,77.6,49.1,44.5,96.5,108.9,185.9],[104.4,64.7,36.8,37.1,78.9,90.5,185.9]],"dog":[[89.4,96.4,40.3,67.0,80.6,122.3,185.9],[80.8,80.8,38.4,49.7,84.5,110.2,185.9],[69.3,61.8,30.7,35.9,61.4,87.8,185.9]],"penguin":[[107.0,116.2,45.4,64.7,87.3,142.0,186.0],[107.9,88.6,40.2,51.8,80.4,118.1,186.0],[105.2,72.1,38.4,44.5,76.9,101.5,186.0]],"otter":[[110.8,88.6,39.8,51.8,94.0,114.4,185.9],[91.0,75.8,43.4,37.1,97.6,105.2,185.9],[77.4,72.1,41.6,33.4,90.4,99.7,185.9]],"fox":[[92.3,121.7,34.6,96.4,65.3,139.1,185.6],[77.0,107.5,34.6,80.6,76.8,128.0,185.9],[66.4,104.3,32.6,77.5,73.0,123.3,185.6]],"hedgehog":[[88.5,129.8,38.4,93.7,69.1,150.3,185.9],[75.0,109.4,38.4,77.9,73.0,134.5,185.9],[76.0,103.1,44.2,71.7,80.6,128.3,185.9]],"deer":[[85.4,99.7,29.2,73.9,58.4,119.9,185.7],[86.9,83.1,23.4,64.7,46.7,105.2,185.7],[73.7,75.8,17.5,61.0,36.5,94.2,185.7]],"panda":[[103.7,88.6,44.3,55.5,99.7,118.1,185.9],[114.8,77.6,40.6,44.5,92.3,105.2,185.6],[92.6,53.7,44.3,22.4,96.0,83.1,185.9]],"octopus":[[105.8,121.1,38.4,74.0,96.0,142.4,186.0],[103.8,96.8,42.2,51.2,103.7,127.2,186.0],[100.0,95.3,38.4,45.2,107.5,124.2,186.0]],"robot":[[96.2,116.9,46.1,79.7,96.0,140.6,186.0],[98.1,93.2,42.2,59.4,92.2,116.9,186.0],[91.4,79.7,36.5,49.2,78.7,106.8,186.0]],"mushroom":[[100.0,109.6,34.6,54.4,76.8,134.6,185.9],[98.1,102.5,34.6,56.2,73.0,127.4,185.6],[91.4,98.9,32.6,45.5,69.1,123.9,185.6]],"whale":[[83.7,149.6,32.6,124.0,73.0,168.8,186.0],[66.4,136.8,36.5,104.7,69.1,162.4,186.2],[54.9,132.9,36.5,103.5,73.0,158.5,186.2]],"lion":[[108.6,100.9,28.8,73.0,69.1,125.6,186.2],[80.8,89.4,30.7,64.8,61.4,114.1,186.2],[87.5,76.3,36.5,53.3,71.0,100.9,186.2]],"unicorn":[[83.7,98.5,28.8,64.5,61.4,120.0,185.7],[70.2,77.0,32.6,41.2,65.3,98.5,185.7],[89.4,68.0,28.8,37.6,53.8,89.5,185.7]],"turtle":[[118.5,77.6,36.9,44.5,73.9,101.5,185.8],[112.9,62.9,40.6,22.4,84.9,88.6,185.8],[112.0,64.7,35.1,26.1,77.5,96.0,185.8]]};   // 每隻寵物三個型態：[眼睛中心x, 眼睛y, 兩眼距離, 頭頂y, 臉寬, 下巴y, 腳底y]（200×200 座標，逐張標記）
+  const PA = {"chick":[[101.9,140.7,19.2,117.0,53.8,157.6,185.8,62.6,136.7],[95.2,110.3,25.0,90.0,59.5,130.5,185.8,37.7,161.6],[90.4,81.5,23.0,64.6,51.8,103.5,185.8,6.2,188.1]],"cat":[[96.4,125.4,36.5,96.0,80.2,151.2,186.1,48.7,151.0],[82.7,99.7,34.7,68.4,72.9,125.4,186.1,27.5,172.2],[70.8,72.1,29.2,44.5,65.7,96.0,186.1,18.0,184.9]],"dragon":[[96.2,118.3,26.9,93.3,61.4,136.4,185.3,48.9,150.8],[63.5,104.4,26.9,84.9,53.8,121.1,185.6,36.6,162.7],[81.8,86.3,25.0,72.4,42.2,98.8,185.6,6.0,193.6]],"bunny":[[80.3,119.9,32.8,92.3,72.2,143.8,185.9,43.5,155.9],[63.1,107.0,31.2,77.6,68.9,132.8,185.9,29.7,169.7],[70.5,94.2,32.8,73.9,67.3,116.2,185.9,37.3,179.7]],"blob":[[103.8,131.1,46.1,91.0,107.5,157.9,186.0,41.2,158.5],[106.7,109.4,48.0,70.9,111.4,137.8,186.0,28.1,171.3],[103.8,104.4,53.8,67.6,130.6,134.5,185.7,10.4,182.3]],"bear":[[104.4,94.2,40.3,59.2,94.7,123.6,185.9,40.6,159.1],[107.0,77.6,49.1,44.5,96.5,108.9,185.9,38.8,161.2],[104.4,64.7,36.8,37.1,78.9,90.5,185.9,14.7,178.2]],"dog":[[89.4,96.4,40.3,67.0,80.6,122.3,185.9,25.6,160.1],[80.8,80.8,38.4,49.7,84.5,110.2,185.9,15.6,183.8],[69.3,61.8,30.7,35.9,61.4,87.8,185.9,6.1,193.9]],"penguin":[[107.0,116.2,45.4,64.7,87.3,142.0,186.0,35.8,163.9],[107.9,88.6,40.2,51.8,80.4,118.1,186.0,27.6,172.1],[105.2,72.1,38.4,44.5,76.9,101.5,186.0,14.3,185.4]],"otter":[[110.8,88.6,39.8,51.8,94.0,114.4,185.9,38.4,161.3],[91.0,75.8,43.4,37.1,97.6,105.2,185.9,23.9,175.8],[77.4,72.1,41.6,33.4,90.4,99.7,185.9,12.6,188.3]],"fox":[[92.3,121.7,34.6,96.4,65.3,139.1,185.6,36.9,162.5],[77.0,107.5,34.6,80.6,76.8,128.0,185.9,16.2,183.5],[66.4,104.3,32.6,77.5,73.0,123.3,185.6,10.5,186.8]],"hedgehog":[[88.5,129.8,38.4,93.7,69.1,150.3,185.9,37.3,162.7],[75.0,109.4,38.4,77.9,73.0,134.5,185.9,23.6,175.8],[76.0,103.1,44.2,71.7,80.6,128.3,185.9,23.6,175.8]],"deer":[[85.4,99.7,29.2,73.9,58.4,119.9,185.7,52.1,147.2],[86.9,83.1,23.4,64.7,46.7,105.2,185.7,42.6,156.7],[73.7,75.8,17.5,61.0,36.5,94.2,185.7,28.9,170.8]],"panda":[[103.7,88.6,44.3,55.5,99.7,118.1,185.9,41.8,157.3],[114.8,77.6,40.6,44.5,92.3,105.2,185.6,15.3,183.8],[92.6,53.7,44.3,22.4,96.0,83.1,185.9,29.8,190.2]],"octopus":[[105.8,121.1,38.4,74.0,96.0,142.4,186.0,39.5,159.9],[103.8,96.8,42.2,51.2,103.7,127.2,186.0,21.2,178.2],[100.0,95.3,38.4,45.2,107.5,124.2,186.0,5.7,194.0]],"robot":[[96.2,116.9,46.1,79.7,96.0,140.6,186.0,44.5,155.2],[98.1,93.2,42.2,59.4,92.2,116.9,186.0,27.3,172.7],[91.4,79.7,36.5,49.2,78.7,106.8,186.0,6.5,192.9]],"mushroom":[[100.0,109.6,34.6,54.4,76.8,134.6,185.9,40.5,158.9],[98.1,102.5,34.6,56.2,73.0,127.4,185.6,23.0,176.7],[91.4,98.9,32.6,45.5,69.1,123.9,185.6,5.8,193.9]],"whale":[[83.7,149.6,32.6,124.0,73.0,168.8,186.0,41.9,157.5],[66.4,136.8,36.5,104.7,69.1,162.4,186.2,21.8,177.7],[54.9,132.9,36.5,103.5,73.0,158.5,186.2,5.5,194.0]],"lion":[[108.6,100.9,28.8,73.0,69.1,125.6,186.2,43.3,156.4],[80.8,89.4,30.7,64.8,61.4,114.1,186.2,22.2,177.3],[87.5,76.3,36.5,53.3,71.0,100.9,186.2,21.7,188.9]],"unicorn":[[83.7,98.5,28.8,64.5,61.4,120.0,185.7,44.5,155.2],[70.2,77.0,32.6,41.2,65.3,98.5,185.7,20.2,179.5],[89.4,68.0,28.8,37.6,53.8,89.5,185.7,5.9,193.7]],"turtle":[[118.5,77.6,36.9,44.5,73.9,101.5,185.8,43.8,155.5],[112.9,62.9,40.6,22.4,84.9,88.6,185.8,27.0,172.3],[112.0,64.7,35.1,26.1,77.5,96.0,185.8,9.6,189.8]]};   // 每隻寵物三個型態：[眼睛中心x, 眼睛y, 兩眼距離, 頭頂y, 臉寬, 下巴y, 腳底y, 身體左x, 身體右x]（200×200 座標，逐張標記）
   const AR = {"bow":0.668,"flower":0.578,"cap":0.723,"party":1.128,"beret":0.656,"tophat":0.715,"magic":0.859,"chef":0.801,"crown":0.727,"helmet":0.848,"halo":0.496,"grad":0.668,"round":0.434,"heart":0.418,"sun":0.406,"star":0.465,"goggle":0.707,"bowtie":0.613,"bell":0.922,"scarf":1.02,"medal":1.099,"lei":0.926,"rainbow":0.949,"balloon":1.326,"wings-l":1.163,"wings-r":1.176,"wings":0.555,"cape-l":1.381,"cape-r":1.349,"cape":0.645,"rocket-l":1.494,"rocket-r":1.513,"rocket":0.707,"swings-l":1.146,"swings-r":1.153,"swings":0.543};   // 配件圖的高÷寬
   /* 有圖的配件放哪裡：每一張寵物圖都標了眼睛、頭頂、臉寬、下巴（PA），配件照這些位置放。
      回傳 [寬, 中心x(成對的是離中心多遠), y, 對齊方式]：b＝y 是下緣、t＝y 是上緣、c＝y 是中心 */
@@ -66,18 +66,34 @@
     crown: g => [g.fw * .55, g.ex, g.top + g.hh * .22, 'b'], grad: g => [g.fw * .9, g.ex, g.top + g.hh * .36, 'b'],
     halo: g => [g.fw * .6, g.ex, g.top - g.hh * .18, 'c'], helmet: g => [Math.max(g.fw * 1.35, (g.chin - g.top) * 1.45), g.ex, (g.top + g.chin) / 2 + g.d * .1, 'c'],
     round: g => [g.d * 1.95, g.ex, g.ey, 'c'], heart: g => [g.d * 2.0, g.ex, g.ey, 'c'], sun: g => [g.d * 1.95, g.ex, g.ey, 'c'], star: g => [g.d * 2.05, g.ex, g.ey, 'c'], goggle: g => [g.d * 2.05, g.ex + g.d * .18, g.ey + g.d * .04, 'c'],
-    bowtie: g => [g.fw * .32, g.ex, g.chin + g.fw * .04, 'c'], bell: g => [g.fw * .42, g.ex, g.chin - g.fw * .01, 't'], scarf: g => [g.fw * .58, g.ex, g.chin - g.fw * .02, 't'],
-    rainbow: g => [g.fw * .58, g.ex, g.chin - g.fw * .02, 't'], medal: g => [g.fw * .34, g.ex, g.chin - g.fw * .02, 't'], lei: g => [g.fw * .5, g.ex, g.chin + g.fw * .05, 'c'],
-    balloon: g => [g.fw * .6, g.ex + g.fw * .62, g.top + g.hh * .1, 'c'],
-    wings: g => [g.fw * .55, g.fw * .5, g.chin + g.fw * .05, 'c', 1], swings: g => [g.fw * .55, g.fw * .5, g.chin, 'c', 1],
-    cape: g => [g.fw * .5, g.fw * .34, g.chin - g.fw * .05, 't', 1], rocket: g => [g.fw * .3, g.fw * .48, g.chin + g.fw * .2, 'c', 1]
+    /* 腳下：畫在寵物後面，寵物踩在上面 */
+    grass: g => [g.bw * 1.05, g.bx, g.bot + 4, 'f'], petal: g => [g.bw * 1.05, g.bx, g.bot + 4, 'f'], cloud: g => [g.bw * 1.1, g.bx, g.bot + 6, 'f'],
+    heartp: g => [g.bw * 1.05, g.bx, g.bot + 4, 'f'], starring: g => [g.bw * 1.08, g.bx, g.bot + 4, 'f'], rainbowc: g => [g.bw * 1.12, g.bx, g.bot + 6, 'f'],
+    /* 身邊：飄在頭旁邊（右邊放不下就放左邊） */
+    balloon: g => side(g, Math.max(38, g.fw * .55), .1), butterfly: g => side(g, Math.max(34, g.fw * .42), .15), starkid: g => side(g, Math.max(32, g.fw * .42), .2), rocketm: g => side(g, Math.max(28, g.fw * .36), .15), moon: g => side(g, Math.max(32, g.fw * .42), .1)
+  };
+  function side(g, w, y) { let x = g.bx1 + w * .15; if (x + w / 2 > 198) x = g.bx0 - w * .15; if (x - w / 2 < 2) x = 198 - w / 2; return [w, x, g.top + (g.ey - g.top) * y, 'c', 0, 'pflt']; }
+  const PH = {
+    grass: [.36, '<ellipse cx="50" cy="18" rx="50" ry="17" fill="#8ce99a"/><ellipse cx="50" cy="16" rx="44" ry="13" fill="#b2f2bb"/>' + [[12, 14, '#ff8fab'], [28, 24, '#ffd43b'], [72, 24, '#fff'], [88, 13, '#b197fc'], [50, 30, '#ff8787']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="4" fill="${c}"/><circle cx="${x}" cy="${y}" r="1.6" fill="#fcc419"/>`).join('')],
+    petal: [.36, '<ellipse cx="50" cy="18" rx="48" ry="15" fill="none" stroke="#ffc9de" stroke-width="6"/>' + [...Array(12)].map((_, i) => { const a = i / 12 * 6.283; return `<ellipse cx="${(50 + 46 * Math.cos(a)).toFixed(1)}" cy="${(18 + 15 * Math.sin(a)).toFixed(1)}" rx="5" ry="3.5" fill="${i % 2 ? '#ff8fab' : '#fff0f6'}" transform="rotate(${(i * 30)} ${(50 + 46 * Math.cos(a)).toFixed(1)} ${(18 + 15 * Math.sin(a)).toFixed(1)})"/>`; }).join('')],
+    cloud: [.42, '<g fill="#fff" stroke="#dbe4ff" stroke-width="2"><ellipse cx="50" cy="28" rx="48" ry="13"/><circle cx="24" cy="20" r="13"/><circle cx="46" cy="14" r="15"/><circle cx="72" cy="19" r="13"/></g><ellipse cx="50" cy="30" rx="40" ry="6" fill="#edf2ff"/>'],
+    heartp: [.36, '<ellipse cx="50" cy="18" rx="48" ry="15" fill="#ffdeeb" opacity=".7"/><ellipse cx="50" cy="18" rx="48" ry="15" fill="none" stroke="#f06595" stroke-width="2.5"/>' + [[14, 10], [50, 3], [86, 10], [30, 30], [70, 30]].map(([x, y]) => `<path d="M${x} ${y + 6} l-5 -5 a3 3 0 0 1 5 -3 a3 3 0 0 1 5 3z" fill="#f06595"/>`).join('')],
+    starring: [.36, '<ellipse cx="50" cy="18" rx="48" ry="15" fill="#fff3bf" opacity=".75"/><ellipse cx="50" cy="18" rx="48" ry="15" fill="none" stroke="#fcc419" stroke-width="3"/>' + [[10, 14], [30, 4], [50, 2], [70, 4], [90, 14], [50, 33]].map(([x, y]) => `<path d="${starPath(x, y, 5.5, 2.4)}" fill="#ffd43b" stroke="#f08c00" stroke-width="1"/>`).join('')],
+    rainbowc: [.5, '<g fill="none" stroke-width="5" stroke-linecap="round">' + ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#9775fa'].map((c, i) => `<path d="M${8 + i * 4} 34 Q50 ${-6 + i * 5} ${92 - i * 4} 34" stroke="${c}"/>`).join('') + '</g><g fill="#fff" stroke="#dbe4ff" stroke-width="2"><ellipse cx="50" cy="40" rx="48" ry="10"/><circle cx="16" cy="34" r="10"/><circle cx="84" cy="34" r="10"/></g>'],
+    butterfly: [.8, '<g stroke="#5f3dc4" stroke-width="2"><path d="M50 40 Q20 0 8 22 Q4 44 50 44Z" fill="#b197fc"/><path d="M50 40 Q80 0 92 22 Q96 44 50 44Z" fill="#74c0fc"/><path d="M50 46 Q26 74 16 60 Q14 48 50 46Z" fill="#ffa8c5"/><path d="M50 46 Q74 74 84 60 Q86 48 50 46Z" fill="#ffd43b"/></g><rect x="47" y="30" width="6" height="34" rx="3" fill="#5f3dc4"/><path d="M50 30 Q42 16 36 14 M50 30 Q58 16 64 14" stroke="#5f3dc4" stroke-width="2" fill="none"/>'],
+    starkid: [1, `<path d="${starPath(50, 52, 46, 21)}" fill="#ffe066" stroke="#f59f00" stroke-width="3" stroke-linejoin="round"/><circle cx="40" cy="52" r="4" fill="#2b2b3a"/><circle cx="60" cy="52" r="4" fill="#2b2b3a"/><path d="M42 62 Q50 70 58 62" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="33" cy="60" r="4" fill="#ff8fab" opacity=".6"/><circle cx="67" cy="60" r="4" fill="#ff8fab" opacity=".6"/>`],
+    rocketm: [1.2, '<g transform="rotate(25 50 60)"><path d="M50 6 Q72 30 70 76 H30 Q28 30 50 6Z" fill="#f1f3f5" stroke="#868e96" stroke-width="3"/><circle cx="50" cy="44" r="10" fill="#4dabf7" stroke="#1c7ed6" stroke-width="3"/><path d="M30 60 L16 84 L32 78Z M70 60 L84 84 L68 78Z" fill="#ff6b6b" stroke="#c92a2a" stroke-width="2"/><path d="M38 78 Q50 118 62 78Z" fill="#ffd43b" stroke="#fd7e14" stroke-width="2"/></g>'],
+    moon: [1, '<path d="M64 8 A44 44 0 1 0 92 70 A36 36 0 1 1 64 8Z" fill="#ffe066" stroke="#f59f00" stroke-width="3"/><circle cx="40" cy="50" r="4" fill="#2b2b3a"/><path d="M34 64 Q42 70 50 64" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="30" cy="58" r="4" fill="#ff8fab" opacity=".6"/>']
   };
   function accImg(id, q) {
     const f = AP[id]; if (!f) return '';
-    const g = { ex: q[0], ey: q[1], d: q[2], top: q[3], fw: q[4], chin: q[5], bot: q[6], hh: q[1] - q[3] };
-    const [w, cx, yy, al, pair] = f(g);
+    const g = { ex: q[0], ey: q[1], d: q[2], top: q[3], fw: q[4], chin: q[5], bot: q[6], hh: q[1] - q[3], bx0: q[7], bx1: q[8], bx: (q[7] + q[8]) / 2 };
+    g.bw = Math.min(150, Math.max(g.fw * 1.1, g.bx1 - g.bx0));
+    const [w, cx, yy, al, pair, cls] = f(g);
     const one = (name, x) => {
-      const h = w * (AR[name] || 1); let y = al === 'b' ? yy - h : al === 't' ? yy : yy - h / 2;
+      if (!AR[name] && PH[name]) { const P = PH[name], h = w * P[0], y = al === 'f' ? Math.min(yy - h * .62, 199 - h) : yy - h / 2; return `<g class="${cls || ''}"><g transform="translate(${(x - w / 2).toFixed(1)} ${y.toFixed(1)}) scale(${(w / 100).toFixed(3)})">${P[1]}</g></g>`; }
+      const h = w * (AR[name] || 1); let y = al === 'b' ? yy - h : al === 't' ? yy : al === 'f' ? Math.min(yy - h * .62, 199 - h) : yy - h / 2;
+      if (cls) return `<g class="${cls}"><image href="${IMG}acc-${name}.webp" x="${(x - w / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/></g>`;
       if (pair) y = Math.min(y, g.bot - h - 2);   // 背後的東西不要超出腳底
       return `<image href="${IMG}acc-${name}.webp" x="${(x - w / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/>`;
     };
@@ -91,11 +107,13 @@
     beret: { k: 'h', n: '畫家帽', lv: 5, p: 65 }, tophat: { k: 'h', n: '紳士帽', lv: 8, p: 100 }, magic: { k: 'h', n: '魔法師帽', lv: 11, p: 140 }, chef: { k: 'h', n: '廚師帽', lv: 14, p: 170 },
     crown: { k: 'h', n: '皇冠', lv: 18, p: 250 }, helmet: { k: 'h', n: '太空頭盔', lv: 22, p: 300 }, halo: { k: 'h', n: '天使光環', lv: 25, p: 350 }, grad: { k: 'h', n: '學士帽', lv: 30, p: 500 },
     round: { k: 'g', n: '圓眼鏡', lv: 2, p: 30 }, heart: { k: 'g', n: '愛心眼鏡', lv: 4, p: 50 }, sun: { k: 'g', n: '墨鏡', lv: 6, p: 80 }, star: { k: 'g', n: '星星眼鏡', lv: 9, p: 120 }, goggle: { k: 'g', n: '潛水鏡', lv: 16, p: 200 },
-    bowtie: { k: 'k', n: '小領結', lv: 1, p: 20 }, bell: { k: 'k', n: '鈴鐺項圈', lv: 3, p: 40 }, scarf: { k: 'k', n: '圍巾', lv: 5, p: 60 }, medal: { k: 'k', n: '金牌', lv: 10, p: 130 },
-    lei: { k: 'k', n: '花圈', lv: 17, p: 220 }, rainbow: { k: 'k', n: '彩虹圍巾', lv: 24, p: 320 },
-    balloon: { k: 'b', n: '彩色氣球', lv: 8, p: 110 }, wings: { k: 'b', n: '天使翅膀', lv: 12, p: 160 }, cape: { k: 'b', n: '英雄披風', lv: 15, p: 200 }, rocket: { k: 'b', n: '火箭背包', lv: 20, p: 280 }, swings: { k: 'b', n: '星星翅膀', lv: 27, p: 400 }
+    grass: { k: 'k', n: '小花草地', lv: 1, p: 20 }, petal: { k: 'k', n: '花瓣圈', lv: 3, p: 40 }, cloud: { k: 'k', n: '軟軟雲朵', lv: 5, p: 60 }, heartp: { k: 'k', n: '愛心光圈', lv: 10, p: 130 },
+    starring: { k: 'k', n: '星星光圈', lv: 17, p: 220 }, rainbowc: { k: 'k', n: '彩虹雲', lv: 24, p: 320 },
+    balloon: { k: 'b', n: '彩色氣球', lv: 8, p: 110 }, butterfly: { k: 'b', n: '小蝴蝶', lv: 12, p: 160 }, starkid: { k: 'b', n: '小星星精靈', lv: 15, p: 200 }, rocketm: { k: 'b', n: '迷你火箭', lv: 20, p: 280 }, moon: { k: 'b', n: '月亮小夥伴', lv: 27, p: 400 }
   };
-  const SLOTS = [['h', '👒 帽子'], ['g', '👓 眼鏡'], ['k', '🎀 脖子'], ['b', '🪽 背後']];
+  const SLOTS = [['h', '👒 帽子'], ['g', '👓 眼鏡'], ['k', '✨ 腳下'], ['b', '🎈 身邊']];
+  /* 舊版的脖子、背後配件（每隻寵物姿勢不同，戴起來不自然，已經拿掉）：買過的退錢 */
+  const OLD_ITEMS = { bowtie: 20, bell: 35, scarf: 50, medal: 100, lei: 220, rainbow: 320, wings: 160, cape: 200, rocket: 280, swings: 400 };
   /* 異色：在原本的樣子上套一層色調（每隻寵物各自買，等級看這隻寵物） */
   const XS = [
     { n: '原色', f: '', lv: 1, p: 0, c: '#dee2e6' },
@@ -142,12 +160,12 @@
     const fil = o.sil ? 'brightness(0) opacity(.2)' : xs.f;
     const L = [];
     if (st === 2 && !o.sil && !pic) L.push(`<svg class="pal" viewBox="0 0 200 200"><defs><radialGradient id="${id}a"><stop offset=".55" stop-color="#fff7c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient></defs><circle cx="100" cy="118" r="84" fill="url(#${id}a)"/></svg>`);
-    if (!o.sil && o.b && ITEMS[o.b] && ITEMS[o.b].k === 'b') L.push(`<svg class="pal" viewBox="0 0 200 200"><g transform="${T}">${AC(o.b)}</g></svg>`);
+    if (!o.sil && o.k && ITEMS[o.k] && ITEMS[o.k].k === 'k') L.push(`<svg class="pal" viewBox="0 0 200 200"><g transform="${T}">${AC(o.k)}</g></svg>`);
     if (pic) L.push(`<svg class="pab" viewBox="0 0 200 200"${fil ? ` style="filter:${fil}"` : ''}><ellipse cx="100" cy="186" rx="${q ? Math.min(78, q[4] * .8).toFixed(1) : 60}" ry="7" fill="#000" opacity=".13"/><image href="${IMG}${sp}-${st}.webp" x="4" y="4" width="192" height="184" preserveAspectRatio="xMidYMax meet"/></svg>`
       + (mood === 'sleep' ? '<span class="pmood">💤</span>' : mood === 'sad' ? '<span class="pmood">💧</span>' : ''));
     else L.push(bodySVG(sp, st, o.sil ? 'ok' : mood, id, fil, T));
     if (!o.sil) {
-      const fr = ['k', 'g', 'h'].filter(k => o[k] && ITEMS[o[k]] && ITEMS[o[k]].k === k).map(k => AC(o[k])).join('');
+      const fr = ['g', 'h', 'b'].filter(k => o[k] && ITEMS[o[k]] && ITEMS[o[k]].k === k).map(k => AC(o[k])).join('');
       if (fr) L.push(`<svg class="pal" viewBox="0 0 200 200"><g transform="${T}">${fr}</g></svg>`);
       if ((o.x | 0) === 4) L.push(`<span class="pspk"><i style="background-image:url(${IMG}fx-shine.webp)"></i><i style="background-image:url(${IMG}fx-shine.webp)"></i><i style="background-image:url(${IMG}fx-shine.webp)"></i></span>`);
     }
@@ -274,6 +292,7 @@
   /* 一個配件單獨畫在小框框裡（商店用） */
   function itemSVG(k) {
     if (AR[k]) return `<img class="isvg" src="${IMG}acc-${k}.webp" alt="" draggable="false">`;
+    if (PH[k]) return `<svg class="isvg" viewBox="-4 -4 108 ${(100 * PH[k][0] + 8).toFixed(0)}">${PH[k][1]}</svg>`;
     const I = ITEMS[k], VB = { bow: '100 50 56 48', flower: '106 52 48 48', bowtie: '72 134 56 40', helmet: '30 16 140 168', halo: '60 20 80 36', lei: '46 132 108 40', balloon: '116 30 84 110', grad: '40 24 120 72', cape: '24 112 152 90' };
     const vb = VB[k] || (I.k === 'h' ? '50 8 100 80' : I.k === 'g' ? '40 92 120 38' : I.k === 'k' ? '50 132 100 58' : '6 74 188 116');
     return `<svg class="isvg" viewBox="${vb}">${acc(k)}</svg>`;
@@ -308,6 +327,13 @@
     if (!sum) return null;
     if (!sum.pet) sum.pet = { st: 'egg', ex: 0, coin: START_COIN, xp: 0, own: {}, v: 2, u: Date.now() };
     const p = sum.pet; if (p.v !== 2) migrate(p);
+    if (!p.iv) {   // 配件改版（脖子、背後 → 腳下、身邊）：買過的退錢、穿著的脫下來
+      p.iv = 1; let n = 0; p.own = p.own || {};
+      Object.keys(OLD_ITEMS).forEach(id => { if (p.own[id]) { n += OLD_ITEMS[id]; delete p.own[id]; } });
+      const off = r => { if (r && OLD_ITEMS[r.k]) r.k = ''; if (r && (OLD_ITEMS[r.b] || (r.b && !ITEMS[r.b]))) r.b = ''; };
+      off(p); Object.values(p.box || {}).forEach(off);
+      if (n) { p.coin = (p.coin || 0) + n; p.refund2 = n; } p.u = Date.now();
+    }
     p.box = p.box || {}; p.eggs = p.eggs || []; p.dex = p.dex || {}; p.got = p.got || {}; p.ach = p.ach || {}; p.own = p.own || {}; p.rooms = p.rooms || {};
     return p;
   }
@@ -468,6 +494,7 @@
     Pn.appendChild(el('div', 'phow', `💡 一次就答對：經驗 +10、🪙+2；第二次才答對：經驗 +5、🪙+1。每天前 ${BOOST_N} 題答對拿全額，之後減半。完成每日任務再 +30 經驗、🪙+10；吃飽又開心經驗 ×1.2！`));
     loadLikes();
     if (p.refund) { const n = p.refund; delete p.refund; save(p); setTimeout(() => toast(`🎨 換顏色改成「異色」了，以前買的顏色退還 🪙${n}`), 600); }
+    if (p.refund2) { const n = p.refund2; delete p.refund2; save(p); setTimeout(() => toast(`🎀 脖子、背後的配件換成新的「腳下」「身邊」了，以前買的退還 🪙${n}`), 1800); }
     if (p.evo) setTimeout(showEvo, 500);
     clearInterval(page.t); page.t = setInterval(() => { if (view !== 'pet' || !document.getElementById('pstage')) return clearInterval(page.t); refresh(); }, 60000);
   }
@@ -798,6 +825,7 @@
   const css = `
   .pa{position:relative;width:100%;height:100%}.pa>svg,.pa>.pspk{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
   .pa .pmood{position:absolute;right:8%;top:18%;font-size:1.6em}
+  .pa .pflt{animation:pflt 2.6s ease-in-out infinite}@keyframes pflt{50%{transform:translateY(-5px)}}
   .pspk i{position:absolute;width:22%;height:22%;background:center/contain no-repeat;animation:pspk 1.8s ease-in-out infinite}
   .pspk i:nth-child(1){left:12%;top:24%}.pspk i:nth-child(2){right:10%;top:40%;animation-delay:.6s}.pspk i:nth-child(3){left:40%;top:6%;animation-delay:1.2s}
   @keyframes pspk{0%,100%{transform:scale(.2) rotate(0);opacity:0}50%{transform:scale(1) rotate(45deg);opacity:1}}
