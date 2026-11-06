@@ -164,6 +164,8 @@
   const NAMES = ['小布丁', '麻糬', '湯圓', '小餅乾', '奶茶', '豆花', '芒果', '布布', '泡芙', '棉花糖', '小可', '多多', '咪咪', '球球', '嘟嘟', '樂樂',
     '皮皮', '丸子', '小星', '月月', '雲朵', '珍珠', '可樂', '花生', '小米', '橘橘', '莓莓', '蜜蜜', '豆豆', '糖糖', '阿福', '旺旺', '跳跳', '小熊', '奇奇', '妞妞'];
   const STICKERS = ['👍', '❤️', '😆', '🌟', '🎉'];
+  /* 測試帳號（98、99）：金幣無限、配件不用等級、寵物頁上方有測試工具 */
+  const TST = () => { try { return !!(user && isTest(user.seat)); } catch (e) { return false; } };
   const EGG_NEED = [50, 100, 150], START_COIN = 30, FULL_DECAY = 2.5, JOY_DECAY = 3, PLAY_MS = 20 * 60 * 1000;
   const GAIN = { ok: [2, 10], ok2: [1, 5] }, LATE = { ok: [1, 5], ok2: [0, 3] }, BOOST_N = 20, DAY_XP = 30, DAY_COIN = 10, CARE_K = 1.2;
   const OLD_DEF = { chick: 1, cat: 5, dragon: 2, bunny: 0, blob: 3, bear: 7 }, OLD_COLOR_PRICE = 30;
@@ -375,6 +377,7 @@
     if (!sum.pet) sum.pet = { st: 'egg', ex: 0, coin: START_COIN, xp: 0, own: {}, v: 2, u: Date.now() };
     const p = sum.pet; if (!p.cl) p.cl = { b: p.coin || 0, e: {}, s: {} }; p.cl.e = p.cl.e || {}; p.cl.s = p.cl.s || {};   // 雲端存回來時空的 {} 會不見
     if (p.v !== 2) migrate(p);
+    if (TST() && coinOf(p) < 50000) coinAdd(p, 99999 - coinOf(p));
     if (!p.iv) {   // 配件改版（脖子、背後 → 腳下、身邊）：買過的退錢、穿著的脫下來
       p.iv = 1; let n = 0; p.own = p.own || {};
       Object.keys(OLD_ITEMS).forEach(id => { if (p.own[id]) { n += OLD_ITEMS[id]; delete p.own[id]; } });
@@ -509,6 +512,7 @@
   let tab = 'food', mod = null;
   function page(Pn) {
     const p = P(), h = el('div', 'h1', `<span class="tag">🐾</span>我的寵物`); h.style.setProperty('--c', '#f06595'); Pn.appendChild(h);
+    if (TST()) testTools(Pn, p);
     if (p.st === 'egg') return eggPage(Pn, p);
     const L = lvOf(p.xp || 0), st = stageOf(L.lv), S = SPECIES[p.sp];
     const Sg = el('div', 'cd pstage' + (night() ? ' night' : '')); Sg.id = 'pstage';
@@ -675,15 +679,15 @@
       SLOTS.forEach(([k, n]) => {
         h += `<div class="psec">${n}</div><div class="pgrid">`;
         Object.entries(ITEMS).filter(([, I]) => I.k === k).forEach(([id, I]) => {
-          const on = p[k] === id, has = own[id], lock = !has && ML < I.lv;
+          const on = p[k] === id, has = own[id], lock = !has && !TST() && ML < I.lv;
           h += `<button class="pitem w${on ? ' on' : ''}${lock ? ' lock' : ''}" data-i="${id}">${itemSVG(id)}<b>${I.n}</b><em>${on ? '✅ 穿著' : has ? '換上' : lock ? (I.lv - L === 1 ? '🔒 再升 1 級，就能使用' : `🔒 升到 Lv.${I.lv} 解鎖`) : `🪙 ${I.p}`}</em></button>`;
         });
         h += '</div>';
       });
       h += `<div class="psec">🎨 異色 <small>每隻寵物各自買・看${nameOf(p)}的等級</small></div><div class="pgrid cols">`;
-      XS.forEach((x, i) => { const cur = (p.x | 0) === i, has = !i || (p.xo || {})[i], lock = !has && L < x.lv; h += `<button class="pcol${cur ? ' on' : ''}${lock ? ' lock' : ''}" data-x="${i}" style="--m:${x.c}"><i>${i === 4 ? '✨' : ''}</i><small>${x.n}</small><em>${cur ? '✅' : has ? '換上' : lock ? `🔒Lv.${x.lv}` : `🪙${x.p}`}</em></button>`; });
+      XS.forEach((x, i) => { const cur = (p.x | 0) === i, has = !i || (p.xo || {})[i], lock = !has && !TST() && L < x.lv; h += `<button class="pcol${cur ? ' on' : ''}${lock ? ' lock' : ''}" data-x="${i}" style="--m:${x.c}"><i>${i === 4 ? '✨' : ''}</i><small>${x.n}</small><em>${cur ? '✅' : has ? '換上' : lock ? `🔒Lv.${x.lv}` : `🪙${x.p}`}</em></button>`; });
       h += `</div><div class="psec">🏡 房間</div><div class="pgrid rooms">`;
-      ROOMS.forEach(r => { const cur = (p.room || 'home') === r.id, has = !r.p || p.rooms[r.id], lock = !has && ML < r.lv; h += `<button class="proomb${cur ? ' on' : ''}${lock ? ' lock' : ''}" data-r="${r.id}"><span class="prv">${roomArt(r.id)}</span><b>${r.n}</b><em>${cur ? '✅ 使用中' : has ? '換上' : lock ? `🔒 Lv.${r.lv}` : `🪙 ${r.p}`}</em></button>`; });
+      ROOMS.forEach(r => { const cur = (p.room || 'home') === r.id, has = !r.p || p.rooms[r.id], lock = !has && !TST() && ML < r.lv; h += `<button class="proomb${cur ? ' on' : ''}${lock ? ' lock' : ''}" data-r="${r.id}"><span class="prv">${roomArt(r.id)}</span><b>${r.n}</b><em>${cur ? '✅ 使用中' : has ? '換上' : lock ? `🔒 Lv.${r.lv}` : `🪙 ${r.p}`}</em></button>`; });
       C.innerHTML = h + '</div>';
       C.querySelectorAll('[data-i]').forEach(b => tap(b, () => wear(b.dataset.i)));
       C.querySelectorAll('[data-x]').forEach(b => tap(b, () => shiny(+b.dataset.x)));
@@ -695,7 +699,7 @@
     const p = P(), I = ITEMS[id];
     if (p[I.k] === id) { p[I.k] = ''; save(p); refresh(); paintTab(); return; }   // 再點一次＝脫下來
     if (!p.own[id]) {
-      if (maxLv(p) < I.lv) { say(`寵物升到 Lv.${I.lv} 才能買${I.n}喔！`, 2200); return; }
+      if (!TST() && maxLv(p) < I.lv) { say(`寵物升到 Lv.${I.lv} 才能買${I.n}喔！`, 2200); return; }
       if ((p.coin || 0) < I.p) { say(`金幣不夠…還差 ${I.p - (p.coin || 0)} 枚`, 2200); return; }
       if (!(await ask(`<div class="paski">${itemSVG(id)}</div>用 🪙${I.p} 買「${I.n}」嗎？<small>買了以後每一隻寵物都可以戴</small>`, '買！'))) return;
       coinAdd(p, -I.p); p.own[id] = 1; try { sfx.ticket(); } catch (e) { }
@@ -706,7 +710,7 @@
     const p = P(), x = XS[i], L = lvOf(p.xp || 0).lv; p.xo = p.xo || {};
     if ((p.x | 0) === i) return;
     if (i && !p.xo[i]) {
-      if (L < x.lv) { say(`${nameOf(p)}升到 Lv.${x.lv} 才能變成${x.n}色喔！`, 2200); return; }
+      if (!TST() && L < x.lv) { say(`${nameOf(p)}升到 Lv.${x.lv} 才能變成${x.n}色喔！`, 2200); return; }
       if ((p.coin || 0) < x.p) { say(`金幣不夠…還差 ${x.p - (p.coin || 0)} 枚`, 2200); return; }
       if (!(await ask(`<div class="paskp">${petArt(look(p, { x: i, mood: 'happy' }))}</div>用 🪙${x.p} 讓${nameOf(p)}變成「${x.n}」異色嗎？`, '變身！'))) return;
       coinAdd(p, -x.p); p.xo[i] = 1;
@@ -716,7 +720,7 @@
   async function room(id) {
     const p = P(), r = ROOMS.find(x => x.id === id); if ((p.room || 'home') === id) return;
     if (r.p && !p.rooms[id]) {
-      if (maxLv(p) < r.lv) { say(`寵物升到 Lv.${r.lv} 才能搬到${r.n}喔！`, 2200); return; }
+      if (!TST() && maxLv(p) < r.lv) { say(`寵物升到 Lv.${r.lv} 才能搬到${r.n}喔！`, 2200); return; }
       if ((p.coin || 0) < r.p) { say(`金幣不夠…還差 ${r.p - (p.coin || 0)} 枚`, 2200); return; }
       if (!(await ask(`用 🪙${r.p} 買「${r.n}」房間嗎？`, '買！'))) return;
       coinAdd(p, -r.p); p.rooms[id] = 1;
@@ -801,6 +805,25 @@
     if (pr < 1) { const g = el('button', 'go pgo2', '✏️ 去練習孵蛋 ▶'); tap(g, () => startPractice((mixOf(subj) || MIX).key)); Pn.appendChild(g); }
     else tap(S.querySelector('#ppet'), () => hatch());
     Pn.appendChild(el('div', 'phow', '💡 孵化以後可以從 8 種寵物裡選一隻、取名字。牠會跟著你練習升級、進化！'));
+  }
+  /* 測試工具：只有測試帳號看得到 */
+  function testTools(Pn, p) {
+    const T = el('div', 'cd ptest'), egg = p.st === 'egg', L = egg ? 1 : lvOf(p.xp || 0).lv;
+    T.innerHTML = `<b>🧪 測試工具</b>` + (egg ? `<button data-t="ex">🥚 蛋直接可以孵</button>`
+      : `<span>等級 Lv.${L}</span>${[1, 7, 18, 30].map(v => `<button data-t="lv" data-v="${v}"${v === L ? ' class="on"' : ''}>Lv.${v}</button>`).join('')}<button data-t="lv" data-v="${L - 1}">－1</button><button data-t="lv" data-v="${L + 1}">＋1</button>
+        <select data-t="sp">${SP_KEYS.map(k => `<option value="${k}"${k === p.sp ? ' selected' : ''}>${SPECIES[k].n}</option>`).join('')}</select>
+        <button data-t="fill">🍚💗 補滿</button><button data-t="egg">🥚 送一顆蛋</button>`);
+    Pn.appendChild(T);
+    const go = () => { save(p); render(); };
+    T.querySelectorAll('button').forEach(b => tap(b, () => {
+      const t = b.dataset.t;
+      if (t === 'ex') p.ex = EGG_NEED[0];
+      if (t === 'lv') { const v = Math.max(1, Math.min(MAXLV, +b.dataset.v)), a = stageOf(L), z = stageOf(v); p.xp = cum(v); delete p.evo; if (z > a) p.evo = { f: a, t: z }; }
+      if (t === 'fill') { setFull(p, 100); setJoy(p, 100); }
+      if (t === 'egg') { p.eggs = p.eggs || []; p.eggs.push({ t: 0, ex: EGG_NEED[0] }); }
+      go();
+    }));
+    const S = T.querySelector('select'); if (S) S.onchange = () => { p.sp = S.value; p.dex = p.dex || {}; p.dex[S.value] = 1; delete p.evo; go(); };
   }
   function hatch() {
     const w = document.getElementById('ppet'); if (!w || hatch.busy) return; hatch.busy = 1;
@@ -935,6 +958,9 @@
   .pevo1{font-size:1.05rem;font-weight:900;color:#7048e8;text-align:center}.pevo1 b{font-size:1.25rem}
   .pcare{font-size:1.05rem;font-weight:900;color:#f08c00;text-align:center}
   .pday{display:flex;justify-content:center;gap:.5rem 1.2rem;flex-wrap:wrap;font-size:1rem;font-weight:900;color:#666}.pday b{color:#e67700}
+  .ptest{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;background:#fff9db;border:3px dashed #fcc419;padding:.6rem .8rem;margin-bottom:.8rem}
+  .ptest b{color:#e67700;margin-right:.3rem}.ptest span{font-weight:900;color:#555;margin-right:.2rem}
+  .ptest button,.ptest select{border:2px solid #ffe066;background:#fff;border-radius:10px;padding:.25rem .6rem;font:inherit;font-weight:800;color:#555}.ptest button.on{background:#ffe066}
   .pacts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.6rem;margin-top:.8rem}
   .pact{background:#fff;border:0;border-radius:20px;box-shadow:0 5px 0 #f1e3cf;padding:.55rem .2rem;font-size:1.05rem;font-weight:900;color:#555;display:flex;flex-direction:column;align-items:center;gap:.15rem;font-family:inherit}
   .pact span{font-size:2rem;line-height:1}.pact:active{transform:translateY(3px);box-shadow:0 2px 0 #f1e3cf}.pact.cool{opacity:.55}
