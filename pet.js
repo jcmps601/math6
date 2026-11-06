@@ -58,6 +58,12 @@
   const AR = {"bow":0.668,"flower":0.578,"cap":0.723,"party":1.128,"beret":0.656,"tophat":0.715,"magic":0.859,"chef":0.801,"crown":0.727,"helmet":0.848,"halo":0.496,"grad":0.668,"round":0.434,"heart":0.418,"sun":0.406,"star":0.465,"goggle":0.707,"balloon":1.317,"grass":0.428,"petal":0.444,"cloud":0.45,"heartp":0.5,"starring":0.514,"rainbowc":0.522,"butterfly":0.886,"starkid":0.964,"rocketm":1.117,"moon":1.068};   // 配件圖的高÷寬
   /* 有圖的配件放哪裡：每一張寵物圖都量了兩隻眼睛（位置、大小、頭歪的角度）、頭頂、頭寬（PA）。
      帽子、眼鏡跟著頭一起歪；回傳 {w 寬, x/y 位置, al 對齊（b 下緣中間、c 中心）, r 轉幾度} */
+  /* 帽子要戴在「頭頂」：每張圖手動量的頭頂點（不算耳朵、角、毛） x、y 和頭寬 w（200×200 座標） */
+  const HT = {"chick":[[98,120,64],[98,86,60],[94,54,60]],"cat":[[92,88,72],[78,63,72],[80,46,68]],"dragon":[[90,93,62],[66,86,52],[82,77,46]],"bunny":[[85,86,66],[68,72,64],[75,72,64]],"blob":[[102,86,62],[102,64,90],[103,64,100]],"bear":[[100,57,80],[105,51,82],[106,40,80]],"dog":[[92,61,70],[82,40,74],[69,26,58]],"penguin":[[102,62,80],[106,52,80],[106,46,72]],"otter":[[100,48,80],[86,42,82],[78,38,82]],"fox":[[86,89,60],[70,72,66],[60,69,66]],"hedgehog":[[92,92,60],[76,90,62],[77,77,60]],"deer":[[90,78,54],[88,62,50],[78,57,44]],"panda":[[100,52,84],[108,33,86],[90,20,80]],"octopus":[[99,74,80],[97,55,90],[95,44,90]],"robot":[[97,82,80],[97,62,82],[95,52,72]],"mushroom":[[106,58,70],[98,58,72],[92,50,72]],"whale":[[86,122,60],[68,107,70],[58,100,64]],"lion":[[100,62,70],[73,42,72],[90,34,74]],"unicorn":[[78,56,62],[72,42,56],[84,36,56]],"turtle":[[118,46,70],[108,24,74],[102,20,70]]};
+  /* 帽子：[寬度＝頭寬幾倍, 往頭裡戴進去多少（帽子高度的比例）] */
+  const HK = { cap: [1, .22], party: [.46, .08], beret: [.98, .22], tophat: [.74, .14], magic: [1.02, .18], chef: [.82, .18], crown: [.62, .12], grad: [1.06, .26] };
+  /* 眼鏡拆成左右兩半，各自對準一隻眼睛（鏡片中心在圖寬的 26.5%／73.5%、半徑約圖寬 21%）；潛水鏡是一整片 */
+  const GL = { round: '#83392a', heart: '#da4578', sun: '#2f2d30', star: '#d9a010' };
   const UP = (g, f) => [g.mx + g.ux * g.tl * f, g.my + g.uy * g.tl * f];   // 從眼睛往頭頂走 f 倍
   const hat = (k, f, side) => g => { let [x, y] = UP(g, f); if (side) { x += g.ex * g.hw * side; y += g.ey * g.hw * side; } return { w: g.hw * k, x, y, al: 'b', r: g.a }; };
   const glass = k => g => ({ w: (g.d + g.es * 1.15) * k, x: g.mx, y: g.my, al: 'c', r: g.a });
@@ -87,9 +93,31 @@
     rocketm: [1.2, '<g transform="rotate(25 50 60)"><path d="M50 6 Q72 30 70 76 H30 Q28 30 50 6Z" fill="#f1f3f5" stroke="#868e96" stroke-width="3"/><circle cx="50" cy="44" r="10" fill="#4dabf7" stroke="#1c7ed6" stroke-width="3"/><path d="M30 60 L16 84 L32 78Z M70 60 L84 84 L68 78Z" fill="#ff6b6b" stroke="#c92a2a" stroke-width="2"/><path d="M38 78 Q50 118 62 78Z" fill="#ffd43b" stroke="#fd7e14" stroke-width="2"/></g>'],
     moon: [1, '<path d="M64 8 A44 44 0 1 0 92 70 A36 36 0 1 1 64 8Z" fill="#ffe066" stroke="#f59f00" stroke-width="3"/><circle cx="40" cy="50" r="4" fill="#2b2b3a"/><path d="M34 64 Q42 70 50 64" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="30" cy="58" r="4" fill="#ff8fab" opacity=".6"/>']
   };
-  function accImg(id, q) {
+  const F1 = v => v.toFixed(1);
+  /* 眼鏡：左半邊對左眼、右半邊對右眼；兩眼距離比鏡框寬時，中間補一段鼻樑 */
+  function glassPair(id, g) {
+    const W = 256, H = W * AR[id], rho = g.es * .92, s = Math.max(rho / (.21 * W), g.d / (.47 * W) * .78);
+    const L = [g.mx - g.ex * g.d / 2, g.my - g.ey * g.d / 2], Rr = [g.mx + g.ex * g.d / 2, g.my + g.ey * g.d / 2], src = `${IMG}acc-${id}.webp`;
+    const half = (c, k) => `<g transform="translate(${F1(c[0])} ${F1(c[1])}) rotate(${F1(g.a)})"><svg x="${F1((k ? -.235 : -.265) * W * s)}" y="${F1(-H * s / 2)}" width="${F1(W / 2 * s)}" height="${F1(H * s)}" viewBox="${k ? W / 2 : 0} 0 ${W / 2} ${F1(H)}" preserveAspectRatio="none"><image href="${src}" width="${W}" height="${F1(H)}"/></svg></g>`;
+    const gap = g.d - .47 * W * s, br = gap > 0 ? `<g transform="translate(${F1(g.mx)} ${F1(g.my)}) rotate(${F1(g.a)})"><rect x="${F1(-gap / 2 - 2)}" y="${F1(-H * s * .2)}" width="${F1(gap + 4)}" height="${F1(Math.max(2, W * s * .045))}" rx="1.5" fill="${GL[id]}"/></g>` : '';
+    return `<g>${br}${half(L, 0)}${half(Rr, 1)}</g>`;
+  }
+  /* 帽子、頭上的東西：照手動量的頭頂點 */
+  function headAcc(id, g, ht) {
+    const [hx, hy, hw] = ht, ux = g.ey, uy = -g.ex, rot = g.a, AR1 = AR[id] || 1;
+    const at = (w, x, y, al, r) => { const h = w * AR1, yy = al === 'b' ? y - h : y - h / 2, rr = r ? ` transform="rotate(${F1(r)} ${F1(x)} ${F1(y)})"` : '';
+      return `<g><g${rr}><image href="${IMG}acc-${id}.webp" x="${F1(x - w / 2)}" y="${F1(yy)}" width="${F1(w)}" height="${F1(h)}"/></g></g>`; };
+    if (HK[id]) { const [k, sink] = HK[id], w = hw * k, h = w * AR1; return at(w, hx - ux * h * sink, hy - uy * h * sink, 'b', rot); }
+    if (id === 'halo') { const w = hw * .66; return at(w, hx + ux * w * .42, hy + uy * w * .42, 'c', rot); }
+    if (id === 'helmet') { const w = hw * 1.42, cx = (hx + g.mx) / 2 + (g.mx - hx) * .35, cy = (hy + g.my) / 2 + (g.my - hy) * .35; return at(w, cx, cy, 'c', rot); }
+    if (id === 'bow' || id === 'flower') { const w = hw * (id === 'bow' ? .4 : .44), x = hx + g.ex * hw * .34 - ux * w * .05, y = hy + g.ey * hw * .34 - uy * w * .05; return at(w, x, y, 'c', rot + (id === 'bow' ? 15 : 0)); }
+    return '';
+  }
+  function accImg(id, q, ht) {
     const f = AP[id]; if (!f) return '';
     const a = q[3] * Math.PI / 180, g = { mx: q[0], my: q[1], d: q[2], a: q[3], es: q[4], tx: q[5], ty: q[6], hw: q[7], chin: q[8], bot: q[9], bx0: q[10], bx1: q[11], ex: Math.cos(a), ey: Math.sin(a) };
+    if (GL[id]) return glassPair(id, g);
+    if (ht) { const P = headAcc(id, g, ht); if (P) return P; }
     g.tl = Math.hypot(g.tx - g.mx, g.ty - g.my); g.ux = (g.tx - g.mx) / (g.tl || 1); g.uy = (g.ty - g.my) / (g.tl || 1);
     g.bx = (g.bx0 + g.bx1) / 2; g.bw = Math.min(150, Math.max(g.hw * 1.1, g.bx1 - g.bx0));
     const P = f(g), w = P.w, ph = !AR[id] && PH[id], h = w * (ph ? PH[id][0] : AR[id] || 1);
@@ -156,7 +184,7 @@
   function petArt(o) {
     const sp = SPECIES[o.sp] ? o.sp : 'chick', st = o.stage != null ? o.stage : stageOf(o.lv || 1), mood = o.mood || 'ok', id = 'p' + (++uid);
     const pic = ART.has(sp), q = pic && PA[sp] && PA[sp][st], T = pic ? '' : `translate(100 182) scale(${SC[st]}) translate(-100 -182)`, xs = XS[o.x | 0] || XS[0];
-    const AC = id => q ? accImg(id, q) : acc(id, sp);
+    const AC = id => q ? accImg(id, q, HT[sp] && HT[sp][st]) : acc(id, sp);
     const fil = o.sil ? 'brightness(0) opacity(.2)' : xs.f;
     const L = [];
     if (st === 2 && !o.sil && !pic) L.push(`<svg class="pal" viewBox="0 0 200 200"><defs><radialGradient id="${id}a"><stop offset=".55" stop-color="#fff7c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient></defs><circle cx="100" cy="118" r="84" fill="url(#${id}a)"/></svg>`);
