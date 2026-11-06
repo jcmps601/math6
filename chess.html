@@ -416,7 +416,7 @@ const canMove=()=>{const st=G.st;if(!st||st.phase!=='play'||!G.R||G.R.over)retur
 const replayNow=st=>G.type==='pd'?TK.replay(st.map,st.seed,st.moves||''):G.type==='aq'?AQ.replay(st.deck,st.moves||''):XQ.replay(st.moves||'');
 /* 場地：開房間的人選（或隨機）；同一個房間的下一局換人先手（第 1 局紅隊先、第 2 局藍隊先…） */
 const pdSiteChoice=()=>{const v=G.site||LS.get('pd_site','random');return TK.SITES[v]?v:'random'};
-const pdFresh=g=>{const v=pdSiteChoice(),ng=TK.newGame(2,'ffa',{site:TK.SITES[v]?v:undefined,first:((g||1)-1)%2});return {map:ng.map,seed:ng.seed,turn:PSIDE[((g||1)-1)%2]}};
+const pdFresh=g=>{const v=pdSiteChoice(),ng=TK.newGame(2,'ffa',{site:TK.SITES[v]?v:undefined,first:((g||1)-1)%2,mv:G.ver===2?'v2':''});return {map:ng.map,seed:ng.seed,turn:PSIDE[((g||1)-1)%2]}};
 /* 新的一局:暗棋要洗牌、大砲對轟要新地圖 */
 const fresh=g=>G.type==='aq'?{deck:AQ.deal()}:G.type==='pd'?pdFresh(g):{};
 /* 坦克造型：在平台裡用車庫買的 */
@@ -538,7 +538,7 @@ async function sweepRooms(){if(Net.mode!=='firebase'||sweepRooms.done)return;swe
 $('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('建立中…');await netReady;await sweepRooms();
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/state`)))pin=p}
     if(!pin)return msg('房間滿了，等一下再試');
-    G.newCreated=Date.now();G.site='';G.site=G.type==='pd'?pdSiteChoice():'';await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated,...(G.type==='pd'?{ver:TK.VER,site:G.site}:{})},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...fresh(1)},players:{r:{id:myId,name,seat:mySeat(),...(G.type==='pd'?{skin:mySkin()}:{})}}});
+    G.newCreated=Date.now();G.site='';G.ver=TK.VER;G.site=G.type==='pd'?pdSiteChoice():'';await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated,...(G.type==='pd'?{ver:TK.VER,site:G.site}:{})},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...fresh(1)},players:{r:{id:myId,name,seat:mySeat(),...(G.type==='pd'?{skin:mySkin()}:{})}}});
     Net.onDiscRm(`rooms/${pin}`);   // 還沒人加入就關掉、回平台:雲端自動刪掉房間
     Object.assign(G,{mode:'net',pin,me:'r',st:null,players:{},paid:0,created:G.newCreated});$('#pinBig').textContent=pin;msg('');show('wait');listen();
   }catch(e){msg('連不上網路，請檢查網路後再試一次')}};
@@ -546,8 +546,8 @@ $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.t
   msg('加入中…');await netReady;
   try{const room=await Net.get(`rooms/${pin}`);
     if(!room||!room.meta||!GNAME[room.meta.game])return msg('找不到這個房間，看看房號對不對');setType(room.meta.game);
-    if(room.meta.game==='pd'&&room.meta.ver&&room.meta.ver!==TK.VER)return msg(room.meta.ver>TK.VER?'這個房間是新版開的：請重新整理網頁拿到新版，再加入':'這個房間是舊版開的：請開房間的同學重新整理網頁，再開一間新房間');
-    G.site=room.meta.site||'';
+    if(room.meta.game==='pd'&&room.meta.ver>TK.VER)return msg('這個房間是新版開的：請重新整理網頁拿到新版，再加入');   // 比我舊的房間（v2、沒有版本的 v1）照當時規則玩，可以進
+    G.site=room.meta.site||'';G.ver=room.meta.ver||0;
     const pl=room.players||{};
     if(pl.b&&pl.b.id!==myId&&pl.r&&pl.r.id!==myId)return msg('這個房間已經有兩個人了');
     const me=pl.r&&pl.r.id===myId?'r':'b';
@@ -577,7 +577,7 @@ $('#bAgain').onclick=async()=>{if(G.mode==='net'){try{const pl=await Net.get(`ro
   if(G.mode==='solo'){G.st={phase:'play',moves:'',g:(G.st.g||1)+1,...fresh((G.st.g||1)+1)};G.lastLen=-1;onState();return}
   const pl=G.players;if(!pl.r||!pl.b){msg('');return leave()}
   const g2=(G.st.g||1)+1;
-  try{if(G.type==='pd'){Net.update(`rooms/${G.pin}/players/${G.me}`,{skin:mySkin()}).catch(()=>{});Net.update(`rooms/${G.pin}/meta`,{ver:TK.VER}).catch(()=>{})}else await Net.set(`rooms/${G.pin}/players`,{r:pl.b,b:pl.r});
+  try{if(G.type==='pd'){Net.update(`rooms/${G.pin}/players/${G.me}`,{skin:mySkin()}).catch(()=>{});if(!G.ver){G.ver=TK.VER;Net.update(`rooms/${G.pin}/meta`,{ver:TK.VER}).catch(()=>{})}}else await Net.set(`rooms/${G.pin}/players`,{r:pl.b,b:pl.r});
     await Net.update(`rooms/${G.pin}/state`,{phase:'play',moves:'',turn:'r',g:g2,winner:null,reason:null,t:Date.now(),...fresh(g2)})}catch(e){}};
 
 /* ═════════════ 邀請同學（在學習平台裡） ═════════════

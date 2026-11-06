@@ -26,9 +26,12 @@
   const ok = i => i && i.complete && i.naturalWidth > 0;
   SKINS.forEach(s => { img(`tank-${s}-body-v2`); img(`tank-${s}-barrel-v2`); });
   ['wind-left', 'wind-right', 'health', 'wait'].forEach(n => img(`tank-ui-${n}-v2`));
+  /* 場地背景（GPT 畫的，16:7；下面 1/3 是淡色，地面由程式畫才能炸出坑） */
+  const bgImg = site => img(`tank-bg-${site}`);
 
-  /* 砲彈圖示：普通、三連發、超級用 V3 的圖；新砲彈還沒有圖，先用程式畫 */
-  const WIMG = { n: 'img/game/ammo-normal.webp', t: 'img/game/ammo-triple.webp', s: 'img/game/ammo-super.webp' };
+  /* 砲彈圖示：普通、三連發、超級用 V3 的圖；彈跳、散花、傳送用 GPT 第二版畫的圖；
+     鑽地、築牆已經拿掉（只剩 11-06 開的舊房間用得到），用程式畫的 */
+  const WIMG = { n: 'img/game/ammo-normal.webp', t: 'img/game/ammo-triple.webp', s: 'img/game/ammo-super.webp', b: 'img/game/ammo-bounce.webp', c: 'img/game/ammo-cluster.webp', p: 'img/game/ammo-teleport.webp' };
   function drawnIcon(w) {
     const c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d');
     const ball = (x, y, r, a, b) => { const gr = g.createRadialGradient(x - r * .35, y - r * .4, r * .1, x, y, r); gr.addColorStop(0, a); gr.addColorStop(1, b); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = '#fff3dc'; g.lineWidth = 4; g.stroke(); };
@@ -56,9 +59,9 @@
 
   /* 操作區的樣式（兩款遊戲共用；用 #pdCtl 開頭，蓋過頁面原本的） */
   const CSS = `
-#pdCtl .pdw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem;flex:0 0 auto;width:16rem;align-content:center}
+#pdCtl .pdw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem;flex:0 0 auto;width:14rem;align-content:center}
 #pdCtl .pdw button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:0;min-height:2.9rem;padding:.15rem .1rem;border:3px solid #e9d5ae;background:#fff;border-radius:12px;font-weight:900;color:#7a5a32;font-size:.78rem;position:relative;line-height:1.05}
-#pdCtl .pdw button img{width:1.65rem;height:1.65rem;object-fit:contain;pointer-events:none}
+#pdCtl .pdw button img{width:1.9rem;height:1.9rem;object-fit:contain;pointer-events:none}
 #pdCtl .pdw button b{font-size:.76rem;white-space:nowrap}
 #pdCtl .pdw button em{position:absolute;top:-.45rem;right:-.35rem;margin:0;font-style:normal;font-size:.72rem;background:#7a5a32;color:#fff;border-radius:999px;padding:.05rem .32rem;line-height:1.15}
 #pdCtl .pdw button.bonus em{background:#e8590c}
@@ -284,8 +287,15 @@
     terrainCache.v = -1;
   }
   function drawBG(c) {
-    if (!deco.bg || deco.bg.width !== cv.width) {
+    const bi = bgImg(shown.site), useImg = ok(bi), bk = useImg ? 'img' : 'vec';
+    if (!deco.bg || deco.bg.width !== cv.width || deco.bgKey !== bk) {
       const lk = L(), o = document.createElement('canvas'); o.width = cv.width; o.height = cv.height; const b = o.getContext('2d'); b.setTransform(K, 0, 0, K, 0, 0);
+      deco.bgKey = bk;
+      if (useImg) {   // 背景圖：照比例蓋滿（舊的 1200×600 場地會裁掉一點左右）
+        const r = Math.max(W / bi.naturalWidth, H / bi.naturalHeight), w = bi.naturalWidth * r, h = bi.naturalHeight * r;
+        b.drawImage(bi, (W - w) / 2, H - h, w, h); deco.bg = o;
+        c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(deco.bg, 0, 0); c.restore(); return;
+      }
       const sky = b.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, lk.sky[0]); sky.addColorStop(.55, lk.sky[1]); sky.addColorStop(1, lk.sky[2]); b.fillStyle = sky; b.fillRect(0, 0, W, H);
       if (deco.stars) { b.fillStyle = '#fff'; deco.stars.forEach(([x, y, s]) => { b.globalAlpha = .4 + s / 3; b.beginPath(); b.arc(x, y, s, 0, 7); b.fill(); }); b.globalAlpha = 1;
         const ex = W - 260, ey = 150; const eg = b.createRadialGradient(ex - 15, ey - 15, 5, ex, ey, 46); eg.addColorStop(0, '#9ad1ff'); eg.addColorStop(1, '#2b6cb0'); b.fillStyle = eg; b.beginPath(); b.arc(ex, ey, 44, 0, 7); b.fill(); b.fillStyle = '#63c370'; b.beginPath(); b.ellipse(ex - 10, ey - 6, 16, 10, .4, 0, 7); b.fill(); b.beginPath(); b.ellipse(ex + 16, ey + 14, 10, 6, -.3, 0, 7); b.fill(); }
@@ -301,6 +311,7 @@
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(deco.bg, 0, 0); c.restore();
   }
   function drawClouds(c, dt) {
+    if (deco.bgKey === 'img') return;   // 背景圖已經有雲
     for (const k of clouds) {
       k.x += (k.v * .25 + V.wind * .09) * dt; if (k.x > W + 120) k.x = -120; if (k.x < -120) k.x = W + 120;
       c.save(); c.translate(k.x, k.y); c.scale(k.s, k.s); c.fillStyle = shown.site === 'volcano' ? 'rgba(120,90,80,.55)' : 'rgba(255,255,255,.88)';
@@ -581,6 +592,7 @@
   /* 砲彈按鈕：這一局有的才放（舊房間只有當時的 3～4 種），4×2 格子 */
   function buildWeapons() {
     const box = ctl.querySelector('#pdW'), list = TK.weapons(shown); if (box.dataset.k === list.join('')) return; box.dataset.k = list.join('');
+    box.style.gridTemplateColumns = `repeat(${list.length > 6 ? 4 : list.length > 4 ? 3 : list.length},minmax(0,1fr))`;
     box.innerHTML = list.map(k => `<button data-w="${k}"><img src="${wIcon(k)}" alt=""><b>${WSHOW[k]}</b><em></em></button>`).join('');
     list.forEach(k => { const im = new Image(); im.src = wIcon(k); IMGC['__w' + k] = im; });
     box.querySelectorAll('[data-w]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (!myInput()) return; const s = shown.turn; if (TK.left(shown, s, b.dataset.w) <= 0) return; aim[s].w = b.dataset.w; snd.click(); paintCtl(); }));

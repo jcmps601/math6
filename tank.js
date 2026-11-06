@@ -3,19 +3,20 @@
    ・發射的那台平板負責算結果（炸在哪、每台坦克扣多少血），寫成「一步棋」存進雲端，其他平板照著重播。
      所以這裡的東西都要是確定的：要亂數一律用 rng(seed)，不能用 Math.random()（只有開新局產生地圖時可以）。
    ・地圖字串
-       v2|場地|先手|每人發數|x0,x1,…|地面高度（每 4 px 一個，36 進位 2 碼）     ← 現在用的（1600 × 700）
+       v3|場地|先手|每人發數|x0,x1,…|地面高度（每 4 px 一個，36 進位 2 碼）     ← 現在用的（1600 × 700，6 種砲彈）
+       v2|…（同上）                  ← 2026-11-06 開的房間：8 種砲彈（還有鑽地彈、築牆彈），照當時規則重播
        m1|x0,x1,…|地面高度          ← 舊的大砲混戰（1600 × 700，草原，先手＝seed % 人數，每人 8 發）
        v1|紅x|藍x|地面高度          ← 舊的大砲對轟（1200 × 600，草原，紅先，每人 15 發）
      浮島的空隙高度記成 900（VOID）。舊地圖照舊的規則重播（沒有掉落傷害、補給箱、滑動），已經在下的房間不會壞。
    ・一步棋
-       v2／m1：「玩家:坦克位置:角度:力道:砲彈:爆炸1|爆炸2…」；時間到沒發射＝「玩家:坦克位置:-」
+       v3／v2／m1：「玩家:坦克位置:角度:力道:砲彈:爆炸1|爆炸2…」；時間到沒發射＝「玩家:坦克位置:-」
                爆炸＝「第幾顆_x_y_直擊(玩家+1，0 沒有)_扣血0.扣血1.…」
                築牆彈的「爆炸」＝土丘的位置（扣血全 0）；傳送彈的「爆炸」＝傳送後坦克的新位置 x
        v1：「坦克位置:角度:力道:砲彈:第幾顆_x_y_紅扣血_藍扣血_直擊|…」（玩家＝輪到的人）
    ・重播時才算、不寫進棋譜的（兩台一定算得一樣）：掉落傷害、掉進浮島空隙、雪地滑動、岩漿燙傷、補給箱出現和撿到
    ・state.out＝{i玩家: 第幾步的時候離開}，重播到那一步就讓他出局 */
 (function (root) {
-  const VER = 2;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）
+  const VER = 3;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）。3＝拿掉鑽地彈、築牆彈
   const HP = 100, FUEL = 180, SUB = 3, STEP = 4, VOID = 900;
   const GRAV = 0.18, WK = 0.0035, VK = 0.17;
   /* 場地：重力倍數、風倍數、坑的倍數、岩漿高度、浮島空隙、雪地會滑 */
@@ -40,7 +41,10 @@
     p: { name: '傳送彈', D: 0, R: 0, cr: 0, n: 1, lim: 1, tele: 1 },
     s: { name: '超級彈', D: 48, R: 85, cr: 60, n: 1, lim: 1 }
   };
-  const WK_ = Object.keys(WEAP), CRATE_W = ['c', 'd', 'w', 'p'];
+  const WK_ = Object.keys(WEAP);
+  /* 現在（v3）用的砲彈、補給箱裡會開到的砲彈。鑽地彈、築牆彈老師試玩後拿掉了；
+     v2 地圖（2026-11-06 那一天開的房間）照當時的規則：8 種砲彈、補給箱是散花／鑽地／築牆／傳送 */
+  const W3 = ['n', 't', 'b', 'c', 'p', 's'], CRATE_W = ['c', 'p', 'b', 't'], CRATE_V2 = ['c', 'd', 'w', 'p'];
   const WALL_W = 50, WALL_H = 60;            // 土丘：半寬 50、頂上平的（大約 70 寬）、高 60
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const windRaw = (seed, n) => { const r = rng((seed | 0) * 31 + n * 7919 + 17); r(); return Math.floor((r() + r()) / 2 * 17) - 8; };
@@ -110,7 +114,7 @@
       h[i] = y;
     }
     /* 坦克站的地方弄平（站得穩、雪地也不會一開始就滑） */
-    for (const t of pos) { const gi = Math.round(t / STEP), lvl = h[gi]; for (let i = 0; i < cnt; i++) { const d = Math.abs(i * STEP - t); if (d < 70) { const k = 1 - d / 70; h[i] = h[i] * (1 - k * .85) + lvl * k * .85; } } for (let i = 0; i < cnt; i++) if (Math.abs(i * STEP - t) <= 26) h[i] = lvl; }
+    for (const t of pos) { const gi = Math.round(t / STEP), lvl = site === 'volcano' ? Math.min(h[gi], 560) : h[gi]; /* 火山：出生點一定高過岩漿 */ for (let i = 0; i < cnt; i++) { const d = Math.abs(i * STEP - t); if (d < 70) { const k = 1 - d / 70; h[i] = h[i] * (1 - k * .85) + lvl * k * .85; } } for (let i = 0; i < cnt; i++) if (Math.abs(i * STEP - t) <= 26) h[i] = lvl; }
     for (let i = 0; i < cnt; i++) {
       let v = Math.max(site === 'canyon' ? 330 : 300, Math.min(site === 'volcano' ? 640 : 610, Math.round(h[i])));
       if (isl) { const x = i * STEP; if (!isl.some(([a, b]) => x >= a && x <= b)) v = VOID; else { const e = Math.min(...isl.filter(([a, b]) => x >= a && x <= b).map(([a, b]) => Math.min(x - a, b - x))); if (e < 24) v = Math.round(v + (24 - e) * 2.2); } }
@@ -118,7 +122,8 @@
     }
     return { pos, h };
   }
-  /* 開新的一局：site 可以是場地代號或 'random'；first＝誰先打（不給就用亂數）；per＝每人幾發 */
+  /* 開新的一局：site 可以是場地代號或 'random'；first＝誰先打（不給就用亂數）；per＝每人幾發；
+     mv:'v2'＝在 11-06 開的舊房間裡再來一局（照當時的規則，房間裡還沒更新的平板才算得一樣） */
   function newGame(n, mode, opt = {}, rnd = Math.random) {
     n = clamp(n | 0, 2, 4); mode = mode === 'team' && n === 4 ? 'team' : 'ffa';
     const site = SITES[opt.site] ? opt.site : SITE_KEYS[Math.floor(rnd() * SITE_KEYS.length)];
@@ -128,13 +133,13 @@
     if (mode !== 'team') for (let i = n - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
     const xs = idx.map(p => pos[p]);   // 玩家 i 站在 xs[i]（2 對 2：左到右 紅 藍 紅 藍）
     if (mode === 'team') xs.sort((a, b) => a - b);
-    const map = ['v2', site, first, per, xs.join(','), h.map(v => v.toString(36).padStart(2, '0')).join('')].join('|');
+    const map = [opt.mv === 'v2' ? 'v2' : 'v3', site, first, per, xs.join(','), h.map(v => v.toString(36).padStart(2, '0')).join('')].join('|');
     return { map, seed: Math.floor(rnd() * 1e9), mode, n, site };
   }
   function decode(map) {
     const f = String(map || '').split('|');
-    let W = 1600, H = 700, xs, hs, site = 'grass', first = null, per = 8, legacy = '';
-    if (f[0] === 'v2') { site = SITES[f[1]] ? f[1] : 'grass'; first = +f[2] || 0; per = +f[3] || 8; xs = f[4]; hs = f[5]; }
+    let W = 1600, H = 700, xs, hs, site = 'grass', first = null, per = 8, legacy = '', mv = f[0];
+    if (f[0] === 'v3' || f[0] === 'v2') { site = SITES[f[1]] ? f[1] : 'grass'; first = +f[2] || 0; per = +f[3] || 8; xs = f[4]; hs = f[5]; }
     else if (f[0] === 'm1') { legacy = 'm1'; xs = f[1]; hs = f[2]; }
     else { legacy = 'v1'; W = 1200; H = 600; per = 15; first = 0; xs = (f[1] || '160') + ',' + (f[2] || '1040'); hs = f[3]; }
     const pts = []; for (let i = 0; i + 1 < (hs || '').length; i += 2) pts.push(parseInt(hs.slice(i, i + 2), 36));
@@ -144,7 +149,7 @@
       g[x] = (a >= VOID) !== (b >= VOID) ? (fr < .5 ? a : b) : a + (b - a) * fr;   // 島的邊是直的
     }
     const X = String(xs || '').split(',').map(Number).filter(isFinite);
-    return { W, H, FLOOR: H - 44, g, xs: X.length >= 2 ? X : [200, W - 200], site, first, per, legacy };
+    return { W, H, FLOOR: H - 44, g, xs: X.length >= 2 ? X : [200, W - 200], site, first, per, legacy, mv };
   }
   const gAt = (g, x) => g[clamp(Math.round(x), 0, g.length - 1)];
   const center = (g, x) => [x, gAt(g, x) - 16];
@@ -190,14 +195,14 @@
   const alive = (S, i) => !!S.T[i] && !S.T[i].out && S.T[i].hp > 0;
   function nextAlive(S, from) { for (let d = 1; d <= S.n; d++) { const j = (from + d) % S.n; if (alive(S, j)) return j; } return from; }
   /* 這一局可以用哪些砲彈（舊地圖只有當時有的） */
-  const weapons = S => S.legacy === 'v1' ? ['n', 't', 's'] : S.legacy === 'm1' ? ['n', 't', 'b', 's'] : WK_;
+  const weapons = S => S.legacy === 'v1' ? ['n', 't', 's'] : S.legacy === 'm1' ? ['n', 't', 'b', 's'] : S.mv === 'v2' ? WK_ : W3;
   const left = (S, i, w) => w === 'n' ? Infinity : !weapons(S).includes(w) ? 0 : WEAP[w].lim - S.T[i].used[w] + (S.T[i].bonus[w] || 0);
   /* 補給箱：每 4 回合從天上掉一個（位置、裡面裝什麼都用 rng(seed) 決定） */
   function dropCrate(S) {
     if (S.crates.length >= 2) return;
     const r = rng(((S.seed ^ 0x5bd1e995) >>> 0) + S.a * 7919);
     for (let t = 0; t < 14; t++) {
-      const x = Math.round(80 + r() * (S.W - 160)), w = CRATE_W[Math.floor(r() * CRATE_W.length)];
+      const CW = S.mv === 'v2' ? CRATE_V2 : CRATE_W, x = Math.round(80 + r() * (S.W - 160)), w = CW[Math.floor(r() * CW.length)];
       if (isVoid(S.g, x) || (S.sp.lava && gAt(S.g, x) > S.sp.lava - 4)) continue;
       if (S.T.some(t => !t.out && Math.abs(t.x - x) < 60) || S.crates.some(c => Math.abs(c.x - x) < 90)) continue;
       S.crates.push({ id: ++S.cid, x, w }); S.ev.push({ k: 'drop', x, id: S.cid }); return;
@@ -220,7 +225,7 @@
   function replay(map, seed, moves, out, mode) {
     const M = decode(map), n = M.xs.length, sp = SITES[M.site];
     const S = {
-      W: M.W, H: M.H, FLOOR: M.FLOOR, site: M.site, sp, legacy: M.legacy, g: M.g, n, mode: mode === 'team' && n === 4 ? 'team' : 'ffa',
+      W: M.W, H: M.H, FLOOR: M.FLOOR, site: M.site, sp, legacy: M.legacy, mv: M.mv, g: M.g, n, mode: mode === 'team' && n === 4 ? 'team' : 'ffa',
       T: M.xs.map(x => ({ x, hp: HP, used: { t: 0, b: 0, c: 0, d: 0, w: 0, p: 0, s: 0 }, bonus: {}, out: false, ko: -1, st: { shots: 0, hits: 0, far: 0, best: 0 } })),
       turn: M.first != null ? M.first % n : (seed >>> 0) % n, k: 0, a: 0, seed: seed | 0, last: null, over: false, maxT: n * M.per, per: M.per, crates: [], cid: 0, ev: []
     };
@@ -382,7 +387,7 @@
   function fire(S, x, a, p, w) {
     const me = S.turn, g = Float64Array.from(S.g);
     a = Math.round(clamp(a, 0, 180)); p = Math.round(clamp(p, 10, 100));
-    if (!WEAP[w] || left(S, me, w) <= 0) w = 'n';
+    if (!WEAP[w] || left(S, me, w) <= 0) w = 'n';   // 不能用的砲彈（用完了、這一版沒有）一律改成普通彈
     const F = launch(S, g, me, x, a, p, w), imp = [];
     for (let it = 0; it < SUB * 1400 && F.sh.some(s => s.live); it++) {
       for (const r of stepFlight(F)) {

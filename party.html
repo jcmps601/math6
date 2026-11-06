@@ -394,7 +394,7 @@ document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(!isHost(
 $('#bStart').onclick=async()=>{if(!isHost())return;let pl;try{pl=await Net.get(`rooms/${G.pin}/players`)||{}}catch(e){return lmsg('連線失敗，請再按一次')}
   G.players=pl;const ks=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false);if(ks.length<2)return paintLobby();
   let mode=G.st&&G.st.mode==='team'&&ks.length===4?'team':'ffa';
-  const site=G.st&&TK.SITES[G.st.site]?G.st.site:undefined,ng=TK.newGame(ks.length,mode,{site});
+  const site=G.st&&TK.SITES[G.st.site]?G.st.site:undefined,ng=TK.newGame(ks.length,mode,{site,mv:G.ver===2?'v2':''});
   const upd={phase:'play',order:ks.join(','),names:ks.map(k=>plName(pl[k]).replace(/[|,]/g,'')).join('|'),seats:ks.map(k=>+pl[k].seat||0).join(','),skins:ks.map(k=>pl[k].skin||'forest').join('|'),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',out:null,g:((G.st&&G.st.g)||0)+1,winner:null,reason:null,t:Date.now()};
   try{await Net.update(`rooms/${G.pin}/state`,upd);Net.remove(`rooms/${G.pin}/live`).catch(()=>{})}catch(e){lmsg('連線失敗，請再按一次')}};
 const lmsg=t=>{$('#lmsg').textContent=t||''};
@@ -424,7 +424,7 @@ async function create(){const name=await needName();if(!name)return false;msg('�
     if(!pin){msg('房間滿了，等一下再試');return false}
     const created=Date.now();
     await Net.set(`rooms/${pin}`,{meta:{game:'pm',created,ver:TK.VER},state:{phase:'wait',mode:'ffa',site:LS.get('pm_site','random'),g:0,t:created},players:{p0:{id:myId,name,seat:mySeat(),tk:hasTicket(),skin:mySkin()}}});
-    Object.assign(G,{mode:'net',pin,slot:'p0',st:null,players:{},created,arm:'',rec:'',ovHide:''});msg('');listen();armLobby();return true
+    Object.assign(G,{mode:'net',pin,slot:'p0',st:null,players:{},created,ver:TK.VER,arm:'',rec:'',ovHide:''});msg('');listen();armLobby();return true
   }catch(e){msg('連不上網路，請檢查網路後再試一次');return false}}
 async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');const name=await needName();if(!name)return;
   msg('加入中…');await netReady;
@@ -432,12 +432,12 @@ async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數�
       const room=await Net.get(`rooms/${pin}`);
       if(!room||!room.meta)return msg('找不到這個房間，看看房號對不對');
       if(room.meta.game!=='pm')return msg('這個房號是別的遊戲（軍棋、暗棋或大砲對轟），請到「雙人對戰」加入');
-      if(room.meta.ver&&room.meta.ver!==TK.VER)return msg(room.meta.ver>TK.VER?'這個房間是新版開的：請重新整理網頁拿到新版，再加入':'這個房間是舊版開的：請開房間的同學重新整理網頁，再開一間新房間');
+      if(room.meta.ver>TK.VER)return msg('這個房間是新版開的：請重新整理網頁拿到新版，再加入');   // 比我舊的房間照當時規則玩，可以進
       const pl=room.players||{};let slot=SLOTS.find(k=>pl[k]&&pl[k].id===myId);
       if(!slot){slot=SLOTS.find(k=>!pl[k]);if(!slot)return msg('這個房間已經有 4 個人了');
         await Net.set(`rooms/${pin}/players/${slot}`,{id:myId,name,seat:mySeat(),tk:hasTicket(),skin:mySkin()});
         await new Promise(r=>setTimeout(r,350));const chk=await Net.get(`rooms/${pin}/players/${slot}`);if(!chk||chk.id!==myId)continue}   // 同時有人搶到同一個位置：換下一個
-      Object.assign(G,{mode:'net',pin,slot,st:room.state,players:{...pl,[slot]:{id:myId,name,seat:mySeat()}},created:room.meta.created||0,arm:'',rec:'',ovHide:room.state&&room.state.phase==='end'?`pm${pin}_${room.meta.created||0}_${room.state.g||1}`:''});
+      Object.assign(G,{mode:'net',pin,slot,ver:room.meta.ver||0,st:room.state,players:{...pl,[slot]:{id:myId,name,seat:mySeat()}},created:room.meta.created||0,arm:'',rec:'',ovHide:room.state&&room.state.phase==='end'?`pm${pin}_${room.meta.created||0}_${room.state.g||1}`:''});
       msg('');listen();onState();return}
     msg('人太多了，請再試一次')}catch(e){msg('連不上網路，請再試一次')}}
 $('#bNew').onclick=async()=>{if(await create())onState()};
