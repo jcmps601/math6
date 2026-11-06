@@ -1,8 +1,8 @@
 /* 601 學習平台：離線也能用
    第一次有網路時打開平台，就把平台、遊戲和雲端程式存在平板上；之後沒網路也能打開練習。
    網頁本身「先抓網路上最新的，抓不到才用存起來的」，所以老師更新後學生一連網就會拿到新版。 */
-const CACHE = 'learn601-v42';
-const PAGES = ['./learn.html', './game.html', './chess.html', './xq.js', './aq.js', './pd.js', './pdv.js', './party.html', './coop.html', './pm.js', './pmv.js', './ico.js', './pet.js', './farm.js', ...['zh', 'en', 'sci', 'soc'].map(k => `./bank/${k}.js`)];
+const CACHE = 'learn601-v43';
+const PAGES = ['./learn.html', './game.html', './chess.html', './xq.js', './aq.js', './tank.js', './tankv.js', './party.html', './coop.html', './ico.js', './pet.js', './farm.js', ...['zh', 'en', 'sci', 'soc'].map(k => `./bank/${k}.js`)];
 const SDK = ['app', 'database', 'auth'].map(n => `https://www.gstatic.com/firebasejs/10.12.2/firebase-${n}-compat.js`);
 
 self.addEventListener('install', e => {

@@ -110,17 +110,33 @@ button{font-family:inherit;cursor:pointer}
  #home>:first-child{margin-top:0}#home>:last-child{margin-bottom:0}
  #home .logo{grid-column:1;grid-row:1}#home .note{grid-column:1;grid-row:2}#me{grid-column:1;grid-row:3}#rec{grid-column:1;grid-row:4}#mode{grid-column:1;grid-row:5}
  #home .menu{grid-column:2;grid-row:1/span 4;align-self:center}#msg{grid-column:2;grid-row:5}}
+
+/* 場地、車庫、結算 */
+.sitebox{width:min(40rem,100%);background:#fffaf0;border-radius:18px;padding:.5rem .6rem;box-shadow:0 4px 0 #d9b97f}
+.sitet{font-weight:900;color:#7a5a32;font-size:1.1rem;margin-bottom:.35rem}.sitet small{font-size:.9rem;color:#9a7a52}
+.sites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem}
+.sites button{display:flex;align-items:center;gap:.35rem;justify-content:center;min-height:2.9rem;border:3px solid #e9d5ae;background:#fff;border-radius:14px;font-weight:900;font-size:1rem;color:#7a5a32;padding:.2rem .3rem}
+.sites button.on{border-color:#f59f00;background:#fff3bf;color:#c2410c}.sites button:disabled{cursor:default}.sites button:disabled:not(.on){opacity:.55}
+.sw{flex:none;width:1.3rem;height:1.3rem;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #e9d5ae}
+.sw-random{background:conic-gradient(#6cd35c,#f2c46d,#e9f2fb,#ff8e5e,#5fbaff,#353b74,#d9774a,#6cd35c)}
+.sw-grass{background:linear-gradient(#5fb6ff 50%,#6cd35c 50%)}.sw-desert{background:linear-gradient(#6fb9ef 50%,#f2c46d 50%)}.sw-snow{background:linear-gradient(#8fbdea 50%,#fff 50%)}
+.sw-volcano{background:linear-gradient(#ff8e5e 50%,#ff5a1f 50%)}.sw-islands{background:linear-gradient(#5fbaff 50%,#3aa0e0 50%)}.sw-moon{background:linear-gradient(#1d2a5c 50%,#cfd0de 50%)}.sw-canyon{background:linear-gradient(#ffb98a 50%,#d9774a 50%)}
+.slot img.sk{width:3.4rem;height:auto;flex:none}
+.btn.gar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}.btn.gar small{font-size:.75em;color:#9a7a52}
+#ovSt:empty{display:none}
+@media (max-width:560px){.sites button{font-size:.85rem;flex-direction:column;gap:.1rem}}
 </style></head><body>
 
 <section class="scr on" id="home">
   <div class="logo"><img src="img/ui/vs-pd.webp" alt="">大砲混戰</div>
-  <div class="note">2～4 個人一起打！輪到你：先<b>開車</b>移動，再調<b>角度</b>、<b>力道</b>發射（按 ⇄ 可以轉向）。<br>
+  <div class="note">2～4 個人一起打！輪到你：先<b>開車</b>移動，再調<b>角度</b>、<b>力道</b>，選砲彈發射（按 ⇄ 可以轉向）。<br>
     <b>各自為戰</b>：打到只剩最後一台就贏　<b>2 對 2</b>：把對方整隊打倒就贏。注意<b>風向</b>！</div>
   <div id="me"></div>
   <div class="menu">
     <button class="btn" id="bNew"><img class="ti" src="img/ui/ic-room-create.webp" alt="" draggable="false">建立房間</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin"><img class="ti" src="img/ui/ic-room-join.webp" alt="" draggable="false">加入</button></div>
     <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請同學一起玩</button>
+    <button class="btn g gar" id="bGarage" hidden><img class="ti" src="img/game/tank-ui-garage-v2.webp" alt="" draggable="false">坦克車庫<small id="mySkin"></small></button>
     <button class="btn g" id="bSolo" hidden style="display:none">👥 同一台平板輪流打（2～4 人）</button><!-- 學生喜歡各自用自己的平板：拿掉同一台輪流打 -->
   </div>
   <div id="msg"></div>
@@ -132,6 +148,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="logo" style="font-size:clamp(1.6rem,min(6vw,6vh),2.6rem)"><img src="img/ui/vs-pd.webp" alt="">大砲混戰房間</div>
   <div class="pinrow">房號<div id="pinBig">----</div></div>
   <div class="modes" id="modes"><button data-m="ffa">💥 各自為戰</button><button data-m="team">🤝 2 對 2</button></div>
+  <div class="sitebox"><div class="sitet">場地<small id="siteTip"></small></div><div class="sites" id="sites"></div></div>
   <div id="slots"></div>
   <div id="lwait"></div>
   <div class="menu">
@@ -148,7 +165,7 @@ button{font-family:inherit;cursor:pointer}
   <div id="offMsg"></div>
 </section>
 
-<div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div class="s" id="ovN"></div>
+<div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div id="ovSt"></div><div class="s" id="ovN"></div>
   <div class="row"><button class="btn" id="bBack">🔁 回房間</button><button class="btn" id="bAgain" hidden>🔁 再玩一次</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
 <div class="ov" id="pick"><div class="box"><div class="t"><img class="ti" src="img/ui/vs-inv.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.35em">邀請同學來玩大砲混戰</div>
@@ -160,7 +177,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="s" id="soloTip"></div>
   <div class="row"><button class="btn" id="soloGo">開始！</button><button class="btn g" id="soloX">取消</button></div></div></div>
 
-<script src="ico.js"></script><script src="pm.js"></script><script src="pmv.js"></script>
+<script src="ico.js"></script><script src="tank.js"></script><script src="tankv.js"></script>
 <script>
 /* ═════════════ 601 大砲混戰 ═════════════
    2～4 台平板連線一起打（rooms/房號，跟軍棋、大砲對轟同一個 Firebase）：
@@ -216,6 +233,11 @@ function myName(){const s=inPlat()&&P.seat();if(s)return P.seatName?P.seatName(s
 const hasTicket=()=>!inPlat()||isTestMe()||(P.tickets()||0)>0;
 const payTicket=()=>!inPlat()||P.useTicket('xq');
 const mySeat=()=>inPlat()?P.seat():0;
+/* 坦克造型：在平台裡用車庫買的，不在平台就用這台平板記的 */
+const mySkin=()=>{const s=inPlat()&&P.tankSkin?P.tankSkin():LS.get('tank_skin','forest');return TKV.SKINS.includes(s)?s:'forest'};
+function paintSkin(){const b=$('#bGarage');b.hidden=!(inPlat()&&P.garage);$('#mySkin').textContent='　'+TKV.SKIN_N[mySkin()]}
+async function openGarage(){if(!(inPlat()&&P.garage))return;await P.garage();paintSkin();paintMe();
+  if(G.mode==='net'&&G.pin&&G.slot&&G.players[G.slot])Net.update(`rooms/${G.pin}/players/${G.slot}`,{skin:mySkin()}).catch(()=>{})}
 const NO_TK='要有 1 張遊戲券才能玩（輸的人用掉 1 張，贏的人不用）。回平台練習 10 題答對 8 題就能拿到！';
 function paintMe(){const n=myName();$('#me').innerHTML=(n?`我是 <b>${n}</b>`+(inPlat()?'':' <button id="bName">改名字</button>'):'<button id="bName">先輸入你的名字</button>')
     +(inPlat()?`<div style="margin-top:.3rem"><img class="ti" src="img/ui/rw-ticket.webp" alt="">遊戲券 × ${P.tickets()||0}　<small>（輸的人用 1 張）</small></div>`:'');
@@ -230,7 +252,7 @@ const sfx={join(){tone(660,.1,'triangle',.06);tone(880,.14,'triangle',.06,.08)},
 const G={mode:'',pin:'',slot:'',st:null,players:{},created:0,un:[],arm:'',offSince:{},rec:'',ovHide:'',lobbyMode:'ffa',inv:new Set(),solo:null};
 const order=()=>(G.st&&G.st.order?String(G.st.order).split(','):[]);
 const myIdx=()=>G.mode==='solo'?-1:order().indexOf(G.slot);
-const R=()=>{const st=G.st;if(!st||!st.map)return null;return PM.replay(st.map,st.seed,st.moves||'',st.out,st.mode)};
+const R=()=>{const st=G.st;if(!st||!st.map)return null;return TK.replay(st.map,st.seed,st.moves||'',st.out,st.mode)};
 const gameKey=()=>`pm${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;
 const tokCount=()=>((G.st&&G.st.moves)||'').split(',').filter(Boolean).length;
 const plName=p=>p?(p.seat&&inPlat()&&P.seatName?P.seatName(p.seat):p.name||'同學'):'同學';
@@ -238,26 +260,26 @@ const plName=p=>p?(p.seat&&inPlat()&&P.seatName?P.seatName(p.seat):p.name||'同�
 const names=()=>{if(G.mode==='solo')return order().map((_,i)=>'玩家 '+(i+1));const nm=String((G.st&&G.st.names)||'').split('|');return order().map((k,i)=>nm[i]||plName(G.players[k]))};
 const hostSlot=()=>{const ks=SLOTS.filter(k=>G.players[k]&&!G.players[k].off);return ks[0]||SLOTS.find(k=>G.players[k])||''};
 const isHost=()=>G.mode==='net'&&hostSlot()===G.slot;
-const PALETTE=m=>m==='team'?['#ef4444','#3b82f6','#f97316','#06b6d4']:['#ef4444','#3b82f6','#22c55e','#f59e0b'];
+const PALETTE=m=>m==='team'?['#ef4444','#3b82f6','#ef4444','#3b82f6']:['#ef4444','#3b82f6','#22c55e','#f59e0b'];
 
 const pmHost={
   state:()=>G.st&&G.st.map?{map:G.st.map,seed:G.st.seed,moves:G.st.moves||'',out:G.st.out||null,mode:G.st.mode}:null,
-  canAct:()=>{const st=G.st;if(!st||st.phase!=='play')return false;const r=PMV.shown();if(!r||r.over)return false;return G.mode==='solo'||(myIdx()>=0&&r.turn===myIdx())},
-  solo:()=>G.mode==='solo', me:()=>myIdx(), names:()=>names(),
+  canAct:()=>{const st=G.st;if(!st||st.phase!=='play')return false;const r=TKV.shown();if(!r||r.over)return false;return G.mode==='solo'||(myIdx()>=0&&r.turn===myIdx())},
+  solo:()=>G.mode==='solo', me:()=>myIdx(), names:()=>names(), skins:()=>String((G.st&&G.st.skins)||'').split('|'),
   send:tok=>sendMove(tok), live:v=>{if(G.mode==='net')Net.set(`rooms/${G.pin}/live`,v).catch(()=>{})}, idle:()=>onState()
 };
 let mounted=false;
-function showGame(){if(!mounted){PMV.mount({cv:$('#pdCv'),ctl:$('#pdCtl'),host:pmHost});mounted=true}
-  if(!$('#game').classList.contains('on')){show('game');PMV.start();requestAnimationFrame(()=>PMV.fit())}}
-function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id!=='game')PMV.stop()}
+function showGame(){if(!mounted){TKV.mount({cv:$('#pdCv'),ctl:$('#pdCtl'),host:pmHost});mounted=true}
+  if(!$('#game').classList.contains('on')){show('game');TKV.start();requestAnimationFrame(()=>TKV.fit())}}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id!=='game')TKV.stop()}
 
 /* 送出一步（輪到我、或幫卡住的人「時間到」） */
 async function sendMove(tok){const st=G.st;if(!st||st.phase!=='play')return;
-  const moves=(st.moves?st.moves+',':'')+tok,N=PM.replay(st.map,st.seed,moves,st.out,st.mode),upd={moves,t:Date.now()};
+  const moves=(st.moves?st.moves+',':'')+tok,N=TK.replay(st.map,st.seed,moves,st.out,st.mode),upd={moves,t:Date.now()};
   if(N.over){upd.phase='end';upd.winner=N.winner;upd.reason=N.reason}
   if(G.mode==='solo'){G.st={...st,...upd};onState();return}
-  const old={...st};G.st={...st,...upd};PMV.update();
-  try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){G.st=old;PMV.unlock();PMV.update();alert('連線失敗，這一發沒有送出，請再發射一次')}}
+  const old={...st};G.st={...st,...upd};TKV.update();
+  try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){G.st=old;TKV.unlock();TKV.update();alert('連線失敗，這一發沒有送出，請再發射一次')}}
 
 /* ═════════════ 收到更新 ═════════════ */
 function onState(){
@@ -265,19 +287,19 @@ function onState(){
   if(G.mode==='net'&&!G.players[G.slot]&&G.st&&!G.leaving){/* 我不在房間名單裡了（斷線被移掉）：補回去 */ rejoinSelf()}
   if(st.phase==='wait'||(st.phase==='end'&&G.ovHide===gameKey())||!st.map){$('#over').classList.remove('on');armLobby();paintLobby();show('lobby');return}
   showGame();
-  if(st.phase==='play'){armPlay();$('#over').classList.remove('on');PMV.update();
+  if(st.phase==='play'){armPlay();$('#over').classList.remove('on');TKV.update();
     const r=R();if(r&&r.over&&G.mode==='net')Net.update(`rooms/${G.pin}/state`,{phase:'end',winner:r.winner,reason:r.reason,t:Date.now()}).catch(()=>{});   // 有人離開後只剩一隊
     if(G.mode==='solo'&&G.solo&&G.solo.paid!==st.g){if(payTicket())G.solo.paid=st.g;else{alert(NO_TK);return leave()}}
     paintLeave();return}
   /* 結束 */
-  armLobby();PMV.update();paintLeave();
+  armLobby();TKV.update();paintLeave();
   if(G.mode==='net')record();
-  if(PMV.busy()){$('#over').classList.remove('on');return}   // 等砲彈、爆炸播完
+  if(TKV.busy()){$('#over').classList.remove('on');return}   // 等砲彈、爆炸播完
   paintOver()}
 function paintLeave(){$('#bLeave').textContent=G.mode==='net'&&myIdx()>=0&&G.st&&G.st.phase==='play'?'離開（算輸）':'離開'}
 
 /* 結果畫面 */
-function paintOver(){const st=G.st,r=R();if(!r)return;const me=myIdx(),res=me>=0?PM.result(st.winner,me):null,nm=names(),col=PALETTE(r.mode);
+function paintOver(){const st=G.st,r=R();if(!r)return;const me=myIdx(),res=me>=0?TK.result(st.winner,me):null,nm=names(),col=PALETTE(r.mode);
   const t=$('#ovT');
   if(G.mode==='solo'||me<0){const W=(r.win||[]).map(i=>nm[i]).join('、');t.textContent=r.draw?'🤝 平手！':r.mode==='team'?((r.win||[])[0]%2?'🔵 藍隊勝利！':'🔴 紅隊勝利！'):`🏆 ${W} 贏了！`;t.style.color=r.draw?'#7a5a32':'#c2410c'}
   else{t.textContent=res===1?'🎉 你贏了！':res===2?'🤝 平手！':'再接再厲！';t.style.color=res===1?'#c2410c':'#7a5a32'}
@@ -285,17 +307,18 @@ function paintOver(){const st=G.st,r=R();if(!r)return;const me=myIdx(),res=me>=0
   const L=$('#ovList');
   if(r.mode==='team'){L.innerHTML=[0,1].map(tm=>{const mem=[...Array(r.n).keys()].filter(i=>i%2===tm),won=(r.win||[]).includes(mem[0]);
       return `<div class="rk${mem.includes(me)?' me':''}"><em>${r.draw&&won?'🤝':won?'🏆':''}</em><i style="background:${col[tm]}"></i><span>${tm?'藍隊':'紅隊'}：${mem.map(i=>nm[i]).join('、')}</span><small>${mem.map(i=>r.T[i].out?'離開':r.T[i].hp>0?r.T[i].hp+'血':'KO').join(' / ')}</small></div>`}).join('')}
-  else L.innerHTML=PM.places(r).map(p=>`<div class="rk${p.i===me?' me':''}"><em>${p.place<=3?['🥇','🥈','🥉'][p.place-1]:p.place}</em><i style="background:${col[p.i]}"></i><span>${nm[p.i]}${p.i===me?'（我）':''}</span><small>${r.T[p.i].out?'離開了':r.T[p.i].hp>0?'剩 '+r.T[p.i].hp+' 血':'KO'}</small></div>`).join('');
+  else L.innerHTML=TK.places(r).map(p=>`<div class="rk${p.i===me?' me':''}"><em>${p.place<=3?['🥇','🥈','🥉'][p.place-1]:p.place}</em><i style="background:${col[p.i]}"></i><span>${nm[p.i]}${p.i===me?'（我）':''}</span><small>${r.T[p.i].out?'離開了':r.T[p.i].hp>0?'剩 '+r.T[p.i].hp+' 血':'KO'}</small></div>`).join('');
+  $('#ovSt').innerHTML=TKV.statsHTML(r,nm);
   $('#ovN').textContent=G.mode==='net'&&res===0&&inPlat()&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':'';
   $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=G.mode!=='solo';
   if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(res===1||(G.mode==='solo'))sfx.win()}}
 
 /* 戰績、遊戲券：這局有我、結束了，就記一次 */
 function record(force){const st=G.st,me=myIdx();if(!inPlat()||me<0||!st)return;const k=gameKey();if(G.rec===k)return;
-  let w=force!=null?force:PM.result(st.winner,me);if(w==null)return;G.rec=k;
+  let w=force!=null?force:TK.result(st.winner,me);if(w==null)return;G.rec=k;
   const r=R(),nm=names(),ord=order(),seats=String(st.seats||'').split(',').map(Number);
   const winIdx=((r&&r.win)||[]).filter(i=>i!==me),o=(w===0&&winIdx.length?seats[winIdx[0]]:seats.find((s,i)=>i!==me&&s))||0;
-  let reason=force===0?'中途離開':r&&r.mode==='team'?(w===1?'2對2獲勝':w===2?'2對2平手':'2對2落敗'):w===2?`${ord.length}人混戰平手`:`${ord.length}人混戰第${(PM.places(r).find(p=>p.i===me)||{}).place||ord.length}名`;
+  let reason=force===0?'中途離開':r&&r.mode==='team'?(w===1?'2對2獲勝':w===2?'2對2平手':'2對2落敗'):w===2?`${ord.length}人混戰平手`:`${ord.length}人混戰第${(TK.places(r).find(p=>p.i===me)||{}).place||ord.length}名`;
   P.xqResult({k,o,w,r:reason.slice(0,20),n:tokCount(),g:'pm'});
   if(w===0&&!isTestMe())payTicket();
   if(P.xqPending)P.xqPending(null);sendTk();paintRec()}
@@ -309,24 +332,24 @@ function armPlay(){if(G.mode!=='net'||!G.slot)return;const k=gameKey();
   sendTk();
   if(inPlat()&&P.xqPending){const seats=String(G.st.seats||'').split(',').map(Number);P.xqPending({k,pin:G.pin,me:myIdx(),o:seats.find((s,i)=>i!==myIdx()&&s)||0,g:'pm',t:Date.now()})}}
 async function rejoinSelf(){if(rejoinSelf.busy||!G.pin)return;rejoinSelf.busy=1;
-  try{const cur=await Net.get(`rooms/${G.pin}/players/${G.slot}`);if(!cur){await Net.set(`rooms/${G.pin}/players/${G.slot}`,{id:myId,name:myName(),seat:mySeat(),tk:hasTicket()});G.arm=''}}catch(e){}rejoinSelf.busy=0}
+  try{const cur=await Net.get(`rooms/${G.pin}/players/${G.slot}`);if(!cur){await Net.set(`rooms/${G.pin}/players/${G.slot}`,{id:myId,name:myName(),seat:mySeat(),tk:hasTicket(),skin:mySkin()});G.arm=''}}catch(e){}rejoinSelf.busy=0}
 /* 有人離線：倒數 20 秒，沒回來就出局（由還在線上、排最前面的人寫） */
 function watchOff(){const st=G.st,box=$('#offMsg');
   if(G.mode!=='net'||!st||st.phase!=='play'){G.offSince={};box.innerHTML='';return}
-  const r=PMV.shown()||R();if(!r){box.innerHTML='';return}
+  const r=TKV.shown()||R();if(!r){box.innerHTML='';return}
   const ord=order(),now=Date.now(),nm=names(),lines=[];
   const onlineIdx=ord.map((k,i)=>G.players[k]&&!G.players[k].off&&!(r.T[i]&&r.T[i].out)?i:-1).filter(i=>i>=0);
   const watcher=onlineIdx[0]===myIdx();
   ord.forEach((k,i)=>{const p=G.players[k],gone=!p||p.off;
     if(!gone||!r.T[i]||r.T[i].out||i===myIdx()){delete G.offSince[i];return}
     const t0=G.offSince[i]||(G.offSince[i]=now),left=Math.ceil((OFF_MS-(now-t0))/1000);
-    if(left>0){if(PM.alive(r,i))lines.push(`📴 ${nm[i]} 離線了，<b>${left}</b> 秒內沒回來就出局`);return}
+    if(left>0){if(TK.alive(r,i))lines.push(`📴 ${nm[i]} 離線了，<b>${left}</b> 秒內沒回來就出局`);return}
     if(watcher||now-t0>OFF_MS+10000){G.offSince[i]=now+60000;markOut(i)}});
   box.innerHTML=lines.join('<br>');
   /* 輪到的人一直沒動（平板放著沒關）：時間過了 25 秒，幫他「時間到」 */
-  if(watcher&&!PMV.busy()&&!r.over&&r.turn!==myIdx()&&PMV.turnAge()>TURN_MS+25000&&G.passFor!==tokCount()){G.passFor=tokCount();sendMove(PM.pass(r.turn,r.T[r.turn].x))}}
+  if(watcher&&!TKV.busy()&&!r.over&&r.turn!==myIdx()&&TKV.turnAge()>TURN_MS+25000&&G.passFor!==tokCount()){G.passFor=tokCount();sendMove(TK.pass(r,r.turn,r.T[r.turn].x))}}
 async function markOut(i){const st=G.st;if(!st||st.phase!=='play')return;const out={...(st.out||{}),['i'+i]:tokCount()};
-  const N=PM.replay(st.map,st.seed,st.moves||'',out,st.mode),upd={['out/i'+i]:tokCount(),t:Date.now()};
+  const N=TK.replay(st.map,st.seed,st.moves||'',out,st.mode),upd={['out/i'+i]:tokCount(),t:Date.now()};
   if(N.over){upd.phase='end';upd.winner=N.winner;upd.reason=N.reason}
   try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){}}
 setInterval(()=>{if($('#game').classList.contains('on'))watchOff()},500);
@@ -355,20 +378,24 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
   document.querySelectorAll('#modes button').forEach(b=>{b.classList.toggle('on',b.dataset.m===mode);b.disabled=!host});
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
-    const ci=mode==='team'?i:i;return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主':''}${p.tk===false?' 🎟️ 沒有遊戲券':''}${p.off?' 📴 離線':''}</small></div></div>`}).join('');
+    const ci=mode==='team'?i:i;return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/tank-${TKV.SKINS.includes(p.skin)?p.skin:'forest'}-body-v2.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主':''}${p.tk===false?' 🎟️ 沒有遊戲券':''}${p.off?' 📴 離線':''}</small></div></div>`}).join('');
   const ready=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false).length;
   const why=ready<2?'至少要 2 個人才能開始':mode==='team'&&ready!==4?'2 對 2 要剛好 4 個人（有遊戲券、在線上）':'';
   $('#bStart').hidden=!host;$('#bStart').disabled=!!why;
   $('#lwait').textContent=st.phase==='play'?'這一局已經開始了，你先在旁邊看，下一局就能一起玩':host?(why||`${ready} 個人，準備好了就按開始！`):`等房主（${plName(pl[hs])}）按開始…`;
   if(st.phase==='play'&&myIdx()<0)showGame();
   $('#bInv2').hidden=!(inPlat()&&P.invite)||n>=4;
+  const site=st.site&&TK.SITES[st.site]?st.site:'random';
+  $('#sites').innerHTML=['random',...TK.SITE_KEYS].map(k=>`<button data-s="${k}" class="${k===site?'on':''}" ${host?'':'disabled'}><i class="sw sw-${k}"></i>${k==='random'?'隨機':TK.SITES[k].n}</button>`).join('');
+  $('#siteTip').textContent=site==='random'?'　每一局隨機換場地':'　'+TK.SITES[site].tip;
+  $('#sites').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!isHost())return;LS.set('pm_site',b.dataset.s);Net.update(`rooms/${G.pin}/state`,{site:b.dataset.s,t:Date.now()}).catch(()=>{})});
   if(!hasTicket())$('#lmsg').textContent='🎟️ 你的遊戲券用完了，這一局只能在旁邊看';}
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(!isHost())return;Net.update(`rooms/${G.pin}/state`,{mode:b.dataset.m,t:Date.now()}).catch(()=>{})});
 $('#bStart').onclick=async()=>{if(!isHost())return;let pl;try{pl=await Net.get(`rooms/${G.pin}/players`)||{}}catch(e){return lmsg('連線失敗，請再按一次')}
   G.players=pl;const ks=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false);if(ks.length<2)return paintLobby();
   let mode=G.st&&G.st.mode==='team'&&ks.length===4?'team':'ffa';
-  const ng=PM.newGame(ks.length,mode);
-  const upd={phase:'play',order:ks.join(','),names:ks.map(k=>plName(pl[k]).replace(/[|,]/g,'')).join('|'),seats:ks.map(k=>+pl[k].seat||0).join(','),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',out:null,g:((G.st&&G.st.g)||0)+1,winner:null,reason:null,t:Date.now()};
+  const site=G.st&&TK.SITES[G.st.site]?G.st.site:undefined,ng=TK.newGame(ks.length,mode,{site});
+  const upd={phase:'play',order:ks.join(','),names:ks.map(k=>plName(pl[k]).replace(/[|,]/g,'')).join('|'),seats:ks.map(k=>+pl[k].seat||0).join(','),skins:ks.map(k=>pl[k].skin||'forest').join('|'),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',out:null,g:((G.st&&G.st.g)||0)+1,winner:null,reason:null,t:Date.now()};
   try{await Net.update(`rooms/${G.pin}/state`,upd);Net.remove(`rooms/${G.pin}/live`).catch(()=>{})}catch(e){lmsg('連線失敗，請再按一次')}};
 const lmsg=t=>{$('#lmsg').textContent=t||''};
 
@@ -377,7 +404,7 @@ const msg=t=>{$('#msg').textContent=t||''};
 function listen(){G.un.forEach(f=>f());G.un=[
   Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&!G.leaving){G.un.forEach(f=>f());G.un=[];G.mode='';show('home');msg('房間關掉了')}return}
     const was=G.st&&G.st.phase;G.st=v;if(was==='wait'&&v.phase==='play')G.ovHide='';onState()}),
-  Net.on(`rooms/${G.pin}/live`,v=>PMV.setLive(v)),
+  Net.on(`rooms/${G.pin}/live`,v=>TKV.setLive(v)),
   Net.on(`rooms/${G.pin}/players`,v=>{const before=SLOTS.filter(k=>G.players[k]).length;G.players=v||{};const after=SLOTS.filter(k=>G.players[k]).length;
     if(after>before&&before)sfx.join();if(G.st)onState()}),
   Net.on(`rooms/${G.pin}/dec`,v=>{if(!v||!inPlat()||Date.now()-(v.t||0)>60000)return;G.inv.delete(v.s);
@@ -396,7 +423,7 @@ async function create(){const name=await needName();if(!name)return false;msg('�
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/meta`)))pin=p}
     if(!pin){msg('房間滿了，等一下再試');return false}
     const created=Date.now();
-    await Net.set(`rooms/${pin}`,{meta:{game:'pm',created},state:{phase:'wait',mode:'ffa',g:0,t:created},players:{p0:{id:myId,name,seat:mySeat(),tk:hasTicket()}}});
+    await Net.set(`rooms/${pin}`,{meta:{game:'pm',created,ver:TK.VER},state:{phase:'wait',mode:'ffa',site:LS.get('pm_site','random'),g:0,t:created},players:{p0:{id:myId,name,seat:mySeat(),tk:hasTicket(),skin:mySkin()}}});
     Object.assign(G,{mode:'net',pin,slot:'p0',st:null,players:{},created,arm:'',rec:'',ovHide:''});msg('');listen();armLobby();return true
   }catch(e){msg('連不上網路，請檢查網路後再試一次');return false}}
 async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');const name=await needName();if(!name)return;
@@ -405,9 +432,10 @@ async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數�
       const room=await Net.get(`rooms/${pin}`);
       if(!room||!room.meta)return msg('找不到這個房間，看看房號對不對');
       if(room.meta.game!=='pm')return msg('這個房號是別的遊戲（軍棋、暗棋或大砲對轟），請到「雙人對戰」加入');
+      if(room.meta.ver&&room.meta.ver!==TK.VER)return msg(room.meta.ver>TK.VER?'這個房間是新版開的：請重新整理網頁拿到新版，再加入':'這個房間是舊版開的：請開房間的同學重新整理網頁，再開一間新房間');
       const pl=room.players||{};let slot=SLOTS.find(k=>pl[k]&&pl[k].id===myId);
       if(!slot){slot=SLOTS.find(k=>!pl[k]);if(!slot)return msg('這個房間已經有 4 個人了');
-        await Net.set(`rooms/${pin}/players/${slot}`,{id:myId,name,seat:mySeat(),tk:hasTicket()});
+        await Net.set(`rooms/${pin}/players/${slot}`,{id:myId,name,seat:mySeat(),tk:hasTicket(),skin:mySkin()});
         await new Promise(r=>setTimeout(r,350));const chk=await Net.get(`rooms/${pin}/players/${slot}`);if(!chk||chk.id!==myId)continue}   // 同時有人搶到同一個位置：換下一個
       Object.assign(G,{mode:'net',pin,slot,st:room.state,players:{...pl,[slot]:{id:myId,name,seat:mySeat()}},created:room.meta.created||0,arm:'',rec:'',ovHide:room.state&&room.state.phase==='end'?`pm${pin}_${room.meta.created||0}_${room.state.g||1}`:''});
       msg('');listen();onState();return}
@@ -427,7 +455,7 @@ document.querySelectorAll('#soloM button').forEach(b=>b.onclick=()=>{if(b.disabl
 $('#bSolo').onclick=()=>{return;if(!hasTicket())return msg(NO_TK);paintSolo();$('#soloBox').classList.add('on')};
 $('#soloX').onclick=()=>$('#soloBox').classList.remove('on');
 $('#soloGo').onclick=()=>{$('#soloBox').classList.remove('on');soloStart(soloN,soloM)};
-function soloStart(n,m){if(!hasTicket()){show('home');return msg(NO_TK)}const ng=PM.newGame(n,m),g=((G.st&&G.st.g)||0)+1;
+function soloStart(n,m){if(!hasTicket()){show('home');return msg(NO_TK)}const ng=TK.newGame(n,m),g=((G.st&&G.st.g)||0)+1;
   G.solo={n,m,paid:(G.solo&&G.solo.paid)||0};Object.assign(G,{mode:'solo',pin:'',slot:'',players:{}});
   G.st={phase:'play',order:[...Array(n).keys()].map(i=>'s'+i).join(','),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',g};onState()}
 
@@ -447,8 +475,9 @@ $('#bInv').onclick=async()=>{if(await create()){onState();openPick()}};
 window.addEventListener('pagehide',()=>{if(G.inv.size&&inPlat()&&P.uninvite)G.inv.forEach(s=>P.uninvite(s))});
 
 /* ═════════════ 開始 ═════════════ */
-paintMe();paintRec();if(inPlat()&&P.invite)$('#bInv').hidden=false;
-addEventListener('resize',()=>{if($('#game').classList.contains('on'))PMV.fit()});
+paintMe();paintRec();paintSkin();if(inPlat()&&P.invite)$('#bInv').hidden=false;
+$('#bGarage').onclick=openGarage;
+addEventListener('resize',()=>{if($('#game').classList.contains('on'))TKV.fit()});
 (async()=>{await netReady;
   if(Net.mode==='local'){$('#mode').hidden=false;$('#mode').textContent='⚠ 連不上雲端：現在是本機模式，只能在同一台電腦的不同分頁之間一起玩。'}
   if(Q.get('join')){$('#pinIn').value=Q.get('join');join(Q.get('join'))}

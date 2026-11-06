@@ -1045,5 +1045,5 @@
   const S = document.createElement('style'); S.textContent = css + `
   @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
-  window.PET = { coinAdd, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();

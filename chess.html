@@ -165,13 +165,30 @@ button{font-family:inherit;cursor:pointer}
  #home .logo{grid-column:1;grid-row:2}#aqRule,#pdRule{grid-column:1;grid-row:3}#me{grid-column:1;grid-row:4}#mode{grid-column:1;grid-row:5}#rec{grid-column:1;grid-row:6}
  #home .menu{grid-column:2;grid-row:2/span 4;align-self:center;width:100%;max-width:26rem}#msg{grid-column:2;grid-row:6}}
 #types button .ti,.types button .ti,.btn .ti,#me .ti{width:1.6em;height:1.6em;vertical-align:-.45em;margin-right:.3em;pointer-events:none}#pick .t .ti.big{width:1.5em;height:1.5em;vertical-align:-.35em;margin-right:.3em}
+
+/* 大砲對轟：場地、車庫、結算 */
+#pdOpt{width:min(34rem,100%);background:#fffaf0;border-radius:18px;padding:.5rem .6rem;display:flex;flex-direction:column;gap:.45rem}
+.pdst{font-weight:900;color:#7a5a32;font-size:1.05rem;text-align:left}.pdst small{font-size:.85rem;color:#9a7a52}
+.sites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem}
+.sites button{display:flex;align-items:center;gap:.3rem;justify-content:center;min-height:2.75rem;border:3px solid #e9d5ae;background:#fff;border-radius:14px;font-weight:900;font-size:.95rem;color:#7a5a32;padding:.15rem .25rem}
+.sites button.on{border-color:#f59f00;background:#fff3bf;color:#c2410c}
+.sw{flex:none;width:1.2rem;height:1.2rem;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #e9d5ae}
+.sw-random{background:conic-gradient(#6cd35c,#f2c46d,#e9f2fb,#ff8e5e,#5fbaff,#353b74,#d9774a,#6cd35c)}
+.sw-grass{background:linear-gradient(#5fb6ff 50%,#6cd35c 50%)}.sw-desert{background:linear-gradient(#6fb9ef 50%,#f2c46d 50%)}.sw-snow{background:linear-gradient(#8fbdea 50%,#fff 50%)}
+.sw-volcano{background:linear-gradient(#ff8e5e 50%,#ff5a1f 50%)}.sw-islands{background:linear-gradient(#5fbaff 50%,#3aa0e0 50%)}.sw-moon{background:linear-gradient(#1d2a5c 50%,#cfd0de 50%)}.sw-canyon{background:linear-gradient(#ffb98a 50%,#d9774a 50%)}
+.btn.gar{font-size:1.1rem;padding:.45rem 1rem}.btn.gar small{font-size:.85em;color:#9a7a52}
+#ovSt:empty{display:none}
+@media (max-width:560px){.sites button{font-size:.8rem;flex-direction:column;gap:.1rem}}
+@media (orientation:landscape) and (max-height:720px) and (min-width:700px){#pdOpt{grid-column:2;grid-row:6}}
 </style></head><body>
 
 <section class="scr on" id="home">
   <div id="types"><button data-t="xq"><img class="ti" src="img/ui/vs-xq.webp" alt="" draggable="false">軍棋</button><button data-t="aq"><img class="ti" src="img/ui/vs-aq.webp" alt="" draggable="false">暗棋</button><button data-t="pd"><img class="ti" src="img/ui/vs-pd.webp" alt="" draggable="false">大砲對轟</button></div>
   <div class="logo"><span>帥</span><em id="logoT">軍棋對戰</em><span>將</span></div>
   <div class="note" id="aqRule" hidden>32 顆棋全部蓋著：輪到你就<b>翻一顆</b>或<b>走一格</b>。第一顆翻到什麼顏色，你就是那一方。<br>大吃小（兵卒可以吃帥將）；炮要<b>隔一顆</b>才能吃。對方的棋被吃光就贏了！</div>
-  <div class="note" id="pdRule" hidden>輪到你：可以先<b>開車</b>移動一下，再調<b>角度</b>和<b>力道</b>發射砲彈（也可以直接在畫面上拖）。<br>注意上面的<b>風向</b>！先把對方的血打到 0 就贏了。</div>
+  <div class="note" id="pdRule" hidden>輪到你：先<b>開車</b>移動，再調<b>角度</b>、<b>力道</b>，選<b>砲彈</b>發射（按 ⇄ 轉向，也可以直接在畫面上拖）。<br>注意<b>風向</b>！每 4 回合會掉下<b>補給箱</b>，開過去或打中就拿到特殊砲彈。先把對方的血打到 0 就贏了。</div>
+  <div id="pdOpt" hidden><div class="pdst">場地　<small id="pdSiteTip"></small></div><div class="sites" id="pdSites"></div>
+    <button class="btn g gar" id="bGarage" hidden><img class="ti" src="img/game/tank-ui-garage-v2.webp" alt="" draggable="false">坦克車庫　<small id="mySkin"></small></button></div>
   <div id="me"></div>
   <div class="menu">
     <button class="btn" id="bNew">🏠 建立房間（我先下・紅方）</button>
@@ -204,10 +221,10 @@ button{font-family:inherit;cursor:pointer}
   </aside>
 </section>
 
-<div id="over"><div class="box"><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="s" id="ovN"></div><div class="row"><button class="btn" id="bAgain">🔁 再來一局（換邊）</button><button class="btn g" id="bOut">離開</button></div></div></div>
+<div id="over"><div class="box"><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div id="ovSt"></div><div class="s" id="ovN"></div><div class="row"><button class="btn" id="bAgain">🔁 再來一局（換邊）</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
 <div id="pick"><div class="box"><div class="t"><img class="ti big" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請誰一起下<span id="pickG">軍棋</span>？</div><div id="pickT" class="types"><button data-t="xq"><img class="ti" src="img/ui/vs-xq.webp" alt="" draggable="false">軍棋</button><button data-t="aq"><img class="ti" src="img/ui/vs-aq.webp" alt="" draggable="false">暗棋</button><button data-t="pd"><img class="ti" src="img/ui/vs-pd.webp" alt="" draggable="false">大砲對轟</button></div><div class="s">綠色的同學現在在平台上，按一下就會邀請他</div><div id="pickList"></div><button class="btn g" id="pickX">取消</button></div></div>
-<script src="ico.js"></script><script src="xq.js"></script><script src="aq.js"></script><script src="pd.js"></script><script src="pdv.js"></script>
+<script src="ico.js"></script><script src="xq.js"></script><script src="aq.js"></script><script src="tank.js"></script><script src="tankv.js"></script>
 <script>
 /* ═════════════ 601 象棋對戰 ═════════════
    兩台平板連線對下：建立房間的人拿紅方先下，另一人輸入 4 位數房號加入。
@@ -282,13 +299,13 @@ const GNAME={xq:'軍棋',aq:'暗棋',pd:'大砲對轟'};
 const gPre=()=>G.type==='xq'?'':G.type;   // 戰績的局號開頭(象棋沒有)
 G.type=(q=>GNAME[q]?q:(t=>GNAME[t]?t:'xq')(LS.get('xq_type','xq')))(new URLSearchParams(location.search).get('g'));
 function setType(t){G.type=t;LS.set('xq_type',t);document.querySelectorAll('#types button,#pickT button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  $('#logoT').textContent=t==='pd'?GNAME[t]:GNAME[t]+'對戰';$('#aqRule').hidden=t!=='aq';$('#pdRule').hidden=t!=='pd';document.title='601 '+$('#logoT').textContent;$('#pickG').textContent=GNAME[t];
+  $('#logoT').textContent=t==='pd'?GNAME[t]:GNAME[t]+'對戰';$('#aqRule').hidden=t!=='aq';$('#pdRule').hidden=t!=='pd';$('#pdOpt').hidden=t!=='pd';if(t==='pd')paintPdOpt();document.title='601 '+$('#logoT').textContent;$('#pickG').textContent=GNAME[t];
   document.querySelectorAll('.logo span').forEach((s,i)=>s.textContent=t==='aq'?(i?'暗':'翻'):t==='pd'?(i?'轟':'砰'):(i?'將':'帥'));
   $('#bNew').innerHTML='<img class="ti" src="img/ui/ic-room-create.webp" alt="" draggable="false">'+(t==='pd'?'建立房間（我先打・紅隊）':'建立房間（我先下・紅方）');$('#bLocal').textContent=t==='pd'?'👥 同一台平板兩人輪流打':'👥 同一台平板兩人輪流下'}
 document.querySelectorAll('#types button,#pickT button').forEach(b=>b.onclick=()=>{if(G.mode)return;setType(b.dataset.t);paintRec()});
 const view=i=>{const c=i%9,r=(i/9)|0;return G.flip?[8-c,9-r]:[c,r]};
 function drawGrid(){
-  $('#game').classList.toggle('pd',G.type==='pd');if(G.type==='pd')return pdShow();PDV.stop();
+  $('#game').classList.toggle('pd',G.type==='pd');if(G.type==='pd')return pdShow();TKV.stop();
   if(G.type==='aq')return aqGrid();
   svg.innerHTML='';svg.setAttribute('viewBox','-60 -60 920 1020');svg.style.aspectRatio='920/1020';svg.classList.remove('aq');
   mk(svg,'rect',{x:-55,y:-55,width:910,height:1010,rx:28,fill:'#e9c38a',stroke:'#a8743a','stroke-width':8});
@@ -379,23 +396,36 @@ function aqTap(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;co
   if(G.sel>=0){const m=R.legal.find(m=>m[0]==='m'&&m[1]===G.sel&&m[2]===i);if(m)return play(m)}
   if(t&&!t.up){G.sel=-1;return play(['f',i])}                       // 點蓋著的棋＝翻開
   G.sel=t&&t.up&&mine&&AQ.color(t.p)===mine&&R.legal.some(m=>m[0]==='m'&&m[1]===i)?i:-1;if(G.sel>=0)tone(660,.05,'triangle',.04);aqRender()}
-/* ═════════════ 大砲對轟（畫面在 pdv.js、規則在 pd.js） ═════════════ */
-const pdHost={state:()=>G.st,canAct:()=>canMove(),solo:()=>G.mode==='solo',me:()=>G.mode==='net'?G.me:null,
-  names:()=>G.mode==='solo'?{r:'紅隊',b:'藍隊'}:{r:(G.players.r&&G.players.r.name)||'紅隊',b:(G.players.b&&G.players.b.name)||'藍隊'},
+/* ═════════════ 大砲對轟（跟大砲混戰共用：規則在 tank.js、畫面在 tankv.js；紅隊＝玩家 0、藍隊＝玩家 1） ═════════════ */
+const PSIDE=['r','b'],pIdx=x=>x==='b'?1:0;
+const pdWin=w=>{w=String(w||'');return w.startsWith('d:')?'draw':w==='1'?'b':w==='0'?'r':w};
+const pdHost={state:()=>G.st,canAct:()=>canMove(),solo:()=>G.mode==='solo',me:()=>G.mode==='net'?pIdx(G.me):-1,
+  names:()=>G.mode==='solo'?['紅隊','藍隊']:[G.players.r?nameOf('r'):'紅隊',G.players.b?nameOf('b'):'藍隊'],
+  skins:()=>[(G.players.r&&G.players.r.skin)||'forest',(G.players.b&&G.players.b.skin)||'forest'],
   send:t=>play(t),live:v=>{if(G.mode==='net'&&G.pin)Net.set(`rooms/${G.pin}/live`,v).catch(()=>{})},
   idle:()=>{if(G.st&&G.st.phase==='end'&&$('#game').classList.contains('on'))onState()}};
-function pdShow(){if(!pdShow.m){PDV.mount({cv:$('#pdCv'),ctl:$('#pdCtl'),host:pdHost});pdShow.m=1}PDV.start();requestAnimationFrame(()=>PDV.fit())}
-function pdRender(){G.R=replayNow(G.st||{});PDV.update();$('#bUndo').hidden=true;$('#code').textContent=G.mode==='net'?`房號 ${G.pin}`:''}
+function pdShow(){if(!pdShow.m){TKV.mount({cv:$('#pdCv'),ctl:$('#pdCtl'),host:pdHost});pdShow.m=1}TKV.start();requestAnimationFrame(()=>TKV.fit())}
+function pdRender(){G.R=replayNow(G.st||{});TKV.update();$('#bUndo').hidden=true;$('#code').textContent=G.mode==='net'?`房號 ${G.pin}`:''}
 async function pdPlay(tok){if(!canMove())return;const old={...G.st};
-  const moves=(G.st.moves?G.st.moves+',':'')+tok,N=PD.replay(G.st.map,G.st.seed,moves),upd={moves,turn:N.turn,t:Date.now()};
-  if(N.over){upd.phase='end';upd.winner=N.winner;upd.reason=N.reason}
+  const moves=(G.st.moves?G.st.moves+',':'')+tok,N=TK.replay(G.st.map,G.st.seed,moves),upd={moves,turn:PSIDE[N.turn],t:Date.now()};
+  if(N.over){upd.phase='end';upd.winner=pdWin(N.winner);upd.reason=N.reason}
   if(G.mode==='solo'){G.st={...G.st,...upd};onState();return}
   G.st={...G.st,...upd};render();
-  try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){G.st=old;PDV.unlock();render();alert('連線失敗，這一發沒有送出，請再發射一次')}}
-const canMove=()=>{const st=G.st;if(!st||st.phase!=='play'||!G.R||G.R.over)return false;return G.mode==='solo'||G.R.turn===G.me};
-const replayNow=st=>G.type==='pd'?PD.replay(st.map,st.seed,st.moves||''):G.type==='aq'?AQ.replay(st.deck,st.moves||''):XQ.replay(st.moves||'');
+  try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){G.st=old;TKV.unlock();render();alert('連線失敗，這一發沒有送出，請再發射一次')}}
+const canMove=()=>{const st=G.st;if(!st||st.phase!=='play'||!G.R||G.R.over)return false;return G.mode==='solo'||(G.type==='pd'?PSIDE[G.R.turn]:G.R.turn)===G.me};
+const replayNow=st=>G.type==='pd'?TK.replay(st.map,st.seed,st.moves||''):G.type==='aq'?AQ.replay(st.deck,st.moves||''):XQ.replay(st.moves||'');
+/* 場地：開房間的人選（或隨機）；同一個房間的下一局換人先手（第 1 局紅隊先、第 2 局藍隊先…） */
+const pdSiteChoice=()=>{const v=G.site||LS.get('pd_site','random');return TK.SITES[v]?v:'random'};
+const pdFresh=g=>{const v=pdSiteChoice(),ng=TK.newGame(2,'ffa',{site:TK.SITES[v]?v:undefined,first:((g||1)-1)%2});return {map:ng.map,seed:ng.seed,turn:PSIDE[((g||1)-1)%2]}};
 /* 新的一局:暗棋要洗牌、大砲對轟要新地圖 */
-const fresh=()=>G.type==='aq'?{deck:AQ.deal()}:G.type==='pd'?PD.newGame():{};
+const fresh=g=>G.type==='aq'?{deck:AQ.deal()}:G.type==='pd'?pdFresh(g):{};
+/* 坦克造型：在平台裡用車庫買的 */
+const mySkin=()=>{const v=inPlat()&&P.tankSkin?P.tankSkin():LS.get('tank_skin','forest');return TKV.SKINS.includes(v)?v:'forest'};
+function paintPdOpt(){const box=$('#pdSites');if(!box)return;const cur=pdSiteChoice();
+  box.innerHTML=['random',...TK.SITE_KEYS].map(k=>`<button data-s="${k}" class="${k===cur?'on':''}"><i class="sw sw-${k}"></i>${k==='random'?'隨機':TK.SITES[k].n}</button>`).join('');
+  $('#pdSiteTip').textContent=cur==='random'?'每一局隨機換場地':TK.SITES[cur].tip;
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(G.mode)return;LS.set('pd_site',b.dataset.s);G.site='';paintPdOpt()});
+  const gb=$('#bGarage');gb.hidden=!(inPlat()&&P.garage);$('#mySkin').textContent=TKV.SKIN_N[mySkin()]}
 /* 點棋盤:先點自己的棋,再點綠點 */
 svg.addEventListener('pointerdown',e=>{
   if(!canMove())return;e.preventDefault();if(G.type==='aq')return aqTap(e);
@@ -424,11 +454,12 @@ function onState(){
   render();
   if(st.phase==='end'&&st.winner==='none'){$('#ovT').textContent='⏸️ 這局不算';$('#ovT').style.color='#7a5a32';$('#ovS').textContent=st.reason||'';$('#over').classList.add('on');if(inPlat()&&P.xqPending)P.xqPending(null);sendTk();paintAgain()}
   else if(st.phase==='end'){const w=st.winner,draw=w==='draw',mine=G.mode==='net'&&w===G.me;record(draw?2:w===G.me,st.reason,len);
-    if(G.type==='pd'&&PDV.busy()){$('#over').classList.remove('on');return}   // 等砲彈、爆炸播完再跳結束畫面
+    if(G.type==='pd'&&TKV.busy()){$('#over').classList.remove('on');return}   // 等砲彈、爆炸播完再跳結束畫面
     /* 暗棋:玩家是 r(先下)/b(後下),顏色要看翻到什麼 */
     const cw=G.type==='aq'&&!draw?(R.col&&R.col[w])||w:w,side=x=>G.type==='pd'?sideName(x):x==='r'?'紅方':'黑方';
     $('#ovT').textContent=draw?'🤝 和局':G.mode==='net'?(mine?'🎉 你贏了！':'再接再厲！'):(G.type==='pd'?(cw==='r'?'🔴 紅隊勝！':'🔵 藍隊勝！'):cw==='r'?'🔴 紅方勝！':'⚫ 黑方勝！');
     $('#ovT').style.color=draw?'#7a5a32':cw==='r'?'#c0392b':G.type==='pd'?'#2563eb':'#222';
+    $('#ovSt').innerHTML=G.type==='pd'?TKV.statsHTML(R,pdHost.names()):'';
     $('#ovS').textContent=(G.mode==='net'&&!draw?side(cw)+'勝・':'')+(st.reason||'')+(G.mode==='net'&&inPlat()&&!draw&&!mine&&!(P.isTest&&P.isTest())?'（用掉 1 張遊戲券）':'');
     if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(mine||G.mode==='solo')sfx.win()}paintAgain()}
   else $('#over').classList.remove('on');
@@ -478,11 +509,11 @@ function againBlock(){if(!hasTicket())return '你的遊戲券用完了，不能�
   if(G.mode!=='net')return '';const opp=XQ.other(G.me),pl=G.players;
   if(!pl[opp])return '對手已經離開了，不能再來一局';
   if(pl[opp].tk===false)return `${nameOf(opp)}的遊戲券用完了，不能再來一局`;return ''}
-function paintAgain(){const why=againBlock();$('#bAgain').disabled=!!why;$('#ovN').textContent=why?'🎟️ '+why:''}
+function paintAgain(){$('#bAgain').textContent=G.type==='pd'?'🔁 再來一局（換人先打）':'🔁 再來一局（換邊）';const why=againBlock();$('#bAgain').disabled=!!why;$('#ovN').textContent=why?'🎟️ '+why:''}
 /* 給平台用：現在是不是正在連線對戰中、要離開時先算輸 */
 window.__xqBusy=()=>G.mode==='net'&&!!G.st&&G.st.phase==='play'&&!!(G.players.r&&G.players.b);
 window.__xqQuit=()=>leave();
-function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='game')fit();if(id!=='game')PDV.stop()}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='game')fit();if(id!=='game')TKV.stop()}
 function fit(){/* SVG 用 aspect-ratio 自己縮放,這裡只在換方向時重畫 */render()}
 addEventListener('resize',()=>{if($('#game').classList.contains('on'))fit()});
 
@@ -493,7 +524,7 @@ function listen(){G.un.forEach(f=>f());G.un=[
       /* 等人的時候網路斷了,雲端已經把房間刪掉:回首頁重開 */
       else if($('#wait').classList.contains('on')){uninvite();G.un.forEach(f=>f());G.un=[];G.mode='';show('home');msg('網路斷了一下，房間關掉了，請重新建立房間')}return}
     G.st=v;if(v.phase!=='wait'&&$('#wait').classList.contains('on')){Net.cancelDisc(`rooms/${G.pin}`);uninvite();startGame()}if($('#game').classList.contains('on'))onState()}),   // 有人加入了:房間不再斷線就刪
-  Net.on(`rooms/${G.pin}/live`,v=>{if(G.type==='pd')PDV.setLive(v)}),
+  Net.on(`rooms/${G.pin}/live`,v=>{if(G.type==='pd')TKV.setLive(v)}),
   Net.on(`rooms/${G.pin}/players`,v=>{G.players=v||{};const mine=Object.keys(G.players).find(k=>G.players[k]&&G.players[k].id===myId);if(mine&&mine!==G.me){G.me=mine;G.flip=G.me==='b';drawGrid()}if($('#game').classList.contains('on')){render();if(G.st)guard(G.st);if($('#over').classList.contains('on'))paintAgain()}})]}
 function startGame(){G.flip=G.me==='b';G.lastLen=-1;drawGrid();show('game');onState()}
 async function needName(){if(!hasTicket()){msg(NO_TK);return null}let n=myName();if(!n)n=askName();if(!n){msg('先輸入名字');return null}return n}
@@ -507,7 +538,7 @@ async function sweepRooms(){if(Net.mode!=='firebase'||sweepRooms.done)return;swe
 $('#bNew').onclick=async()=>{const name=await needName();if(!name)return;msg('建立中…');await netReady;await sweepRooms();
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/state`)))pin=p}
     if(!pin)return msg('房間滿了，等一下再試');
-    G.newCreated=Date.now();await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...fresh()},players:{r:{id:myId,name,seat:mySeat()}}});
+    G.newCreated=Date.now();G.site='';G.site=G.type==='pd'?pdSiteChoice():'';await Net.set(`rooms/${pin}`,{meta:{game:G.type,created:G.newCreated,...(G.type==='pd'?{ver:TK.VER,site:G.site}:{})},state:{phase:'wait',moves:'',turn:'r',g:1,t:Date.now(),...fresh(1)},players:{r:{id:myId,name,seat:mySeat(),...(G.type==='pd'?{skin:mySkin()}:{})}}});
     Net.onDiscRm(`rooms/${pin}`);   // 還沒人加入就關掉、回平台:雲端自動刪掉房間
     Object.assign(G,{mode:'net',pin,me:'r',st:null,players:{},paid:0,created:G.newCreated});$('#pinBig').textContent=pin;msg('');show('wait');listen();
   }catch(e){msg('連不上網路，請檢查網路後再試一次')}};
@@ -515,11 +546,13 @@ $('#bJoin').onclick=async()=>{const pin=$('#pinIn').value.trim();if(!/^\d{4}$/.t
   msg('加入中…');await netReady;
   try{const room=await Net.get(`rooms/${pin}`);
     if(!room||!room.meta||!GNAME[room.meta.game])return msg('找不到這個房間，看看房號對不對');setType(room.meta.game);
+    if(room.meta.game==='pd'&&room.meta.ver&&room.meta.ver!==TK.VER)return msg(room.meta.ver>TK.VER?'這個房間是新版開的：請重新整理網頁拿到新版，再加入':'這個房間是舊版開的：請開房間的同學重新整理網頁，再開一間新房間');
+    G.site=room.meta.site||'';
     const pl=room.players||{};
     if(pl.b&&pl.b.id!==myId&&pl.r&&pl.r.id!==myId)return msg('這個房間已經有兩個人了');
     const me=pl.r&&pl.r.id===myId?'r':'b';
     Object.assign(G,{mode:'net',pin,me,st:room.state,players:pl,created:room.meta.created||0,paid:pl[me]&&pl[me].id===myId?(room.state.g||1):0});   /* 斷線回來同一局不用再付 */
-    if(me==='b'&&!pl.b){await Net.set(`rooms/${pin}/players/b`,{id:myId,name,seat:mySeat()});if(room.state.phase==='wait')await Net.update(`rooms/${pin}/state`,{phase:'play',t:Date.now()})}
+    if(me==='b'&&!pl.b){await Net.set(`rooms/${pin}/players/b`,{id:myId,name,seat:mySeat(),...(G.type==='pd'?{skin:mySkin()}:{})});if(room.state.phase==='wait')await Net.update(`rooms/${pin}/state`,{phase:'play',t:Date.now()})}
     msg('');listen();startGame();
   }catch(e){msg('連不上網路，請再試一次')}};
 $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bJoin').onclick()});
@@ -527,7 +560,7 @@ $('#bLocal').onclick=()=>{return;if(!hasTicket())return msg(NO_TK);Object.assign
 $('#bCancel').onclick=async()=>{uninvite();G.un.forEach(f=>f());G.un=[];Net.cancelDisc(`rooms/${G.pin}`);try{await Net.remove(`rooms/${G.pin}`)}catch(e){}G.mode='';show('home')};   // 取消「斷線就刪」:以後別人用到同一個房號才不會被刪
 $('#bUndo').onclick=()=>{if(G.mode!=='solo'||!G.st.moves)return;const a=G.st.moves.split(',');a.pop();G.st={...G.st,phase:'play',moves:a.join(',')};G.sel=-1;onState()};
 $('#bResign').onclick=async()=>{if(!G.st||G.st.phase!=='play')return;
-  const loser=G.mode==='solo'?G.R.turn:G.me;if(!confirm(G.mode==='solo'?`${loser==='r'?'紅方':'黑方'}要認輸嗎？`:'確定要認輸嗎？'))return;
+  const loser=G.mode==='solo'?(G.type==='pd'?PSIDE[G.R.turn]:G.R.turn):G.me;if(!confirm(G.mode==='solo'?`${loser==='r'?'紅方':'黑方'}要認輸嗎？`:'確定要認輸嗎？'))return;
   const lc=G.type==='aq'?(G.R.col&&G.R.col[loser])||loser:loser;const upd={phase:'end',winner:XQ.other(loser),reason:(G.type==='pd'?sideName(loser):lc==='r'?'紅方':'黑方')+'認輸',t:Date.now()};
   if(G.mode==='solo'){G.st={...G.st,...upd};onState()}else{try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){}}};
 async function leave(){$('#over').classList.remove('on');uninvite();clearTimeout(G.offT);G.offT=0;if(G.armed&&G.pin){Net.cancelDisc(`rooms/${G.pin}/players/${G.me}/off`);G.armed=''}
@@ -537,13 +570,15 @@ async function leave(){$('#over').classList.remove('on');uninvite();clearTimeout
   G.mode='';show('home');paintMe()}
 $('#bLeave').onclick=()=>{if(G.st&&G.st.phase==='play'&&G.mode==='net'&&!confirm('現在離開算認輸，確定嗎？'))return;leave()};
 $('#bOut').onclick=leave;
-/* 再來一局：紅黑交換，紅方先下 */
+/* 再來一局：軍棋、暗棋紅黑交換、紅方先下；大砲對轟不換邊，改成輪流先打 */
 $('#bAgain').onclick=async()=>{if(G.mode==='net'){try{const pl=await Net.get(`rooms/${G.pin}/players`);if(pl)G.players=pl}catch(e){}}
   if(againBlock())return paintAgain();   // 有人沒券(或對手走了)就不能再來一局
   $('#over').classList.remove('on');
-  if(G.mode==='solo'){G.st={phase:'play',moves:'',g:(G.st.g||1)+1,...fresh()};G.lastLen=-1;onState();return}
+  if(G.mode==='solo'){G.st={phase:'play',moves:'',g:(G.st.g||1)+1,...fresh((G.st.g||1)+1)};G.lastLen=-1;onState();return}
   const pl=G.players;if(!pl.r||!pl.b){msg('');return leave()}
-  try{await Net.set(`rooms/${G.pin}/players`,{r:pl.b,b:pl.r});await Net.update(`rooms/${G.pin}/state`,{phase:'play',moves:'',turn:'r',g:(G.st.g||1)+1,winner:null,reason:null,t:Date.now(),...fresh()})}catch(e){}};
+  const g2=(G.st.g||1)+1;
+  try{if(G.type==='pd'){Net.update(`rooms/${G.pin}/players/${G.me}`,{skin:mySkin()}).catch(()=>{});Net.update(`rooms/${G.pin}/meta`,{ver:TK.VER}).catch(()=>{})}else await Net.set(`rooms/${G.pin}/players`,{r:pl.b,b:pl.r});
+    await Net.update(`rooms/${G.pin}/state`,{phase:'play',moves:'',turn:'r',g:g2,winner:null,reason:null,t:Date.now(),...fresh(g2)})}catch(e){}};
 
 /* ═════════════ 邀請同學（在學習平台裡） ═════════════
    選同學 → 先開好房間 → 平台送出邀請；對方在平台按「接受」就會自動加入（chess.html?join=房號）。
@@ -562,7 +597,8 @@ async function invite(s){$('#pick').classList.remove('on');await $('#bNew').oncl
   try{await P.invite(s,G.pin,G.type);G.inv=s;$('#waitNote').textContent=`已經邀請 ${P.seatName(s)}，等他按「接受」…`;$('#invMsg').textContent=''}catch(e){$('#invMsg').textContent='邀請送不出去，請檢查網路'}
   G.un.push(Net.on(`rooms/${G.pin}/dec`,v=>{if(!v||!$('#wait').classList.contains('on'))return;G.inv=0;
     $('#invMsg').textContent=v.why==='noticket'?`${P.seatName(v.s)} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${P.seatName(v.s)} 正在跟別人下棋，等一下再邀請`:`${P.seatName(v.s)} 說下次再玩`}))}
-setType(G.type);paintMe();paintRec();if(inPlat()&&P.invite)$('#bInv').hidden=false;
+setType(G.type);paintMe();paintRec();
+$('#bGarage').onclick=async()=>{if(!(inPlat()&&P.garage))return;await P.garage();paintPdOpt();paintMe()};if(inPlat()&&P.invite)$('#bInv').hidden=false;
 (async()=>{const q=new URLSearchParams(location.search);await netReady;
   if(q.get('join')){$('#pinIn').value=q.get('join');$('#bJoin').onclick()}
   else if(q.has('pick'))openPick()})();
