@@ -100,10 +100,15 @@
   }
 
   /* ───────── 自己的資料 ───────── */
+  const tst = () => { try { return !!(user && isTest(user.seat)); } catch (e) { return false; } };
   function F() {
     if (!sum) return null;
     if (!sum.farm || !Array.isArray(sum.farm.p)) sum.farm = { xp: 0, water: START_WATER, fert: 1, p: Array(MAXP).fill(0), store: {}, log: [], u: Date.now() };
     const f = sum.farm; f.store = f.store || {}; f.log = f.log || []; while (f.p.length < MAXP) f.p.push(0);
+    if (tst()) {   // 測試帳號（98、99）：水、肥料用不完，農場直接 Lv.10（12 塊田、所有種子）
+      if ((f.water || 0) < 999) f.water = 999; if ((f.fert || 0) < 99) f.fert = 99;
+      if (lvOf(f.xp).lv < 10) { let x = 0; for (let l = 1; l < 10; l++) x += xpNeed(l); f.xp = Math.max(f.xp || 0, x); }
+    }
     return f;
   }
   const coins = () => (PET.P() && PET.P().coin) || 0;
