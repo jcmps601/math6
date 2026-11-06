@@ -837,7 +837,13 @@
   function closeModal() { if (mod) mod.remove(); mod = null; }
   /* 選初始寵物（還沒有的才能選） */
   function pickSpecies(cb) {
-    const p = P(), list = STARTERS.filter(k => !p.dex[k]);
+    /* 一般：還沒養過的初始寵物；測試帳號：20 種裡現在沒在養的都能選（換寵物、送蛋測試用） */
+    const p = P(), own = k => k === p.sp || (p.box || {})[k];
+    let list = TST() ? SP_KEYS.filter(k => !own(k)) : STARTERS.filter(k => !p.dex[k]);
+    if (!list.length) {   // 初始寵物都養過了（稀有、傳說要用稀有蛋、傳說蛋孵）：這顆蛋換成金幣，不會卡住
+      const m = modal(`<div class="pmh">🎉 蛋裂開了！</div><div class="pmh2">初始寵物你都養過了！<br>這顆蛋變成 🪙100 金幣</div><button class="go" id="pok">收下 🪙100</button>`);
+      tap(m.querySelector('#pok'), () => { p.eggs.splice(0, 1); coinAdd(p, 100); save(p); closeModal(); render(); }); return;
+    }
     const m = modal(`<div class="pmh">🎉 蛋裂開了！你想要哪一隻寵物？</div><div class="pspg">${list.map(k => `<button data-s="${k}">${petArt({ sp: k, lv: 1, mood: 'happy' })}<b>${SPECIES[k].n}</b><small>${SPECIES[k].f.join('→')}</small></button>`).join('')}</div>`);
     m.querySelectorAll('[data-s]').forEach(b => tap(b, () => cb(b.dataset.s)));
   }
