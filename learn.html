@@ -699,7 +699,9 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #opts.long,#opts.xlong{overflow-y:auto;justify-content:flex-start}
 #opts.long button,#opts.xlong button{max-height:none;overflow:visible;flex:0 0 auto;min-height:3.6rem;white-space:normal;text-align:center;padding:.5rem .7rem}
 #opts.long button{font-size:1.45rem}#opts.xlong button{font-size:1.2rem}
-#opts.long::before,#opts.xlong::before{content:'';flex:1 1 0;max-height:2rem}#opts.long::after,#opts.xlong::after{content:'';flex:1 1 0;max-height:2rem}
+/* 置中用按鈕的 margin（::before/::after 留給「先看題目」提示和倒數條） */
+#opts.long>button:first-child,#opts.xlong>button:first-child{margin-top:auto}#opts.long>button:last-child,#opts.xlong>button:last-child{margin-bottom:auto}
+#opts.long.wait::before,#opts.xlong.wait::before{bottom:0;position:sticky;flex:none;align-self:flex-start;order:99;margin-top:-.3rem}
 </style>
 </head><body>
 
