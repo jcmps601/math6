@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寵物配件檢查</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#fff9f0;--card:#fff;--ink:#333;--sub:#888;--line:#f1e3cf;--bad:#e03131;--badbg:#fff0f0;--on:#7048e8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif;padding-bottom:5rem}
+header{padding:1rem 1rem .4rem;max-width:1200px;margin:0 auto}
+h1{margin:0;font-size:1.6rem}
+.lead{color:#666;font-size:.98rem;line-height:1.6;margin:.3rem 0 0}
+.bar{position:sticky;top:0;z-index:20;background:rgba(255,249,240,.96);backdrop-filter:blur(4px);border-bottom:2px solid var(--line);padding:.5rem 1rem}
+.bar .in{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:.45rem}
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap}
+.tabs button,.chips button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:.35rem .8rem;font:inherit;font-weight:800;font-size:.95rem;color:#555;cursor:pointer}
+.tabs button.on,.chips button.on{background:var(--on);border-color:var(--on);color:#fff}
+.chips{display:flex;gap:.35rem;flex-wrap:nowrap;align-items:center;overflow-x:auto;padding-bottom:.25rem;scrollbar-width:thin}
+.chips>*{flex:none}
+.chips .lb{font-size:.85rem;font-weight:900;color:var(--sub);margin-right:.1rem}
+.chips button{font-size:.88rem;padding:.25rem .65rem}
+.chips button.has{border-color:#ffa8a8}
+main{max-width:1200px;margin:0 auto;padding:.6rem 1rem}
+h2{font-size:1.2rem;margin:1.2rem 0 .5rem;display:flex;align-items:center;gap:.5rem}
+h2 small{font-size:.85rem;color:var(--sub);font-weight:700}
+.row{display:grid;grid-template-columns:7.5rem repeat(3,minmax(0,1fr));gap:.5rem;align-items:stretch;margin-bottom:.5rem}
+.row .nm{display:flex;flex-direction:column;justify-content:center;font-weight:900;font-size:1rem;line-height:1.3}
+.row .nm small{color:var(--sub);font-size:.8rem;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.5rem}
+.t{position:relative;background:var(--card);border:3px solid #eee6d6;border-radius:14px;padding:16% 4% 2%;cursor:pointer;content-visibility:auto;contain-intrinsic-size:auto 190px;-webkit-tap-highlight-color:transparent}
+.t .art{position:relative;width:100%;aspect-ratio:1}
+.t .cap{position:absolute;left:.4rem;top:.25rem;right:.4rem;font-size:.78rem;font-weight:800;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:3}
+.t.bad{border-color:var(--bad);background:var(--badbg)}
+.t.bad::after{content:'✗ 有問題';position:absolute;right:.35rem;bottom:.3rem;background:var(--bad);color:#fff;font-size:.75rem;font-weight:900;border-radius:999px;padding:.05rem .45rem;z-index:4}
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:2px solid var(--line);padding:.55rem 1rem calc(.55rem + env(safe-area-inset-bottom))}
+.foot .in{max-width:1200px;margin:0 auto;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.foot b{color:var(--bad)}
+.foot button{border:0;border-radius:12px;padding:.45rem .9rem;font:inherit;font-weight:900;cursor:pointer}
+.foot .cp{background:var(--on);color:#fff}.foot .cl{background:#eef1ec;color:#657065}
+.foot .msg{color:#2b8a3e;font-weight:800;font-size:.9rem}
+#list{max-width:1200px;margin:0 auto;white-space:pre-wrap;font-size:.92rem;background:#fff;border:2px dashed #ffa8a8;border-radius:12px;padding:.6rem .8rem;display:none}
+.empty{color:var(--sub);padding:1rem 0}
+@media (max-width:560px){
+ .row{grid-template-columns:repeat(3,minmax(0,1fr))}.row .nm{grid-column:1/-1;flex-direction:row;gap:.4rem;align-items:baseline}
+ .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .t .cap{font-size:.7rem}
+}
+</style></head>
+<body>
+<header>
+  <h1>寵物配件檢查</h1>
+  <p class="lead">20 種寵物 × 3 個型態 × 28 種配件，全部用平台上同一套程式畫出來。看到歪掉、蓋錯位置的，<b>點一下那一格</b>就會標成「有問題」；最後按「複製清單」貼給 Claude 就可以。標記會記在這台裝置上。</p>
+</header>
+<div class="bar"><div class="in">
+  <div class="tabs" id="tabs"></div>
+  <div class="chips" id="chips"></div>
+</div></div>
+<main id="main"></main>
+<pre id="list"></pre>
+<div class="foot"><div class="in"><span>已標記 <b id="nbad">0</b> 個有問題</span><button class="cp" id="cp">複製清單</button><button class="cl" id="cl">清除標記</button><span class="msg" id="msg"></span></div></div>
+
+<script>
+/* pet.js 是給學習平台用的，這裡補上它載入時需要的東西（這一頁只拿來畫圖，不會讀寫任何人的資料） */
+var sum=null,user=null,db=null,ROOT='learn';
+var LS={get:function(k,d){return d},set:function(){}};
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e}
+function tap(e,f){e.addEventListener('click',f);return e}
+function dkey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function isTest(){return false}function seatName(s){return s+' 號'}function saveSum(){}function enqueue(){}function streak(){return 0}
+var sfx={ok:function(){},ticket:function(){},win:function(){}};function confetti(){}function toast(){}function ico(){return ''}
+</script>
+<script src="pet.js"></script>
+<script>
+(function(){
+  var P=window.PET, SP=Object.keys(P.SPECIES), IT=P.ITEMS, LV=[1,7,18];
+  var SLOT={h:'帽子・頭上',g:'眼鏡',k:'腳下',b:'身邊'}, ST=['第一型態','第二型態','最終型態'];
+  var KEY='petcheck_bad', bad={};
+  try{bad=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){bad={}}
+  function saveBad(){try{localStorage.setItem(KEY,JSON.stringify(bad))}catch(e){}paintCount()}
+  var mode='item', curItem=Object.keys(IT)[0], curSp=SP[0];
+  try{var s=JSON.parse(localStorage.getItem('petcheck_view')||'null');if(s){mode=s.m||mode;if(IT[s.i])curItem=s.i;if(P.SPECIES[s.s])curSp=s.s}}catch(e){}
+  function saveView(){try{localStorage.setItem('petcheck_view',JSON.stringify({m:mode,i:curItem,s:curSp}))}catch(e){}}
+
+  var $=function(id){return document.getElementById(id)};
+  var key=function(sp,st,id){return sp+'|'+st+'|'+id};
+  var spName=function(sp){return P.SPECIES[sp].n};
+  var label=function(sp,st,id){return spName(sp)+'・'+ST[st]+'（'+P.SPECIES[sp].f[st]+'）＋ '+IT[id].n};
+
+  function tile(sp,st,id,cap){
+    var o={sp:sp,lv:LV[st],stage:st,mood:'ok'};o[IT[id].k]=id;
+    var k=key(sp,st,id),d=el('div','t'+(bad[k]?' bad':''),'<span class="cap">'+cap+'</span><div class="art">'+P.petArt(o)+'</div>');
+    d.title=label(sp,st,id);
+    d.addEventListener('click',function(){if(bad[k])delete bad[k];else bad[k]=1;d.classList.toggle('bad',!!bad[k]);saveBad();paintChips()});
+    return d}
+
+  function paintTabs(){var T=$('tabs');T.innerHTML='';
+    [['item','依配件看'],['pet','依寵物看'],['all','全部一次看']].forEach(function(x){
+      var b=el('button',mode===x[0]?'on':'',x[1]);b.onclick=function(){mode=x[0];saveView();render()};T.appendChild(b)})}
+  function badCount(f){return Object.keys(bad).filter(f).length}
+  function paintChips(){var C=$('chips');C.innerHTML='';
+    if(mode==='item'){Object.keys(SLOT).forEach(function(k){C.appendChild(el('span','lb',SLOT[k]));
+      Object.keys(IT).filter(function(id){return IT[id].k===k}).forEach(function(id){
+        var n=badCount(function(x){return x.split('|')[2]===id});
+        var b=el('button',(id===curItem?'on':'')+(n?' has':''),IT[id].n+(n?' ('+n+')':''));b.onclick=function(){curItem=id;saveView();render()};C.appendChild(b)})})}
+    else if(mode==='pet'){SP.forEach(function(sp){
+        var n=badCount(function(x){return x.split('|')[0]===sp});
+        var b=el('button',(sp===curSp?'on':'')+(n?' has':''),spName(sp)+(n?' ('+n+')':''));b.onclick=function(){curSp=sp;saveView();render()};C.appendChild(b)})}
+    else C.appendChild(el('span','lb','依配件分段，往下捲就會看到全部 1680 種組合（畫面會邊捲邊畫）'));}
+
+  /* 依配件：每種寵物一列 × 三個型態 */
+  function byItem(M,id,head){
+    if(head)M.appendChild(el('h2','',IT[id].n+'<small>'+SLOT[IT[id].k]+'</small>'));
+    SP.forEach(function(sp){var r=el('div','row');r.appendChild(el('div','nm',spName(sp)+'<small>'+(P.SPECIES[sp].r?['','稀有','傳說'][P.SPECIES[sp].r]:'初始')+'</small>'));
+      [0,1,2].forEach(function(st){r.appendChild(tile(sp,st,id,P.SPECIES[sp].f[st]))});M.appendChild(r)})}
+  /* 依寵物：每個型態一段 × 28 種配件 */
+  function byPet(M,sp){[0,1,2].forEach(function(st){
+      M.appendChild(el('h2','',spName(sp)+'・'+ST[st]+'<small>'+P.SPECIES[sp].f[st]+'</small>'));
+      var g=el('div','grid');Object.keys(IT).forEach(function(id){g.appendChild(tile(sp,st,id,IT[id].n))});M.appendChild(g)})}
+  /* 全部：每種配件一段，捲到附近才畫 */
+  function all(M){var ids=Object.keys(IT);
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&!e.target.dataset.done){e.target.dataset.done=1;e.target.innerHTML='';byItem(e.target,e.target.dataset.id,true);io.unobserve(e.target)}})},{rootMargin:'1200px 0px'});
+    ids.forEach(function(id){var s=el('section','','<h2>'+IT[id].n+'<small>'+SLOT[IT[id].k]+'（往下捲就會出現）</small></h2>');s.dataset.id=id;s.style.minHeight='60vh';M.appendChild(s);io.observe(s)})}
+
+  function render(){paintTabs();paintChips();var M=$('main');M.innerHTML='';
+    if(mode==='item')byItem(M,curItem,true);else if(mode==='pet')byPet(M,curSp);else all(M);window.scrollTo(0,0)}
+
+  function listText(){var ks=Object.keys(bad);if(!ks.length)return '';
+    var ids=Object.keys(IT);ks.sort(function(a,b){var A=a.split('|'),B=b.split('|');return ids.indexOf(A[2])-ids.indexOf(B[2])||SP.indexOf(A[0])-SP.indexOf(B[0])||A[1]-B[1]});
+    return '寵物配件有問題的組合（共 '+ks.length+' 個）：\n'+ks.map(function(k){var a=k.split('|');return '・'+label(a[0],+a[1],a[2])+'　['+k+']'}).join('\n')}
+  function paintCount(){$('nbad').textContent=Object.keys(bad).length;var L=$('list'),t=listText();L.textContent=t;L.style.display=t?'block':'none'}
+  $('cp').onclick=function(){var t=listText(),M=$('msg');if(!t){M.textContent='還沒有標記';return}
+    var done=function(){M.textContent='已複製，貼給 Claude 就可以'};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,function(){sel()});else sel();
+    function sel(){var r=document.createRange();r.selectNodeContents($('list'));var s=getSelection();s.removeAllRanges();s.addRange(r);M.textContent='已選取下面的清單，請按「拷貝」'}};
+  $('cl').onclick=function(){if(!Object.keys(bad).length)return;if(!confirm('清除全部標記？'))return;bad={};saveBad();render()};
+  render();paintCount();
+})();
+</script>
+</body></html>
