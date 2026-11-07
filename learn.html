@@ -656,6 +656,26 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #playt .pybtn:active{transform:translateY(2px)}
 @media (max-width:900px),(orientation:portrait){.hgrid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){#next .nxr{grid-template-columns:minmax(0,1fr)}#playt .pybtn b{font-size:1rem}#playt .pybtn .pbi{width:2.2rem;height:2.2rem}}
+
+/* ═══ 學習排行榜 ═══ */
+#sboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;background:none;box-shadow:none;padding:0}
+#sboard>.ld{grid-column:1/-1;background:#fff;border-radius:20px;padding:1rem}
+#sboard .br i small{display:block;font-size:.72rem;color:#999;text-align:right;line-height:1}
+#sboard .wrme{font-size:.95rem;font-weight:900;color:#e8590c;padding:.3rem .7rem 0;text-align:center}
+@media (max-width:900px),(orientation:portrait){#sboard{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){#sboard{grid-template-columns:minmax(0,1fr)}}
+#shome{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;position:relative;padding-top:.9rem}
+#shome>.ld{grid-column:1/-1}
+#shome .hmore{position:absolute;right:.8rem;top:-2.6rem}
+#shome .shc{background:#fffaf0;border-radius:18px;padding:.6rem .7rem;border-top:.4rem solid var(--dc)}
+#shome .sht{display:flex;align-items:center;gap:.35rem;font-size:1.2rem;font-weight:900;color:var(--dc);flex-wrap:wrap}#shome .sht small{font-size:.8rem;color:#9a8a6a;font-weight:800}
+#shome .shi{width:1.7rem;height:1.7rem}
+#shome .shr{display:flex;align-items:center;gap:.5rem;font-size:1.1rem;font-weight:900;padding:.15rem .3rem;border-radius:10px}
+#shome .shr b{width:1.8rem;text-align:center;color:#888}#shome .shr span{flex:1}#shome .shr i{font-style:normal;color:#e8590c}#shome .shr i small{display:none}
+#shome .shr.me{background:#fff4e6;outline:2px solid #ffd8a8}
+#shome .shn{font-size:.95rem;color:#888;font-weight:800;padding:.3rem}
+#shome .shm{margin-top:.35rem;font-size:.95rem;font-weight:900;color:#5c4326}#shome .shm b{color:#e8590c;font-size:1.15rem}
+@media (max-width:520px){#shome{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head><body>
 
@@ -1181,7 +1201,7 @@ async function ensureBind(){if(!user||!db||!fauth)return false;
     const k=u.uid+'|'+user.seat+'|'+user.pin;if(boundKey===k)return true;
     await timeout(db.ref(`${ROOT}/bind/${u.uid}`).set({s:String(user.seat),p:String(user.pin)}),10000);boundKey=k;return true}catch(e){return false}}
 async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true;
-  while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/')||it.p.startsWith(ROOT+'/boss/')||it.p.startsWith(ROOT+'/pet')||it.p.startsWith(ROOT+'/farm');   // pet/、petlike/、farm/、farmact/
+  while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/')||it.p.startsWith(ROOT+'/boss/')||it.p.startsWith(ROOT+'/stat/')||it.p.startsWith(ROOT+'/pet')||it.p.startsWith(ROOT+'/farm');   // pet/、petlike/、farm/、farmact/
     if(isLb&&!(await ensureBind()))break;
     /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
     const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
@@ -1370,6 +1390,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   f.appendChild(W);t.appendChild(f);P.appendChild(t);
   const G2=el('div','hgrid');G2.appendChild(nextCard());G2.appendChild(progCard());P.appendChild(G2);
   if(!LS.get('learn601_rwseen',0))setTimeout(()=>{if(view==='home'&&!document.getElementById('rwhelp'))rewardHelp()},600);
+  statPush();P.appendChild(el('div','sec',`${ico('pr-pen','hi2')}學習排行榜`));P.appendChild(statCardHome());
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}全班挑戰・寵物・農場`));
   const H=el('div','hsum');H.appendChild(bossCard());H.appendChild(PET.homeCard());H.appendChild(FARM.homeCard());P.appendChild(H);
   P.appendChild(playCard());
@@ -1425,9 +1446,61 @@ function rewardHelp(){const m=el('div','pmod','');m.id='rwhelp';m.innerHTML=`<di
 function statCard(){const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
   const c=el('div','cd');c.style.marginTop='1rem';c.appendChild(S);return c}
+
+/* ===================== 學習排行榜 =====================
+   每個人把自己的學習數字放在 learn/stat/座號 = {w:本週星期一, tw:本週練習題數, n:累計題數, f:累計一次就答對題數, st:連續完成天數, t:時間}
+   （只能寫自己那一格；Firebase 規則要加 STAT_RULE 那一段）。全班都看得到，測試帳號不上榜。
+   四個榜：本週練習、累計練習、一次就答對率（累計做滿 STAT_MIN 題才上榜，免得做 3 題對 3 題就 100%）、連續完成天數 */
+const STAT_MIN=100;
+const STAT_RULE=`"stat": {
+  ".read": true,
+  "$seat": {
+    ".write": "auth != null && root.child('learn').child('bind').child(auth.uid).child('s').val() === $seat",
+    ".validate": "newData.hasChildren(['w','tw','n','f','st','t']) && newData.child('w').isString() && newData.child('tw').isNumber() && newData.child('n').isNumber() && newData.child('f').isNumber() && newData.child('st').isNumber() && newData.child('t').isNumber() && newData.child('n').val() >= 0 && newData.child('n').val() <= 1000000 && newData.child('f').val() <= newData.child('n').val()"
+  }
+}`;
+const weekQ=()=>weekKeys(0).reduce((a,k)=>a+(sum.days[k]||0),0);
+function statMine(){return {w:bossWk(),tw:weekQ(),n:sum.total||0,f:Math.min(sum.first||0,sum.total||0),st:streak(),t:Date.now()}}
+/* 練完一輪、打開平台時更新（數字沒變就不送） */
+function statPush(){if(!user||!sum)return;const v=statMine(),k=[v.w,v.tw,v.n,v.f,v.st].join('|');if(statPush.k===user.seat+k)return;statPush.k=user.seat+k;
+  enqueue(`${ROOT}/stat/${user.seat}`,v,true)}
+let STATC=null;
+async function statAll(){if(STATC&&Date.now()-STATC.at<30000)return STATC;if(!(await fbOnline()))return null;
+  let v,denied=false;try{v=(await timeout(db.ref(`${ROOT}/stat`).get(),8000)).val()||{}}catch(e){denied=/permission/i.test(String(e&&(e.code||e.message)));if(denied)return {denied:true};throw e}
+  const wk=bossWk(),today=dkey(),yd=(()=>{const d=new Date();d.setDate(d.getDate()-1);return dkey(d)})(),rows=[];
+  for(const [st,o] of Object.entries(v)){const seat=+st;if(!o||isTest(seat))continue;const day=dkey(new Date(+o.t||0));
+    rows.push({seat,tw:o.w===wk?(+o.tw||0):0,n:+o.n||0,f:+o.f||0,st:day===today||day===yd?(+o.st||0):0})}   // 連續天數：太久沒更新就斷了
+  if(user&&!isTest(user.seat)){const m=statMine(),i=rows.findIndex(r=>r.seat===user.seat),me={seat:user.seat,tw:m.tw,n:m.n,f:m.f,st:m.st};if(i>=0)rows[i]=me;else rows.push(me)}   // 自己的用這台平板上最新的
+  STATC={at:Date.now(),rows};return STATC}
+const STAT_BOARDS=[
+  {k:'tw',n:'本週練習',img:'pr-pen',c:'#1c7ed6',u:'題',sub:'這週做了幾題',v:r=>r.tw,on:r=>r.tw>0},
+  {k:'n',n:'累計練習',img:'rw-trophy',c:'#2e7554',u:'題',sub:'全部做了幾題',v:r=>r.n,on:r=>r.n>0},
+  {k:'acc',n:'一次就答對',img:'pr-ok',c:'#e8590c',u:'%',sub:`做滿 ${STAT_MIN} 題才上榜`,v:r=>r.n?Math.round(r.f/r.n*1000)/10:0,on:r=>r.n>=STAT_MIN},
+  {k:'st',n:'連續完成',img:'rw-fire',c:'#c2255c',u:'天',sub:`每天做滿 ${GOAL} 題`,v:r=>r.st,on:r=>r.st>0}];
+function statRank(B,rows){const on=rows.filter(B.on).map(r=>({seat:r.seat,v:B.v(r),n:r.n})).sort((a,b)=>b.v-a.v||b.n-a.n||a.seat-b.seat);
+  on.forEach(x=>x.rank=1+on.filter(y=>y.v>x.v).length);return on}
+const statFmt=(B,x)=>B.k==='acc'?`${x.v}%<small>${x.n} 題</small>`:`${x.v} ${B.u}`;
+/* 學習頁：四個榜 */
+async function loadStatBoard(L){let S;try{S=await statAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
+  if(!S){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
+  if(S.denied){L.innerHTML='<div class="ld">⏳ 學習排行榜還沒開通（請告訴老師）</div>';return}
+  L.innerHTML=STAT_BOARDS.map(B=>{const on=statRank(B,S.rows),mi=user&&on.findIndex(x=>x.seat===user.seat);let rows='';
+    on.forEach((x,i)=>{const m=user&&x.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${x.rank<=3?['🥇','🥈','🥉'][x.rank-1]:x.rank}</b><span>${x.seat} 號${m?'<small>我</small>':''}</span><i>${statFmt(B,x)}</i></div>`});
+    const tip=B.k==='acc'&&user&&!isTest(user.seat)&&(sum.total||0)<STAT_MIN?`<div class="wrme">我做了 ${sum.total||0} 題，再 ${STAT_MIN-(sum.total||0)} 題就上榜</div>`:'';
+    return `<div class="bcol" style="--dc:${B.c}"><div class="bh">${ico(B.img,'hi2')}${B.n}<small>${B.sub}${mi>=0?`・我第 ${on[mi].rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去練習！</div>'}${tip}</div>`}).join('')}
+/* 首頁：本週練習王、一次就答對的前 3 名＋我的名次 */
+function statCardHome(){const c=el('div','cd');c.id='shome';c.innerHTML='<div class="ld">讀取中…</div>';
+  statAll().then(S=>{if(!c.isConnected)return;if(!S||S.denied){c.innerHTML=`<div class="ld">${S&&S.denied?'⏳ 學習排行榜還沒開通':'📴 連上網路才看得到排行榜'}</div>`;return}
+    c.innerHTML=[STAT_BOARDS[0],STAT_BOARDS[2]].map(B=>{const on=statRank(B,S.rows),me=user&&on.find(x=>x.seat===user.seat);
+      return `<div class="shc" style="--dc:${B.c}"><div class="sht">${ico(B.img,'shi')}${B.n}<small>${B.sub}</small></div>${on.slice(0,3).map(x=>`<div class="shr${user&&x.seat===user.seat?' me':''}"><b>${['🥇','🥈','🥉'][x.rank-1]||x.rank}</b><span>${x.seat} 號</span><i>${statFmt(B,x)}</i></div>`).join('')||'<div class="shn">還沒有人上榜，快去練習！</div>'}
+        <div class="shm">${me?`我第 <b>${me.rank}</b> 名・${statFmt(B,me).replace(/<small>.*<\/small>/,'')}`:isTest(user.seat)?'測試帳號不上榜':B.k==='acc'?`做滿 ${STAT_MIN} 題就上榜（我做了 ${sum.total||0} 題）`:'練習 1 題就上榜！'}</div></div>`}).join('');
+    const more=el('button','hmore','完整排行榜 ▶');tap(more,()=>{goView('learn');setTimeout(()=>{const e=document.getElementById('sboard');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},300)});c.appendChild(more)}).catch(()=>{c.innerHTML='<div class="ld">讀取失敗，等一下再試</div>'});
+  return c}
 /* 學習頁：科目 → 單元 */
 function renderLearn(P){const h=el('div','h1',`<span class="tag">✏️</span>學習`);h.style.setProperty('--c','#1c7ed6');P.appendChild(h);
-  P.appendChild(subjBar());P.appendChild(unitCards());P.appendChild(statCard())}
+  P.appendChild(subjBar());P.appendChild(unitCards());P.appendChild(statCard());
+  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}學習排行榜<small>（測試帳號不上榜）</small>`));
+  const sb=el('div','cd');sb.id='sboard';sb.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(sb);statPush();loadStatBoard(sb)}
 function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${isMix(u)?'★':uTag(u)}</span>${u.name}`);h.style.setProperty('--c',u.c);P.appendChild(h);
   if(u.g||isMix(u)){const c=el('div','cd');c.id='practice';c.style.setProperty('--c',u.c);const b=sum.best[u.key]||0;
     c.innerHTML=`<div class="bi">✏️</div><div><div class="t">練習 ${N} 題</div><div class="s">${b?`最佳 ${b} / ${N}　${stars(b)}`:'還沒練習過'}</div></div>`;
@@ -1919,7 +1992,7 @@ function bankReveal(q){const c=$('#bigc');let filled=false;
   else if(q.hd&&!filled)c.insertAdjacentHTML('beforeend',`<div class="bx s heard">${q.hd}</div>`);
   fitBig()}
 function nextQ(){if(!solved)return;if(cur<N-1){cur++;showQ()}else endRound()}
-function endRound(){const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length,bk=typeof pu==='string'?pu:UN[pu].key;
+function endRound(){try{STATC=null;statPush()}catch(e){}const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length,bk=typeof pu==='string'?pu:UN[pu].key;
   if(pu!=='wb'&&first>(sum.best[bk]||0))sum.best[bk]=first;
   const got=round.got||0;
   logRound(false);
