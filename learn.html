@@ -164,6 +164,8 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 #fbx .stk hr{width:100%;border:0;border-top:5px solid #555;margin:0}
 #fbx .ib.act{border-color:var(--o);box-shadow:0 0 0 .25rem rgba(255,146,43,.25)}
 #bw{width:2.4em!important}
+#fbx .rc{display:none;font-size:2.4rem;font-weight:900;color:#555}
+.rtmode #bw,.rtmode #fbx .stk hr{display:none}.rtmode #fbx .stk{flex-direction:row;gap:.35rem}.rtmode #fbx .rc{display:block}.rtmode #fbx .ib{width:2.8em}
 .frmode #fbx{display:flex}.frmode #box{display:none}
 .ib.ok{border-color:#37b24d!important;background:#d3f9d8;color:#2b8a3e}
 .ib.no,#fbx.no .ib{border-color:#fa5252;background:#ffe3e3;animation:shake .4s}
@@ -703,6 +705,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 /* 選項按鈕最矮也要放得下一行字（以前視窗矮時會被壓扁、字的下緣被切掉）；真的放不下就捲動 */
 #opts:not(.row){overflow-y:auto;padding-bottom:5px}
 #opts:not(.row) button{line-height:1.2;min-height:calc(1.2em + 1.1rem)}
+#opts.hasfr:not(.row) button{flex:0 0 auto;min-height:calc(2.5em + .6rem);max-height:none}   /* 選項有直式分數：按鈕要夠高 */
 @media (orientation:landscape) and (max-height:620px){
  #opts:not(.row){gap:.4rem}
  #opts:not(.row) button{font-size:1.45rem;padding:.15rem .4rem;min-height:calc(1.2em + .8rem);border-width:3px;box-shadow:0 3px 0 #dee2e6}
@@ -757,7 +760,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
    <div class="card" id="figc"><canvas id="scr"></canvas><div id="pens"><button data-p="b" class="on" title="藍筆"><img class="ico" src="img/ui/pr-pen.webp" alt="藍筆"></button><button data-p="r" title="紅筆"><img class="ico" src="img/ui/pr-marker.webp" alt="紅筆"></button><button data-p="e" title="橡皮擦"><img class="ico" src="img/ui/pr-eraser.webp" alt="橡皮擦"></button><button data-p="c" title="全部擦掉"><img class="ico" src="img/ui/pr-trash.webp" alt="全部擦掉"></button><button data-p="h" title="停止畫筆" aria-label="停止畫筆"><img class="ico" src="img/ui/pr-pen-off.webp" alt="停止畫筆"></button></div><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
    <div class="card" id="ansc">
     <div id="ansline"><span class="pre" id="pre"></span><span id="box" class="ib"></span>
-     <span id="fbx"><span class="ib" id="bw" data-k="w"></span><span class="stk"><span class="ib" id="bn" data-k="n"></span><hr><span class="ib" id="bd" data-k="d"></span></span></span>
+     <span id="fbx"><span class="ib" id="bw" data-k="w"></span><span class="stk"><span class="ib" id="bn" data-k="n"></span><hr><b class="rc">：</b><span class="ib" id="bd" data-k="d"></span></span></span>
      <span id="rev"></span><span id="unit"></span></div>
     <div id="fb"></div>
     <div id="pad"></div>
@@ -821,7 +824,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 <div id="toast"></div>
 <div id="end"><div class="box"><img id="endm" class="ico" alt="" draggable="false"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
 <!-- 國語、英語、自然、社會的題庫(數學的題目在下面的程式裡自動出題) -->
-<script src="ico.js"></script><script src="pet.js"></script><script src="farm.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script>
+<script src="ico.js"></script><script src="pet.js"></script><script src="farm.js"></script><script src="bank/m5.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script>
 <script>
 const NS='http://www.w3.org/2000/svg',$=s=>document.querySelector(s);
 function mk(p,t,a={},s){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(s!=null)e.textContent=s;if(p)p.appendChild(e);return e}
@@ -1094,6 +1097,27 @@ const U3={
 };
 
 
+/* ================= 第5單元 比和比值 =================
+   題目來自 bank/m5.js（從南一題庫挑出來的），每一類（t）是一個題型。
+   type：mc 選擇、num 填數字、frac 填分數、ratio 填「□：□」（simp 要化成最簡單整數比，不然相等的比都算對） */
+const M5_HINT={'比的記法':['「甲對乙的比」「甲和乙的比」：甲寫在前面（前項），乙寫在後面（後項）','先找出題目問的兩個量各是多少'],
+ '比值':['比值 ＝ 前項 ÷ 後項','寫成最簡分數；整除的話就寫整數'],
+ '最簡單整數比':['前項、後項同時乘以或除以同一個數（0 除外），比值不變','小數比先同乘以 10、100；分數比先同乘以分母的最小公倍數','最後同除以最大公因數，前項和後項要互質'],
+ '相等的比':['相等的比：比值一樣','把每個比都化成最簡單整數比，再比比看'],
+ '求□':['相等的比：前項、後項同時乘以（或除以）同一個數','先看已經知道的兩項：乘以幾、或除以幾？','另一項也乘以（或除以）同一個數'],
+ '比值比大小':['先算出兩個比的比值（前項 ÷ 後項）','比值寫成分數，通分再比大小'],
+ '比的應用':['先寫出題目的比，用 □ 表示不知道的量','相等的比：前項、後項乘以同一個數','按比分配：先算全部共有幾份，1 份是多少'],
+ '圖形的比':['先算出兩個圖形的周長、面積（或體積）','再照題目的順序寫成比']};
+const txtLen=o=>String(o).replace(/<[^>]+>/g,'').length;
+function m5Q(it){const q={id:`m5|${it.q}|${it.big||''}|${JSON.stringify(it.a)}`,type:it.type,text:it.q,subj:'math',kind:'think',
+   big:it.big?`<div class="bx${it.bc?' '+it.bc:''}">${it.big}</div>`:'',hints:(it.hint||M5_HINT[it.t]||[]).slice(),sol:(it.exp||[]).slice(),unit:it.unit||'',pre:''};
+  if(it.type==='mc'){q.opts=shuf(it.opts);q.ans=it.a;q.row=!!it.row||it.opts.length<=2}
+  else if(it.type==='frac')q.ans={n:it.a[0],d:it.a[1]};
+  else if(it.type==='ratio'){q.ans=it.a.slice();q.simp=!!it.simp}
+  else q.ans=it.a;
+  return q}
+const U5={};(window.M5||[]).forEach(it=>{(U5[it.t]=U5[it.t]||[]).push(it)});Object.keys(U5).forEach(t=>{const L=U5[t];U5[t]=()=>m5Q(pick(L))});
+
 /* =====================================================================
    601 學習平台 — 設定區
    ===================================================================== */
@@ -1134,8 +1158,10 @@ const UN=[
          {id:'4-pi',i:'📜',k:'故事',n:'圓周率的故事 割圓術',f:'t/4-pi.html'},{id:'4-3',i:'🍕',k:'4-3',n:'圓面積 切割拼合',f:'t/4-3.html'},{id:'4-3b',i:'🧩',k:'4-3',n:'圓面積公式',f:'t/4-3b.html'},
          {id:'4-4',i:'✖️',k:'4-4',n:'半徑變兩倍',f:'t/4-4.html'},{id:'4-pr',i:'👑',k:'挑戰',n:'分級練習（含魔王）',f:'t/4-pr.html'}],
   tt:{b_dC:'4-1b',b_rC:'4-1b',b_Cd:'4-1b',a_Cr:'4-1b',a_wheel:'4-1b',c_trackP:'4-1b',b_rA:'4-3b',b_dA:'4-3b',a_CA:'4-3b',a_card:'4-3b',c_ring:'4-3b',a_double:'4-4'}},
- {key:'u5',no:'5',name:'比和比值',nav:'比和比值',c:'#7048e8',cb:'#f3f0ff',
-  tools:[{id:'5-all',i:'⚖️',k:'自學',n:'比和比值',f:'t/5.html'}]}
+ {key:'u5',term:'fin',no:'5',ic:'⚖️',name:'比和比值',nav:'比和比值',c:'#7048e8',cb:'#f3f0ff',g:U5,
+  types:['比的記法','比值','最簡單整數比','最簡單整數比','相等的比','求□','求□','比值比大小','比的應用','比的應用','圖形的比'].filter(t=>U5[t]),
+  tools:[{id:'5-all',i:'⚖️',k:'自學',n:'比和比值',f:'t/5.html'}],
+  tt:{'比的記法':'5-all','比值':'5-all','相等的比':'5-all','最簡單整數比':'5-all','求□':'5-all','比值比大小':'5-all','比的應用':'5-all','圖形的比':'5-all'}}
 ];
 /* ===================== 科目 =====================
    數學的單元在上面(UN);國語、英語、自然、社會的題目放在 bank/ 資料夾的題庫檔,題型都是選擇題。
@@ -1960,14 +1986,14 @@ function buildPad(fracMode){pad.innerHTML='';['7','8','9','⌫','4','5','6','C',
 ['bw','bn','bd'].forEach(id=>tap($('#'+id),e=>{if(solved)return;act=e.currentTarget.dataset.k;paintF()}));
 function paintF(){['w','n','d'].forEach(k=>{const e=$('#b'+k);e.textContent=fv[k];e.classList.toggle('act',k===act&&!solved)})}
 function key(k){if(solved||!round)return;const q=round.qs[cur];if(q.type==='mc')return;if(k==='檢查')return check();
-  if(q.type==='frac'){$('#fbx').classList.remove('no');
-    if(k==='下一格'){act={w:'n',n:'d',d:'w'}[act];return paintF()}
+  if(q.type==='frac'||q.type==='ratio'){$('#fbx').classList.remove('no');
+    if(k==='下一格'){act=q.type==='ratio'?(act==='n'?'d':'n'):{w:'n',n:'d',d:'w'}[act];return paintF()}
     let v=fv[act];if(k==='⌫')v=v.slice(0,-1);else if(k==='C')v='';else if(/\d/.test(k)&&v.length<4)v=(v==='0'?'':v)+k;fv[act]=v;paintF();return}
   if(k==='⌫')val=val.slice(0,-1);else if(k==='C')val='';else if(k==='.'){if(!val.includes('.')&&val.length<9)val+=val?'.':'0.'}else if(val.length<9)val=(val==='0'?'':val)+k;
   $('#box').textContent=val;$('#box').className='ib'}
 document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')||$('#end').classList.contains('on')||vt)return;if($('#teach').classList.contains('on')){if(e.key==='Enter'||e.key===' '){e.preventDefault();tNext()}return}
-  if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&round.qs[cur].type==='frac'?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
-  else if(e.key==='Tab'||e.key==='/'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
+  if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&/frac|ratio/.test(round.qs[cur].type)?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
+  else if(e.key==='Tab'||e.key==='/'||e.key===':'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
 function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
@@ -1976,14 +2002,14 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
   const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none';$('#bigc').innerHTML=''}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
   stopAu();if(q.say||q.au)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
   $('#figc').classList.remove('solv');$('#steps').innerHTML='';fitBig();
-  const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac');A.classList.toggle('chmode',q.type==='mc');if(q.type!=='mc')$('#body').classList.remove('wideo','halfo');
-  $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';$('#rev').style.display='none';$('#rev').innerHTML='';
+  const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac'||q.type==='ratio');A.classList.toggle('rtmode',q.type==='ratio');A.classList.toggle('chmode',q.type==='mc');if(q.type!=='mc')$('#body').classList.remove('wideo','halfo');
+  $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';['bw','bn','bd'].forEach(id=>$('#'+id).className='ib');$('#rev').style.display='none';$('#rev').innerHTML='';
   $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
-  if(q.type==='mc'){const O=$('#opts');O.innerHTML='';const ml=Math.max(...q.opts.map(o=>isImg(o)?0:String(o).length));
-    O.className=(q.row?'row':'')+(ml>22?' xlong':ml>8?' long':'');
+  if(q.type==='mc'){const O=$('#opts');O.innerHTML='';const ml=Math.max(...q.opts.map(o=>isImg(o)?0:txtLen(o)));
+    O.className=(q.row?'row':'')+(ml>22?' xlong':ml>8?' long':'')+(q.opts.some(o=>/class="fr"/.test(o))?' hasfr':'');
     /* 長句選項：右邊選項欄變寬（沒有引文時更寬），比較不用捲動 */
     $('#body').classList.toggle('wideo',ml>8&&!q.big);$('#body').classList.toggle('halfo',ml>8&&!!q.big);q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
-  else buildPad(q.type==='frac');
+  else buildPad(q.type==='frac'||q.type==='ratio');
   paintF();$('#fb').textContent='';$('#fb').className='';dis($('#next'),true);$('#next').textContent='下一題 ▶';dis($('#hint'),false);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
 /* 題目大字放不下時縮小:不換行的大字看寬度;會換行的句子(.s)、短文(.p)只在整張卡片放不下時才縮小,最小 18px */
@@ -2014,7 +2040,7 @@ function bankTry(q,msg){const fb=$('#fb');fb.innerHTML=`${ico('mascot-think','fb
 /* ===== 答錯一次：用同一題型、不同數字的例題，一步一步教 ===== */
 let tSteps=[],tK=0;
 function makeExample(q){for(let i=0;i<40;i++){const e=genQ(q.u,q.t,true),k=x=>x.id||x.text+(x.big||'')+JSON.stringify(x.opts||'')+JSON.stringify(x.fig||'');if(k(e)!==k(q)&&(q.type==='mc'||JSON.stringify(e.ans)!==JSON.stringify(q.ans)))return e}return null}
-function ansHtml(e){const a=e.type==='frac'?mx(e.ans.n,e.ans.d):e.type==='mc'?optHtml(e.ans):f(e.ans);return `答案：${e.pre?e.pre+' ':''}${a}${e.unit?' '+e.unit:''}`}
+function ansHtml(e){const a=e.type==='frac'?mx(e.ans.n,e.ans.d):e.type==='ratio'?e.ans.join('：'):e.type==='mc'?optHtml(e.ans):f(e.ans);return `答案：${e.pre?e.pre+' ':''}${a}${e.unit?' '+e.unit:''}`}
 function showTeach(q,msg){const e=makeExample(q);$('#tmsg').innerHTML=msg?'💡 '+msg:'';
   if(!e){tSteps=q.hints.map(h=>'💡 '+h);$('#tq').innerHTML='';$('#tfig').style.display='none';$('#tbig').innerHTML=''}
   else{$('#tq').innerHTML='例題：'+hl(e.text);const sv=$('#tfig');sv.innerHTML='';
@@ -2030,6 +2056,12 @@ tap($('#tbtn'),()=>tNext());
 function right(q){round.res[cur]=tries===0?'ok':'ok2';const fb=$('#fb');fb.className='good pop';fb.textContent=tries===0?'🎉 '+pick(PRAISE):'👍 答對了！再接再厲';sfx.ok();burst(fb,tries===0?18:10);finish(q,true)}
 function trapMsg(q,v){const t=(q.traps||[]).find(([x])=>x>=0&&near(v,x));if(t)return t[1];const tf=(q.trapsF||[]).find(([x])=>near(v,x.n/x.d));return tf?tf[1]:null}
 function check(){const q=round.qs[cur];
+  if(q.type==='ratio'){const F2=$('#fbx'),fb=$('#fb');if(fv.n===''&&fv.d==='')return;
+    if(fv.n===''||fv.d===''){fb.className='bad';fb.textContent='前項、後項都要填喔';act=fv.n===''?'n':'d';paintF();return}
+    const a=+fv.n,b=+fv.d,[x,y]=q.ans;if(!a||!b){fb.className='bad';fb.textContent='比的前項、後項不能是 0';return}
+    if(a===x&&b===y||!q.simp&&a*y===b*x){['bn','bd'].forEach(id=>$('#'+id).classList.add('ok'));right(q);return}
+    if(a*y===b*x){F2.className='';void F2.offsetWidth;F2.className='no';fb.className='bad';fb.textContent='是相等的比！還要化成最簡單整數比';return}
+    F2.className='';void F2.offsetWidth;F2.className='no';wrong(a*x===b*y?'前項、後項的順序弄反了':null);return}
   if(q.type==='frac'){const w=fv.w===''?0:+fv.w,hasF=fv.n!==''||fv.d!=='';
     if(!hasF&&fv.w==='')return;
     if(hasF&&(fv.n===''||fv.d==='')){$('#fb').className='bad';$('#fb').textContent='分子、分母都要填喔';act=fv.n===''?'n':'d';paintF();return}
@@ -2081,9 +2113,9 @@ function finish(q,ok){solved=true;dis($('#hint'),true);$('#hint').classList.remo
   else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
   saveSum(round.got>0||rushed);if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
-  if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.id?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
+  if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.id&&q.type==='mc'?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
-    else{const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):f(q.ans);r.style.display='inline-block';$('#box').style.display='none';$('#fbx').style.display='none'}}
+    else{const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):q.type==='ratio'?q.ans.join('：'):f(q.ans);r.style.display='inline-block';$('#box').style.display='none';$('#fbx').style.display='none'}}
   if(q.id)bankReveal(q);
   dis($('#next'),false);$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintP();
   setTimeout(()=>{const s=$('#steps').lastElementChild;if(s&&s.scrollIntoView)s.scrollIntoView({block:'nearest'})},50)}
