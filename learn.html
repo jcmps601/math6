@@ -694,6 +694,12 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .midh{margin-top:1.4rem}
 @media (min-width:1100px){#ucmid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:900px),(orientation:portrait){#ucmid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 長選項（句子）：字小一點、按鈕可以變高，不會被切掉；真的放不下就捲動 */
+#opts.long,#opts.xlong{overflow-y:auto;justify-content:flex-start}
+#opts.long button,#opts.xlong button{max-height:none;overflow:visible;flex:0 0 auto;min-height:3.6rem;white-space:normal;text-align:center;padding:.5rem .7rem}
+#opts.long button{font-size:1.45rem}#opts.xlong button{font-size:1.2rem}
+#opts.long::before,#opts.xlong::before{content:'';flex:1 1 0;max-height:2rem}#opts.long::after,#opts.xlong::after{content:'';flex:1 1 0;max-height:2rem}
 </style>
 </head><body>
 
@@ -1945,7 +1951,7 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
   $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';$('#rev').style.display='none';$('#rev').innerHTML='';
   $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
   if(q.type==='mc'){const O=$('#opts');O.innerHTML='';const ml=Math.max(...q.opts.map(o=>isImg(o)?0:String(o).length));
-    O.className=(q.row?'row':'')+(ml>40?' xlong':ml>18?' long':'');q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
+    O.className=(q.row?'row':'')+(ml>22?' xlong':ml>8?' long':'');q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
   else buildPad(q.type==='frac');
   paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
