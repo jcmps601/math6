@@ -73,10 +73,11 @@
     cap: hat(.8, .62), party: hat(.36, .84), beret: hat(.78, .72), tophat: hat(.56, .8), magic: hat(.8, .8), chef: hat(.6, .82), crown: hat(.5, .8), grad: hat(.82, .74),
     halo: g => { const [x, y] = UP(g, 1.22); return { w: g.hw * .58, x, y, al: 'c', r: g.a }; },
     helmet: g => { const [x, y] = UP(g, .3); return { w: Math.max(g.hw * 1.3, g.tl * 2.6), x, y, al: 'c', r: g.a }; },
-    round: glass(1), heart: glass(1.02), sun: glass(1), star: glass(1.05), goggle: glass(1.12),
+    round: glass(1), heart: glass(1.02), sun: glass(1), star: glass(1.05), goggle: g => { const w = Math.max((g.d / 2 + g.es * .7) / .3025, g.d / .32 * .8), h = w * .707, ox = w * .014, oy = -h * .028 - Math.max(0, w * .13 - g.es * .7);   // 兩眼都要在透明窗口裡、鏡框不壓眼睛；往上推讓眼睛靠窗口下緣，鼻罩才不會蓋住嘴巴
+      return { w, x: g.mx + g.ex * ox - g.ey * oy, y: g.my + g.ey * ox + g.ex * oy, al: 'c', r: g.a }; },
     /* 腳下：畫在寵物後面，寵物踩在上面 */
     grass: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), petal: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), cloud: g => ({ w: g.bw * 1.1, x: g.bx, y: g.bot + 6, al: 'f' }),
-    heartp: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), starring: g => ({ w: g.bw * 1.08, x: g.bx, y: g.bot + 4, al: 'f' }), rainbowc: g => ({ w: g.bw * 1.12, x: g.bx, y: g.bot + 6, al: 'f2' }),
+    heartp: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), starring: g => ({ w: g.bw * 1.08, x: g.bx, y: g.bot + 4, al: 'f' }), rainbowc: g => ({ w: Math.min(198, g.bw * 1.5), x: g.bx, y: g.bot + 6, al: 'f2', pre: rainbowArc(g) }),
     /* 身邊：飄在頭旁邊（右邊放不下就放左邊） */
     balloon: g => side(g, Math.max(34, g.hw * .45), .1), butterfly: g => side(g, Math.max(34, g.hw * .42), .15), starkid: g => side(g, Math.max(32, g.hw * .42), .2), rocketm: g => side(g, Math.max(28, g.hw * .36), .15), moon: g => side(g, Math.max(32, g.hw * .42), .1)
   };
@@ -99,30 +100,58 @@
      ADJ['種類-型態'] 或 ADJ['種類']（三個型態都適用）＝ { 配件id 或 部位(h 帽子/g 眼鏡/k 腳下/b 身邊): 設定 }
        [往右, 往下, 放大倍數, 多轉幾度, 左右翻面]  → 從原本算好的位置微調（200×200 座標，翻面寫 1）
        { x, y, w, r, f }                            → 直接指定：中心點 x、y，寬 w，轉 r 度，f:1 翻面 */
+  const HATS = ['cap', 'party', 'beret', 'tophat', 'magic', 'chef', 'crown', 'grad'];
+  const allHats = v => Object.fromEntries(HATS.map(id => [id, v]));   // 每一種帽子都套同一個微調
   const ADJ = {
-    /* 蝴蝶結、小花：避開頭上原本的花、冰晶、頭巾、頭飾，改綁在耳朵、頭側或當髮夾（老師 2026-11-07 檢查後調整） */
-    'bunny-1': {bow: {x: 76, y: 55, w: 28, r: -20, f: 1}, flower: {x: 76, y: 55, w: 36, r: -35, f: 1}},   // 頭上有花 → 綁在左耳
-    'bunny-2': {bow: {x: 122, y: 52, w: 26, r: 25}, flower: {x: 122, y: 52, w: 34, r: 10}},   // 花冠 → 右耳
+    /* 2026-11-07 依老師、美術檢查報告調整：
+       ・蝴蝶結／小花：避開頭上原本的花、冰晶、頭巾、頭飾，也不要靠近眼睛；改綁在耳朵、頭側、菇傘邊或身體外緣
+       ・光環：有天線、水花、冰晶、小香菇等頭飾的，抬到頭飾最高點上方，留一點空隙
+       ・身邊小夥伴（b）：{x,y} 只換位置、大小不變，避開尾巴、畫筆、燈籠、尾端星星、寶石
+       ・彩虹馬的帽子：往後腦斜戴、縮小一點，讓獨角露出來 */
     'blob-0': {bow: {x: 98, y: 72, w: 30}, flower: {x: 98, y: 72, w: 39, r: -15}},   // 水滴尖尖的頂端
-    'blob-2': {bow: {x: 148, y: 98, w: 30, r: 20}, flower: {x: 148, y: 98, w: 39, r: 5}},   // 頭上有泡泡冠 → 右側
-    'penguin-1': {bow: [8, 14, 1, 10], flower: [8, 14, 1, 10]},   // 避開頭上的雪花
-    'penguin-2': {bow: [18, 10, .9, 15], flower: [18, 10, .9, 15]},   // 避開冰晶冠
-    'panda-1': {bow: {x: 150, y: 36, w: 26, r: 20}, flower: {x: 150, y: 36, w: 34, r: 5}},   // 頭巾 → 右耳
-    'panda-2': {bow: {x: 126, y: 36, w: 26, r: 20}, flower: {x: 126, y: 36, w: 34, r: 5}},   // 右耳
-    'mushroom-1': {bow: {x: 126, y: 118, w: 24, r: 15}, flower: {x: 126, y: 118, w: 31}},   // 菇傘上有芽 → 臉旁髮夾
-    'mushroom-2': {bow: {x: 128, y: 113, w: 24, r: 15}, flower: {x: 128, y: 113, w: 31}},
-    'lion-2': {bow: [18, 22, 1, 10], flower: [18, 22, 1, 10]},   // 頭飾 → 鬃毛側邊
-    'turtle-1': {bow: [0, 9], flower: [0, 9]},
-    'cat-0': {bow: [6, 0], flower: [6, 0]}, 'cat-2': {bow: [10, -4], flower: [10, -4]},   // 避開額頭的星星、月亮
-    'dragon-2': {bow: {x: 127, y: 89, w: 22, r: 20}, flower: {x: 127, y: 89, w: 29, r: 5}},
-    'otter-0': {bow: [0, 6], flower: [0, 6]},
+    'blob-2': {bow: {x: 157, y: 90, w: 28, r: 25}, flower: {x: 161, y: 84, w: 34, r: 10}, halo: [0, -18]},   // 泡泡冠 → 身體右上外緣
+    'bunny-1': {bow: {x: 76, y: 55, w: 28, r: -20, f: 1}, flower: {x: 76, y: 55, w: 36, r: -35, f: 1}},   // 頭上有花 → 左耳
+    'bunny-2': {bow: {x: 122, y: 52, w: 26, r: 25}, flower: {x: 122, y: 52, w: 34, r: 10}},   // 花冠 → 右耳
+    'cat-0': {bow: [6, 0], flower: [6, 0]},
+    'cat-2': {bow: [10, -4], flower: [10, -4], b: {x: 18, y: 50}},   // 避開額頭的月亮；小夥伴避開尾巴的星星
+    'dragon-2': {bow: {x: 121, y: 84, w: 20, r: 20}, flower: {x: 121, y: 84, w: 26, r: 5}},   // 頭側、角的下方
+    'fox-2': {b: {x: 14, y: 52}},   // 右邊都是燈籠
     'hedgehog-1': {bow: {x: 122, y: 106, w: 26, r: 20}, flower: {x: 122, y: 106, w: 34, r: 5}},   // 頭上有楓葉
+    'lion-2': {bow: [18, 22, 1, 10], flower: [18, 22, 1, 10]},   // 頭飾 → 鬃毛側邊
+    'mushroom-1': {bow: {x: 150, y: 90, w: 24, r: 25}, flower: {x: 148, y: 88, w: 30, r: 10}, halo: [0, -26]},   // 菇傘右側邊緣
+    'mushroom-2': {bow: {x: 150, y: 80, w: 24, r: 20}, flower: {x: 150, y: 78, w: 30, r: 5}, halo: [0, -22]},
+    'octopus-1': {b: {x: 36, y: 62}},   // 右邊有畫筆
+    'octopus-2': {b: {x: 72, y: 22}},   // 兩邊是調色盤、畫筆、泡泡
+    'otter-0': {bow: [0, 6], flower: [0, 6]},
+    'otter-1': {halo: [0, -8]}, 'otter-2': {halo: [0, -10]},   // 浪花頭髮
+    'panda-1': {bow: {x: 150, y: 36, w: 26, r: 20}, flower: {x: 150, y: 36, w: 34, r: 5}},   // 頭巾 → 右耳
+    'panda-2': {bow: {x: 126, y: 36, w: 26, r: 20}, flower: {x: 126, y: 36, w: 34, r: 5}},
+    'penguin-1': {bow: [8, 14, 1, 10], flower: [16, 4, 1, 15]},   // 避開雪花、右眼
+    'penguin-2': {bow: [18, 10, .9, 15], flower: [24, 2, .9, 20], halo: [0, -20]},   // 冰晶冠
+    'robot-0': {halo: [0, -23]}, 'robot-1': {halo: [0, -21]}, 'robot-2': {halo: [0, -8]},   // 天線、齒輪
+    'turtle-1': {bow: [0, 9], flower: [0, 9]},
+    'turtle-2': {b: {x: 181, y: 120}},   // 上面有浮空寶石
+    'unicorn-0': allHats([18, 4, .88, 16]), 'unicorn-1': allHats([28, 6, .85, 18]), 'unicorn-2': allHats([24, 6, .85, 16]),
+    'whale-0': {halo: [0, -28], b: {x: 140, y: 88}},   // 噴水的星星；小夥伴離開尾巴
+    'whale-1': {halo: [-16, -22], b: {x: 166, y: 70}},
+    'whale-2': {halo: [0, -24], b: {x: 34, y: 62}},   // 自己就有一圈光環
   };
   const adjOf = (sp, st, id) => { const o = ADJ[sp + '-' + st] || {}, a = ADJ[sp] || {}, k = ITEMS[id] && ITEMS[id].k; return o[id] || a[id] || o[k] || a[k] || null; };
   function wrapAdj(svg, cx, cy, A) {
-    if (!A || !Array.isArray(A)) return svg;
+    if (!A) return svg;
+    if (!Array.isArray(A)) return `<g transform="translate(${F1(A.x - cx)} ${F1(A.y - cy)})">${svg}</g>`;   // 只換位置
     const [dx = 0, dy = 0, s = 1, r = 0, f = 0] = A;
     return `<g transform="translate(${F1(cx + dx)} ${F1(cy + dy)}) rotate(${F1(r)}) scale(${f ? -s : s} ${s}) translate(${F1(-cx)} ${F1(-cy)})">${svg}</g>`;
+  }
+  /* 彩虹雲：原圖的彩虹在雲中間，寵物一站上去就被身體擋住，看起來跟普通雲朵一樣。
+     把原圖的彩虹那一塊（360×188 裡 x 96～268、y 4～64）裁出來，放大拉高成一道拱，兩腳落在身體兩側的雲上 */
+  let rbwN = 0;
+  function rainbowArc(g) {
+    const cw = Math.min(198, g.bw * 1.5), ch = cw * .522, top = Math.min(g.bot + 6 - ch * .72, 199 - ch), land = top + ch * .47;   // 雲圖的上緣、彩虹兩腳落在雲上的高度
+    const R = Math.min(190, g.bw * 1.42), arcH = R * (46 / 172) * 2.05, x0 = g.bx - R / 2, y0 = land + 3 - arcH;
+    /* 只留彩色那一圈：外圈、內圈都是半個橢圓（量過：彩虹帶頂端 y6、內緣 y49，左右腳在 x98、x265），拱門裡面的雲不要 */
+    const cid = 'rbw' + (++rbwN);
+    return `<svg x="${F1(x0)}" y="${F1(y0)}" width="${F1(R)}" height="${F1(arcH)}" viewBox="96 4 172 46" preserveAspectRatio="none" overflow="hidden"><clipPath id="${cid}"><path clip-rule="evenodd" d="M95 66 A87 61 0 0 1 269 66 Z M126 66 A56 17 0 0 1 238 66 Z"/></clipPath><image href="${IMG}acc-rainbowc.webp" width="360" height="188" clip-path="url(#${cid})"/></svg>`;
   }
   function absAcc(id, A) {
     const w = A.w, h = w * (AR[id] || 1), fl = ITEMS[id] && ITEMS[id].k === 'b' ? ' class="pflt"' : '';
@@ -150,7 +179,7 @@
     return '';
   }
   function accImg(id, q, ht, sp, st) {
-    const A = adjOf(sp, st, id); if (A && !Array.isArray(A)) return absAcc(id, A);
+    const A = adjOf(sp, st, id); if (A && !Array.isArray(A) && A.w) return absAcc(id, A);
     const out = accImg0(id, q, ht, sp), g = out.g;
     return wrapAdj(out.s, g.pv[0], g.pv[1], A);
   }
@@ -166,7 +195,7 @@
     const x = P.x - w / 2, rot = P.r ? ` transform="rotate(${P.r.toFixed(1)} ${P.x.toFixed(1)} ${(P.al === 'b' ? P.y : P.y).toFixed(1)})"` : '';
     const body = ph ? `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(w / 100).toFixed(3)})">${PH[id][1]}</g>` : `<image href="${IMG}acc-${id}.webp" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/>`;
     g.pv = [P.x, P.y];
-    return { s: `<g${P.cls ? ` class="${P.cls}"` : ''}><g${rot}>${body}</g></g>`, g };
+    return { s: (P.pre || '') + `<g${P.cls ? ` class="${P.cls}"` : ''}><g${rot}>${body}</g></g>`, g };
   }
 
 
