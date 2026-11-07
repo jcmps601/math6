@@ -630,6 +630,32 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 @media (max-width:600px){#garage .glist{grid-template-columns:repeat(2,minmax(0,1fr))}#garage .gs{display:none}}
 #xqcard .xbtns .go.xgar{grid-column:1/-1;background:#fff;color:#7a5a32;box-shadow:0 4px 0 #d9b97f;border:2px solid #ead9b6}
 #xqcard .xbtns .go.xgar small{font-size:.8em;margin-left:.5em;color:#9a7a52}
+
+/* ═══ 2026-11-07 修正：學習頁標題圖、單元卡圖示不擋星星、首頁重新編排 ═══ */
+.h1 .tag img{width:1.25em!important;height:1.25em!important;vertical-align:-.25em}
+.uc .s{padding-right:4.4rem}
+@media (max-width:900px),(orientation:portrait){
+ .uc .ui{top:.55rem;bottom:auto;right:.45rem}.uc .b{padding-right:2.9rem}.uc .s{padding-right:0}}
+.hgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:1rem;margin-top:1rem;align-items:stretch}
+.hgrid>.cd{margin-top:0!important}
+#next .nxh{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:1.25rem;font-weight:900;color:#2e7554}
+#next .nxh span{display:flex;align-items:center;gap:.35rem}#next .nxs{width:1.8rem;height:1.8rem}
+#next .nxr{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:.7rem;margin-top:.6rem}
+#next .nxu,#next .nxw{display:flex;flex-direction:column;gap:.4rem;background:#fffaf0;border-radius:18px;padding:.6rem .7rem;position:relative;border-top:.4rem solid var(--c,#e7ddcc)}
+#next .nxw{--c:#e8a0a0}
+#next .nxi{position:absolute;right:.5rem;top:.5rem;font-size:2.6rem;line-height:1}#next .nxi img{width:3rem;height:3rem}
+#next .nxt{padding-right:3.2rem}#next .nxt .a{font-size:.95rem;font-weight:900;color:var(--c)}#next .nxt .b{font-size:1.3rem;font-weight:900;color:#333;line-height:1.25}
+#next .nxt .s{font-size:1rem;font-weight:900;color:#657065;display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.15rem}#next .nxt .s b{color:#c92a2a;font-size:1.3rem}
+#next .go{margin:auto 0 0;align-self:stretch;font-size:1.15rem;padding:.5rem .6rem}
+#playt{margin-top:1rem}
+#playt .pyt{display:flex;align-items:center;gap:.6rem}#playt .pyi{width:3rem;height:3rem}
+#playt .pyh{font-size:1.3rem;font-weight:900;color:#6d4c9a}#playt .pys{font-size:1rem;font-weight:800;color:#657065}#playt .pys b{color:#2e7554}
+#playt .pyb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;margin-top:.7rem}
+#playt .pybtn{display:flex;flex-direction:column;align-items:center;gap:.1rem;border:3px solid #ece3f7;background:#fff;border-radius:18px;padding:.5rem .3rem;font-family:inherit;min-height:3rem}
+#playt .pybtn .pbi{width:2.6rem;height:2.6rem}#playt .pybtn b{font-size:1.1rem;color:#33443b}#playt .pybtn small{font-size:.85rem;color:#8a7a9a;font-weight:800}
+#playt .pybtn:active{transform:translateY(2px)}
+@media (max-width:900px),(orientation:portrait){.hgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){#next .nxr{grid-template-columns:minmax(0,1fr)}#playt .pybtn b{font-size:1rem}#playt .pybtn .pbi{width:2.2rem;height:2.2rem}}
 </style>
 </head><body>
 
@@ -1341,14 +1367,37 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
-  f.appendChild(W);t.appendChild(f);P.appendChild(t);P.appendChild(progCard());
+  f.appendChild(W);t.appendChild(f);P.appendChild(t);
+  const G2=el('div','hgrid');G2.appendChild(nextCard());G2.appendChild(progCard());P.appendChild(G2);
   if(!LS.get('learn601_rwseen',0))setTimeout(()=>{if(view==='home'&&!document.getElementById('rwhelp'))rewardHelp()},600);
-  /* 單元（目前的科目；換科目到「學習」） */
-  const SJ=subjOf(subj),hd=el('div','sec hsec',`<span>${ico(SJ.img,'hi2')}${SJ.n}・學習單元</span>`),sw=el('button','hmore',`換科目 ▶`);tap(sw,()=>goView('learn'));hd.appendChild(sw);P.appendChild(hd);
-  P.appendChild(unitCards());
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}全班挑戰・寵物・農場`));
   const H=el('div','hsum');H.appendChild(bossCard());H.appendChild(PET.homeCard());H.appendChild(FARM.homeCard());P.appendChild(H);
+  P.appendChild(playCard());
   P.appendChild(statCard())}
+/* 首頁：接下來練什麼——目前科目裡還沒完成的第一個單元；都完成了就挑星星最少的；都 3 顆星就練綜合 */
+function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj),SM=mixOf(subj);if(!L.length)return SM||null;
+  const nd=L.find(u=>!((sum.dn&&sum.dn[u.key])||sum.best[u.key]!=null));if(nd)return nd;
+  const low=L.slice().sort((a,b)=>starN(sum.best[a.key]||0)-starN(sum.best[b.key]||0))[0];return starN(sum.best[low.key]||0)<3?low:(SM||low)}
+function nextCard(){const c=el('div','cd');c.id='next';const u=nextUnit(),SJ=subjOf(subj),W=wbLoad().length;
+  c.innerHTML=`<div class="nxh"><span>${ico(SJ.img,'nxs')}接下來練什麼</span></div>`;
+  const sw=el('button','hmore','全部單元 ▶');tap(sw,()=>goView('learn'));c.querySelector('.nxh').appendChild(sw);
+  const row=el('div','nxr');
+  if(u){const t=el('div','nxu');t.style.setProperty('--c',u.c);
+    t.innerHTML=`<span class="nxi">${u.img?ico(u.img):(u.ic||'')}</span><div class="nxt"><div class="a">${isMix(u)?'★ 綜合':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${unitState(u.key)}</div></div>`;
+    const g=el('button','go','開始練習 ▶');tap(g,()=>startPractice(isMix(u)?u.key:UN.indexOf(u)));t.appendChild(g);row.appendChild(t)}
+  else row.appendChild(el('div','nxu',`<div class="nxt"><div class="b">${SJ.n}的題目準備中</div></div>`));
+  const w=el('div','nxw');w.innerHTML=W?`<span class="nxi">${ico('nav-wb')}</span><div class="nxt"><div class="b">錯題本</div><div class="s"><b>${W}</b> 題待練</div></div>`:`<span class="nxi">${ico('mascot-yay')}</span><div class="nxt"><div class="b">錯題本</div><div class="s">空的，太棒了！</div></div>`;
+  if(W){const g=el('button','go gray','再練一次');tap(g,()=>startPractice('wb'));w.appendChild(g)}
+  row.appendChild(w);c.appendChild(row);return c}
+/* 首頁：跟同學一起玩——現在誰在線上、直接進大砲遊戲 */
+function playCard(){const c=el('div','cd');c.id='playt';
+  c.innerHTML=`<div class="pyt">${ico('vs-vs','pyi')}<div><div class="pyh">跟同學一起玩</div><div class="pys" id="pyon">看看誰在線上…</div></div></div><div class="pyb"></div>`;
+  const B=c.querySelector('.pyb');
+  [['vs-pd','大砲對轟','2 人',()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'})],['vs-pd','大砲混戰','2～4 人',()=>openTool({...XQ_TOOL,f:'party.html'})],['vs-vs','更多對戰','軍棋・暗棋',()=>goView('game')]]
+    .forEach(([im,n,sub,fn])=>{const b=el('button','pybtn',`${ico(im,'pbi')}<b>${n}</b><small>${sub}</small>`);tap(b,fn);B.appendChild(b)});
+  onlineSeats().then(o=>{const e=c.querySelector('#pyon');if(!e)return;const L=Object.keys(o).map(Number).filter(s=>s!==user.seat&&(isTest(user.seat)||!isTest(s)));
+    e.innerHTML=!online?'📴 連上網路才能跟同學一起玩':L.length?`現在有 <b>${L.length}</b> 位同學在線上：${L.slice(0,6).map(s=>seatName(s)).join('、')}${L.length>6?'…':''}`:'現在沒有同學在線上，可以先練習，等一下再來看看'}).catch(()=>{});
+  return c}
 /* 單元卡片（首頁、學習頁共用）：目前科目的單元＋綜合＋錯題 */
 function unitCards(){const SM=mixOf(subj),SJ=subjOf(subj),G=el('div');G.id='ucards';
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;G.appendChild(c)}
@@ -1377,7 +1426,7 @@ function statCard(){const rate=sum.total?Math.round(sum.first/sum.total*100):0;
   const S=el('div','stat',`<div>累計練習<b>${sum.total} 題</b></div><div>一次就答對<b>${rate}%</b></div><div>練習天數<b>${Object.values(sum.days).filter(v=>v>0).length} 天</b></div>`);
   const c=el('div','cd');c.style.marginTop='1rem';c.appendChild(S);return c}
 /* 學習頁：科目 → 單元 */
-function renderLearn(P){const h=el('div','h1',`<span class="tag">${ico('pr-pen','hi2')}</span>學習`);h.style.setProperty('--c','#1c7ed6');P.appendChild(h);
+function renderLearn(P){const h=el('div','h1',`<span class="tag">✏️</span>學習`);h.style.setProperty('--c','#1c7ed6');P.appendChild(h);
   P.appendChild(subjBar());P.appendChild(unitCards());P.appendChild(statCard())}
 function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${isMix(u)?'★':uTag(u)}</span>${u.name}`);h.style.setProperty('--c',u.c);P.appendChild(h);
   if(u.g||isMix(u)){const c=el('div','cd');c.id='practice';c.style.setProperty('--c',u.c);const b=sum.best[u.key]||0;
@@ -1897,7 +1946,12 @@ const bossOf=wk=>{const n=Math.floor(new Date(wk+'T00:00:00').getTime()/6048e5),
 const bossHP=()=>SEATS.flat().length*BOSS_HP_EACH;
 const myBoss=wk=>(sum&&sum.bossD&&sum.bossD[wk])||0;
 /* 答完一題:扣魔王的血(在 finish 裡呼叫) */
+/* 魔王打倒了沒（這台平板記得的）：打倒以後答對就不再扣血、不再加點數 */
+const bdeadK=wk=>'learn601_bdead_'+(user&&user.seat)+'_'+wk;
+const bossDead=wk=>!!LS.get(bdeadK(wk),0);
 function bossHit(res){const h=BOSS_HIT[res]||0;if(!h||!user||!sum)return 0;const wk=bossWk();
+  if(bossDead(wk))return 0;
+  if(!bossHit.at||Date.now()-bossHit.at>60000){bossHit.at=Date.now();bossLoad(wk).then(R=>{if(R&&R.ok&&R.tot>=R.hp)LS.set(bdeadK(wk),1)}).catch(()=>{})}   // 一分鐘看一次全班打倒了沒
   sum.bossD=sum.bossD||{};sum.bossD[wk]=(sum.bossD[wk]||0)+h;
   for(const k of Object.keys(sum.bossD))if(k<bossWk(4))delete sum.bossD[k];   // 只留最近幾週
   round.bd=(round.bd||0)+h;BOSSC=null;
@@ -1922,7 +1976,7 @@ async function bossLoad(wk){if(BOSSC&&BOSSC.wk===wk&&Date.now()-BOSSC.at<20000)r
   if(user){const me=rows.find(r=>r.seat===user.seat),m=myBoss(wk);if(me)me.s=Math.max(me.s,m);else if(m)rows.push({seat:user.seat,s:m,t:Date.now()})}
   const cls=rows.filter(r=>!isTest(r.seat)).sort((a,b)=>b.s-a.s||a.seat-b.seat);
   let tot=cls.reduce((a,r)=>a+r.s,0);if(user&&isTest(user.seat))tot+=myBoss(wk);   // 測試帳號:自己打的也看得到效果
-  const R={wk,at:Date.now(),ok:!!v,denied,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP()};if(v){if(wk===bossWk())BOSSC=R;else BOSSL[wk]=R}return R}   // 沒讀到雲端的不要記(連上線後要重讀)
+  const R={wk,at:Date.now(),ok:!!v,denied,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP()};if(v&&tot>=R.hp&&user)LS.set(bdeadK(wk),1);if(v){if(wk===bossWk())BOSSC=R;else BOSSL[wk]=R}return R}   // 沒讀到雲端的不要記(連上線後要重讀)
 const bossClaimed=wk=>!!(sum&&sum.bossR&&sum.bossR[wk]);
 function bossClaim(wk){if(!sum||bossClaimed(wk))return;sum.bossR=sum.bossR||{};sum.bossR[wk]=1;
   if(!isTest(user.seat))sum.tk=(sum.tk||0)+1;saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);
@@ -1941,7 +1995,8 @@ async function bossPaint(c,wk,tries=0){const B=bossOf(wk);let R,L=null;try{[R,L]
   const left=Math.max(0,R.hp-tot),dead=left<=0,me=myBoss(wk),rk=R.rows.findIndex(r=>r.seat===user.seat);
   c.classList.toggle('dead',dead);c.querySelector('#bbi').style.width=(left/R.hp*100)+'%';
   c.querySelector('#bbt').textContent=dead?'💥 被打倒了！':`剩 ${left} / ${R.hp}`;
-  c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${tot}</b> 點・`:seen&&seen.wk===wk?`全班已經打了 <b>${tot}</b> 點（連線中…）・`:R.denied?'⏳ 全班的點數還沒開通（請告訴老師）・':'📴 連上網路才看得到全班打了多少・')+(me?`我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！');
+  if(dead){c.querySelector('#bbs').innerHTML=`🎉 全班合力把${B.n}打倒了！`+(me?`我出手了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'下週一會來新的魔王');}
+  else c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${tot}</b> 點・`:seen&&seen.wk===wk?`全班已經打了 <b>${tot}</b> 點（連線中…）・`:R.denied?'⏳ 全班的點數還沒開通（請告訴老師）・':'📴 連上網路才看得到全班打了多少・')+(me?`我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！');
   const md=['🥇','🥈','🥉'];c.querySelector('#bbtop').innerHTML=R.rows.length?'本週勇者：'+R.rows.slice(0,5).map((r,i)=>`<span>${md[i]||''}${r.seat} 號 ${r.s}</span>`).join(''):'';
   /* 打倒了:有出手的人領獎(這週、上週) */
   const rw=c.querySelector('#bbrw');rw.innerHTML='';
