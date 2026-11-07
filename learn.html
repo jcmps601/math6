@@ -699,6 +699,19 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #opts.long,#opts.xlong{overflow-y:auto;justify-content:flex-start}
 #opts.long button,#opts.xlong button{max-height:none;overflow:visible;flex:0 0 auto;min-height:3.6rem;white-space:normal;text-align:center;padding:.5rem .7rem}
 #opts.long button{font-size:1.45rem}#opts.xlong button{font-size:1.2rem}
+/* 選項按鈕最矮也要放得下一行字（以前視窗矮時會被壓扁、字的下緣被切掉）；真的放不下就捲動 */
+#opts:not(.row){overflow-y:auto;padding-bottom:5px}
+#opts:not(.row) button{line-height:1.2;min-height:calc(1.2em + 1.1rem)}
+@media (orientation:landscape) and (max-height:620px){
+ #opts:not(.row){gap:.4rem}
+ #opts:not(.row) button{font-size:1.45rem;padding:.15rem .4rem;min-height:calc(1.2em + .8rem);border-width:3px;box-shadow:0 3px 0 #dee2e6}
+ #opts.long button{font-size:1.25rem}#opts.xlong button{font-size:1.08rem}
+ .qimg{height:min(19rem,30vh)}
+}
+@media (orientation:landscape) and (min-width:700px){#body.wideo{grid-template-columns:1fr minmax(20rem,1.35fr)}#body.halfo{grid-template-columns:1fr minmax(20rem,1fr)}}
+/* 國語：句子裡的空格框、指定語詞畫底線 */
+.bx .qbx{display:inline-block;width:.85em;height:.85em;border:.12em solid #9aa0a6;border-radius:.15em;background:#fff;vertical-align:-.08em;margin:0 .06em}
+.bx u{text-decoration-color:#f08c00;text-decoration-thickness:.12em;text-underline-offset:.2em}
 /* 置中用按鈕的 margin（::before/::after 留給「先看題目」提示和倒數條） */
 #opts.long>button:first-child,#opts.xlong>button:first-child{margin-top:auto}#opts.long>button:last-child,#opts.xlong>button:last-child{margin-bottom:auto}
 #opts.long.wait::before,#opts.xlong.wait::before{bottom:0;position:sticky;flex:none;align-self:flex-start;order:99;margin-top:-.3rem}
@@ -1145,10 +1158,11 @@ function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);i
   /* 短文填空:其他還沒輪到的格子也畫成淡淡的底線,學生才看得出哪裡是空格 */
   /* 題目問「畫線的部分」:畫線的字一開始就要看得到(以前答完才出現) */
   if(it.reveal&&/畫線/.test(it.q||'')&&!big){big=String(it.reveal);it=Object.assign({},it,{reveal:'',bc:'',exp:''})}
+  if(s==='zh')big=big.replace(/□/g,'<i class="qbx"></i>');   // 國語：句子裡的□畫成空格框
   if(it.t==='短文填空')big=big.replace(/(^|[^>])\((\d)\)(?!＿)/g,'$1<span class="ob">($2)＿＿</span>');
   /* 字的大小看長度:對話、句子用大字,只有長的短文才用小字 */
   const bc=it.bc==='p'?(n>160?'p':'p big'):it.bc!=null?it.bc:n>6?'s':'';
-  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=3),   // 並排:圖片,或很短的(ar、ee)
+  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=(s==='zh'?1:3)),   // 並排:圖片,或很短的(ar、ee;國語只有單一個字才並排)
     big:(it.img?`<img class="qimg" src="${it.img}" alt="">`:'')+(big?`<div class="bx${bc?' '+bc:''}">${big}</div>`:''),
     say:it.say||'',au:it.au||'',rv:it.reveal||'',hd:it.au&&it.exp?it.exp:'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
     subj:s,kind,hints:it.hint?[].concat(it.hint):KIND_HINT[kind].slice(),
@@ -1949,11 +1963,13 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
   const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none';$('#bigc').innerHTML=''}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
   stopAu();if(q.say||q.au)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
   $('#figc').classList.remove('solv');$('#steps').innerHTML='';fitBig();
-  const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac');A.classList.toggle('chmode',q.type==='mc');
+  const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac');A.classList.toggle('chmode',q.type==='mc');if(q.type!=='mc')$('#body').classList.remove('wideo','halfo');
   $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';$('#rev').style.display='none';$('#rev').innerHTML='';
   $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
   if(q.type==='mc'){const O=$('#opts');O.innerHTML='';const ml=Math.max(...q.opts.map(o=>isImg(o)?0:String(o).length));
-    O.className=(q.row?'row':'')+(ml>22?' xlong':ml>8?' long':'');q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
+    O.className=(q.row?'row':'')+(ml>22?' xlong':ml>8?' long':'');
+    /* 長句選項：右邊選項欄變寬（沒有引文時更寬），比較不用捲動 */
+    $('#body').classList.toggle('wideo',ml>8&&!q.big);$('#body').classList.toggle('halfo',ml>8&&!!q.big);q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
   else buildPad(q.type==='frac');
   paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
