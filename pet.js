@@ -77,7 +77,7 @@
       return { w, x: g.mx + g.ex * ox - g.ey * oy, y: g.my + g.ey * ox + g.ex * oy, al: 'c', r: g.a }; },
     /* 腳下：畫在寵物後面，寵物踩在上面 */
     grass: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), petal: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), cloud: g => ({ w: g.bw * 1.1, x: g.bx, y: g.bot + 6, al: 'f' }),
-    heartp: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), starring: g => ({ w: g.bw * 1.08, x: g.bx, y: g.bot + 4, al: 'f' }), rainbowc: g => ({ w: Math.min(198, g.bw * 1.5), x: g.bx, y: g.bot + 6, al: 'f2', pre: rainbowArc(g) }),
+    heartp: g => ({ w: g.bw * 1.05, x: g.bx, y: g.bot + 4, al: 'f' }), starring: g => ({ w: g.bw * 1.08, x: g.bx, y: g.bot + 4, al: 'f' }), rainbowc: g => ({ w: Math.min(196, g.bw * RBC), x: g.bx, y: g.bot + 6, al: 'f2', pre: rainbowArc(g) }),
     /* 身邊：飄在頭旁邊（右邊放不下就放左邊） */
     balloon: g => side(g, Math.max(34, g.hw * .45), .1), butterfly: g => side(g, Math.max(34, g.hw * .42), .15), starkid: g => side(g, Math.max(32, g.hw * .42), .2), rocketm: g => side(g, Math.max(28, g.hw * .36), .15), moon: g => side(g, Math.max(32, g.hw * .42), .1)
   };
@@ -113,10 +113,12 @@
     'bunny-1': {bow: {x: 76, y: 55, w: 28, r: -20, f: 1}, flower: {x: 76, y: 55, w: 36, r: -35, f: 1}},   // 頭上有花 → 左耳
     'bunny-2': {bow: {x: 122, y: 52, w: 26, r: 25}, flower: {x: 122, y: 52, w: 34, r: 10}},   // 花冠 → 右耳
     'cat-0': {bow: [6, 0], flower: [6, 0]},
-    'cat-2': {bow: [10, -4], flower: [10, -4], b: {x: 18, y: 50}},   // 避開額頭的月亮；小夥伴避開尾巴的星星
+    'cat-2': {bow: [10, -4], flower: [10, -4], b: {x: 172, y: 24}, balloon: {x: 174, y: 20}, starkid: {x: 16, y: 128}},   // 避開額頭的月亮；小夥伴在尾巴星星上方（星星精靈放左側，免得兩顆星擠在一起）
     'dragon-2': {bow: {x: 121, y: 84, w: 20, r: 20}, flower: {x: 121, y: 84, w: 26, r: 5}},   // 頭側、角的下方
-    'fox-2': {b: {x: 14, y: 52}},   // 右邊都是燈籠
-    'hedgehog-1': {bow: {x: 122, y: 106, w: 26, r: 20}, flower: {x: 122, y: 106, w: 34, r: 5}},   // 頭上有楓葉
+    'fox-2': {b: {x: 74, y: 20}},   // 右邊都是燈籠、左邊是耳朵 → 兩耳中間上方
+    'hedgehog-1': {bow: {x: 122, y: 106, w: 26, r: 20}, flower: {x: 122, y: 106, w: 34, r: 5}, halo: [0, -22]},   // 頭上有楓葉
+    'hedgehog-2': {halo: [0, -24]},   // 刺
+    'bear-1': {halo: [0, -12]}, 'bear-2': {halo: [0, -14]},   // 頭上的葉子
     'lion-2': {bow: [18, 22, 1, 10], flower: [18, 22, 1, 10]},   // 頭飾 → 鬃毛側邊
     'mushroom-1': {bow: {x: 150, y: 90, w: 24, r: 25}, flower: {x: 148, y: 88, w: 30, r: 10}, halo: [0, -26]},   // 菇傘右側邊緣
     'mushroom-2': {bow: {x: 150, y: 80, w: 24, r: 20}, flower: {x: 150, y: 78, w: 30, r: 5}, halo: [0, -22]},
@@ -145,13 +147,28 @@
   }
   /* 彩虹雲：原圖的彩虹在雲中間，寵物一站上去就被身體擋住，看起來跟普通雲朵一樣。
      把原圖的彩虹那一塊（360×188 裡 x 96～268、y 4～64）裁出來，放大拉高成一道拱，兩腳落在身體兩側的雲上 */
-  let rbwN = 0;
+  /* 潛水鏡（256×181）：鼻罩從下框往上突進窗口、又往下垂（約 x 62～172、y 96～181），會蓋住嘴巴。
+     把這塊挖掉，補一條細的藍色下框貼在眼睛正下方，嘴巴、鳥喙就露出來了（暫時版，之後換 GPT 重畫的寵物專用潛水鏡） */
+  let gogN = 0;
+  function gogBody(x, y, w, h) {
+    const cid = 'gog' + (++gogN);
+    return `<svg x="${F1(x)}" y="${F1(y)}" width="${F1(w)}" height="${F1(h)}" viewBox="0 0 256 181" preserveAspectRatio="none" overflow="visible">`
+      + `<clipPath id="${cid}"><path clip-rule="evenodd" d="M-20 -20H280V200H-20Z M58 126 L68 126 Q76 111 96 108 Q128 92 160 108 Q168 114 170 126 L171 126 L171 200 L58 200 Z"/></clipPath>`
+      + `<image href="${IMG}acc-goggle.webp" width="256" height="181" clip-path="url(#${cid})"/>`
+      + `<path d="M54 131 Q113 125 176 131" fill="none" stroke="#1d5fae" stroke-width="10" stroke-linecap="round"/>`
+      + `<path d="M55 130 Q113 124 175 130" fill="none" stroke="#3d91e3" stroke-width="7" stroke-linecap="round"/>`
+      + `<path d="M60 127 Q113 121.5 170 127" fill="none" stroke="#c9e5fb" stroke-width="2" stroke-linecap="round" opacity=".9"/>`
+      + `</svg>`;
+  }
+  let rbwN = 0; const RBC = 1.3;   // 彩虹雲的雲底寬＝身體寬 × 1.3
   function rainbowArc(g) {
-    const cw = Math.min(198, g.bw * 1.5), ch = cw * .522, top = Math.min(g.bot + 6 - ch * .72, 199 - ch), land = top + ch * .47;   // 雲圖的上緣、彩虹兩腳落在雲上的高度
-    const R = Math.min(190, g.bw * 1.42), arcH = R * (46 / 172) * 2.05, x0 = g.bx - R / 2, y0 = land + 3 - arcH;
+    const cw = Math.min(196, g.bw * RBC), ch = cw * .522, top = Math.min(g.bot + 6 - ch * .72, 199 - ch), land = top + ch * .42;   // 雲圖的上緣、彩虹兩腳落在雲上的高度
+    const R = Math.min(198, g.bw * 1.62), arcH = R * (46 / 172) * 1.55, x0 = g.bx - R / 2, y0 = land - arcH;
+    const puff = (cx, cy, r) => `<g fill="#fff" stroke="#c9d2ee" stroke-width="1.3"><circle cx="${F1(cx - r * .55)}" cy="${F1(cy + r * .1)}" r="${F1(r * .62)}"/><circle cx="${F1(cx + r * .55)}" cy="${F1(cy + r * .12)}" r="${F1(r * .58)}"/><circle cx="${F1(cx)}" cy="${F1(cy - r * .18)}" r="${F1(r * .72)}"/></g><ellipse cx="${F1(cx)}" cy="${F1(cy + r * .38)}" rx="${F1(r * 1.05)}" ry="${F1(r * .32)}" fill="#fff"/>`;
+    const pr = R * .085, feet = puff(x0 + R * 16 / 172, y0 + arcH, pr) + puff(x0 + R * 156 / 172, y0 + arcH, pr);   // 彩虹兩腳踩的小雲（原圖也是這樣設計）
     /* 只留彩色那一圈：外圈、內圈都是半個橢圓（量過：彩虹帶頂端 y6、內緣 y49，左右腳在 x98、x265），拱門裡面的雲不要 */
     const cid = 'rbw' + (++rbwN);
-    return `<svg x="${F1(x0)}" y="${F1(y0)}" width="${F1(R)}" height="${F1(arcH)}" viewBox="96 4 172 46" preserveAspectRatio="none" overflow="hidden"><clipPath id="${cid}"><path clip-rule="evenodd" d="M95 66 A87 61 0 0 1 269 66 Z M126 66 A56 17 0 0 1 238 66 Z"/></clipPath><image href="${IMG}acc-rainbowc.webp" width="360" height="188" clip-path="url(#${cid})"/></svg>`;
+    return `<svg x="${F1(x0)}" y="${F1(y0)}" width="${F1(R)}" height="${F1(arcH)}" viewBox="96 4 172 46" preserveAspectRatio="none" overflow="hidden"><clipPath id="${cid}"><path clip-rule="evenodd" d="M95 66 A87 61 0 0 1 269 66 Z M126 66 A56 17 0 0 1 238 66 Z"/></clipPath><image href="${IMG}acc-rainbowc.webp" width="360" height="188" clip-path="url(#${cid})"/></svg>` + feet;
   }
   function absAcc(id, A) {
     const w = A.w, h = w * (AR[id] || 1), fl = ITEMS[id] && ITEMS[id].k === 'b' ? ' class="pflt"' : '';
@@ -193,6 +210,10 @@
     const P = f(g), w = P.w, ph = !AR[id] && PH[id], h = w * (ph ? PH[id][0] : AR[id] || 1);
     let y = P.al === 'b' ? P.y - h : P.al === 'f' ? Math.min(P.y - h * .62, 199 - h) : P.al === 'f2' ? Math.min(P.y - h * .72, 199 - h) : P.y - h / 2;
     const x = P.x - w / 2, rot = P.r ? ` transform="rotate(${P.r.toFixed(1)} ${P.x.toFixed(1)} ${(P.al === 'b' ? P.y : P.y).toFixed(1)})"` : '';
+    if (id === 'goggle') {   // 潛水鏡：裁掉中間的鼻罩（會蓋住嘴巴、鳥喙），補一條細下框
+      const gb = gogBody(x, y, w, h);
+      g.pv = [P.x, P.y]; return { s: `<g${rot}>${gb}</g>`, g };
+    }
     const body = ph ? `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(w / 100).toFixed(3)})">${PH[id][1]}</g>` : `<image href="${IMG}acc-${id}.webp" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/>`;
     g.pv = [P.x, P.y];
     return { s: (P.pre || '') + `<g${P.cls ? ` class="${P.cls}"` : ''}><g${rot}>${body}</g></g>`, g };
