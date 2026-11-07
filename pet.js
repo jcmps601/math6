@@ -61,7 +61,7 @@
   /* 帽子要戴在「頭頂」：每張圖手動量的頭頂點（不算耳朵、角、毛） x、y 和頭寬 w（200×200 座標） */
   const HT = {"chick":[[98,120,64],[98,86,60],[94,54,60]],"cat":[[92,88,72],[78,63,72],[80,46,68]],"dragon":[[90,93,62],[66,86,52],[82,77,46]],"bunny":[[85,86,66],[68,72,64],[75,72,64]],"blob":[[102,86,62],[102,64,90],[103,64,100]],"bear":[[100,57,80],[105,51,82],[106,40,80]],"dog":[[92,61,70],[82,40,74],[69,26,58]],"penguin":[[102,62,80],[106,52,80],[106,46,72]],"otter":[[100,48,80],[86,42,82],[78,38,82]],"fox":[[86,89,60],[70,72,66],[60,69,66]],"hedgehog":[[92,92,60],[76,90,62],[77,77,60]],"deer":[[90,78,54],[88,62,50],[78,57,44]],"panda":[[100,52,84],[108,33,86],[90,20,80]],"octopus":[[99,74,80],[97,55,90],[95,44,90]],"robot":[[97,82,80],[97,62,82],[95,52,72]],"mushroom":[[106,58,70],[98,58,72],[92,50,72]],"whale":[[86,122,60],[68,107,70],[58,100,64]],"lion":[[100,62,70],[73,42,72],[90,34,74]],"unicorn":[[78,56,62],[72,42,56],[84,36,56]],"turtle":[[118,46,70],[108,24,74],[102,20,70]]};
   /* 帽子：[寬度＝頭寬幾倍, 往頭裡戴進去多少（帽子高度的比例）] */
-  const HK = { cap: [1, .22], party: [.46, .08], beret: [.98, .22], tophat: [.74, .14], magic: [1.02, .18], chef: [.82, .18], crown: [.62, .12], grad: [1.06, .26] };
+  const HK = { cap: [1, .22], party: [.64, .1], beret: [.98, .22], tophat: [.74, .14], magic: [1.02, .18], chef: [.82, .18], crown: [.7, .12], grad: [1.06, .26] };
   /* 眼鏡拆成左右兩半，各自對準一隻眼睛（鏡片中心在圖寬的 26.5%／73.5%、半徑約圖寬 21%）；潛水鏡是一整片 */
   const GL = { round: '#83392a', heart: '#da4578', sun: '#2f2d30', star: '#d9a010' };
   const UP = (g, f) => [g.mx + g.ux * g.tl * f, g.my + g.uy * g.tl * f];   // 從眼睛往頭頂走 f 倍
@@ -94,6 +94,40 @@
     moon: [1, '<path d="M64 8 A44 44 0 1 0 92 70 A36 36 0 1 1 64 8Z" fill="#ffe066" stroke="#f59f00" stroke-width="3"/><circle cx="40" cy="50" r="4" fill="#2b2b3a"/><path d="M34 64 Q42 70 50 64" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="30" cy="58" r="4" fill="#ff8fab" opacity=".6"/>']
   };
   const F1 = v => v.toFixed(1);
+  /* ── 每隻寵物、每個型態的配件微調 ──
+     配件不用每隻都放同一個位置：找適合那隻寵物的地方、大小、角度（例如蝴蝶結改綁在耳朵上）。
+     ADJ['種類-型態'] 或 ADJ['種類']（三個型態都適用）＝ { 配件id 或 部位(h 帽子/g 眼鏡/k 腳下/b 身邊): 設定 }
+       [往右, 往下, 放大倍數, 多轉幾度, 左右翻面]  → 從原本算好的位置微調（200×200 座標，翻面寫 1）
+       { x, y, w, r, f }                            → 直接指定：中心點 x、y，寬 w，轉 r 度，f:1 翻面 */
+  const ADJ = {
+    /* 蝴蝶結、小花：避開頭上原本的花、冰晶、頭巾、頭飾，改綁在耳朵、頭側或當髮夾（老師 2026-11-07 檢查後調整） */
+    'bunny-1': {bow: {x: 76, y: 55, w: 28, r: -20, f: 1}, flower: {x: 76, y: 55, w: 36, r: -35, f: 1}},   // 頭上有花 → 綁在左耳
+    'bunny-2': {bow: {x: 122, y: 52, w: 26, r: 25}, flower: {x: 122, y: 52, w: 34, r: 10}},   // 花冠 → 右耳
+    'blob-0': {bow: {x: 98, y: 72, w: 30}, flower: {x: 98, y: 72, w: 39, r: -15}},   // 水滴尖尖的頂端
+    'blob-2': {bow: {x: 148, y: 98, w: 30, r: 20}, flower: {x: 148, y: 98, w: 39, r: 5}},   // 頭上有泡泡冠 → 右側
+    'penguin-1': {bow: [8, 14, 1, 10], flower: [8, 14, 1, 10]},   // 避開頭上的雪花
+    'penguin-2': {bow: [18, 10, .9, 15], flower: [18, 10, .9, 15]},   // 避開冰晶冠
+    'panda-1': {bow: {x: 150, y: 36, w: 26, r: 20}, flower: {x: 150, y: 36, w: 34, r: 5}},   // 頭巾 → 右耳
+    'panda-2': {bow: {x: 126, y: 36, w: 26, r: 20}, flower: {x: 126, y: 36, w: 34, r: 5}},   // 右耳
+    'mushroom-1': {bow: {x: 126, y: 118, w: 24, r: 15}, flower: {x: 126, y: 118, w: 31}},   // 菇傘上有芽 → 臉旁髮夾
+    'mushroom-2': {bow: {x: 128, y: 113, w: 24, r: 15}, flower: {x: 128, y: 113, w: 31}},
+    'lion-2': {bow: [18, 22, 1, 10], flower: [18, 22, 1, 10]},   // 頭飾 → 鬃毛側邊
+    'turtle-1': {bow: [0, 9], flower: [0, 9]},
+    'cat-0': {bow: [6, 0], flower: [6, 0]}, 'cat-2': {bow: [10, -4], flower: [10, -4]},   // 避開額頭的星星、月亮
+    'dragon-2': {bow: {x: 127, y: 89, w: 22, r: 20}, flower: {x: 127, y: 89, w: 29, r: 5}},
+    'otter-0': {bow: [0, 6], flower: [0, 6]},
+    'hedgehog-1': {bow: {x: 122, y: 106, w: 26, r: 20}, flower: {x: 122, y: 106, w: 34, r: 5}},   // 頭上有楓葉
+  };
+  const adjOf = (sp, st, id) => { const o = ADJ[sp + '-' + st] || {}, a = ADJ[sp] || {}, k = ITEMS[id] && ITEMS[id].k; return o[id] || a[id] || o[k] || a[k] || null; };
+  function wrapAdj(svg, cx, cy, A) {
+    if (!A || !Array.isArray(A)) return svg;
+    const [dx = 0, dy = 0, s = 1, r = 0, f = 0] = A;
+    return `<g transform="translate(${F1(cx + dx)} ${F1(cy + dy)}) rotate(${F1(r)}) scale(${f ? -s : s} ${s}) translate(${F1(-cx)} ${F1(-cy)})">${svg}</g>`;
+  }
+  function absAcc(id, A) {
+    const w = A.w, h = w * (AR[id] || 1), fl = ITEMS[id] && ITEMS[id].k === 'b' ? ' class="pflt"' : '';
+    return `<g${fl}><g transform="translate(${F1(A.x)} ${F1(A.y)}) rotate(${F1(A.r || 0)}) scale(${A.f ? -1 : 1} 1)"><image href="${IMG}acc-${id}.webp" x="${F1(-w / 2)}" y="${F1(-h / 2)}" width="${F1(w)}" height="${F1(h)}"/></g></g>`;
+  }
   /* 眼鏡：左半邊對左眼、右半邊對右眼；兩眼距離比鏡框寬時，中間補一段鼻樑 */
   function glassPair(id, g) {
     const W = 256, H = W * AR[id], rho = g.es * .92, s = Math.max(rho / (.21 * W), g.d / (.47 * W) * .78);
@@ -106,26 +140,33 @@
   const HALO_UP = { unicorn: 14 };   // 光環要再往上幾格（頭上有長角的）
   function headAcc(id, g, ht) {
     const [hx, hy, hw] = ht, ux = g.ey, uy = -g.ex, rot = g.a, AR1 = AR[id] || 1;
-    const at = (w, x, y, al, r) => { const h = w * AR1, yy = al === 'b' ? y - h : y - h / 2, rr = r ? ` transform="rotate(${F1(r)} ${F1(x)} ${F1(y)})"` : '';
+    const at = (w, x, y, al, r) => { g.pv = [x, y]; const h = w * AR1, yy = al === 'b' ? y - h : y - h / 2, rr = r ? ` transform="rotate(${F1(r)} ${F1(x)} ${F1(y)})"` : '';
       return `<g><g${rr}><image href="${IMG}acc-${id}.webp" x="${F1(x - w / 2)}" y="${F1(yy)}" width="${F1(w)}" height="${F1(h)}"/></g></g>`; };
     if (HK[id]) { const [k, sink] = HK[id], w = hw * k, h = w * AR1; return at(w, hx - ux * h * sink, hy - uy * h * sink, 'b', rot); }
     if (id === 'halo') { const w = hw * .66, up = w * .42 + (HALO_UP[g.sp] || 0); return at(w, hx + ux * up, hy + uy * up, 'c', rot); }
     if (id === 'helmet') { const w = hw * 1.42, cx = (hx + g.mx) / 2 + (g.mx - hx) * .35, cy = (hy + g.my) / 2 + (g.my - hy) * .35; return at(w, cx, cy, 'c', rot); }
-    if (id === 'bow' || id === 'flower') { const w = hw * (id === 'bow' ? .4 : .44), x = hx + g.ex * hw * .34 - ux * w * .05, y = hy + g.ey * hw * .34 - uy * w * .05; return at(w, x, y, 'c', rot + (id === 'bow' ? 15 : 0)); }
+    /* 蝴蝶結、小花：別在頭的右上側（往下貼著頭，不要浮在空中）；個別寵物再用 ADJ 換到耳朵等地方 */
+    if (id === 'bow' || id === 'flower') { const w = hw * (id === 'bow' ? .5 : .62), x = hx + g.ex * hw * .32 - ux * hw * .1, y = hy + g.ey * hw * .32 - uy * hw * .1; return at(w, x, y, 'c', rot + (id === 'bow' ? 15 : 0)); }
     return '';
   }
-  function accImg(id, q, ht, sp) {
-    const f = AP[id]; if (!f) return '';
+  function accImg(id, q, ht, sp, st) {
+    const A = adjOf(sp, st, id); if (A && !Array.isArray(A)) return absAcc(id, A);
+    const out = accImg0(id, q, ht, sp), g = out.g;
+    return wrapAdj(out.s, g.pv[0], g.pv[1], A);
+  }
+  function accImg0(id, q, ht, sp) {
+    const f = AP[id]; if (!f) return { s: '', g: { pv: [100, 100] } };
     const a = q[3] * Math.PI / 180, g = { sp, mx: q[0], my: q[1], d: q[2], a: q[3], es: q[4], tx: q[5], ty: q[6], hw: q[7], chin: q[8], bot: q[9], bx0: q[10], bx1: q[11], ex: Math.cos(a), ey: Math.sin(a) };
-    if (GL[id]) return glassPair(id, g);
-    if (ht) { const P = headAcc(id, g, ht); if (P) return P; }
+    if (GL[id]) { g.pv = [g.mx, g.my]; return { s: glassPair(id, g), g }; }
+    if (ht) { const P = headAcc(id, g, ht); if (P) return { s: P, g }; }
     g.tl = Math.hypot(g.tx - g.mx, g.ty - g.my); g.ux = (g.tx - g.mx) / (g.tl || 1); g.uy = (g.ty - g.my) / (g.tl || 1);
     g.bx = (g.bx0 + g.bx1) / 2; g.bw = Math.min(150, Math.max(g.hw * 1.1, g.bx1 - g.bx0));
     const P = f(g), w = P.w, ph = !AR[id] && PH[id], h = w * (ph ? PH[id][0] : AR[id] || 1);
     let y = P.al === 'b' ? P.y - h : P.al === 'f' ? Math.min(P.y - h * .62, 199 - h) : P.al === 'f2' ? Math.min(P.y - h * .72, 199 - h) : P.y - h / 2;
     const x = P.x - w / 2, rot = P.r ? ` transform="rotate(${P.r.toFixed(1)} ${P.x.toFixed(1)} ${(P.al === 'b' ? P.y : P.y).toFixed(1)})"` : '';
     const body = ph ? `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(w / 100).toFixed(3)})">${PH[id][1]}</g>` : `<image href="${IMG}acc-${id}.webp" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/>`;
-    return `<g${P.cls ? ` class="${P.cls}"` : ''}><g${rot}>${body}</g></g>`;
+    g.pv = [P.x, P.y];
+    return { s: `<g${P.cls ? ` class="${P.cls}"` : ''}><g${rot}>${body}</g></g>`, g };
   }
 
 
@@ -190,7 +231,7 @@
   function petArt(o) {
     const sp = SPECIES[o.sp] ? o.sp : 'chick', st = o.stage != null ? o.stage : stageOf(o.lv || 1), mood = o.mood || 'ok', id = 'p' + (++uid);
     const pic = ART.has(sp), q = pic && PA[sp] && PA[sp][st], T = pic ? '' : `translate(100 182) scale(${SC[st]}) translate(-100 -182)`, xs = XS[o.x | 0] || XS[0];
-    const AC = id => q ? accImg(id, q, HT[sp] && HT[sp][st], sp) : acc(id, sp);
+    const AC = id => q ? accImg(id, q, HT[sp] && HT[sp][st], sp, st) : acc(id, sp);
     const fil = o.sil ? 'brightness(0) opacity(.2)' : xs.f;
     const L = [];
     if (st === 2 && !o.sil && !pic) L.push(`<svg class="pal" viewBox="0 0 200 200"><defs><radialGradient id="${id}a"><stop offset=".55" stop-color="#fff7c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient></defs><circle cx="100" cy="118" r="84" fill="url(#${id}a)"/></svg>`);
@@ -1059,5 +1100,5 @@
   const S = document.createElement('style'); S.textContent = css + `
   @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
-  window.PET = { coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { _ADJ: ADJ, coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();
