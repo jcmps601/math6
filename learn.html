@@ -190,7 +190,7 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 #acts .hint{border-color:#d0bfff;color:#7048e8}#acts .hint.pulse{animation:pl 1s infinite}
 @keyframes pl{50%{box-shadow:0 0 0 .4rem rgba(112,72,232,.25)}}
 #acts .next{background:var(--o);border-color:var(--o);color:#fff;box-shadow:0 4px 0 #e8590c}
-#acts button:disabled{opacity:.35}
+#acts button.off{opacity:.35}   /* 用 class 不用 :disabled：iPhone Safari 有時候按鈕打開了卻沒重畫，看起來還是灰的 */
 #acts .hide{display:none}
 /* 結算 */
 #end{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:5;padding:1rem}
@@ -587,6 +587,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 
 /* ═══ 2026-11-05 V2：學生看得懂的提示 ═══ */
 #sync{display:flex;align-items:center;justify-content:center;gap:.2rem;line-height:1.3}#sync .ii{width:1.5em;height:1.5em;flex:none}
+@media (max-width:480px){#sync{font-size:0}#sync .ii{width:1.7rem;height:1.7rem}}   /* 手機：只留雲朵圖示（文字會被擠成直的） */
 #fb .fbm{width:2.4em;height:2.4em;vertical-align:-.8em;margin-right:.2em}
 .uc .s{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
 .ust{font-size:.85rem;font-weight:900;border-radius:999px;padding:.05rem .55rem;color:#657065;background:#eef1ec}.ust.d{color:#2e7554;background:#eaf4de}
@@ -761,7 +762,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
     <div id="fb"></div>
     <div id="pad"></div>
     <div id="opts"></div>
-    <div id="acts"><button class="hint" id="hint"><img class="ico bi" src="img/ui/pr-hint.webp" alt="">提示</button><button id="show" class="hide">看解答</button><button class="next" id="next" disabled>下一題 ▶</button></div>
+    <div id="acts"><button class="hint" id="hint"><img class="ico bi" src="img/ui/pr-hint.webp" alt="">提示</button><button id="show" class="hide">看解答</button><button class="next off" id="next" disabled>下一題 ▶</button></div>
    </div>
   </div>
  </main>
@@ -1180,6 +1181,17 @@ const MIX={key:'mix',s:'math',no:'★',ic:'🌟',img:'unit-mix',name:'1～4 單�
 const MIXES=[MIX,...SUBJ.slice(1).map(S=>({key:'mix_'+S.k,s:S.k,no:'★',ic:'🌟',img:'unit-mix',name:S.n+'綜合複習',nav:'綜合',c:'#f59f00',cb:'#fff9db'}))];
 const mixOf=k=>{const M=MIXES.find(m=>m.s===k);return M&&UN.some(u=>u.s===k&&u.g)?M:null};
 const mixByKey=k=>MIXES.find(m=>m.key===k);
+/* 單元的「編號」（UN 裡排第幾個）會因為新增科目、單元而改變（例如加了國語，英語就往後移），
+   所以作答紀錄、錯題本另外記單元代號 uk（en1、zh3…）。以前的紀錄只有編號：用這一輪的單元代號、題型名稱找回正確的單元 */
+const ukIdx=k=>UN.findIndex(u=>u.key===k);
+const hasT=(U,t)=>!!U&&((U.types||[]).includes(t)||(U.tools||[]).some(x=>x.id===t));
+function fixU(q,unitKey){
+  if(q.uk){const j=ukIdx(q.uk);if(j>=0)return j}
+  if(unitKey&&unitKey!=='wb'&&!mixByKey(unitKey)){const j=ukIdx(unitKey);if(j>=0)return j}   // 一般單元：整輪都是這個單元
+  const M=unitKey&&mixByKey(unitKey),sj=M?M.s:null,ok=j=>!!UN[j]&&(!sj||(UN[j].s||'math')===sj)&&hasT(UN[j],q.t);
+  if(ok(q.u))return q.u;
+  for(const d of [7,6,1,-1,-6,-7])if(ok(q.u+d))return q.u+d;
+  const j=UN.findIndex((U,i)=>ok(i));return j>=0?j:null}
 const isMix=u=>MIXES.includes(u);
 /* 期中、期末：每個單元有 term（mid 期中、fin 期末）。某一科只要有期末單元，期中的單元就收進「期中複習」：
    學習頁最下面可以展開來練（星星、紀錄都還在），但綜合複習、首頁推薦、換單元提示只用期末範圍。
@@ -1575,7 +1587,7 @@ const TX={};function toolExists(f){if(location.protocol==='file:')return Promise
    答錯(看解答)或第二次才答對的題目會存起來;在「錯題再練」一次就答對,才會從錯題本拿掉。 */
 const wbKey=()=>'learn601_wb_'+user.seat;
 function wbLoad(){return user?LS.get(wbKey(),[]):[]}
-function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,t:x.q.t,n:x.n,d:x.d})),true)}
+function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,uk:x.q.uk||'',t:x.q.t,n:x.n,d:x.d})),true)}
 function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
   if(res==='ok'){if(i>=0){W.splice(i,1);wbSave(W);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！繼續練習，鞏固這個方法。')}return}
   if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();W.push(x)}
@@ -1587,7 +1599,7 @@ function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題�
   if(W.length){const g=el('button','go',`再練 ${Math.min(10,W.length)} 題 ▶`);tap(g,()=>startPractice('wb'));c.appendChild(g)}
   else{c.classList.add('wbempty');const g=el('button','go','去練習 ▶');tap(g,()=>startPractice((mixOf(subj)||MIX).key));c.appendChild(g)}P.appendChild(c);
   if(!W.length)return;P.appendChild(el('div','sec','錯過的題目'));const L=el('div','cd');L.id='wblist';
-  W.slice().reverse().forEach(x=>{const U=UN[x.q.u]||UN[0];L.appendChild(el('div','wbi',`<span class="wu" style="--c:${U.c}">${uLab(U)}</span><span class="wq">${x.q.text}</span><span class="wn">錯 ${x.n} 次</span>`))});P.appendChild(L)}
+  W.slice().reverse().forEach(x=>{const U=UN[fixU(x.q,'wb')]||UN[x.q.u]||UN[0];L.appendChild(el('div','wbi',`<span class="wu" style="--c:${U.c}">${uLab(U)}</span><span class="wq">${x.q.text}</span><span class="wn">錯 ${x.n} 次</span>`))});P.appendChild(L)}
 
 /* ===================== 遊戲＋排行榜 ===================== */
 let bg='tower';
@@ -1925,10 +1937,11 @@ function newRound(){let qs;
     us.forEach((u,j)=>{const ts=shuf([...new Set(UN[u].types)]);for(let c=0;c<cnt[j];c++)items.push([u,ts[c%ts.length]])});
     items=shuf(items);for(let i=1;i<items.length;i++)if(items[i][0]===items[i-1][0]){const j=items.findIndex((x,k)=>k>i&&x[0]!==items[i-1][0]);if(j>0)[items[i],items[j]]=[items[j],items[i]]}
     qs=items.map(([u,t])=>genQ(u,t))}
-  else if(pu==='wb'){const W=wbLoad();qs=W.slice(0,10).map(x=>JSON.parse(JSON.stringify(x.q)))}
+  else if(pu==='wb'){const W=wbLoad();qs=W.slice(0,10).map(x=>{const q=JSON.parse(JSON.stringify(x.q)),j=fixU(q,'wb');if(j!=null)q.u=j;return q})}
   else qs=listFor(UN[pu].types,10).map(t=>genQ(pu,t));
   N=qs.length;
-  round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false};cur=0;showQ()}
+  qs.forEach(q=>{if(q.u!=null&&UN[q.u])q.uk=UN[q.u].key});
+  round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,uk:q.uk,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false};cur=0;showQ()}
 function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
   const t=document.getElementById('ptk');if(t)t.innerHTML=`${ico('rw-ticket','ii')}× ${tkN()}<small>這輪 ${sum.tc||0}/10・得 ${sum.tco||0} 分</small>`}
 const tkLeft=()=>TK_EVERY-(sum.tc||0);
@@ -1971,7 +1984,7 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
     /* 長句選項：右邊選項欄變寬（沒有引文時更寬），比較不用捲動 */
     $('#body').classList.toggle('wideo',ml>8&&!q.big);$('#body').classList.toggle('halfo',ml>8&&!!q.big);q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
   else buildPad(q.type==='frac');
-  paintF();$('#fb').textContent='';$('#fb').className='';$('#next').disabled=true;$('#next').textContent='下一題 ▶';$('#hint').disabled=false;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
+  paintF();$('#fb').textContent='';$('#fb').className='';dis($('#next'),true);$('#next').textContent='下一題 ▶';dis($('#hint'),false);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
 /* 題目大字放不下時縮小:不換行的大字看寬度;會換行的句子(.s)、短文(.p)只在整張卡片放不下時才縮小,最小 18px */
 function fitBig(){const c=$('#bigc'),F=$('#figc');if(!c.clientWidth)return;c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;
@@ -1980,7 +1993,7 @@ function fitBig(){const c=$('#bigc'),F=$('#figc');if(!c.clientWidth)return;c.que
 addEventListener('resize',()=>{if(round&&$('#prac').classList.contains('on'))fitBig()});
 function addStep(s,cls){const d=el('div',cls);d.innerHTML=s.startsWith('__HTML__')?s.slice(8):s;$('#steps').appendChild(d);return d}
 const solv=q=>{if(!q.id)$('#figc').classList.add('solv')};   // 題庫題不縮小題目,解答直接接在下面
-tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;solv(q);addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)$('#hint').disabled=true;fitBig()});
+tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)return;solv(q);addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;$('#hint').classList.remove('pulse');if(hintK>=q.hints.length)dis($('#hint'),true);fitBig()});
 tap($('#show'),()=>{if(solved)return;round.res[cur]='no';finish(round.qs[cur],false)});
 tap($('#next'),()=>nextQ());
 const near=(a,b)=>Math.abs(a-b)<1e-6;
@@ -1994,7 +2007,7 @@ const KIND_TRY={listen:'再按 🔊 聽一次',read:'回到短文裡找線索',l
 function bankTry(q,msg){const fb=$('#fb');fb.innerHTML=`${ico('mascot-think','fbm')}<b>再想一想</b> `+(msg||KIND_TRY[q.kind]||KIND_TRY.think);
   /* 聽力題:上面已經說「再聽一次」,提示就不要再重複一樣的話 */
   if(q.kind==='listen')while(hintK<q.hints.length&&/聽一次/.test(q.hints[hintK]))hintK++;
-  if(hintK<q.hints.length){addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;if(hintK>=q.hints.length)$('#hint').disabled=true}
+  if(hintK<q.hints.length){addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;if(hintK>=q.hints.length)dis($('#hint'),true)}
   $('#hint').classList.toggle('pulse',hintK<q.hints.length);
   const sb=$('#bigc .say');if(sb){sb.classList.remove('again');void sb.offsetWidth;sb.classList.add('again')}
   fitBig()}
@@ -2051,7 +2064,8 @@ function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div 
   <div class="rmt">慢慢看題目喔！</div><div class="rms">剛剛有 ${RUSH_MAX} 題還沒看完就選，<br>這一輪 10 題重新算。<br>看清楚題目再作答，得 ${TK_NEED} 分就有遊戲券。</div>
   <button class="go" disabled>3</button></div>`;document.body.appendChild(m);const b=m.querySelector('button');let k=3;
   const t=setInterval(()=>{k--;if(k>0)b.textContent=k;else{clearInterval(t);b.disabled=false;b.textContent='我知道了'}},1000);tap(b,()=>{if(!b.disabled)m.remove()})}
-function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
+const dis=(b,v)=>{b.disabled=v;b.classList.toggle('off',v)};
+function finish(q,ok){solved=true;dis($('#hint'),true);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
   const uk=ukeyOf(pu),rew=!uk||uqN(uk)<UNIT_CAP;if(uk){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵
   const k=dkey();if(rew){sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
@@ -2071,7 +2085,7 @@ function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
     else{const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):f(q.ans);r.style.display='inline-block';$('#box').style.display='none';$('#fbx').style.display='none'}}
   if(q.id)bankReveal(q);
-  $('#next').disabled=false;$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintP();
+  dis($('#next'),false);$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintP();
   setTimeout(()=>{const s=$('#steps').lastElementChild;if(s&&s.scrollIntoView)s.scrollIntoView({block:'nearest'})},50)}
 /* 題庫題答完:答案填進底線;聽力題把聽到的內容、或答完才給看的字,放在播音鍵下面 */
 function bankReveal(q){const c=$('#bigc');let filled=false;
@@ -2233,7 +2247,7 @@ tap($('#aload'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#amsg');i
   const rows=await Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/log`).get(),20000)).val()||{};return [s,Object.values(v)]}catch(e){return [s,null]}}));
   const stu={},typ={},err={};let fail=0,total=0;
   rows.forEach(([s,logs])=>{if(!logs){fail++;return}const S=stu[s]={u:UN.map(()=>({n:0,ok1:0})),t:{}};
-    logs.filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).forEach(q=>{if(q.u==null||!UN[q.u])return;total++;
+    logs.filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).map(q=>Object.assign({},q,{u:fixU(q,l.unit)})).forEach(q=>{if(q.u==null||!UN[q.u])return;total++;
       const ok1=q.r==='ok'?1:0,rev=q.r==='no'?1:0,key=q.u+'|'+q.t;
       S.u[q.u].n++;S.u[q.u].ok1+=ok1;
       const st=S.t[key]=S.t[key]||{n:0,ok1:0,rev:0};st.n++;st.ok1+=ok1;st.rev+=rev;
@@ -2297,7 +2311,7 @@ function dashStats(){const since=dSince(),today=dkey(),wk=weekKeys(0),now=Date.n
   const all=DASH.rows.map(r=>{const v=r.sum&&r.sum!=='err'?r.sum:null,days=(v&&v.days)||{};
     const S={s:r.s,ok:!!v,err:r.sum==='err'||!r.log,today:days[today]||0,wkQ:wk.reduce((a,k)=>a+(days[k]||0),0),wkGoal:wk.filter(k=>(days[k]||0)>=GOAL).length,
       last:v&&v.last||0,idle:v&&v.last?Math.floor((now-v.last)/864e5):null,n:0,ok1:0,rev:0,u:{},t:{}};
-    (r.log||[]).filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).forEach(q=>{if(q.u==null||!UN[q.u])return;
+    (r.log||[]).filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).map(q=>Object.assign({},q,{u:fixU(q,l.unit)})).forEach(q=>{if(q.u==null||!UN[q.u])return;
       const o1=q.r==='ok'?1:0;S.n++;S.ok1+=o1;S.rev+=q.r==='no'?1:0;
       const U=S.u[q.u]=S.u[q.u]||{n:0,ok1:0};U.n++;U.ok1+=o1;
       const k=q.u+'|'+q.t,T=S.t[k]=S.t[k]||{u:q.u,t:q.t,n:0,ok1:0,rev:0};T.n++;T.ok1+=o1;T.rev+=q.r==='no'?1:0}));

@@ -164,6 +164,9 @@
   const NAMES = ['小布丁', '麻糬', '湯圓', '小餅乾', '奶茶', '豆花', '芒果', '布布', '泡芙', '棉花糖', '小可', '多多', '咪咪', '球球', '嘟嘟', '樂樂',
     '皮皮', '丸子', '小星', '月月', '雲朵', '珍珠', '可樂', '花生', '小米', '橘橘', '莓莓', '蜜蜜', '豆豆', '糖糖', '阿福', '旺旺', '跳跳', '小熊', '奇奇', '妞妞'];
   const STICKERS = ['👍', '❤️', '😆', '🌟', '🎉'];
+  /* 貼圖改用圖片（跟平台其他圖示同一個畫風）；GPT 畫好新的 img/pet/stk-0～4.webp 之後，把這裡換成新的檔名就好 */
+  const STK_IMG = ['img/ui/ic-thumbs-up.webp', 'img/ui/ic-heart-happy.webp', 'img/ui/mascot-yay.webp', 'img/ui/rw-star.webp', 'img/ui/ic-party-popper.webp'];
+  const stkImg = (i, cls) => STK_IMG[i] ? `<img class="${cls || 'pstki'}" src="${STK_IMG[i]}" alt="${STICKERS[i]}">` : (STICKERS[i] || '');
   /* 測試帳號（98、99）：金幣無限、配件不用等級、寵物頁上方有測試工具 */
   const TST = () => { try { return !!(user && isTest(user.seat)); } catch (e) { return false; } };
   const EGG_NEED = [50, 100, 150], START_COIN = 30, FULL_DECAY = 2.5, JOY_DECAY = 3, PLAY_MS = 20 * 60 * 1000;
@@ -363,13 +366,20 @@
     p.cl.e = p.cl.e || {}; p.cl.s = p.cl.s || {}; const d = dev();
     if (n > 0) p.cl.e[d] = (p.cl.e[d] || 0) + n; else if (n < 0) p.cl.s[d] = (p.cl.s[d] || 0) - n;
     p.coin = coinOf(p); p.u = Date.now();
+    if (typeof window.paintRes === 'function') setTimeout(() => { try { window.paintRes(); } catch (e) { } }, 0);   // 上面的金幣跟著變
   }
   /* 平板上的和雲端的寵物資料合在一起：其他東西用比較新的那一份，金幣帳本兩邊合起來 */
+  const LOOK = ['h', 'g', 'k', 'b', 'x', 'room', 'nm'];   // 外觀：換的時候記 p.lu（最後換造型的時間）
   function mergePet(a, b) {
     if (!a) return b; if (!b) return a;
     const pick = (b.u || 0) > (a.u || 0) ? b : a, other = pick === a ? b : a;
     const la = pick.cl || { b: pick.coin || 0 }, lb = other.cl || { b: other.coin || 0 }, mx = (x, y) => { const o = Object.assign({}, x); for (const k in y || {}) o[k] = Math.max(o[k] || 0, y[k] || 0); return o; };
     pick.cl = { b: Math.max(la.b || 0, lb.b || 0), e: mx(la.e, lb.e), s: mx(la.s, lb.s) }; pick.coin = coinOf(pick);
+    /* 兩台裝置都有動過：買過的東西兩邊合起來；造型（帽子、眼鏡、房間、顏色）看哪一邊最後換的，
+       不然在 A 台換的造型，會被 B 台比較新的整份資料蓋回去（看起來像「換了沒變」） */
+    const un = k => { if (other[k] && typeof other[k] === 'object') pick[k] = Object.assign({}, other[k], pick[k] || {}); };
+    ['own', 'rooms', 'xo', 'dex', 'got', 'ach'].forEach(un);
+    if ((other.lu || 0) > (pick.lu || 0) && other.sp === pick.sp && other.st === pick.st) { LOOK.forEach(k => { pick[k] = other[k]; }); pick.lu = other.lu; }
     return pick;
   }
   function P() {
@@ -697,6 +707,7 @@
   }
   async function wear(id) {
     const p = P(), I = ITEMS[id];
+    p.lu = Date.now();
     if (p[I.k] === id) { p[I.k] = ''; save(p); refresh(); paintTab(); return; }   // 再點一次＝脫下來
     if (!p.own[id]) {
       if (!TST() && maxLv(p) < I.lv) { say(`寵物升到 Lv.${I.lv} 才能買${I.n}喔！`, 2200); return; }
@@ -715,7 +726,7 @@
       if (!(await ask(`<div class="paskp">${petArt(look(p, { x: i, mood: 'happy' }))}</div>用 🪙${x.p} 讓${nameOf(p)}變成「${x.n}」異色嗎？`, '變身！'))) return;
       coinAdd(p, -x.p); p.xo[i] = 1;
     }
-    p.x = i; save(p); refresh(); paintTab(); bounce('spin', 'happy', 1000); fx(i === 4 ? '✨' : '🎨', 'star', 4);
+    p.x = i; p.lu = Date.now(); save(p); refresh(); paintTab(); bounce('spin', 'happy', 1000); fx(i === 4 ? '✨' : '🎨', 'star', 4);
   }
   async function room(id) {
     const p = P(), r = ROOMS.find(x => x.id === id); if ((p.room || 'home') === id) return;
@@ -725,7 +736,7 @@
       if (!(await ask(`用 🪙${r.p} 買「${r.n}」房間嗎？`, '買！'))) return;
       coinAdd(p, -r.p); p.rooms[id] = 1;
     }
-    p.room = id; save(p); render();
+    p.room = id; p.lu = Date.now(); save(p); render();
   }
 
   /* ───────── 寵物屋：蛋籃、我的寵物、圖鑑 ───────── */
@@ -854,7 +865,7 @@
       <div class="png">${NAMES.map((n, i) => `<button data-n="${i}" class="${re && (p.nm | 0) === i ? 'on' : ''}">${n}</button>`).join('')}</div>${re ? '<button class="gray pmx">取消</button>' : ''}`);
     m.querySelectorAll('[data-n]').forEach(b => tap(b, () => {
       const n = +b.dataset.n;
-      if (re) { p.nm = n; save(p); closeModal(); render(); } else cb(n);
+      if (re) { p.nm = n; p.lu = Date.now(); save(p); closeModal(); render(); } else cb(n);
     }));
     const x = m.querySelector('.pmx'); if (x) tap(x, closeModal);
   }
@@ -879,12 +890,12 @@
   const allSeats2 = () => [...SEATS.flat(), ...(user && isTest(user.seat) ? TEST_SEATS : [])];
   function visit(s, v) {
     const sent = LS.get('learn601_petlk_' + user.seat, {}), today = dkey(), done = sent[s] === today, S = SPECIES[v.sp];
-    const m = modal(`<div class="pmh">${seatName(s)}的 ${NAMES[v.nm | 0]}　<small>${formName(v.sp, v.lv)}（${S.n}）・Lv.${v.lv | 0}</small></div><div class="pnow vis">${petArt(Object.assign({}, v, { mood: 'happy' }))}</div>
-      <div class="pstk">${done ? '<div class="pdone">今天已經送過貼圖了，明天再來吧！</div>' : STICKERS.map((e, i) => `<button data-e="${i}">${e}</button>`).join('')}</div><button class="gray pmx">關閉</button>`);
+    const m = modal(`<div class="pmh">${seatName(s)}的 ${NAMES[v.nm | 0]}<small class="pfs">${formName(v.sp, v.lv)}（${S.n}）・Lv.${v.lv | 0}${S.r ? `<i class="ptier r${S.r}">${TIER[S.r]}</i>` : ''}</small></div><div class="pnow vis">${petArt(Object.assign({}, v, { mood: 'happy' }))}</div>
+      <div class="pstk">${done ? '<div class="pdone">今天已經送過貼圖了，明天再來吧！</div>' : STICKERS.map((e, i) => `<button data-e="${i}">${stkImg(i)}</button>`).join('')}</div><button class="gray pmx">關閉</button>`);
     m.querySelectorAll('[data-e]').forEach(b => tap(b, async () => {
       sent[s] = today; LS.set('learn601_petlk_' + user.seat, sent);
       enqueue(`${ROOT}/petlike/${s}/${user.seat}`, { e: +b.dataset.e, d: today, t: Date.now() }, true);
-      m.querySelector('.pstk').innerHTML = `<div class="pdone">已經送出 ${STICKERS[+b.dataset.e]} 了！</div>`; try { sfx.ok(); } catch (e) { }
+      m.querySelector('.pstk').innerHTML = `<div class="pdone">已經送出 ${stkImg(+b.dataset.e, 'pstks')} 了！</div>`; try { sfx.ok(); } catch (e) { }
       const n = m.querySelector('.pnow'); n.classList.remove('hop'); void n.offsetWidth; n.classList.add('hop');
     }));
     tap(m.querySelector('.pmx'), closeModal);
@@ -896,7 +907,7 @@
     const B = document.getElementById('plikes'); if (!B) return;
     const today = dkey(), got = Object.entries(v).filter(([f, x]) => x && x.d === today && STICKERS[x.e] && (!isTest(+f) || isTest(user.seat)));
     if (!got.length) return;
-    B.innerHTML = `<div class="plk">今天收到：${got.map(([f, x]) => `<span title="${seatName(+f)}">${STICKERS[x.e]}<small>${+f >= 98 ? '測' : f}</small></span>`).join('')}</div>`;
+    B.innerHTML = `<div class="plk">今天收到：${got.map(([f, x]) => `<span title="${seatName(+f)}">${stkImg(x.e, 'pstks')}<small>${+f >= 98 ? '測' : f}</small></span>`).join('')}</div>`;
   }
 
   /* ───────── 樣式 ───────── */
@@ -943,8 +954,8 @@
   @keyframes pshake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-5px) rotate(-4deg)}75%{transform:translateX(5px) rotate(4deg)}}
   .pflash{position:fixed;inset:0;background:#fff;z-index:60;animation:pflash .9s forwards;pointer-events:none}@keyframes pflash{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
   .ptag{position:absolute;left:1rem;top:.9rem;background:rgba(255,255,255,.92);border-radius:16px;padding:.35rem .8rem;box-shadow:0 3px 0 #f1e3cf;z-index:2;max-width:55%}
-  .ptag b{font-size:1.45rem;color:#d6336c;display:block;line-height:1.2}.ptag small{font-size:.95rem;color:#888;font-weight:800}
-  .ptier{font-style:normal;font-size:.8rem;border-radius:8px;padding:0 .35rem;margin-left:.3rem;color:#fff;vertical-align:1px}.ptier.r1{background:#7950f2}.ptier.r2{background:linear-gradient(90deg,#f59f00,#e8590c)}
+  .ptag b{font-size:1.45rem;color:#d6336c;display:block;line-height:1.2}.ptag small{font-size:.95rem;color:#888;font-weight:800;display:block;line-height:1.35}
+  .ptier{display:inline-block;white-space:nowrap;font-style:normal;font-size:.8rem;border-radius:8px;padding:0 .35rem;margin-left:.3rem;color:#fff;vertical-align:1px}.ptier.r1{background:#7950f2}.ptier.r2{background:linear-gradient(90deg,#f59f00,#e8590c)}
   .pcoin{position:absolute;right:1rem;top:.9rem;background:#fff9db;border:3px solid #ffe066;border-radius:16px;padding:.3rem .8rem;font-size:1.35rem;font-weight:900;color:#e67700;z-index:2}
   .pbub{position:absolute;left:50%;top:7%;transform:translateX(-50%);max-width:min(22rem,80%);background:#fff;border-radius:18px;padding:.5rem .9rem;font-size:1.2rem;font-weight:900;color:#555;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:2;text-align:center}
   .pbub::after{content:'';position:absolute;left:50%;bottom:-9px;margin-left:-9px;border:9px solid transparent;border-top-color:#fff;border-bottom:0}
@@ -958,7 +969,7 @@
   .pfood{position:absolute;right:12%;top:30%;font-size:3.2rem;z-index:3;animation:pfood 1s ease-in forwards}
   @keyframes pfood{0%{transform:scale(.5);opacity:0}30%{transform:scale(1.2);opacity:1}100%{transform:translate(-22vw,7rem) scale(.4);opacity:0}}
   #plikes{position:absolute;left:1rem;bottom:.8rem;z-index:2}.plk{background:rgba(255,255,255,.92);border-radius:14px;padding:.3rem .6rem;font-size:1rem;font-weight:900;color:#d6336c;display:flex;flex-wrap:wrap;gap:.3rem;max-width:16rem}
-  .plk span{font-size:1.25rem}.plk small{font-size:.7rem;color:#999;margin-left:.1rem}
+  .plk span{font-size:1.25rem;display:inline-flex;align-items:center}.plk .pstks{width:1.5rem;height:1.5rem}.plk small{font-size:.7rem;color:#999;margin-left:.1rem}
   .pstat{margin-top:.8rem;display:flex;flex-direction:column;gap:.5rem}
   .prow{display:flex;align-items:center;gap:.6rem}.prow .pl{width:5rem;flex:none;font-size:1.15rem;font-weight:900;color:#555}
   .pevo1{font-size:1.05rem;font-weight:900;color:#7048e8;text-align:center}.pevo1 b{font-size:1.25rem}
@@ -1012,7 +1023,8 @@
   .pask .pmc{max-width:26rem}.pmh2{font-size:1.3rem;font-weight:900;color:#444;margin-bottom:.8rem}.pmh2 small{display:block;font-size:.95rem;color:#888;margin-top:.3rem}
   .paski .isvg{width:7rem;height:5rem;object-fit:contain}.paskp{width:8rem;height:8rem;margin:0 auto .4rem}
   .pbtns{display:flex;gap:.6rem;justify-content:center}.pbtns .go{margin:0;font-size:1.3rem}.pbtns .pmx{margin:0}
-  .pmh{font-size:1.6rem;font-weight:900;color:#d6336c;margin-bottom:.8rem}.pmh small{font-size:1rem;color:#999}
+  .pmh{font-size:1.6rem;font-weight:900;color:#d6336c;margin-bottom:.8rem;line-height:1.3}.pmh small{font-size:1rem;color:#999}
+  .pmh .pfs{display:block;margin-top:.25rem;font-size:1.05rem}   /* 好友寵物：種類、等級放第二行，不會被切斷 */
   .pspg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem}
   .pspg button{background:linear-gradient(180deg,#fff,#fff0f6);border:3px solid #ffdeeb;border-radius:20px;padding:.4rem .25rem;font-family:inherit;display:flex;flex-direction:column;align-items:center}
   .pspg .pa{width:6.4rem;height:6.4rem}.pspg b{font-size:1.15rem;color:#555}.pspg small{font-size:.72rem;color:#999;font-weight:800}
@@ -1020,7 +1032,8 @@
   .pnow{width:9rem;height:9rem;margin:0 auto .6rem}.pnow.vis{width:12rem;height:12rem}
   .png{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.4rem,1fr));gap:.45rem;margin-bottom:.8rem}
   .png button{background:#fff9db;border:3px solid #ffe066;border-radius:14px;padding:.45rem .2rem;font-size:1.15rem;font-weight:900;color:#e67700;font-family:inherit}.png button.on{background:#ffe066}
-  .pstk{display:flex;justify-content:center;gap:.6rem;margin:.4rem 0 1rem;flex-wrap:wrap}.pstk button{font-size:2.4rem;background:#fff0f6;border:3px solid #ffdeeb;border-radius:18px;padding:.3rem .7rem}
+  .pstk{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.5rem;margin:.4rem 0 1rem}.pstk .pdone{grid-column:1/-1}.pstk button{font-size:2.4rem;background:#fff0f6;border:3px solid #ffdeeb;border-radius:18px;padding:.35rem;display:flex;align-items:center;justify-content:center;aspect-ratio:1}
+  .pstki{width:100%;max-width:4rem;height:auto;aspect-ratio:1;object-fit:contain;display:block;pointer-events:none}.pstks{width:1.6em;height:1.6em;object-fit:contain;vertical-align:middle}
   .pdone{font-size:1.2rem;font-weight:900;color:#2b8a3e}
   .pmx{font-size:1.1rem;border:0;background:#e9ecef;border-radius:14px;padding:.5rem 1.6rem;font-weight:900;color:#555;font-family:inherit;margin-top:.3rem}
   .pmod.evo{background:radial-gradient(circle,#3b2a7a,#140d33)}.pmod.evo .pmc{background:transparent;box-shadow:none;color:#fff}
