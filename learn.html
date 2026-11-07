@@ -69,6 +69,11 @@ button{font-family:inherit;cursor:pointer}
 #subj button small{font-size:.8rem;color:#bbb;margin-left:.25rem}
 #prep{text-align:center;font-size:1.4rem;font-weight:900;color:#999;padding:1.6rem 1rem}#prep b{display:block;font-size:3rem;margin-bottom:.3rem}
 /* 題庫:圖片、短文、圖片選項 */
+.m5t{margin:0 auto .6rem;border-collapse:collapse;background:#fff;font-size:1.45rem;font-weight:800;color:#333}
+.m5t caption{font-size:1.1rem;color:#666;padding-bottom:.25rem}.m5t th,.m5t td{border:2px solid #868e96;padding:.3rem .75rem;text-align:center;white-space:nowrap}.m5t th{background:#f1f3f5}
+.m5l{list-style:none;margin:0 auto .6rem;padding:.5rem .9rem;background:#fff;border:2px dashed #adb5bd;border-radius:12px;font-size:1.35rem;font-weight:700;color:#333;text-align:left;width:fit-content;max-width:100%}
+.m5l li{padding:.15rem 0}.m5l li::before{content:'◆ ';color:#7048e8}
+@media (max-width:560px){.m5t{font-size:1.05rem}.m5t th,.m5t td{padding:.2rem .4rem}.m5l{font-size:1.05rem}}
 .qimg{display:block;max-width:100%;height:min(19rem,36vh);width:auto;object-fit:contain;margin:0 auto .5rem;border-radius:12px;background:#fff}
 .bx.p{font-size:1.65rem;font-weight:800;text-align:left;line-height:1.6;white-space:normal;color:#444}
 .bx.p.big{font-size:2.4rem;line-height:1.5;color:#333}
@@ -1109,8 +1114,8 @@ const M5_HINT={'比的記法':['「甲對乙的比」「甲和乙的比」：甲
  '比的應用':['先寫出題目的比，用 □ 表示不知道的量','相等的比：前項、後項乘以同一個數','按比分配：先算全部共有幾份，1 份是多少'],
  '圖形的比':['先算出兩個圖形的周長、面積（或體積）','再照題目的順序寫成比']};
 const txtLen=o=>String(o).replace(/<[^>]+>/g,'').length;
-function m5Q(it){const q={id:`m5|${it.q}|${it.big||''}|${JSON.stringify(it.a)}`,type:it.type,text:it.q,subj:'math',kind:'think',
-   big:it.big?`<div class="bx${it.bc?' '+it.bc:''}">${it.big}</div>`:'',hints:(it.hint||M5_HINT[it.t]||[]).slice(),sol:(it.exp||[]).slice(),unit:it.unit||'',pre:''};
+function m5Q(it){const q={id:`m5|${it.q}|${it.big||''}|${it.img||''}${it.html?'|t':''}|${JSON.stringify(it.a)}`,type:it.type,text:it.q,subj:'math',kind:it.img||it.html?'look':'think',
+   big:(it.img?`<img class="qimg" src="${it.img}" alt="">`:'')+(it.html||'')+(it.big?`<div class="bx${it.bc?' '+it.bc:''}">${it.big}</div>`:''),hints:(it.hint||M5_HINT[it.t]||[]).slice(),sol:(it.exp||[]).slice(),unit:it.unit||'',pre:''};
   if(it.type==='mc'){q.opts=shuf(it.opts);q.ans=it.a;q.row=!!it.row||it.opts.length<=2}
   else if(it.type==='frac')q.ans={n:it.a[0],d:it.a[1]};
   else if(it.type==='ratio'){q.ans=it.a.slice();q.simp=!!it.simp}
