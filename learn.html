@@ -687,6 +687,13 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .bhit.capn{background:#fff3bf;color:#a0640a}
 .tkget.capn{color:#a0640a}
 @media (max-width:480px){.capl{grid-template-columns:minmax(0,1fr)}}
+
+/* ═══ 期中複習 ═══ */
+#ucmid{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:.8rem}
+#ucmid .uc{opacity:.92;filter:saturate(.85)}
+.midh{margin-top:1.4rem}
+@media (min-width:1100px){#ucmid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:900px),(orientation:portrait){#ucmid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head><body>
 
@@ -1086,20 +1093,20 @@ const tkN=()=>user&&isTest(user.seat)?'∞':(sum&&sum.tk||0);   // 畫面上顯�
 const GOAL=10, ROOT='learn';
 /* 單元:practice 有 g 才有練習;tools 是教具;tt 是「題型 → 對應教具」 */
 const UN=[
- {key:'u1',no:'1',ic:'🧩',name:'質因數分解和短除法',nav:'質因數分解',c:'#22b573',cb:'#e6fcf5',g:U1,
+ {key:'u1',term:'mid',no:'1',ic:'🧩',name:'質因數分解和短除法',nav:'質因數分解',c:'#22b573',cb:'#e6fcf5',g:U1,
   types:['prime','pf','coprime','gcd','gcd','lcm','lcm','appG','appG','appL','appL'],
   tools:[{id:'1-all',i:'🧱',k:'整理',n:'因數與倍數',f:'t/1-all.html'},{id:'1-4',i:'🔍',k:'1-4',n:'最大公因數',f:'t/1-4.html'},{id:'1-4b',i:'👫',k:'1-4',n:'混合分組、分開編組',f:'t/1-4b.html'},
          {id:'1-5',i:'🧮',k:'1-5',n:'最小公倍數',f:'t/1-5.html'},{id:'1-5b',i:'⏰',k:'1-5',n:'最小公倍數的應用',f:'t/1-5b.html'}],
   tt:{prime:'1-all',pf:'1-all',coprime:'1-all',gcd:'1-4',appG:'1-4',lcm:'1-5',appL:'1-5b'}},
- {key:'u2',no:'2',ic:'🍰',name:'分數的除法',nav:'分數除法',c:'#1c7ed6',cb:'#e7f5ff',g:U2,
+ {key:'u2',term:'mid',no:'2',ic:'🍰',name:'分數的除法',nav:'分數除法',c:'#1c7ed6',cb:'#e7f5ff',g:U2,
   types:['simp','same','diff','diff','diff','app','app','app','cmp','simp'],
   tools:[{id:'2-2',i:'🍰',k:'2-2',n:'同分母分數的除法',f:'t/2-2.html'},{id:'2-4',i:'🧃',k:'2-4',n:'分數除法的應用',f:'t/2-4.html'}],
   tt:{same:'2-2',app:'2-4'}},
- {key:'u3',no:'3',ic:'🔢',name:'小數的除法',nav:'小數除法',c:'#f76707',cb:'#fff4e6',g:U3,
+ {key:'u3',term:'mid',no:'3',ic:'🔢',name:'小數的除法',nav:'小數除法',c:'#f76707',cb:'#fff4e6',g:U3,
   types:['intdec','intdec','decdec','decdec','cmp','round','round','app','app','app'],
   tools:[{id:'3-1',i:'🔢',k:'3-1、3-2',n:'小數點怎麼放',f:'t/3-1.html'},{id:'3-3',i:'⚖️',k:'3-3',n:'商怎麼變',f:'t/3-3.html'}],
   tt:{intdec:'3-1',decdec:'3-1',round:'3-1',app:'3-1',cmp:'3-3'}},
- {key:'u4',no:'4',ic:'⭕',name:'圓周長和圓面積',nav:'圓',c:'#d6336c',cb:'#fff0f6',g:T,
+ {key:'u4',term:'mid',no:'4',ic:'⭕',name:'圓周長和圓面積',nav:'圓',c:'#d6336c',cb:'#fff0f6',g:T,
   types:['b_dC','b_rC','b_rA','b_dA','b_Cd','a_Cr','a_CA','a_double','a_card','a_wheel','c_ring','c_trackP'],
   tools:[{id:'4-all',i:'⭕',k:'自學',n:'圓周長和圓面積',f:'unit4.html'},{id:'4-1',i:'📏',k:'4-1',n:'圓周率的發現',f:'t/4-1.html'},{id:'4-1b',i:'🛞',k:'4-1、4-2',n:'圓周長',f:'t/4-1b.html'},
          {id:'4-pi',i:'📜',k:'故事',n:'圓周率的故事 割圓術',f:'t/4-pi.html'},{id:'4-3',i:'🍕',k:'4-3',n:'圓面積 切割拼合',f:'t/4-3.html'},{id:'4-3b',i:'🧩',k:'4-3',n:'圓面積公式',f:'t/4-3b.html'},
@@ -1143,7 +1150,7 @@ function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);i
   const by={};items.forEach(it=>{const t=it.t||'題目';(by[t]=by[t]||[]).push(it)});
   const g={};for(const t in by)g[t]=()=>bankQ(pick(by[t]),S.k);
   const [c,cb]=d.c?[d.c,d.cb||'#f8f9fa']:UCOL[i%UCOL.length],no=String(d.no||i+1),name=d.name||'單元 '+no;
-  UN.push({key:S.k+no,s:S.k,no,ic:d.ic||S.ic,name,nav:d.nav||name,c,cb,g:items.length?g:null,types:Object.keys(by),tools:[]})}))})();
+  UN.push({key:S.k+no,s:S.k,term:d.term==='fin'?'fin':'mid',no,ic:d.ic||S.ic,name,nav:d.nav||name,c,cb,g:items.length?g:null,types:Object.keys(by),tools:[]})}))})();
 /* 單元標籤:數學的單元對應課本(單元 1～4);國語、英語…題庫的分類是「題型」,不寫單元幾,免得學生以為是課本第幾單元 */
 const uLab=U=>U.s&&U.s!=='math'?`${subjOf(U.s).n}・${U.nav||U.name}`:'單元'+U.no;
 const uTag=U=>U.s&&U.s!=='math'?`${subjOf(U.s).ic} ${subjOf(U.s).n}`:'單元 '+U.no;
@@ -1152,6 +1159,14 @@ const MIXES=[MIX,...SUBJ.slice(1).map(S=>({key:'mix_'+S.k,s:S.k,no:'★',ic:'�
 const mixOf=k=>{const M=MIXES.find(m=>m.s===k);return M&&UN.some(u=>u.s===k&&u.g)?M:null};
 const mixByKey=k=>MIXES.find(m=>m.key===k);
 const isMix=u=>MIXES.includes(u);
+/* 期中、期末：每個單元有 term（mid 期中、fin 期末）。某一科只要有期末單元，期中的單元就收進「期中複習」：
+   學習頁最下面可以展開來練（星星、紀錄都還在），但綜合複習、首頁推薦、換單元提示只用期末範圍。
+   新增期末單元：數學在 UN 裡加 term:'fin'；其他科在題庫的單元寫 term: "fin"。 */
+const hasFin=s=>UN.some(u=>u.s===s&&u.g&&u.term==='fin');
+const live=u=>isMix(u)||u.term==='fin'||!hasFin(u.s);
+const midOf=s=>UN.filter(u=>u.g&&u.s===s&&!live(u));
+MIXES.forEach(M=>{const base=M.name;Object.defineProperty(M,'name',{get(){if(!hasFin(M.s))return base;const F=UN.filter(u=>u.g&&u.s===M.s&&u.term==='fin');
+  return M.s==='math'?`${F[0].no}～${F[F.length-1].no} 單元綜合複習`:`${subjOf(M.s).n}期末綜合複習`}})});
 const GM={key:'game',no:'🎮',ic:'🎮',img:'nav-game',nav:'遊戲',c:'#e8590c',cb:'#fff4e6'};
 const PETNAV={key:'pet',no:'🐾',ic:'🐾',img:'nav-pet',nav:'寵物',c:'#f06595',cb:'#fff0f6'};   // 我的寵物(pet.js)
 const FARMNAV={key:'farm',no:'🌾',ic:'🌾',img:'nav-farm',nav:'農場',c:'#74b816',cb:'#f4fce3'};   // 快樂農場(farm.js)
@@ -1408,7 +1423,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   P.appendChild(playCard());
   P.appendChild(statCard())}
 /* 首頁：接下來練什麼——目前科目裡還沒完成的第一個單元；都完成了就挑星星最少的；都 3 顆星就練綜合 */
-function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj),SM=mixOf(subj);if(!L.length)return SM||null;
+function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj&&live(u)),SM=mixOf(subj);if(!L.length)return SM||null;
   const L0=L.filter(u=>uqN(u.key)<UNIT_CAP);if(L0.length&&L0.length<L.length){const a=L0.find(u=>!((sum.dn&&sum.dn[u.key])||sum.best[u.key]!=null))||L0.slice().sort((a,b)=>starN(sum.best[a.key]||0)-starN(sum.best[b.key]||0))[0];return a}
   const nd=L.find(u=>!((sum.dn&&sum.dn[u.key])||sum.best[u.key]!=null));if(nd)return nd;
   const low=L.slice().sort((a,b)=>starN(sum.best[a.key]||0)-starN(sum.best[b.key]||0))[0];return starN(sum.best[low.key]||0)<3?low:(SM||low)}
@@ -1435,9 +1450,16 @@ function playCard(){const c=el('div','cd');c.id='playt';
 /* 單元卡片（首頁、學習頁共用）：目前科目的單元＋綜合＋錯題 */
 function unitCards(){const SM=mixOf(subj),SJ=subjOf(subj),G=el('div');G.id='ucards';
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;G.appendChild(c)}
-  [...UN.filter(u=>u.g&&u.s===subj),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?unitState(u.key):'📺 教具'}</div>`);
-    b.style.setProperty('--c',u.c);tap(b,()=>goView(u.key));G.appendChild(b)});
-  return G}
+  const card=u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?unitState(u.key):'📺 教具'}</div>`);
+    b.style.setProperty('--c',u.c);tap(b,()=>goView(u.key));return b};
+  [...UN.filter(u=>u.g&&u.s===subj&&live(u)),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>G.appendChild(card(u)));
+  /* 期中複習：收起來，按一下展開 */
+  const MID=midOf(subj);if(!MID.length)return G;
+  const W=el('div');W.appendChild(G);const open=!!LS.get('learn601_midopen',0);
+  const hd=el('div','sec hsec midh',`<span>${ico('nav-wb','hi2')}期中複習<small>（${MID.length} 個單元，星星和紀錄都還在）</small></span>`),tg=el('button','hmore',open?'收起來 ▲':'展開 ▼');hd.appendChild(tg);W.appendChild(hd);
+  const M=el('div');M.id='ucmid';M.hidden=!open;MID.forEach(u=>M.appendChild(card(u)));W.appendChild(M);
+  tap(tg,()=>{M.hidden=!M.hidden;LS.set('learn601_midopen',M.hidden?0:1);tg.textContent=M.hidden?'展開 ▼':'收起來 ▲'});
+  return W}
 /* 單元狀態：有完成過一回合（或以前有最佳成績）＝已完成；不然＝還沒開始。星星照最佳成績，沒拿到的是空心星 */
 const starN=b=>b>=9?3:b>=7?2:b>=5?1:0;
 const starRow=b=>{const n=starN(b);return `<span class="srow">${[0,1,2].map(i=>ico(i<n?'rw-star':'rw-star0','st')).join('')}</span>`};
@@ -1856,7 +1878,7 @@ const capOf=k=>{const key=ukeyOf(k);return !!key&&uqN(key)>=UNIT_CAP};
 const unitName=k=>{const key=ukeyOf(k),U=key&&(UN.find(u=>u.key===key)||mixByKey(key));return U?U.name:''};
 /* 今天還能拿獎勵的單元：同一科優先、還沒練過的優先 */
 function capAlt(k){const key=ukeyOf(k),cur=UN.find(u=>u.key===key)||mixByKey(key),sj=cur?cur.s:subj;
-  const L=[...UN.filter(u=>u.g),...MIXES.filter(M=>mixOf(M.s))].filter(u=>u.key!==key&&uqN(u.key)<UNIT_CAP);
+  const L=[...UN.filter(u=>u.g&&live(u)),...MIXES.filter(M=>mixOf(M.s))].filter(u=>u.key!==key&&uqN(u.key)<UNIT_CAP);
   return L.sort((a,b)=>(b.s===sj)-(a.s===sj)||uqN(a.key)-uqN(b.key)).slice(0,4)}
 function capModal(k,goAnyway){const m=el('div','pmod','');m.id='capm';const alt=capAlt(k);
   m.innerHTML=`<div class="pmc capc"><img src="img/ui/mascot-think.webp" alt=""><div class="rmt">換個單元練練看！</div>
@@ -1876,7 +1898,7 @@ function startPractice(k,force){if(!force&&capOf(k)){capModal(k,()=>startPractic
 function newRound(){let qs;
   const M=mixByKey(pu);
   if(M){/* 綜合:10 題平均分給這一科的各單元(數學 4 個單元就是 3、3、2、2) */
-    const us=UN.map((u,i)=>i).filter(i=>UN[i].g&&UN[i].s===M.s),b=Math.floor(10/us.length),cnt=shuf(us.map((_,j)=>b+(j<10-b*us.length?1:0)));let items=[];
+    const us=UN.map((u,i)=>i).filter(i=>UN[i].g&&UN[i].s===M.s&&live(UN[i])),b=Math.floor(10/us.length),cnt=shuf(us.map((_,j)=>b+(j<10-b*us.length?1:0)));let items=[];
     us.forEach((u,j)=>{const ts=shuf([...new Set(UN[u].types)]);for(let c=0;c<cnt[j];c++)items.push([u,ts[c%ts.length]])});
     items=shuf(items);for(let i=1;i<items.length;i++)if(items[i][0]===items[i-1][0]){const j=items.findIndex((x,k)=>k>i&&x[0]!==items[i-1][0]);if(j>0)[items[i],items[j]]=[items[j],items[i]]}
     qs=items.map(([u,t])=>genQ(u,t))}
