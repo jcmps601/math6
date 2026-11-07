@@ -1452,7 +1452,8 @@ function unitCards(){const SM=mixOf(subj),SJ=subjOf(subj),G=el('div');G.id='ucar
   if(!SM){const c=el('div','cd');c.id='prep';c.innerHTML=`<b>📝</b>${SJ.n}的題目準備中，先去練別的科目吧！`;G.appendChild(c)}
   const card=u=>{const b=el('button','uc',`<span class="ui">${u.img?ico(u.img):(u.ic||'')}</span><div class="a">${isMix(u)?'★ 綜合':u===WB?'📕 錯題':uTag(u)}</div><div class="b">${u.name}</div><div class="s">${u===WB?`<span style="color:#c92a2a">${wbLoad().length} 題待練</span>`:u.g||isMix(u)?unitState(u.key):'📺 教具'}</div>`);
     b.style.setProperty('--c',u.c);tap(b,()=>goView(u.key));return b};
-  [...UN.filter(u=>u.g&&u.s===subj&&live(u)),...(SM?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>G.appendChild(card(u)));
+  const LV=UN.filter(u=>u.g&&u.s===subj&&live(u));   // 只有 1 個單元時不放綜合複習卡（內容一樣）
+  [...LV,...(SM&&LV.length>=2?[SM]:[]),...(wbLoad().length?[WB]:[])].forEach(u=>G.appendChild(card(u)));
   /* 期中複習：收起來，按一下展開 */
   const MID=midOf(subj);if(!MID.length)return G;
   const W=el('div');W.appendChild(G);const open=!!LS.get('learn601_midopen',0);
