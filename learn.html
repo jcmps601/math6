@@ -676,6 +676,17 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #shome .shn{font-size:.95rem;color:#888;font-weight:800;padding:.3rem}
 #shome .shm{margin-top:.35rem;font-size:.95rem;font-weight:900;color:#5c4326}#shome .shm b{color:#e8590c;font-size:1.15rem}
 @media (max-width:520px){#shome{grid-template-columns:minmax(0,1fr)}}
+
+/* ═══ 防刷題提示 ═══ */
+#capm .pmc{max-width:30rem;text-align:center}#capm .pmc>img{width:5.5rem;height:5.5rem;object-fit:contain}#capm .rmt{font-size:1.5rem;font-weight:900;color:#2e7554;margin:.3rem 0}#capm .rms{font-size:1.1rem;color:#555;font-weight:800;line-height:1.6}
+.capl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin:.6rem 0}
+.capu{display:flex;align-items:center;gap:.45rem;text-align:left;background:#fff;border:3px solid #eee2c8;border-top:.4rem solid var(--c);border-radius:16px;padding:.45rem .5rem;font-family:inherit;min-height:3.4rem}
+.capu .ci{flex:none;font-size:2rem;line-height:1}.capu .ci img{width:2.4rem;height:2.4rem}
+.capu small{display:block;font-size:.8rem;font-weight:900;color:var(--c)}.capu b{display:block;font-size:1.05rem;color:#333;line-height:1.2}
+.capx{display:flex;justify-content:center}.capx .capgo{border:0;border-radius:14px;background:#eef1ec;color:#657065;font-weight:900;font-size:1rem;padding:.55rem 1rem;font-family:inherit}
+.bhit.capn{background:#fff3bf;color:#a0640a}
+.tkget.capn{color:#a0640a}
+@media (max-width:480px){.capl{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head><body>
 
@@ -1226,6 +1237,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   if(r.farm&&(!sum.farm||(r.farm.u||0)>(sum.farm.u||0)))sum.farm=r.farm;
+  if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
@@ -1397,6 +1409,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   P.appendChild(statCard())}
 /* 首頁：接下來練什麼——目前科目裡還沒完成的第一個單元；都完成了就挑星星最少的；都 3 顆星就練綜合 */
 function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj),SM=mixOf(subj);if(!L.length)return SM||null;
+  const L0=L.filter(u=>uqN(u.key)<UNIT_CAP);if(L0.length&&L0.length<L.length){const a=L0.find(u=>!((sum.dn&&sum.dn[u.key])||sum.best[u.key]!=null))||L0.slice().sort((a,b)=>starN(sum.best[a.key]||0)-starN(sum.best[b.key]||0))[0];return a}
   const nd=L.find(u=>!((sum.dn&&sum.dn[u.key])||sum.best[u.key]!=null));if(nd)return nd;
   const low=L.slice().sort((a,b)=>starN(sum.best[a.key]||0)-starN(sum.best[b.key]||0))[0];return starN(sum.best[low.key]||0)<3?low:(SM||low)}
 function nextCard(){const c=el('div','cd');c.id='next';const u=nextUnit(),SJ=subjOf(subj),W=wbLoad().length;
@@ -1830,7 +1843,34 @@ function genQ(u,t,ex){let q;for(let i=0;i<20;i++){q=mkQ(u,t);if(ex||!SEEN.includ
   if(!ex){SEEN.push(qKey(q));if(SEEN.length>100)SEEN=SEEN.slice(-100);LS.set('learn601_seen',SEEN)}return q}
 function listFor(types,n){let L=[];while(L.length<n)L.push(...shuf(types));L=shuf(L.slice(0,n));
   for(let i=1;i<L.length;i++)if(L[i]===L[i-1]){const j=L.findIndex((t,k)=>k>i&&t!==L[i]&&t!==L[i-1]);if(j>0)[L[i],L[j]]=[L[j],L[i]]}return L}
-function startPractice(k){pu=k;const U=unitOf(k);const PN=document.getElementById('prac');PN.style.setProperty('--c',U.c);PN.style.setProperty('--cb',U.cb);
+/* ===================== 防刷題：同一個單元每天前 UNIT_CAP 題才有獎勵 =====================
+   ・每台平板記「今天每個單元答了幾題」：sum.uq = {d:今天, u:{單元:題數}}（跟著摘要同步，兩台合起來取大的）
+   ・前 UNIT_CAP 題照常：今日任務、排行榜題數、遊戲券分數、金幣、水滴、打魔王
+   ・之後還是可以練，但上面這些都不加；要開始新的一輪時跳出提示，推薦今天還能拿獎勵的單元
+   ・錯題本不限制（重練錯題本來就是希望學生多做的） */
+const UNIT_CAP=20;
+const ukeyOf=k=>k==='wb'||k==null?null:typeof k==='string'?k:(UN[k]&&UN[k].key);
+function uqDay(){const d=dkey();if(!sum.uq||sum.uq.d!==d)sum.uq={d,u:{}};sum.uq.u=sum.uq.u||{};return sum.uq}
+const uqN=key=>key?(uqDay().u[key]||0):0;
+const capOf=k=>{const key=ukeyOf(k);return !!key&&uqN(key)>=UNIT_CAP};
+const unitName=k=>{const key=ukeyOf(k),U=key&&(UN.find(u=>u.key===key)||mixByKey(key));return U?U.name:''};
+/* 今天還能拿獎勵的單元：同一科優先、還沒練過的優先 */
+function capAlt(k){const key=ukeyOf(k),cur=UN.find(u=>u.key===key)||mixByKey(key),sj=cur?cur.s:subj;
+  const L=[...UN.filter(u=>u.g),...MIXES.filter(M=>mixOf(M.s))].filter(u=>u.key!==key&&uqN(u.key)<UNIT_CAP);
+  return L.sort((a,b)=>(b.s===sj)-(a.s===sj)||uqN(a.key)-uqN(b.key)).slice(0,4)}
+function capModal(k,goAnyway){const m=el('div','pmod','');m.id='capm';const alt=capAlt(k);
+  m.innerHTML=`<div class="pmc capc"><img src="img/ui/mascot-think.webp" alt=""><div class="rmt">換個單元練練看！</div>
+    <div class="rms">今天「${unitName(k)}」已經練 ${UNIT_CAP} 題了。<br>換一個單元，就可以繼續拿遊戲券、金幣和排行榜題數。</div><div class="capl"></div>
+    <div class="capx"><button class="gray capgo">還是練這個（沒有獎勵）</button></div></div>`;document.body.appendChild(m);
+  const box=m.querySelector('.capl');
+  alt.forEach(u=>{const b=el('button','capu',`<span class="ci">${u.img?ico(u.img):(u.ic||'')}</span><span><small>${isMix(u)?'★ 綜合':uTag(u)}</small><b>${u.name}</b></span>`);b.style.setProperty('--c',u.c);
+    tap(b,()=>{m.remove();const nk=isMix(u)?u.key:UN.indexOf(u);if(document.getElementById('prac').classList.contains('on')){setPU(nk);newRound()}else startPractice(nk,true)});box.appendChild(b)});
+  if(!alt.length)box.innerHTML='<div class="rms">今天每個單元都練很多了，休息一下，明天再來！</div>';
+  tap(m.querySelector('.capgo'),()=>{m.remove();goAnyway()})}
+function setPU(k){pu=k;const U=unitOf(k);const PN=document.getElementById('prac');PN.style.setProperty('--c',U.c);PN.style.setProperty('--cb',U.cb);
+  document.getElementById('pua').textContent=mixByKey(k)?'★ 綜合':k==='wb'?'📕 錯題':uLab(U);document.getElementById('pub').textContent=U.name}
+function startPractice(k,force){if(!force&&capOf(k)){capModal(k,()=>startPractice(k,true));return}
+  pu=k;const U=unitOf(k);const PN=document.getElementById('prac');PN.style.setProperty('--c',U.c);PN.style.setProperty('--cb',U.cb);
   document.getElementById('pua').textContent=mixByKey(k)?'★ 綜合':k==='wb'?'📕 錯題':uLab(U);document.getElementById('pub').textContent=U.name;
   show$('prac');history.pushState({p:1},'');newRound()}
 function newRound(){let qs;
@@ -1966,14 +2006,18 @@ function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div 
   const t=setInterval(()=>{k--;if(k>0)b.textContent=k;else{clearInterval(t);b.disabled=false;b.textContent='我知道了'}},1000);tap(b,()=>{if(!b.disabled)m.remove()})}
 function finish(q,ok){solved=true;$('#hint').disabled=true;$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
-  const k=dkey();sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok')sum.first++;
-  const tkp=!ok?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):1;   // 這題的遊戲券分數
-  sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;let rushed=false;
-  if((sum.trs||0)>=RUSH_MAX){sum.tc=0;sum.tco=0;sum.trs=0;rushed=true;round.rushed=1;round.miss=0;logPush({k:'rush'})}
+  const uk=ukeyOf(pu),rew=!uk||uqN(uk)<UNIT_CAP;if(uk){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵
+  const k=dkey();if(rew){sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
+  const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):1;   // 這題的遊戲券分數
+  let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
+  if(!rew){}
+  else if((sum.trs||0)>=RUSH_MAX){sum.tc=0;sum.tco=0;sum.trs=0;rushed=true;round.rushed=1;round.miss=0;logPush({k:'rush'})}
   else if(sum.tc>=TK_EVERY){const n=sum.tco||0;sum.tc=0;sum.tco=0;sum.trs=0;round.last10=n;
     if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 得 ${n} 分，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
     else{round.miss=(round.miss||0)+1;toast(`這 10 題得 ${n} 分，要 ${TK_NEED} 分才有券`)}}
-  const bh=bossHit(round.res[cur]),pc=PET.gain(round.res[cur]),fw=FARM.gain(round.res[cur]);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
+  const bh=rew?bossHit(round.res[cur]):0,pc=rew?PET.gain(round.res[cur]):0,fw=rew?FARM.gain(round.res[cur]):0;
+  if(!rew){round.capped=1;if(!round.capNote){round.capNote=1;$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">今天這個單元的獎勵拿滿了</span>')}}
+  else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
   saveSum(round.got>0||rushed);if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.id?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
@@ -1999,10 +2043,11 @@ function endRound(){try{STATC=null;statPush()}catch(e){}const r=round.res,first=
   const U=unitOf(pu);$('#endt').textContent=`這次練習完成了！`;
   /* 我的進步：同一個單元、同樣題數的完整回合才記（錯題本不算） */
   if(pu!=='wb'){sum.rh=sum.rh||{};const a=(sum.rh[bk]=sum.rh[bk]||[]);a.push({t:Date.now(),f:first,n:N});sum.rh[bk]=a.slice(-5);sum.dn=sum.dn||{};sum.dn[bk]=(sum.dn[bk]||0)+1;saveSum(true)}$('#ends').textContent=stars(first)||'💪';
-  $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.rushed?`有 ${RUSH_MAX} 題太快作答，這輪 10 題重新算；看清楚題目，得 ${TK_NEED} 分就有遊戲券`:round.miss?`這 10 題得 ${round.last10} 分，要 ${TK_NEED} 分才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，得 ${TK_NEED} 分就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(first,N);
+  $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.rushed?`有 ${RUSH_MAX} 題太快作答，這輪 10 題重新算；看清楚題目，得 ${TK_NEED} 分就有遊戲券`:round.miss?`這 10 題得 ${round.last10} 分，要 ${TK_NEED} 分才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，得 ${TK_NEED} 分就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(round.capped?(round.rf||0):first,N);
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
-  else mb('再練一回 ▶',()=>newRound(),'go');
+  else mb('再練一回 ▶',()=>capOf(pu)?capModal(pu,()=>newRound()):newRound(),'go');
+  if(round.capped)$('#endsub').innerHTML+=`<div class="tkget capn">今天「${unitName(pu)}」的獎勵拿滿了，換個單元繼續拿獎勵！</div>`;
   $('#end').classList.add('on');if(first>=8){sfx.win();confetti(70)}else sfx.done()}
 
 /* ===================== 全班打魔王 =====================
