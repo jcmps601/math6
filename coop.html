@@ -248,6 +248,96 @@ const LEVELS=[
 '#..............#########',
 '#.....ee...ee..#########',
 '#.12.#^^^^^^^^^#########',
+'########################']},
+{n:"尖刺橋",tip:"尖刺坑跳不過去！一個人踩著按鈕，魔法橋就會出現。先過去的人，再到對面踩另一個按鈕，幫同學變出另一座橋。",m:[
+'########################',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#.*.........*..........#',
+'#......................#',
+'#.......nnnnnnnn.......#',
+'#......#mmmmmmmm.......#',
+'#12.x..#^^^^^^^^.*.y.rb#',
+'########################']},
+{n:"樓梯和隧道",tip:"一個人踩按鈕，魔法樓梯就會出現，另一個人爬上高塔、跳到右邊，再踩按鈕打開隧道的門，讓同學走過來。",m:[
+'########################',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#..........*...........#',
+'#.........####.....*...#',
+'#........m####.........#',
+'#........m####....--...#',
+'#.......mmY............#',
+'#12.x...mmY.*...y....rb#',
+'########################']},
+{n:"拉桿電梯",tip:"有兩道門！搭電梯上右邊的高台拉一支拉桿；左邊高台的拉桿太高了，要站到同學頭上才上得去。",m:[
+'########################',
+'#................#.#...#',
+'#................#.#...#',
+'#................#.#...#',
+'#................#.#...#',
+'#................#.#...#',
+'#................#.#...#',
+'#...........*....#.#...#',
+'#*............u..#.#...#',
+'#.v........#####.U.V...#',
+'####.............U.V...#',
+'#................U.V...#',
+'#.....12.ee......U*V.rb#',
+'########################']},
+{n:"疊羅漢高塔",tip:"高台有 3 格高，一個人站在牆邊，另一個人跳到他頭上再跳上去。上去的人踩按鈕，樓梯就會出現，讓同學爬上來。",m:[
+'########################',
+'#......................#',
+'#......................#',
+'#......................#',
+'#.................*....#',
+'#......................#',
+'#................y..rb.#',
+'#..............#########',
+'#.*...........n#########',
+'#........*x..nn#########',
+'#.......################',
+'#......m################',
+'#12...mm################',
+'########################']},
+{n:"接力三扇門",tip:"三道門要接力：一個人踩著按鈕，同學先過門，過去的人再踩門另一邊的按鈕，幫你開門。每道門都要這樣做！",m:[
+'########################',
+'#.....#.....#.....#....#',
+'#.....#.....#.....#....#',
+'#.....#.....#.....#....#',
+'#.....#.....#.....#....#',
+'#.....#.....#.....#....#',
+'#.....#.....#.....#....#',
+'#.....#..*..#..*..#....#',
+'#.....#.....#.....#....#',
+'#.....X.....Y.....Z....#',
+'#.....X.---.Y.---.Z....#',
+'#.....X.....Y.....Z....#',
+'#12x*.X.x.y.Y.y.z.Z.zrb#',
+'########################']},
+{n:"彩虹終點",tip:"最後一關！先在門的兩邊接力踩按鈕，再從台階跳上電梯越過尖刺，最後疊羅漢上去拉拉桿，打開終點的門。",m:[
+'########################',
+'#.....#............#...#',
+'#.....#............#...#',
+'#.....#............#...#',
+'#.....#..........*.#...#',
+'#.....#...........u#...#',
+'#.....#..........--U...#',
+'#.....#.....*......U...#',
+'#.*...#............U.rb#',
+'#.....#.........########',
+'#.....#.........########',
+'#.....X..#......########',
+'#12.x.X.x#^^ee^^########',
 '########################']}
 ];
 
@@ -357,14 +447,14 @@ const COL=['#ef4444','#3b82f6'],COLD=['#b91c1c','#1e40af'],DOORC={X:'#f59f00',Y:
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 /* 美術圖：img/co/（每關一個主題：草原、森林、雪山、天空城堡） */
 const CO=n=>img('img/co/'+n+'.webp'),ok=i=>i&&i.complete&&i.naturalWidth;
-const THEME=['meadow','meadow','forest','forest','snow','sky'],BGN=[1,1,2,2,3,4];
+const THEME=['meadow','meadow','forest','forest','snow','sky','meadow','forest','snow','forest','meadow','sky'],BGN=[1,1,2,2,3,4,1,2,3,2,1,4];
 const th=()=>THEME[L?L.i:0]||'meadow';
 ['button-up','button-down','lever-off','lever-on','gate-closed','gate-open','wall-red','wall-blue','magic-active','magic-inactive','elevator','spikes',
  'exit-red-closed','exit-red-open','exit-blue-closed','exit-blue-open','gem-front','gem-turn','gem-sparkle','jump-dust','stun-stars','confetti','coop-heart','player-marker',
  'hero-red-idle','hero-red-walk','hero-red-jump','hero-blue-idle','hero-blue-walk','hero-blue-jump','bg-1','bg-2','bg-3','bg-4',
  ...['meadow','forest','snow','sky'].flatMap(t=>[t+'-ground',t+'-fill',t+'-platform'])].forEach(CO);
 /* 門和按鈕要配對：同一組用同一種顏色（X 黃色是原圖的顏色，其他染色） */
-const TINT={Y:'#a855f7',Z:'#10b981',U:'#ec4899',V:'#14b8a6',m:null,n:null},TC={};
+const TINT={MX:'#f5b800',Y:'#a855f7',Z:'#10b981',U:'#ec4899',V:'#14b8a6',m:null,n:null},TC={};
 function tinted(name,k){const im=CO(name),col=TINT[k];if(!col||!ok(im))return im;const key=name+k;if(TC[key])return TC[key];
   const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);
   g.globalCompositeOperation='source-atop';g.globalAlpha=.55;g.fillStyle=col;g.fillRect(0,0,c.width,c.height);c.complete=true;c.naturalWidth=c.width;c.naturalHeight=c.height;return TC[key]=c}
@@ -379,7 +469,7 @@ function drawTiles(){const T=th(),gr=CO(T+'-ground'),fi=CO(T+'-fill'),pf=CO(T+'-
     else if(ch==='-'){if(!put(pf,x,y+TS*.3,TS)){ctx.fillStyle='#c99a5b';rr(x+1,y,TS-2,10,4);ctx.fill()}}
     else if(ch==='^'){if(!put(CO('spikes'),x,y+TS,TS,TS*.5)){ctx.fillStyle='#8d99ae';ctx.fillRect(x,y+TS-14,TS,14)}}
     else if(ch==='R'||ch==='B'){const im=CO(ch==='R'?'wall-red':'wall-blue');if(ok(im))ctx.drawImage(im,x,y,TS,TS);else{ctx.fillStyle=COL[ch==='R'?0:1]+'55';ctx.fillRect(x+6,y,TS-12,TS)}}
-    else if(ch==='m'||ch==='n'){const k=ch==='m'?'X':'Y',on=pressed(k),im=tinted(on?'magic-active':'magic-inactive',k==='X'?'':k);
+    else if(ch==='m'||ch==='n'){const k=ch==='m'?'X':'Y',on=pressed(k),im=tinted(on?'magic-active':'magic-inactive',k==='X'?'MX':'');   // 魔法方塊原本是紫色（配紫色按鈕 y）；配黃色按鈕 x 的染成黃色
       if(ok(im))ctx.drawImage(im,x,y,TS,TS);else{ctx.strokeStyle=DOORC[k];ctx.strokeRect(x+3,y+3,TS-6,TS-6)}}
     else if('XYZUV'.includes(ch)){const open=doorOpen(ch),im=tinted(open?'gate-open':'gate-closed',ch);
       if(ok(im))ctx.drawImage(im,x,y,TS,TS);else if(!open){ctx.fillStyle=DOORC[ch];rr(x+3,y,TS-6,TS,6);ctx.fill()}}}
