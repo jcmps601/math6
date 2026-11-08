@@ -303,8 +303,13 @@ function rects(){   // 會擋住自己的東西（格子以外的）
   return out}
 function step(dt){const p=ME;if(!p||p.dead)return;
   const dir=(K.r?1:0)-(K.l?1:0);p.vx=dir*SPEED;if(dir)p.f=dir;
-  if(K.jp&&p.on){p.vy=-JUMP;p.on=0;sfx.jump();fxAdd(p.x,p.y-4,'dust')}K.jp=0;
-  if(!K.j&&p.vy<-260)p.vy=-260;   // 放開跳就跳低一點
+  /* 跳：・早一點按也算（落地前 0.15 秒內按的，一落地就跳）
+        ・剛走出平台邊緣 0.1 秒內也能跳；站在同學頭上、電梯上晃動時也不會漏掉
+        ・輕點一下也有基本高度（按住超過 0.15 秒才分「長按跳高、短按跳低」） */
+  const tn=performance.now();if(p.on)p.lastOn=tn;
+  if(K.jp){K.jt=tn;K.jp=0}
+  if(K.jt&&tn-K.jt<150&&tn-(p.lastOn||-1e9)<100&&p.vy>-200){p.vy=-JUMP;p.on=0;p.lastOn=-1e9;p.jt=tn;K.jt=0;sfx.jump();fxAdd(p.x,p.y-4,'dust')}
+  if(!K.j&&p.vy<-260&&tn-(p.jt||0)>150)p.vy=-260;   // 放開跳就跳低一點
   p.vy=Math.min(1100,p.vy+GRAV*dt);
   /* 站在電梯或同學頭上：跟著一起動 */
   if(p.ride){const R0=p.ride;const nr=rects().find(q=>q.who===R0.who&&Math.abs(q.x-R0.x)<60);if(nr){p.x+=nr.x-R0.x;p.y+=nr.y-R0.y}}
@@ -415,7 +420,7 @@ addEventListener('resize',fit);
 /* ═════════════ 遊戲迴圈 ═════════════ */
 let last=0,raf=0;
 function loop(t){raf=requestAnimationFrame(loop);if(!$('#game').classList.contains('on')||!L)return;const dt=Math.min(.033,(t-(last||t))/1000);last=t;
-  if(G.st&&G.st.phase==='play'){let left=dt;while(left>0){const s=Math.min(left,1/120);step(s);left-=s}sendLive();checkClear()}
+  if(G.st&&G.st.phase==='play'){let left=dt;while(left>1e-4){const s=Math.min(left,1/120);step(s);left-=s}sendLive();checkClear()}
   draw();paintTop()}
 raf=requestAnimationFrame(loop);
 /* 按鍵、觸控 */
@@ -423,7 +428,7 @@ const KM={ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',ArrowUp:'j',w:'j'
 addEventListener('keydown',e=>{const k=KM[e.key];if(!k||!$('#game').classList.contains('on'))return;e.preventDefault();if(k==='j'&&!K.j)K.jp=1;K[k]=1});
 addEventListener('keyup',e=>{const k=KM[e.key];if(k)K[k]=0});
 [['#kL','l'],['#kR','r'],['#kJ','j']].forEach(([s,k])=>{const b=$(s);
-  const dn=e=>{e.preventDefault();if(k==='j'&&!K.j)K.jp=1;K[k]=1;b.classList.add('dn');try{b.setPointerCapture(e.pointerId)}catch(x){}},up=e=>{K[k]=0;b.classList.remove('dn')};
+  const dn=e=>{e.preventDefault();if(k==='j')K.jp=1;K[k]=1;b.classList.add('dn');try{b.setPointerCapture(e.pointerId)}catch(x){}},up=e=>{K[k]=0;b.classList.remove('dn')};
   b.addEventListener('pointerdown',dn);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);b.addEventListener('contextmenu',e=>e.preventDefault())});
 const touchy=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;$('#ctl').classList.toggle('on',touchy);
 $('#bRe').onclick=()=>{if(ME&&!ME.dead){spawnMe();sendLive(1)}};
