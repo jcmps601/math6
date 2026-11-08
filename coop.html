@@ -47,6 +47,7 @@ button{font-family:inherit;cursor:pointer}
 #ctl button{width:clamp(4rem,19vw,6rem);height:clamp(4rem,19vw,6rem);border-radius:50%;border:0;background:#ffffff2e;color:#fff;font-size:clamp(1.6rem,7vw,2.4rem);font-weight:900;touch-action:none;box-shadow:inset 0 -5px 0 #0003}
 #ctl button.dn{background:#ffffff66}
 #ctl button{padding:0;display:flex;align-items:center;justify-content:center;background:none!important;box-shadow:none}#ctl button img{width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 3px 0 #0004)}#ctl button.dn img{transform:scale(.92);filter:brightness(1.1)}
+#tm{white-space:nowrap;font-variant-numeric:tabular-nums}#tm.late{color:#ffb4a8}
 #top .tb{width:1.5em;height:1.5em;vertical-align:-.4em;margin-right:.2em}#top #gems{white-space:nowrap}#top #bRe{display:flex;align-items:center}
 .hero{width:min(19rem,62vw,34vh);height:auto;flex:none}
 #over .clr{width:min(15rem,60vw,28vh);height:auto;margin:-.2rem auto .2rem;display:block}#over .st img{width:2.4rem;height:auto;margin:0 .15rem}#over .st img.no{filter:grayscale(1) opacity(.35)}
@@ -70,7 +71,7 @@ button{font-family:inherit;cursor:pointer}
 </style></head><body>
 <div class="scr on" id="home">
   <img class="hero" src="img/co/title.webp" alt=""><div class="logo">雙人<span>合作</span>過關</div>
-  <div class="note">兩個人<b>各用自己的平板</b>一起闖關！<br>開始時兩個人各用 <b>1 張遊戲券</b>，同一個房間可以一直玩下一關。</div>
+  <div class="note">兩個人<b>各用自己的平板</b>一起闖關！<br>開始時兩個人各用 <b>1 張遊戲券</b>，一張可以玩 <b>10 分鐘</b>。</div>
   <div id="me"></div>
   <div class="menu">
     <button class="btn o" id="bInv" hidden><img class="ti" src="img/co/ui-invite.webp" alt="" draggable="false">邀請同學一起玩</button>
@@ -88,7 +89,7 @@ button{font-family:inherit;cursor:pointer}
   <div id="lmsg"></div>
 </div>
 <div class="scr" id="game">
-  <div id="top"><span class="t" id="ttl"></span><span id="gems"><img class="tb" src="img/co/ui-gems.webp" alt=""><b id="gemN"></b></span><button id="bRe"><img class="tb" src="img/co/ui-restart.webp" alt="">回起點</button><button id="bOut">離開</button></div>
+  <div id="top"><span class="t" id="ttl"></span><span id="tm"></span><span id="gems"><img class="tb" src="img/co/ui-gems.webp" alt=""><b id="gemN"></b></span><button id="bRe"><img class="tb" src="img/co/ui-restart.webp" alt="">回起點</button><button id="bOut">離開</button></div>
   <div id="wrap"><canvas id="cv" width="960" height="560"></canvas><div id="rot">📱↻ 把平板（手機）橫著拿，畫面會比較大</div></div>
   <div id="ctl"><div class="grp"><button id="kL" aria-label="往左"><img src="img/co/ui-left.webp" alt=""></button><button id="kR" aria-label="往右"><img src="img/co/ui-right.webp" alt=""></button></div><button id="kJ" aria-label="跳"><img src="img/co/ui-jump.webp" alt=""></button></div>
 </div>
@@ -99,7 +100,7 @@ button{font-family:inherit;cursor:pointer}
    ・兩個人各用自己的平板連線（房間 rooms/房號）：p0＝紅色（開房間的人）、p1＝藍色
    ・每台平板只算「自己的角色」，位置每秒傳 12 次（rooms/房號/live/位置）；機關（按鈕、門）由兩個人的位置各自算，拉桿和寶石寫在 rooms/房號/w
    ・紅色牆只有紅色能過、藍色牆只有藍色能過；可以站在同學頭上跳得更高；碰到尖刺就回起點（不扣分、不會輸）
-   ・兩個人都走到自己顏色的門 → 過關。開始時兩個人各用 1 張遊戲券，同一個房間繼續玩不用再付 */
+   ・兩個人都走到自己顏色的門 → 過關。開始時兩個人各用 1 張遊戲券，一張玩 10 分鐘；時間到再給 2 分鐘把這一關做完，想繼續玩兩個人各再用 1 張 */
 const $=s=>document.querySelector(s);
 const FIREBASE_CONFIG={apiKey:"AIzaSyD-frW7ISsXAHsv1DSZpGzvn_ok9t1NJ4U",authDomain:"quiz601.firebaseapp.com",databaseURL:"https://quiz601-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"quiz601"};
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -146,6 +147,7 @@ const mySeat=()=>inPlat()?P.seat():0;
 const myPet=()=>{try{return inPlat()&&P.myPet?P.myPet():null}catch(e){return null}};
 const hasTicket=()=>!inPlat()||isTestMe()||(P.tickets()||0)>0;
 const payTicket=()=>!inPlat()||P.useTicket('co');
+const TICKET_MS=Q.has('local')&&Q.get('tm')?+Q.get('tm')*1000:10*60*1000,GRACE_MS=Q.has('local')&&Q.get('gr')?+Q.get('gr')*1000:2*60*1000;   // 一張券玩 10 分鐘、時間到再給 2 分鐘收尾（?local 測試時可以用 tm、gr 改秒數）
 const NO_TK='要有 1 張遊戲券才能玩。回平台練習 10 題答對 8 題就能拿到！';
 function paintMe(){$('#me').innerHTML=`我是 <b>${myName()}</b>`+(inPlat()?`　<img class="ti" src="img/ui/rw-ticket.webp" alt="" style="width:1.4em;height:1.4em;vertical-align:-.4em">遊戲券 × ${P.tickets()||0}`:'')}
 let AC=null;function tone(f,d,type='triangle',v=.07,at=0){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+at,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
@@ -773,14 +775,16 @@ function draw(){if(!L)return;drawBg();drawTiles();
     if(ok(fi)){const w=f.t==='dust'?40:36+a*14;ctx.drawImage(fi,f.x-w/2,f.y-a*(f.t==='dust'?6:30)-w*fi.naturalHeight/fi.naturalWidth/2,w,w*fi.naturalHeight/fi.naturalWidth)}
     else if(f.t!=='dust'){ctx.font='28px sans-serif';ctx.textAlign='center';ctx.fillText(f.t,f.x,f.y-a*40)}ctx.globalAlpha=1}
   if(!o&&G.mode==='net'){ctx.fillStyle='#0008';rr(W/2-200,16,400,40,14);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 18px sans-serif';ctx.textAlign='center';ctx.fillText('📴 等同學連上線…',W/2,43)}}
-function paintTop(){if(!L)return;const n=L.gems.filter((g,i)=>G.w['G'+L.i+'_'+i]).length;$('#ttl').textContent=`第 ${L.i+1} 關`;$('#gemN').textContent=`${n} / ${L.gems.length}`}
+function paintTop(){if(!L)return;const n=L.gems.filter((g,i)=>G.w['G'+L.i+'_'+i]).length;$('#ttl').textContent=`第 ${L.i+1} 關`;$('#gemN').textContent=`${n} / ${L.gems.length}`;paintClock()}
+const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+function paintClock(){const e=$('#tm'),st=G.st;if(!st||!st.te){e.textContent='';return}const left=st.te-now(),late=left<=0;e.className=late?'late':'';e.textContent=late?'⏱ 加時 '+mmss(st.te+GRACE_MS-now()):'⏱ '+mmss(left)}
 function fit(){const wrap=$('#wrap'),r=wrap.getBoundingClientRect();if(!r.width)return;const k=Math.min(r.width/W,r.height/H)*.98;cv.style.width=Math.floor(W*k)+'px';cv.style.height=Math.floor(H*k)+'px'}
 addEventListener('resize',fit);
 
 /* ═════════════ 遊戲迴圈 ═════════════ */
 let last=0,raf=0;
 function loop(t){raf=requestAnimationFrame(loop);if(!$('#game').classList.contains('on')||!L)return;const dt=Math.min(.033,(t-(last||t))/1000);last=t;
-  if(G.st&&G.st.phase==='play'){let left=dt;while(left>1e-4){const s=Math.min(left,1/120);step(s);left-=s}sendLive();checkClear()}
+  if(G.st&&G.st.phase==='play'){let left=dt;while(left>1e-4){const s=Math.min(left,1/120);step(s);left-=s}sendLive();checkClear();checkTime()}
   draw();paintTop()}
 raf=requestAnimationFrame(loop);
 /* 按鍵、觸控 */
@@ -796,13 +800,25 @@ $('#bRe').onclick=()=>{if(ME&&!ME.dead){spawnMe();sendLive(1)}};
 /* ═════════════ 房間狀態 ═════════════ */
 function onState(){const st=G.st;if(!st)return;
   if(st.phase==='wait'){show('lobby');paintLobby();$('#over').classList.remove('on');return}
-  if(st.phase==='play'||st.phase==='clear'||st.phase==='done'){
-    /* 開始玩：這個房間第一次開始時付 1 張券 */
-    const pk=G.pin+'_'+G.created;if(G.paid!==pk){G.paid=pk;if(!payTicket()){lmsg(NO_TK);}paintMe()}
+  if(st.phase==='play'||st.phase==='clear'||st.phase==='done'||st.phase==='time'){
+    /* 開始玩、續玩：每一張券（tn）付一次 */
+    const pk=G.pin+'_'+G.created+'_'+(st.tn||1);if(G.paid!==pk){G.paid=pk;if(!payTicket()){lmsg(NO_TK);}paintMe()}
     if(!L||L.i!==st.lv||G.lvKey!==st.lvk){G.lvKey=st.lvk;L=build(st.lv);spawnMe();FX.length=0;sendLive(1)}
     show('game');armPlay();
-    if(st.phase==='clear')paintClear();else $('#over').classList.remove('on')}}
-function paintClear(){const st=G.st,n=st.gems||0,tot=L?L.gems.length:3;
+    if(st.phase==='clear')paintClear();else if(st.phase==='time'){paintTimeUp();tryRenew()}else $('#over').classList.remove('on')}}
+/* 時間到：兩個人都按「再玩 10 分鐘」才繼續，各用 1 張券 */
+function paintTimeUp(){const st=G.st,tn=(st.tn||1)+1,mine=st['rn_'+G.slot]===tn,his=st['rn_'+(G.slot==='p0'?'p1':'p0')]===tn,can=hasTicket();
+  $('#ovI').style.display='none';$('#ovT').textContent='時間到！';$('#ovS').innerHTML='';
+  $('#ovM').textContent=mine?'等同學也按「再玩 10 分鐘」…':(can?'這張遊戲券的 10 分鐘用完了。想繼續玩，兩個人各用 1 張遊戲券。':NO_TK)+(his?'（同學已經準備好了！）':'');
+  const B=$('#ovB');B.innerHTML='';
+  if(!mine){const go=document.createElement('button');go.className='btn o';go.textContent='再玩 10 分鐘';go.disabled=!can;go.onclick=()=>{go.disabled=true;Net.update(`rooms/${G.pin}/state`,{['rn_'+G.slot]:tn}).catch(()=>{go.disabled=false})};B.appendChild(go)}
+  const out=document.createElement('button');out.className='btn k';out.textContent='離開';out.onclick=leave;B.appendChild(out);$('#over').classList.add('on')}
+function tryRenew(){const st=G.st;if(!isHost()||!st||st.phase!=='time')return;const tn=(st.tn||1)+1;if(st.rn_p0!==tn||st.rn_p1!==tn)return;
+  const k=G.pin+'_'+G.created+'_'+tn;if(tryRenew.k===k)return;tryRenew.k=k;const te=now()+TICKET_MS;
+  if(st.nl!=null)startLevel(st.nl,{te,tn});else Net.update(`rooms/${G.pin}/state`,{phase:'play',te,tn,t:Date.now()}).catch(()=>{tryRenew.k=''})}
+/* 加時也用完：開房間的人把遊戲停下來（兩台平板一起跳出「時間到」） */
+function checkTime(){const st=G.st;if(!isHost()||!st||st.phase!=='play'||!st.te||now()<st.te+GRACE_MS)return;const k=G.pin+'_'+G.created+'_'+(st.tn||1);if(checkTime.k===k)return;checkTime.k=k;Net.update(`rooms/${G.pin}/state`,{phase:'time',nl:null,t:Date.now()}).catch(()=>{checkTime.k=''})}
+function paintClear(){$('#ovI').style.display='';const st=G.st,n=st.gems||0,tot=L?L.gems.length:3;
   if(G.clrKey!==st.lvk){G.clrKey=st.lvk;sfx.clear();const b=best();b[st.lv]=Math.max(b[st.lv]==null?-1:b[st.lv],n);LS.set('co601_best',b)}
   const lastLv=st.lv>=LEVELS.length-1;
   $('#ovT').textContent=lastLv?'全部破關了！':'過關！';$('#ovS').innerHTML=Array.from({length:tot},(_,k)=>`<img src="img/co/gem-front.webp" alt="" class="${k<n?'':'no'}">`).join('');
@@ -815,9 +831,11 @@ function paintClear(){const st=G.st,n=st.gems||0,tot=L?L.gems.length:3;
   else{const w=document.createElement('div');w.style.cssText='font-weight:900;color:#6b7f9e';w.textContent='等開房間的同學按「下一關」…';B.appendChild(w)}
   const out=document.createElement('button');out.className='btn k';out.textContent='離開';out.onclick=leave;B.appendChild(out);
   $('#over').classList.add('on')}
-async function startLevel(i){if(!isHost())return;const lvk=Math.random().toString(36).slice(2,7);
+async function startLevel(i,ren){if(!isHost())return;const st=G.st||{};
+  if(!ren&&st.te&&now()>st.te){Net.update(`rooms/${G.pin}/state`,{phase:'time',nl:i,t:Date.now()}).catch(()=>{});return}   // 券的時間用完了：先續玩
+  const lvk=Math.random().toString(36).slice(2,7);
   const w=G.w||{},rm={};for(const k in w)if(k.startsWith('L'+i)||k.startsWith('G'+i+'_'))rm[k]=null;   // 這一關的拉桿、寶石重來
-  try{if(Object.keys(rm).length)await Net.update(`rooms/${G.pin}/w`,rm);await Net.update(`rooms/${G.pin}/state`,{phase:'play',lv:i,lvk,t:Date.now()})}catch(e){}}
+  try{if(Object.keys(rm).length)await Net.update(`rooms/${G.pin}/w`,rm);await Net.update(`rooms/${G.pin}/state`,{phase:'play',lv:i,lvk,t:Date.now(),te:ren?ren.te:(st.te||now()+TICKET_MS),tn:ren?ren.tn:(st.tn||1),nl:null})}catch(e){}}
 
 /* ═════════════ 房間（等人） ═════════════ */
 function paintLobby(){const pl=G.players,host=isHost();$('#pinBig').textContent=G.pin;
