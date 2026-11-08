@@ -816,8 +816,8 @@ function paintTimeUp(){const st=G.st,tn=(st.tn||1)+1,mine=st['rn_'+G.slot]===tn,
 function tryRenew(){const st=G.st;if(!isHost()||!st||st.phase!=='time')return;const tn=(st.tn||1)+1;if(st.rn_p0!==tn||st.rn_p1!==tn)return;
   const k=G.pin+'_'+G.created+'_'+tn;if(tryRenew.k===k)return;tryRenew.k=k;const te=now()+TICKET_MS;
   if(st.nl!=null)startLevel(st.nl,{te,tn});else Net.update(`rooms/${G.pin}/state`,{phase:'play',te,tn,t:Date.now()}).catch(()=>{tryRenew.k=''})}
-/* 加時也用完：開房間的人把遊戲停下來（兩台平板一起跳出「時間到」） */
-function checkTime(){const st=G.st;if(!isHost()||!st||st.phase!=='play'||!st.te||now()<st.te+GRACE_MS)return;const k=G.pin+'_'+G.created+'_'+(st.tn||1);if(checkTime.k===k)return;checkTime.k=k;Net.update(`rooms/${G.pin}/state`,{phase:'time',nl:null,t:Date.now()}).catch(()=>{checkTime.k=''})}
+/* 加時也用完：把遊戲停下來（兩台平板都會檢查，其中一台休眠時另一台也停得下來） */
+function checkTime(){const st=G.st;if(!st||st.phase!=='play'||!st.te||now()<st.te+GRACE_MS)return;const k=G.pin+'_'+G.created+'_'+(st.tn||1);if(checkTime.k===k)return;checkTime.k=k;Net.update(`rooms/${G.pin}/state`,{phase:'time',nl:null,t:Date.now()}).catch(()=>{checkTime.k=''})}
 function paintClear(){$('#ovI').style.display='';const st=G.st,n=st.gems||0,tot=L?L.gems.length:3;
   if(G.clrKey!==st.lvk){G.clrKey=st.lvk;sfx.clear();const b=best();b[st.lv]=Math.max(b[st.lv]==null?-1:b[st.lv],n);LS.set('co601_best',b)}
   const lastLv=st.lv>=LEVELS.length-1;
