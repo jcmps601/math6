@@ -53,7 +53,6 @@ button{font-family:inherit;cursor:pointer}
 #ctl #kJ{width:clamp(5rem,24vw,7rem);height:clamp(5rem,24vw,7rem)}
 /* 橫的短螢幕：按鈕疊在畫面上 */
 @media (orientation:landscape) and (max-height:560px){#ctl.on{position:absolute;left:0;right:0;bottom:0;background:none;pointer-events:none}#ctl .grp,#ctl>button{pointer-events:auto}#ctl button{opacity:.6;width:min(4.4rem,20vh);height:min(4.4rem,20vh)}#ctl #kJ{width:min(5rem,23vh);height:min(5rem,23vh)}#ctl .grp{gap:.4rem}#ctl.on{padding:.3rem .4rem}}
-#tip{position:absolute;left:50%;top:8%;transform:translateX(-50%);background:#fffffff0;color:#1f3a63;font-weight:900;border-radius:16px;padding:.4rem .9rem;font-size:clamp(.9rem,min(3.4vw,3vh),1.15rem);max-width:90%;text-align:center;pointer-events:none;transition:opacity .4s}
 #rot{display:none;position:absolute;left:50%;bottom:4%;transform:translateX(-50%);color:#cfe3ff;font-weight:900;font-size:1rem;white-space:nowrap}
 @media (orientation:portrait) and (max-width:600px){#rot{display:block}}
 #over{position:fixed;inset:0;background:#0b1a2ecc;display:none;align-items:center;justify-content:center;z-index:9;padding:1rem}
@@ -71,7 +70,7 @@ button{font-family:inherit;cursor:pointer}
 </style></head><body>
 <div class="scr on" id="home">
   <img class="hero" src="img/co/title.webp" alt=""><div class="logo">雙人<span>合作</span>過關</div>
-  <div class="note">兩個人<b>各用自己的平板</b>一起闖關！紅色和藍色要互相幫忙：<br>一個人踩住按鈕開門、站到同學頭上跳高、各走各的顏色通道，兩個人都走到自己的門就過關。<br>開始時兩個人各用 <b>1 張遊戲券</b>，同一個房間可以一直玩下一關。</div>
+  <div class="note">兩個人<b>各用自己的平板</b>一起闖關！<br>開始時兩個人各用 <b>1 張遊戲券</b>，同一個房間可以一直玩下一關。</div>
   <div id="me"></div>
   <div class="menu">
     <button class="btn o" id="bInv" hidden><img class="ti" src="img/co/ui-invite.webp" alt="" draggable="false">邀請同學一起玩</button>
@@ -90,7 +89,7 @@ button{font-family:inherit;cursor:pointer}
 </div>
 <div class="scr" id="game">
   <div id="top"><span class="t" id="ttl"></span><span id="gems"><img class="tb" src="img/co/ui-gems.webp" alt=""><b id="gemN"></b></span><button id="bRe"><img class="tb" src="img/co/ui-restart.webp" alt="">回起點</button><button id="bOut">離開</button></div>
-  <div id="wrap"><canvas id="cv" width="960" height="560"></canvas><div id="tip"></div><div id="rot">📱↻ 把平板（手機）橫著拿，畫面會比較大</div></div>
+  <div id="wrap"><canvas id="cv" width="960" height="560"></canvas><div id="rot">📱↻ 把平板（手機）橫著拿，畫面會比較大</div></div>
   <div id="ctl"><div class="grp"><button id="kL" aria-label="往左"><img src="img/co/ui-left.webp" alt=""></button><button id="kR" aria-label="往右"><img src="img/co/ui-right.webp" alt=""></button></div><button id="kJ" aria-label="跳"><img src="img/co/ui-jump.webp" alt=""></button></div>
 </div>
 <div id="over"><div class="box"><img class="clr" id="ovI" src="img/co/clear.webp" alt=""><div class="t" id="ovT"></div><div class="st" id="ovS"></div><div class="s" id="ovM"></div><div class="bs" id="ovB"></div></div></div>
@@ -159,7 +158,7 @@ const sfx={jump(){tone(520,.12,'square',.03);tone(780,.08,'square',.02,.05)},gem
    m n 踩著 x、y 按鈕才會出現的方塊（樓梯）　e 電梯（上下移動 3 格）　* 寶石　r 紅色的門（終點）　b 藍色的門　1 紅色起點　2 藍色起點 */
 const TS=40,COLS=24,ROWS=14,W=COLS*TS,H=ROWS*TS;
 const LEVELS=[
-{n:'一起出發',tip:'用 ◀ ▶ 走路、按「跳」跳起來。兩個人都走到自己顏色的門就過關！',m:[
+{n:'一起出發',m:[
 '########################',
 '#......................#',
 '#......................#',
@@ -174,7 +173,7 @@ const LEVELS=[
 '#........---...........#',
 '#.12.............#..*rb#',
 '########################']},
-{n:'幫我按住',tip:'踩著按鈕，門才會打開。一個人按住，另一個人先過去，再到另一邊按按鈕幫同學開門！最高的寶石要站到同學頭上才拿得到。',m:[
+{n:'幫我按住',m:[
 '########################',
 '#..........#...........#',
 '#..........#...........#',
@@ -189,7 +188,7 @@ const LEVELS=[
 '#.---......X.....---...#',
 '#.12...x...X...x....rb.#',
 '########################']},
-{n:'疊羅漢',tip:'高台跳不上去？一個人站在牆邊，另一個人跳到他頭上再跳！上去以後踩按鈕，樓梯就會出現。',m:[
+{n:'疊羅漢',m:[
 '########################',
 '#......................#',
 '#......................#',
@@ -204,7 +203,7 @@ const LEVELS=[
 '#............n##########',
 '#.12..*.....nn##########',
 '########################']},
-{n:'紅藍通道',tip:'紅色牆只有紅色能穿過，藍色牆只有藍色能穿過。各走各的路，踩按鈕幫對方開門！',m:[
+{n:'紅藍通道',m:[
 '########################',
 '#......................#',
 '#...####################',
@@ -219,7 +218,7 @@ const LEVELS=[
 '#---B.......*..X.......#',
 '#12.B..........X..y..b.#',
 '########################']},
-{n:'拉桿開關',tip:'走到拉桿旁邊就會切換，門會打開或關上。拉桿兩個人都看得到，要商量好再拉喔！',m:[
+{n:'拉桿開關',m:[
 '########################',
 '#......................#',
 '#......................#',
@@ -234,7 +233,7 @@ const LEVELS=[
 '#...---....U.---V......#',
 '#.12.......U....V...rb.#',
 '########################']},
-{n:'電梯',tip:'站上會上下移動的電梯，等它到最高的時候跳過去。小心下面的尖刺！',m:[
+{n:'電梯',m:[
 '########################',
 '#......................#',
 '#......................#',
@@ -249,7 +248,7 @@ const LEVELS=[
 '#.....ee...ee..#########',
 '#.12.#^^^^^^^^^#########',
 '########################']},
-{n:"尖刺橋",tip:"尖刺坑跳不過去！一個人踩著按鈕，魔法橋就會出現。先過去的人，再到對面踩另一個按鈕，幫同學變出另一座橋。",m:[
+{n:"尖刺橋",m:[
 '########################',
 '#......................#',
 '#......................#',
@@ -264,7 +263,7 @@ const LEVELS=[
 '#......#mmmmmmmm.......#',
 '#12.x..#^^^^^^^^.*.y.rb#',
 '########################']},
-{n:"樓梯和隧道",tip:"一個人踩按鈕，魔法樓梯就會出現，另一個人爬上高塔、跳到右邊，再踩按鈕打開隧道的門，讓同學走過來。",m:[
+{n:"樓梯和隧道",m:[
 '########################',
 '#......................#',
 '#......................#',
@@ -279,7 +278,7 @@ const LEVELS=[
 '#.......mmY............#',
 '#12.x...mmY.*...y....rb#',
 '########################']},
-{n:"拉桿電梯",tip:"有兩道門！搭電梯上右邊的高台拉一支拉桿；左邊高台的拉桿太高了，要站到同學頭上才上得去。",m:[
+{n:"拉桿電梯",m:[
 '########################',
 '#................#.#...#',
 '#................#.#...#',
@@ -294,7 +293,7 @@ const LEVELS=[
 '#................U.V...#',
 '#.....12.ee......U*V.rb#',
 '########################']},
-{n:"疊羅漢高塔",tip:"高台有 3 格高，一個人站在牆邊，另一個人跳到他頭上再跳上去。上去的人踩按鈕，樓梯就會出現，讓同學爬上來。",m:[
+{n:"疊羅漢高塔",m:[
 '########################',
 '#......................#',
 '#......................#',
@@ -309,7 +308,7 @@ const LEVELS=[
 '#......m################',
 '#12...mm################',
 '########################']},
-{n:"接力三扇門",tip:"三道門要接力：一個人踩著按鈕，同學先過門，過去的人再踩門另一邊的按鈕，幫你開門。每道門都要這樣做！",m:[
+{n:"接力三扇門",m:[
 '########################',
 '#.....#.....#.....#....#',
 '#.....#.....#.....#....#',
@@ -324,7 +323,7 @@ const LEVELS=[
 '#.....X.....Y.....Z....#',
 '#12x*.X.x.y.Y.y.z.Z.zrb#',
 '########################']},
-{n:"彩虹終點",tip:"最後一關！先在門的兩邊接力踩按鈕，再從台階跳上電梯越過尖刺，最後疊羅漢上去拉拉桿，打開終點的門。",m:[
+{n:"彩虹終點",m:[
 '########################',
 '#.....#............#...#',
 '#.....#............#...#',
@@ -338,6 +337,126 @@ const LEVELS=[
 '#.....#.........########',
 '#.....X..#......########',
 '#12.x.X.x#^^ee^^########',
+'########################']},
+{n:"交換房間",m:[
+'########################',
+'#...........#..........#',
+'#...........#..........#',
+'#...........#..........#',
+'#...........#..........#',
+'#...........#..........#',
+'#...........#..........#',
+'#...........#.......*..#',
+'#....*......#..*.......#',
+'#...........X..........#',
+'#...........X......--..#',
+'#...........X..........#',
+'#.b....x.1..X..2.x...r.#',
+'########################']},
+{n:"天窗",m:[
+'########################',
+'#......................#',
+'#......................#',
+'#.................*....#',
+'#......................#',
+'#.......*..............#',
+'#......................#',
+'#...............x...rb.#',
+'##########XXX###########',
+'#......................#',
+'#.........---..........#',
+'#......--..............#',
+'#12.x...............*..#',
+'########################']},
+{n:"雙層通道",m:[
+'########################',
+'#........R.......X.....#',
+'#........R.......X.....#',
+'#.....*..R..*....X.....#',
+'#........R.......X.....#',
+'#........R.......X.....#',
+'#........R....y..X.y.r.#',
+'#....###################',
+'#........B.......Y.....#',
+'#..--....B..*....Y.....#',
+'#........B.......Y.....#',
+'#--......B.......Y.....#',
+'#..12....B....x..Y.x.b.#',
+'########################']},
+{n:"顏色地板",m:[
+'########################',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#...........*..........#',
+'#..*.............*.....#',
+'#......................#',
+'#.....mmmmmmx.nnnnn.yrb#',
+'#....#BBBBBB##RRRRR#####',
+'#12..#^^^^^^##^^^^^#####',
+'########################']},
+{n:"過河接力",m:[
+'########################',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#......................#',
+'#........*.......*.....#',
+'#............*.........#',
+'#......................#',
+'#......mmmmm...nnnnn...#',
+'#12.x..^^^^^x.y^^^^^yrb#',
+'########################']},
+{n:"專屬按鈕",m:[
+'########################',
+'#......#........#......#',
+'#......#........#......#',
+'#......#........#......#',
+'#......#........#......#',
+'#......#........#......#',
+'#......#........#...*..#',
+'#......#........#......#',
+'#...*..#........#......#',
+'#......X....*...Y......#',
+'#......X........Y......#',
+'#..###.X.######.Y###...#',
+'#12RxR.X.BxBRyR.YByB.rb#',
+'########################']},
+{n:"電梯島",m:[
+'########################',
+'#..................#...#',
+'#..................#...#',
+'#..................#...#',
+'#..................#...#',
+'#..................X...#',
+'#..........*....*..X...#',
+'#......*...........X...#',
+'#..........x.......Xxrb#',
+'#.........###.....######',
+'#.........###.....######',
+'#.........###.....######',
+'#12..^ee^^###^^ee^######',
+'########################']},
+{n:"大冒險",m:[
+'########################',
+'#.....#................#',
+'#.....#....*...........#',
+'#.....#................#',
+'#.....U....u...........#',
+'#.....U...--...*.......#',
+'#.....U................#',
+'#.rb..U.......z........#',
+'#################ZZZ####',
+'#........*.............#',
+'#.....mmmmmmm....---...#',
+'#....#BBBBBBB#.--......#',
+'#12..#^^^^^^^#.x.....z.#',
 '########################']}
 ];
 
@@ -447,7 +566,7 @@ const COL=['#ef4444','#3b82f6'],COLD=['#b91c1c','#1e40af'],DOORC={X:'#f59f00',Y:
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 /* 美術圖：img/co/（每關一個主題：草原、森林、雪山、天空城堡） */
 const CO=n=>img('img/co/'+n+'.webp'),ok=i=>i&&i.complete&&i.naturalWidth;
-const THEME=['meadow','meadow','forest','forest','snow','sky','meadow','forest','snow','forest','meadow','sky'],BGN=[1,1,2,2,3,4,1,2,3,2,1,4];
+const THEME=['meadow','meadow','forest','forest','snow','sky','meadow','forest','snow','forest','meadow','sky','snow','sky','forest','meadow','snow','forest','meadow','sky'],BGN=[1,1,2,2,3,4,1,2,3,2,1,4,3,4,2,1,3,2,1,4];
 const th=()=>THEME[L?L.i:0]||'meadow';
 ['button-up','button-down','lever-off','lever-on','gate-closed','gate-open','wall-red','wall-blue','magic-active','magic-inactive','elevator','spikes',
  'exit-red-closed','exit-red-open','exit-blue-closed','exit-blue-open','gem-front','gem-turn','gem-sparkle','jump-dust','stun-stars','confetti','coop-heart','player-marker',
@@ -503,7 +622,7 @@ function draw(){if(!L)return;drawBg();drawTiles();
     if(ok(fi)){const w=f.t==='dust'?40:36+a*14;ctx.drawImage(fi,f.x-w/2,f.y-a*(f.t==='dust'?6:30)-w*fi.naturalHeight/fi.naturalWidth/2,w,w*fi.naturalHeight/fi.naturalWidth)}
     else if(f.t!=='dust'){ctx.font='28px sans-serif';ctx.textAlign='center';ctx.fillText(f.t,f.x,f.y-a*40)}ctx.globalAlpha=1}
   if(!o&&G.mode==='net'){ctx.fillStyle='#0008';rr(W/2-200,16,400,40,14);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 18px sans-serif';ctx.textAlign='center';ctx.fillText('📴 等同學連上線…',W/2,43)}}
-function paintTop(){if(!L)return;const n=L.gems.filter((g,i)=>G.w['G'+L.i+'_'+i]).length;$('#ttl').textContent=`第 ${L.i+1} 關・${LEVELS[L.i].n}`;$('#gemN').textContent=`${n} / ${L.gems.length}`}
+function paintTop(){if(!L)return;const n=L.gems.filter((g,i)=>G.w['G'+L.i+'_'+i]).length;$('#ttl').textContent=`第 ${L.i+1} 關`;$('#gemN').textContent=`${n} / ${L.gems.length}`}
 function fit(){const wrap=$('#wrap'),r=wrap.getBoundingClientRect();if(!r.width)return;const k=Math.min(r.width/W,r.height/H)*.98;cv.style.width=Math.floor(W*k)+'px';cv.style.height=Math.floor(H*k)+'px'}
 addEventListener('resize',fit);
 
@@ -522,7 +641,6 @@ addEventListener('keyup',e=>{const k=KM[e.key];if(k)K[k]=0});
   b.addEventListener('pointerdown',dn);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);b.addEventListener('contextmenu',e=>e.preventDefault())});
 const touchy=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;$('#ctl').classList.toggle('on',touchy);
 $('#bRe').onclick=()=>{if(ME&&!ME.dead){spawnMe();sendLive(1)}};
-let tipT=0;function tip(t){const e=$('#tip');e.textContent=t;e.style.opacity=1;clearTimeout(tipT);tipT=setTimeout(()=>e.style.opacity=0,7000)}
 
 /* ═════════════ 房間狀態 ═════════════ */
 function onState(){const st=G.st;if(!st)return;
@@ -530,14 +648,14 @@ function onState(){const st=G.st;if(!st)return;
   if(st.phase==='play'||st.phase==='clear'||st.phase==='done'){
     /* 開始玩：這個房間第一次開始時付 1 張券 */
     const pk=G.pin+'_'+G.created;if(G.paid!==pk){G.paid=pk;if(!payTicket()){lmsg(NO_TK);}paintMe()}
-    if(!L||L.i!==st.lv||G.lvKey!==st.lvk){G.lvKey=st.lvk;L=build(st.lv);spawnMe();FX.length=0;tip(LEVELS[st.lv].tip);sendLive(1)}
+    if(!L||L.i!==st.lv||G.lvKey!==st.lvk){G.lvKey=st.lvk;L=build(st.lv);spawnMe();FX.length=0;sendLive(1)}
     show('game');armPlay();
     if(st.phase==='clear')paintClear();else $('#over').classList.remove('on')}}
 function paintClear(){const st=G.st,n=st.gems||0,tot=L?L.gems.length:3;
   if(G.clrKey!==st.lvk){G.clrKey=st.lvk;sfx.clear();const b=best();b[st.lv]=Math.max(b[st.lv]==null?-1:b[st.lv],n);LS.set('co601_best',b)}
   const lastLv=st.lv>=LEVELS.length-1;
   $('#ovT').textContent=lastLv?'全部破關了！':'過關！';$('#ovS').innerHTML=Array.from({length:tot},(_,k)=>`<img src="img/co/gem-front.webp" alt="" class="${k<n?'':'no'}">`).join('');
-  $('#ovM').textContent=lastLv?'你們是最強的搭檔！':`第 ${st.lv+1} 關「${LEVELS[st.lv].n}」完成，拿到 ${n} 顆寶石`;
+  $('#ovM').textContent=lastLv?'你們是最強的搭檔！':`第 ${st.lv+1} 關完成，拿到 ${n} 顆寶石`;
   const B=$('#ovB');B.innerHTML='';
   if(isHost()){
     if(!lastLv){const nx=document.createElement('button');nx.className='btn o';nx.textContent='下一關 ▶';nx.onclick=()=>startLevel(st.lv+1);B.appendChild(nx)}
