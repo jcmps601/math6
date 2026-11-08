@@ -46,9 +46,13 @@ button{font-family:inherit;cursor:pointer}
 #ctl .grp{display:flex;gap:.7rem}
 #ctl button{width:clamp(4rem,19vw,6rem);height:clamp(4rem,19vw,6rem);border-radius:50%;border:0;background:#ffffff2e;color:#fff;font-size:clamp(1.6rem,7vw,2.4rem);font-weight:900;touch-action:none;box-shadow:inset 0 -5px 0 #0003}
 #ctl button.dn{background:#ffffff66}
-#ctl #kJ{width:clamp(5rem,24vw,7rem);height:clamp(5rem,24vw,7rem);background:#f9731688}
+#ctl button{padding:0;display:flex;align-items:center;justify-content:center;background:none!important;box-shadow:none}#ctl button img{width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 3px 0 #0004)}#ctl button.dn img{transform:scale(.92);filter:brightness(1.1)}
+#top .tb{width:1.5em;height:1.5em;vertical-align:-.4em;margin-right:.2em}#top #gems{white-space:nowrap}#top #bRe{display:flex;align-items:center}
+.hero{width:min(19rem,62vw,34vh);height:auto;flex:none}
+#over .clr{width:min(15rem,60vw,28vh);height:auto;margin:-.2rem auto .2rem;display:block}#over .st img{width:2.4rem;height:auto;margin:0 .15rem}#over .st img.no{filter:grayscale(1) opacity(.35)}
+#ctl #kJ{width:clamp(5rem,24vw,7rem);height:clamp(5rem,24vw,7rem)}
 /* 橫的短螢幕：按鈕疊在畫面上 */
-@media (orientation:landscape) and (max-height:560px){#ctl.on{position:absolute;left:0;right:0;bottom:0;background:none;pointer-events:none}#ctl .grp,#ctl>button{pointer-events:auto}#ctl button{opacity:.75}}
+@media (orientation:landscape) and (max-height:560px){#ctl.on{position:absolute;left:0;right:0;bottom:0;background:none;pointer-events:none}#ctl .grp,#ctl>button{pointer-events:auto}#ctl button{opacity:.6;width:min(4.4rem,20vh);height:min(4.4rem,20vh)}#ctl #kJ{width:min(5rem,23vh);height:min(5rem,23vh)}#ctl .grp{gap:.4rem}#ctl.on{padding:.3rem .4rem}}
 #tip{position:absolute;left:50%;top:8%;transform:translateX(-50%);background:#fffffff0;color:#1f3a63;font-weight:900;border-radius:16px;padding:.4rem .9rem;font-size:clamp(.9rem,min(3.4vw,3vh),1.15rem);max-width:90%;text-align:center;pointer-events:none;transition:opacity .4s}
 #rot{display:none;position:absolute;left:50%;bottom:4%;transform:translateX(-50%);color:#cfe3ff;font-weight:900;font-size:1rem;white-space:nowrap}
 @media (orientation:portrait) and (max-width:600px){#rot{display:block}}
@@ -66,18 +70,18 @@ button{font-family:inherit;cursor:pointer}
 #pickList button.on{border-color:#3b82f6;color:#1f5fbf;background:#eef5ff}#pickList button.sent{border-color:#22c55e;color:#15803d}
 </style></head><body>
 <div class="scr on" id="home">
-  <div class="logo">🤝 雙人<span>合作</span>過關</div>
+  <img class="hero" src="img/co/title.webp" alt=""><div class="logo">雙人<span>合作</span>過關</div>
   <div class="note">兩個人<b>各用自己的平板</b>一起闖關！紅色和藍色要互相幫忙：<br>一個人踩住按鈕開門、站到同學頭上跳高、各走各的顏色通道，兩個人都走到自己的門就過關。<br>開始時兩個人各用 <b>1 張遊戲券</b>，同一個房間可以一直玩下一關。</div>
   <div id="me"></div>
   <div class="menu">
-    <button class="btn o" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請同學一起玩</button>
+    <button class="btn o" id="bInv" hidden><img class="ti" src="img/co/ui-invite.webp" alt="" draggable="false">邀請同學一起玩</button>
     <button class="btn" id="bNew"><img class="ti" src="img/ui/ic-room-create.webp" alt="" draggable="false">建立房間</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn k" id="bJoin"><img class="ti" src="img/ui/ic-room-join.webp" alt="" draggable="false">加入</button></div>
   </div>
   <div id="msg"></div>
 </div>
 <div class="scr" id="lobby">
-  <div class="pinrow">房號 <span id="pinBig"></span><button class="btn g" id="bInv2" hidden>邀請同學</button></div>
+  <div class="pinrow">房號 <span id="pinBig"></span><button class="btn g" id="bInv2" hidden><img class="ti" src="img/co/ui-invite.webp" alt="" draggable="false">邀請同學</button></div>
   <div class="pls" id="pls"></div>
   <div class="note" id="lnote"></div>
   <div class="lvs" id="lvs"></div>
@@ -85,11 +89,11 @@ button{font-family:inherit;cursor:pointer}
   <div id="lmsg"></div>
 </div>
 <div class="scr" id="game">
-  <div id="top"><span class="t" id="ttl"></span><span id="gems"></span><button id="bRe">↺ 回起點</button><button id="bOut">離開</button></div>
+  <div id="top"><span class="t" id="ttl"></span><span id="gems"><img class="tb" src="img/co/ui-gems.webp" alt=""><b id="gemN"></b></span><button id="bRe"><img class="tb" src="img/co/ui-restart.webp" alt="">回起點</button><button id="bOut">離開</button></div>
   <div id="wrap"><canvas id="cv" width="960" height="560"></canvas><div id="tip"></div><div id="rot">📱↻ 把平板（手機）橫著拿，畫面會比較大</div></div>
-  <div id="ctl"><div class="grp"><button id="kL">◀</button><button id="kR">▶</button></div><button id="kJ">跳</button></div>
+  <div id="ctl"><div class="grp"><button id="kL" aria-label="往左"><img src="img/co/ui-left.webp" alt=""></button><button id="kR" aria-label="往右"><img src="img/co/ui-right.webp" alt=""></button></div><button id="kJ" aria-label="跳"><img src="img/co/ui-jump.webp" alt=""></button></div>
 </div>
-<div id="over"><div class="box"><div class="t" id="ovT"></div><div class="st" id="ovS"></div><div class="s" id="ovM"></div><div class="bs" id="ovB"></div></div></div>
+<div id="over"><div class="box"><img class="clr" id="ovI" src="img/co/clear.webp" alt=""><div class="t" id="ovT"></div><div class="st" id="ovS"></div><div class="s" id="ovM"></div><div class="bs" id="ovB"></div></div></div>
 <div id="pick"><div class="box"><div style="font-size:1.3rem;font-weight:900;color:#1f5fbf">要邀請誰？（亮的是在線上的同學）</div><div id="pickList"></div><button class="btn g" id="pickX">關閉</button></div></div>
 <script>
 /* ═════════════ 601 雙人合作過關 ═════════════
@@ -299,12 +303,12 @@ function rects(){   // 會擋住自己的東西（格子以外的）
   return out}
 function step(dt){const p=ME;if(!p||p.dead)return;
   const dir=(K.r?1:0)-(K.l?1:0);p.vx=dir*SPEED;if(dir)p.f=dir;
-  if(K.jp&&p.on){p.vy=-JUMP;p.on=0;sfx.jump()}K.jp=0;
+  if(K.jp&&p.on){p.vy=-JUMP;p.on=0;sfx.jump();fxAdd(p.x,p.y-4,'dust')}K.jp=0;
   if(!K.j&&p.vy<-260)p.vy=-260;   // 放開跳就跳低一點
   p.vy=Math.min(1100,p.vy+GRAV*dt);
   /* 站在電梯或同學頭上：跟著一起動 */
   if(p.ride){const R0=p.ride;const nr=rects().find(q=>q.who===R0.who&&Math.abs(q.x-R0.x)<60);if(nr){p.x+=nr.x-R0.x;p.y+=nr.y-R0.y}}
-  moveX(p,p.vx*dt);const wasOn=p.on;p.on=0;p.ride=null;moveY(p,p.vy*dt);
+  moveX(p,p.vx*dt);const wasOn=p.on;p.on=0;p.ride=null;moveY(p,p.vy*dt);p.onP=!!(p.ride&&p.ride.who==='p');
   /* 尖刺、掉下去 */
   const c0=Math.floor((p.x-p.w/2+3)/TS),c1=Math.floor((p.x+p.w/2-3)/TS),r1=Math.floor((p.y-2)/TS);
   for(let c=c0;c<=c1;c++)if(tileAt(c,r1)==='^'&&p.y>r1*TS+TS*.45)return die();
@@ -325,11 +329,11 @@ function moveY(p,dy){let y=p.y+dy;
   /* 單向平台：從上面掉下來才會站住 */
   if(dy>=0){const c0=Math.floor((p.x-p.w/2)/TS),c1=Math.floor((p.x+p.w/2-.01)/TS);
     for(let c=c0;c<=c1;c++){const r=Math.floor(y/TS);if(tileAt(c,r)==='-'&&p.y<=r*TS+1&&y>=r*TS){y=r*TS;p.vy=0;p.on=1}}
-    for(const q of rects()){if(p.x+p.w/2>q.x+2&&p.x-p.w/2<q.x+q.w-2&&p.y<=q.y+6&&y>=q.y){y=q.y;p.vy=0;p.on=1;p.ride={who:q.who,x:q.x,y:q.y}}}}
+    for(const q of rects()){if(p.x+p.w/2>q.x+2&&p.x-p.w/2<q.x+q.w-2&&p.y<=q.y+6&&y>=q.y){y=q.y;p.vy=0;p.on=1;p.ride={who:q.who,x:q.x,y:q.y};if(q.who==='p'&&!p.onP)fxAdd(p.x,p.y-p.h-14,'💖')}}}
   p.y=y}
 function die(){const p=ME;p.dead=1;sfx.die();fxAdd(p.x,p.y-p.h/2,'💫');setTimeout(()=>{spawnMe();sendLive(1)},700)}
 /* 小特效 */
-const FX=[];const fxAdd=(x,y,t)=>FX.push({x,y,t,s:now()});
+const FX=[],FXI={'✨':'gem-sparkle','💫':'stun-stars',dust:'jump-dust','💖':'coop-heart'};const fxAdd=(x,y,t)=>FX.push({x,y,t,s:now()});
 /* ═════════════ 連線：位置、機關 ═════════════ */
 let lastSend=0;
 function sendLive(force){if(G.mode!=='net'||!ME||!L)return;const t=Date.now();if(!force&&t-lastSend<80)return;lastSend=t;
@@ -346,44 +350,65 @@ const cv=$('#cv'),ctx=cv.getContext('2d');
 const IMG={};const img=src=>{if(!IMG[src]){const i=new Image();i.src=src;IMG[src]=i}return IMG[src]};
 const COL=['#ef4444','#3b82f6'],COLD=['#b91c1c','#1e40af'],DOORC={X:'#f59f00',Y:'#a855f7',Z:'#10b981',U:'#ec4899',V:'#14b8a6'};
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
-function drawBg(){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#8fd0ff');g.addColorStop(1,'#dff3ff');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  const t=now()/1000;ctx.fillStyle='#ffffffcc';[[120,90,1],[520,60,.7],[820,120,1.2]].forEach(([x,y,s],i)=>{const xx=(x+t*(8+i*3))%(W+200)-100;ctx.beginPath();ctx.ellipse(xx,y,50*s,18*s,0,0,7);ctx.ellipse(xx+30*s,y-12*s,30*s,20*s,0,0,7);ctx.fill()});
-  ctx.fillStyle='#b8e2b0';ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<=W;x+=40)ctx.lineTo(x,H-110-Math.sin(x/130)*40);ctx.lineTo(W,H);ctx.fill()}
-function drawTiles(){
+/* 美術圖：img/co/（每關一個主題：草原、森林、雪山、天空城堡） */
+const CO=n=>img('img/co/'+n+'.webp'),ok=i=>i&&i.complete&&i.naturalWidth;
+const THEME=['meadow','meadow','forest','forest','snow','sky'],BGN=[1,1,2,2,3,4];
+const th=()=>THEME[L?L.i:0]||'meadow';
+['button-up','button-down','lever-off','lever-on','gate-closed','gate-open','wall-red','wall-blue','magic-active','magic-inactive','elevator','spikes',
+ 'exit-red-closed','exit-red-open','exit-blue-closed','exit-blue-open','gem-front','gem-turn','gem-sparkle','jump-dust','stun-stars','confetti','coop-heart','player-marker',
+ 'hero-red-idle','hero-red-walk','hero-red-jump','hero-blue-idle','hero-blue-walk','hero-blue-jump','bg-1','bg-2','bg-3','bg-4',
+ ...['meadow','forest','snow','sky'].flatMap(t=>[t+'-ground',t+'-fill',t+'-platform'])].forEach(CO);
+/* 門和按鈕要配對：同一組用同一種顏色（X 黃色是原圖的顏色，其他染色） */
+const TINT={Y:'#a855f7',Z:'#10b981',U:'#ec4899',V:'#14b8a6',m:null,n:null},TC={};
+function tinted(name,k){const im=CO(name),col=TINT[k];if(!col||!ok(im))return im;const key=name+k;if(TC[key])return TC[key];
+  const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);
+  g.globalCompositeOperation='source-atop';g.globalAlpha=.55;g.fillStyle=col;g.fillRect(0,0,c.width,c.height);c.complete=true;c.naturalWidth=c.width;c.naturalHeight=c.height;return TC[key]=c}
+/* 寬度 w、底部對齊 (x, by) 畫一張圖（高度照比例） */
+function put(im,x,by,w,hh){if(!ok(im))return false;const h=hh||w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,x,by-h,w,h);return true}
+function drawBg(){const im=CO('bg-'+(BGN[L?L.i:0]||1));if(ok(im)){ctx.drawImage(im,0,0,W,H);return}
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#8fd0ff');g.addColorStop(1,'#dff3ff');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}
+function drawTiles(){const T=th(),gr=CO(T+'-ground'),fi=CO(T+'-fill'),pf=CO(T+'-platform');
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const ch=L.g[r][c],x=c*TS,y=r*TS;
-    if(ch==='#'){const top=tileAt(c,r-1)!=='#';ctx.fillStyle='#9a6b3f';ctx.fillRect(x,y,TS,TS);ctx.fillStyle='#87592f';ctx.fillRect(x+4,y+14,8,6);ctx.fillRect(x+22,y+26,10,6);
-      if(top){ctx.fillStyle='#5cc85c';ctx.fillRect(x,y,TS,11);ctx.fillStyle='#46a846';ctx.fillRect(x,y+9,TS,3)}}
-    else if(ch==='-'){ctx.fillStyle='#c99a5b';rr(x+1,y,TS-2,10,4);ctx.fill();ctx.fillStyle='#a87a3e';ctx.fillRect(x+5,y+10,4,6);ctx.fillRect(x+TS-9,y+10,4,6)}
-    else if(ch==='^'){ctx.fillStyle='#8d99ae';for(let k=0;k<4;k++){ctx.beginPath();ctx.moveTo(x+k*10,y+TS);ctx.lineTo(x+k*10+5,y+TS-16);ctx.lineTo(x+k*10+10,y+TS);ctx.fill()}ctx.fillStyle='#edf2f4';for(let k=0;k<4;k++){ctx.beginPath();ctx.moveTo(x+k*10+5,y+TS-16);ctx.lineTo(x+k*10+7,y+TS-9);ctx.lineTo(x+k*10+5,y+TS-9);ctx.fill()}}
-    else if(ch==='R'||ch==='B'){const k=ch==='R'?0:1;ctx.fillStyle=COL[k]+'55';ctx.fillRect(x+6,y,TS-12,TS);ctx.strokeStyle=COL[k];ctx.lineWidth=3;ctx.setLineDash([6,5]);ctx.strokeRect(x+7.5,y+1.5,TS-15,TS-3);ctx.setLineDash([])}
-    else if(ch==='m'||ch==='n'){const on=pressed(ch==='m'?'X':'Y'),col=DOORC[ch==='m'?'X':'Y'];if(on){ctx.fillStyle=col;rr(x+1,y+1,TS-2,TS-2,6);ctx.fill();ctx.fillStyle='#ffffff66';ctx.fillRect(x+4,y+4,TS-8,5)}else{ctx.strokeStyle=col+'aa';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.strokeRect(x+3,y+3,TS-6,TS-6);ctx.setLineDash([])}}
-    else if('XYZUV'.includes(ch)){const open=doorOpen(ch),col=DOORC[ch];if(open){ctx.strokeStyle=col+'88';ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.strokeRect(x+4,y+1,TS-8,TS-2);ctx.setLineDash([])}
-      else{ctx.fillStyle=col;rr(x+3,y,TS-6,TS,6);ctx.fill();ctx.fillStyle='#ffffff55';ctx.fillRect(x+9,y+4,5,TS-8);ctx.fillStyle='#0003';ctx.fillRect(x+3,y+TS/2-2,TS-6,4)}}}
-  L.plates.forEach(p=>{const x=p.c*TS,y=p.r*TS+TS,on=pressed(p.k),col=DOORC[p.k];ctx.fillStyle='#555';ctx.fillRect(x+4,y-5,TS-8,5);ctx.fillStyle=col;rr(x+7,y-(on?7:13),TS-14,on?4:9,3);ctx.fill()});
-  L.levers.forEach(v=>{const x=v.c*TS+TS/2,y=v.r*TS+TS,on=leverOn(v.k),col=DOORC[v.k];ctx.fillStyle='#6b7280';rr(x-12,y-8,24,8,3);ctx.fill();ctx.strokeStyle='#374151';ctx.lineWidth=5;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+(on?14:-14),y-26);ctx.stroke();ctx.fillStyle=col;ctx.beginPath();ctx.arc(x+(on?14:-14),y-27,7,0,7);ctx.fill()});
-  L.elev.forEach(e=>{const y=elevY(e),x=e.c*TS;ctx.fillStyle='#64748b';rr(x+2,y,e.n*TS-4,12,5);ctx.fill();ctx.fillStyle='#fbbf24';for(let k=0;k<e.n*2;k++)ctx.fillRect(x+8+k*20,y+4,10,3)});
-  const t=now()/400;L.gems.forEach((g,i)=>{if(G.w['G'+L.i+'_'+i])return;const x=g.c*TS+TS/2,y=g.r*TS+TS/2+Math.sin(t+i)*4;ctx.fillStyle='#fde047';ctx.beginPath();ctx.moveTo(x,y-14);ctx.lineTo(x+12,y-2);ctx.lineTo(x,y+14);ctx.lineTo(x-12,y-2);ctx.closePath();ctx.fill();ctx.strokeStyle='#ca8a04';ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='#fff9';ctx.fillRect(x-4,y-8,4,6)});
-  L.exit.forEach((e,i)=>{if(!e)return;const x=e.c*TS,y=e.r*TS;const bodyOn=i===me()?atExit(ME,i):atExit(other(),i);ctx.fillStyle=COLD[i];rr(x+3,y-TS+6,TS-6,TS*2-6,14);ctx.fill();ctx.fillStyle=bodyOn?'#fff59d':COL[i];rr(x+8,y-TS+12,TS-16,TS*2-16,10);ctx.fill();
-    ctx.fillStyle='#fff';ctx.font='900 20px sans-serif';ctx.textAlign='center';ctx.fillText(i?'藍':'紅',x+TS/2,y+8)})}
+    if(ch==='#'){const top=tileAt(c,r-1)!=='#',im=top?gr:fi;
+      if(ok(im)){const h=TS*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,x-.5,y+TS-h-.5,TS+1,h+1)}else{ctx.fillStyle='#9a6b3f';ctx.fillRect(x,y,TS,TS)}}
+    else if(ch==='-'){if(!put(pf,x,y+TS*.3,TS)){ctx.fillStyle='#c99a5b';rr(x+1,y,TS-2,10,4);ctx.fill()}}
+    else if(ch==='^'){if(!put(CO('spikes'),x,y+TS,TS,TS*.5)){ctx.fillStyle='#8d99ae';ctx.fillRect(x,y+TS-14,TS,14)}}
+    else if(ch==='R'||ch==='B'){const im=CO(ch==='R'?'wall-red':'wall-blue');if(ok(im))ctx.drawImage(im,x,y,TS,TS);else{ctx.fillStyle=COL[ch==='R'?0:1]+'55';ctx.fillRect(x+6,y,TS-12,TS)}}
+    else if(ch==='m'||ch==='n'){const k=ch==='m'?'X':'Y',on=pressed(k),im=tinted(on?'magic-active':'magic-inactive',k==='X'?'':k);
+      if(ok(im))ctx.drawImage(im,x,y,TS,TS);else{ctx.strokeStyle=DOORC[k];ctx.strokeRect(x+3,y+3,TS-6,TS-6)}}
+    else if('XYZUV'.includes(ch)){const open=doorOpen(ch),im=tinted(open?'gate-open':'gate-closed',ch);
+      if(ok(im))ctx.drawImage(im,x,y,TS,TS);else if(!open){ctx.fillStyle=DOORC[ch];rr(x+3,y,TS-6,TS,6);ctx.fill()}}}
+  L.plates.forEach(p=>{const x=p.c*TS,y=p.r*TS+TS,on=pressed(p.k);put(tinted(on?'button-down':'button-up',p.k),x,y,TS)});
+  L.levers.forEach(v=>{const x=v.c*TS,y=v.r*TS+TS,on=leverOn(v.k);put(tinted(on?'lever-on':'lever-off',v.k),x-4,y,TS+8)});
+  L.elev.forEach(e=>{const y=elevY(e),x=e.c*TS,im=CO('elevator');if(ok(im))ctx.drawImage(im,x,y-4,e.n*TS,22);else{ctx.fillStyle='#64748b';rr(x+2,y,e.n*TS-4,12,5);ctx.fill()}});
+  const t=now();L.gems.forEach((g,i)=>{if(G.w['G'+L.i+'_'+i])return;const x=g.c*TS+TS/2,y=g.r*TS+TS/2+Math.sin(t/400+i)*4,im=CO(Math.floor(t/350+i)%2?'gem-turn':'gem-front');
+    if(!put(im,x-16,y+14,32)){ctx.fillStyle='#fde047';ctx.beginPath();ctx.arc(x,y,10,0,7);ctx.fill()}});
+  L.exit.forEach((e,i)=>{if(!e)return;const cx=e.c*TS+TS/2,by=e.r*TS+TS;const bodyOn=i===me()?atExit(ME,i):atExit(other(),i);
+    const im=CO(`exit-${i?'blue':'red'}-${bodyOn?'open':'closed'}`),h=TS*2+6,w=ok(im)?h*im.naturalWidth/im.naturalHeight:TS;
+    if(ok(im))ctx.drawImage(im,cx-w/2,by-h,w,h);else{ctx.fillStyle=COL[i];rr(cx-TS/2+3,by-TS*2+6,TS-6,TS*2-6,14);ctx.fill()}})}
 function drawBody(b,name,pet,isMe){if(!b)return;const x=b.x,y=b.y,col=COL[b.who];
   ctx.fillStyle='#0002';ctx.beginPath();ctx.ellipse(x,y,16,4,0,0,7);ctx.fill();
   const bob=b.a===1?Math.abs(Math.sin(now()/90))*3:0,src=pet?`img/pet/${pet.sp}-${pet.st||0}.webp`:null,im=src&&img(src);
-  ctx.save();ctx.translate(x,y-bob);if(b.f<0)ctx.scale(-1,1);
-  if(im&&im.complete&&im.naturalWidth){const s=52;ctx.drawImage(im,-s/2,-s+4,s,s)}
-  else{ctx.fillStyle=col;rr(-14,-34,28,34,12);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(5,-22,5,0,7);ctx.fill();ctx.fillStyle='#222';ctx.beginPath();ctx.arc(6,-22,2.5,0,7);ctx.fill()}
+  ctx.save();if(b.dead)ctx.globalAlpha=.45;ctx.translate(x,y-bob);if(b.f<0)ctx.scale(-1,1);
+  if(ok(im)){const s=52;ctx.drawImage(im,-s/2,-s+4,s,s)}
+  else{const h=CO(`hero-${b.who?'blue':'red'}-${['idle','walk','jump'][b.a||0]}`);   // 沒有寵物：紅色、藍色的果凍小角色
+    if(ok(h)){const w=46,hh=w*h.naturalHeight/h.naturalWidth;ctx.drawImage(h,-w/2,-hh+3,w,hh)}
+    else{ctx.fillStyle=col;rr(-14,-34,28,34,12);ctx.fill()}}
   ctx.restore();
-  /* 顏色標記：頭上的小旗子和名字 */
-  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x-6,y-58);ctx.lineTo(x+6,y-58);ctx.lineTo(x,y-50);ctx.fill();
-  ctx.font='900 14px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.strokeText(name,x,y-62);ctx.fillStyle=col;ctx.fillText(name,x,y-62);
-  if(b.dead){ctx.globalAlpha=.6;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y-20,26,0,7);ctx.fill();ctx.globalAlpha=1}}
+  /* 名字；自己的頭上多一個白色箭頭 */
+  const mk=CO('player-marker');if(isMe&&ok(mk))ctx.drawImage(mk,x-9,y-74,18,15);
+  else{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x-6,y-60);ctx.lineTo(x+6,y-60);ctx.lineTo(x,y-52);ctx.fill()}
+  ctx.font='900 14px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.strokeText(name,x,isMe?y-78:y-64);ctx.fillStyle=col;ctx.fillText(name,x,isMe?y-78:y-64);
+  if(b.dead){const st=CO('stun-stars');put(st,x-22,y-34,44)}}
 function draw(){if(!L)return;drawBg();drawTiles();
   const o=other(),pm=G.players[G.slot==='p0'?'p1':'p0'];
   drawBody(o,o?(me()?'紅':'藍')+'・'+plName(pm):'',pm&&pm.pet,0);
   drawBody(ME,(me()?'藍':'紅')+'・我',myPet(),1);
-  const t=now();for(let i=FX.length-1;i>=0;i--){const f=FX[i],a=(t-f.s)/700;if(a>1){FX.splice(i,1);continue}ctx.globalAlpha=1-a;ctx.font='28px sans-serif';ctx.textAlign='center';ctx.fillText(f.t,f.x,f.y-a*40);ctx.globalAlpha=1}
+  const t=now();for(let i=FX.length-1;i>=0;i--){const f=FX[i],a=(t-f.s)/700;if(a>1){FX.splice(i,1);continue}ctx.globalAlpha=1-a;const fi=FXI[f.t]&&CO(FXI[f.t]);
+    if(ok(fi)){const w=f.t==='dust'?40:36+a*14;ctx.drawImage(fi,f.x-w/2,f.y-a*(f.t==='dust'?6:30)-w*fi.naturalHeight/fi.naturalWidth/2,w,w*fi.naturalHeight/fi.naturalWidth)}
+    else if(f.t!=='dust'){ctx.font='28px sans-serif';ctx.textAlign='center';ctx.fillText(f.t,f.x,f.y-a*40)}ctx.globalAlpha=1}
   if(!o&&G.mode==='net'){ctx.fillStyle='#0008';rr(W/2-200,16,400,40,14);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 18px sans-serif';ctx.textAlign='center';ctx.fillText('📴 等同學連上線…',W/2,43)}}
-function paintTop(){if(!L)return;const n=L.gems.filter((g,i)=>G.w['G'+L.i+'_'+i]).length;$('#ttl').textContent=`第 ${L.i+1} 關・${LEVELS[L.i].n}`;$('#gems').textContent=`💎 ${n} / ${L.gems.length}`}
+function paintTop(){if(!L)return;const n=L.gems.filter((g,i)=>G.w['G'+L.i+'_'+i]).length;$('#ttl').textContent=`第 ${L.i+1} 關・${LEVELS[L.i].n}`;$('#gemN').textContent=`${n} / ${L.gems.length}`}
 function fit(){const wrap=$('#wrap'),r=wrap.getBoundingClientRect();if(!r.width)return;const k=Math.min(r.width/W,r.height/H)*.98;cv.style.width=Math.floor(W*k)+'px';cv.style.height=Math.floor(H*k)+'px'}
 addEventListener('resize',fit);
 
@@ -416,7 +441,7 @@ function onState(){const st=G.st;if(!st)return;
 function paintClear(){const st=G.st,n=st.gems||0,tot=L?L.gems.length:3;
   if(G.clrKey!==st.lvk){G.clrKey=st.lvk;sfx.clear();const b=best();b[st.lv]=Math.max(b[st.lv]==null?-1:b[st.lv],n);LS.set('co601_best',b)}
   const lastLv=st.lv>=LEVELS.length-1;
-  $('#ovT').textContent=lastLv?'🎉 全部破關了！':'🎉 過關！';$('#ovS').textContent='💎'.repeat(n)+'◇'.repeat(Math.max(0,tot-n));
+  $('#ovT').textContent=lastLv?'全部破關了！':'過關！';$('#ovS').innerHTML=Array.from({length:tot},(_,k)=>`<img src="img/co/gem-front.webp" alt="" class="${k<n?'':'no'}">`).join('');
   $('#ovM').textContent=lastLv?'你們是最強的搭檔！':`第 ${st.lv+1} 關「${LEVELS[st.lv].n}」完成，拿到 ${n} 顆寶石`;
   const B=$('#ovB');B.innerHTML='';
   if(isHost()){
@@ -432,7 +457,7 @@ async function startLevel(i){if(!isHost())return;const lvk=Math.random().toStrin
 
 /* ═════════════ 房間（等人） ═════════════ */
 function paintLobby(){const pl=G.players,host=isHost();$('#pinBig').textContent=G.pin;
-  $('#pls').innerHTML=SLOTS.map((k,i)=>{const p=pl[k],pet=p&&p.pet;return `<div class="pl ${p?(i?'b':'r'):'empty'}"><div class="av">${pet?`<img src="img/pet/${pet.sp}-${pet.st||0}.webp" alt="">`:`<span style="font-size:2.6rem">${p?(i?'🔵':'🔴'):'⏳'}</span>`}</div>${i?'藍色':'紅色'}<br>${plName(p)}${p?`<small>${p.tk===false?'⚠ 沒有遊戲券':k===G.slot?'（我）':''}</small>`:'<small>等同學加入</small>'}</div>`}).join('');
+  $('#pls').innerHTML=SLOTS.map((k,i)=>{const p=pl[k],pet=p&&p.pet;return `<div class="pl ${p?(i?'b':'r'):'empty'}"><div class="av">${pet?`<img src="img/pet/${pet.sp}-${pet.st||0}.webp" alt="">`:p?`<img src="img/co/hero-${i?'blue':'red'}-idle.webp" alt="">`:'<span style="font-size:2.6rem">⏳</span>'}</div>${i?'藍色':'紅色'}<br>${plName(p)}${p?`<small>${p.tk===false?'⚠ 沒有遊戲券':k===G.slot?'（我）':''}</small>`:'<small>等同學加入</small>'}</div>`}).join('');
   const both=!!(pl.p0&&pl.p1),tkOK=SLOTS.every(k=>!pl[k]||pl[k].tk!==false);
   $('#lnote').innerHTML=host?(both?'選一關，按「開始」！（打過的關卡才能選下一關）':'把房號告訴同學，或按「邀請同學」。'):'等開房間的同學選關卡、按開始…';
   const U=Math.max(unlocked(),G.lvPick);const b=best();
