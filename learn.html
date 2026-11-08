@@ -613,6 +613,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 /* 大砲混戰：雙人對戰卡片裡最顯眼的一顆（占兩格） */
 #xqcard .xbtns .go.xparty{grid-column:1/-1;background:linear-gradient(#ff8a3d,#e8590c);box-shadow:0 4px 0 #a0400a}
 #xqcard .xbtns .go.xcoop{background:linear-gradient(#60a5fa,#2563eb);box-shadow:0 4px 0 #1e40af}
+#xqcard .xbtns .go.xcoop.soon{background:#adb5bd;box-shadow:0 4px 0 #868e96;cursor:default}#xqcard .xbtns .go.xcoop.soon .bi{filter:grayscale(1);opacity:.7}
 #xqcard .xbtns .go.xparty small{font-size:.8em;margin-left:.4em;opacity:.9}
 
 /* 坦克車庫 */
@@ -1649,6 +1650,7 @@ const tier=(g,r)=>starred(g,r)?r.d:-1;
 function gBetter(g,a,b){if(!a)return false;if(!b)return true;const ta=tier(g,a),tb=tier(g,b);if(ta!==tb)return ta>tb;const lo=!!(gOf(g)||[])[4];if(a.s!==b.s)return lo?a.s<b.s:a.s>b.s;return a.d>b.d}
 const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;if(g==='cups')return `${v} / 5`;if(g==='hunt')return `${v} ★`;return `${v} ${G[3]}`};
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
+const COOP_OPEN=false;   // 雙人合作過關開放了沒
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">${ico('rw-ticket','tki')}<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
@@ -1659,7 +1661,10 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const xa=el('button','go gray',ico('vs-aq','bi')+'暗棋');tap(xa,()=>openTool({...XQ_TOOL,f:'chess.html?g=aq'}));
   const xp=el('button','go gray',ico('vs-pd','bi')+'大砲對轟');tap(xp,()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'}));
   const xm=el('button','go xparty',ico('vs-pd','bi')+'大砲混戰<small>2～4 人</small>');tap(xm,()=>openTool({...XQ_TOOL,f:'party.html'}));
-  const xc=el('button','go xparty xcoop','<img class="ico bi" src="img/co/ui-invite.webp" alt="" draggable="false">雙人合作過關<small>一起闖關</small>');tap(xc,()=>openTool({...XQ_TOOL,f:'coop.html'}));
+  /* 雙人合作過關：關卡還太少，先鎖起來顯示「準備中」（測試帳號還能進去試玩）。要開放：COOP_OPEN 改成 true */
+  const coOK=COOP_OPEN||isTest(user.seat);
+  const xc=el('button','go xparty xcoop'+(coOK?'':' soon'),'<img class="ico bi" src="img/co/ui-invite.webp" alt="" draggable="false">雙人合作過關<small>'+(COOP_OPEN?'一起闖關':'準備中')+'</small>');
+  tap(xc,()=>{if(coOK)openTool({...XQ_TOOL,f:'coop.html'});else toast('雙人合作過關還在準備中，關卡做多一點就開放！')});
   const xg=el('button','go xgar',`<img class="ico bi" src="img/game/tank-ui-garage-v2.webp" alt="" draggable="false">坦克車庫<small>${TANK_SKINS[tankSkin()].n}</small>`);tap(xg,()=>garage().then(()=>render()));
   [xv,xb,xa,xp,xm,xc,xg].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
