@@ -134,6 +134,8 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 /* 計算紙:題目卡片上的透明畫布 */
 #scr{position:absolute;left:0;top:0;width:100%;height:100%;z-index:4;touch-action:none;cursor:crosshair}
 #figc.nodraw #scr{pointer-events:none;cursor:auto}
+#figc.longq #pens{display:none}
+#figc.more::after{content:'⬇ 往下滑看全文';position:sticky;bottom:.3rem;align-self:center;flex:none;z-index:5;height:1.9rem;margin-bottom:-1.9rem;line-height:1.9rem;padding:0 .9rem;border-radius:1rem;background:#1c7ed6;color:#fff;font-size:.9rem;font-weight:800;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 #figc .say{position:relative;z-index:6}   /* 播音鍵在畫布上面,開著畫筆也按得到 */
 #pens{position:absolute;top:.4rem;right:.4rem;z-index:5;display:flex;gap:.3rem;background:rgba(255,255,255,.92);border-radius:14px;padding:.25rem;box-shadow:0 2px 6px rgba(0,0,0,.12)}
 #pens button{width:2.6rem;height:2.6rem;border:3px solid transparent;border-radius:11px;background:#f1f3f5;font-size:1.3rem;padding:0;line-height:1}
@@ -1196,7 +1198,7 @@ function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);i
   if(it.t==='短文填空')big=big.replace(/(^|[^>])\((\d)\)(?!＿)/g,'$1<span class="ob">($2)＿＿</span>');
   /* 字的大小看長度:對話、句子用大字,只有長的短文才用小字 */
   const bc=it.bc==='p'?(n>160?'p':'p big'):it.bc!=null?it.bc:n>6?'s':'';
-  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:it.opts.every(o=>/^[○╳]/.test(o))?it.opts.slice():shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=(s==='zh'||s==='soc'?1:3)),   // 並排:圖片,或很短的(ar、ee;國語只有單一個字才並排)
+  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:it.opts.every(o=>/^[○╳]/.test(o))?it.opts.slice():shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=(s==='zh'||s==='soc'||s==='sci'?1:3)),   // 並排:圖片,或很短的(ar、ee;國語只有單一個字才並排)
     big:(it.img?`<img class="qimg${it.tall?' tall':''}" src="${it.img}" alt="">`:'')+(big?`<div class="bx${bc?' '+bc:''}">${big}</div>`:''),
     say:it.say||'',au:it.au||'',rv:it.reveal||'',hd:it.au&&it.exp?it.exp:'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
     subj:s,kind,hints:it.hint?[].concat(it.hint):KIND_HINT[kind].slice(),
@@ -1886,14 +1888,20 @@ const SCR={on:LS.get('learn601_draw',true),pen:'b',strokes:[],cur:null,penSeen:f
 const scrCv=$('#scr'),scrCx=scrCv.getContext('2d');
 function scrFit(){const f=$('#figc'),w=f.clientWidth,h=f.clientHeight,d=Math.min(2,devicePixelRatio||1);
   if(scrCv.width!==Math.round(w*d)||scrCv.height!==Math.round(h*d)){scrCv.width=Math.round(w*d);scrCv.height=Math.round(h*d)}
-  scrCx.setTransform(d,0,0,d,0,0);scrDraw()}
+  scrCx.setTransform(d,0,0,d,0,0);scrDraw();scrLong()}
+/* 題目卡片放不下（長文章）：手指要用來捲動，這一題不開計算紙，並提示往下滑 */
+function scrMore(){const f=$('#figc');f.classList.toggle('more',!!SCR.long&&getComputedStyle(f).overflowY!=='visible'&&f.scrollTop+f.clientHeight<f.scrollHeight-8)}
+function scrLong(){const f=$('#figc');if(!f.clientWidth)return;f.classList.remove('more');
+  const l=getComputedStyle(f).overflowY==='visible'?f.getBoundingClientRect().bottom+scrollY>innerHeight+2:f.scrollHeight>f.clientHeight+2;
+  if(l!==!!SCR.long){SCR.long=l;f.classList.toggle('longq',l);scrPaint()}scrMore()}
+$('#figc').addEventListener('scroll',scrMore,{passive:true});$('#figc').addEventListener('load',()=>scrLong(),true);
 function scrLine(st){const P=st.p;if(!P.length)return;scrCx.globalCompositeOperation=st.e?'destination-out':'source-over';
   scrCx.strokeStyle=st.c;scrCx.lineCap=scrCx.lineJoin='round';
   if(P.length===1){scrCx.beginPath();scrCx.arc(P[0][0],P[0][1],st.w*P[0][2]/2,0,7);scrCx.fillStyle=st.c;scrCx.fill();return}
   for(let i=1;i<P.length;i++){scrCx.beginPath();scrCx.lineWidth=st.w*(P[i-1][2]+P[i][2])/2;scrCx.moveTo(P[i-1][0],P[i-1][1]);scrCx.lineTo(P[i][0],P[i][1]);scrCx.stroke()}}
 function scrDraw(){scrCx.clearRect(0,0,scrCv.width,scrCv.height);SCR.strokes.forEach(scrLine);scrCx.globalCompositeOperation='source-over'}
 function scrClear(){SCR.strokes=[];SCR.cur=null;scrDraw()}
-function scrPaint(){$('#figc').classList.toggle('nodraw',!SCR.on);$('#pens').querySelectorAll('button').forEach(b=>b.classList.toggle('on',SCR.on&&b.dataset.p===SCR.pen))}
+function scrPaint(){$('#figc').classList.toggle('nodraw',!SCR.on||SCR.long);$('#pens').querySelectorAll('button').forEach(b=>b.classList.toggle('on',SCR.on&&b.dataset.p===SCR.pen))}
 const scrPt=e=>{const r=scrCv.getBoundingClientRect(),pr=e.pointerType==='pen'&&e.pressure>0?.55+e.pressure*.9:1;return [e.clientX-r.left,e.clientY-r.top,pr]};
 scrCv.addEventListener('pointerdown',e=>{if(!SCR.on)return;if(e.pointerType==='pen')SCR.penSeen=true;else if(e.pointerType==='touch'&&SCR.penSeen)return;   // 用過筆,手掌不畫
   e.preventDefault();try{scrCv.setPointerCapture(e.pointerId)}catch(x){}const er=SCR.pen==='e';
@@ -2006,7 +2014,7 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&/frac|ratio/.test(round.qs[cur].type)?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
   else if(e.key==='Tab'||e.key==='/'||e.key===':'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
-function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
+function showQ(){const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
   $('#prac').classList.toggle('en',isEn);$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
@@ -2022,7 +2030,7 @@ function showQ(){const q=round.qs[cur];scrClear();requestAnimationFrame(scrFit);
     $('#body').classList.toggle('wideo',ml>8&&!q.big);$('#body').classList.toggle('halfo',ml>8&&!!q.big);q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
   else buildPad(q.type==='frac'||q.type==='ratio');
   paintF();$('#fb').textContent='';$('#fb').className='';dis($('#next'),true);$('#next').textContent='下一題 ▶';dis($('#hint'),false);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
-  paintDots();paintP();window.scrollTo&&window.scrollTo(0,0)}
+  paintDots();paintP();window.scrollTo&&window.scrollTo(0,0);setTimeout(scrLong,120)}
 /* 題目大字放不下時縮小:不換行的大字看寬度;會換行的句子(.s)、短文(.p)只在整張卡片放不下時才縮小,最小 18px */
 function fitBig(){const c=$('#bigc'),F=$('#figc');if(!c.clientWidth)return;c.querySelectorAll('.bx').forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize),k=0;
   if(b.classList.contains('p')||b.classList.contains('s')){while(F.scrollHeight>F.clientHeight+2&&fs>18&&k++<30){fs=Math.max(18,fs*.93);b.style.fontSize=fs+'px'}return}
