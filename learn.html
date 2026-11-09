@@ -627,6 +627,10 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #garage .gt{font-size:1.6rem;font-weight:900;color:#2e7554}#garage .gs{font-size:1rem;font-weight:800;color:#7a6a52}
 #garage .gcoin{margin-left:auto;display:flex;align-items:center;gap:.3rem;background:#fff;border-radius:999px;padding:.25rem .8rem;font-size:1.3rem;font-weight:900;color:#b45309;box-shadow:0 3px 0 #ead9b6}#garage .gcoin .gi{width:1.7rem;height:1.7rem}
 #garage .glist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:.9rem 0}
+#garage .gtabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4rem;margin-top:.8rem}#garage .gtab{border:3px solid #eee2c8;background:#fff;border-radius:14px;min-height:3.2rem;font:inherit;font-size:1.1rem;font-weight:900;color:#6b5a42;line-height:1.15;padding:.2rem}#garage .gtab small{display:block;font-size:.72rem;font-weight:800;opacity:.85;white-space:nowrap}
+#garage .gtab.t0.on{background:#5f8a5f;border-color:#5f8a5f;color:#fff}#garage .gtab.t1.on{background:#0c9a78;border-color:#0c9a78;color:#fff}#garage .gtab.t2.on{background:#6a48d8;border-color:#6a48d8;color:#fff}#garage .gtab.t3.on{background:#c98a00;border-color:#c98a00;color:#fff}
+#garage .gcard.t1.lock .gprev,#garage .gcard.t2.lock .gprev,#garage .gcard.t3.lock .gprev{filter:none}#garage .gcard.t1{background:#f0fbf7}#garage .gcard.t2{background:#f4f1ff}#garage .gcard.t3{background:#fff7e0}
+#tkrefund .tkrf{font-size:2.2rem;font-weight:900;color:#b45309;margin:.4rem 0 .8rem}#tkrefund .tkrf img{width:2.4rem;height:2.4rem;vertical-align:-.4rem}
 #garage .gcard{background:#fff;border:3px solid #eee2c8;border-radius:20px;padding:.5rem;display:flex;flex-direction:column;align-items:center;gap:.3rem}
 #garage .gcard.on{border-color:#2e7554;box-shadow:0 0 0 3px #cfe5c4}
 #garage .gcard.lock .gprev{filter:saturate(.55) brightness(.97)}
@@ -1323,7 +1327,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   if(r.farm&&(!sum.farm||(r.farm.u||0)>(sum.farm.u||0)))sum.farm=r.farm;
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
-  if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
+  if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
 /* 老師在雲端清除紀錄後,平板上留下的舊進度也要歸零(還有沒上傳的資料就不動) */
@@ -1454,7 +1458,7 @@ function subjBar(){const B=el('div');B.id='subj';
     tap(b,()=>{if(subj===S.k)return;subj=S.k;LS.set('learn601_subj',subj);const u=UN.find(x=>x.key===view)||mixByKey(view);if(u&&u.s!==subj)view='learn';paintNavs();render()});B.appendChild(b)});
   return B}
 /* 同一頁重畫時，保留捲動的位置（不會跳回最上面） */
-function render(){const P=document.getElementById('pane'),k=view+'|'+subj,same=render.k===k,st=same?P.scrollTop:0,ws=same?scrollY:0;
+function render(){try{tkRefund()}catch(e){}const P=document.getElementById('pane'),k=view+'|'+subj,same=render.k===k,st=same?P.scrollTop:0,ws=same?scrollY:0;
   const h0=same?P.scrollHeight:0,d0=same?document.documentElement.scrollHeight:0;
   render0();render.k=view+'|'+subj;
   if(same&&(st||ws)){
@@ -1833,10 +1837,25 @@ function acceptInv(){const x=invNow;if(!x)return;
   if(vt){vt=XQ_TOOL;document.getElementById('vtitle').textContent=t.n;frameGo(t.f)}else openTool(t)}
 
 /* ===================== 坦克車庫（大砲對轟、大砲混戰的造型） =====================
-   六款造型只改外觀（能力、大小、射程都一樣）。用寵物金幣買（跟寵物、農場同一本帳），森林嫩葉免費。
+   十五款造型只改外觀（能力、大小、射程都一樣），分基本、進階、史詩、傳說四級，同一級同價。用寵物金幣買（跟寵物、農場同一本帳），森林嫩葉免費。
+   2026-11 調價：珊瑚烈焰、青綠閃電（300）和紫夜星辰（500）改成 150，買過的人保留坦克、自動退差額（tkRefund；sum.tks.rf：1 已退、2 調價後才買）。
    買過的存在 sum.tks = {own:{代號:1}, use:正在用的, u:時間}，跟著摘要同步。測試帳號全部免費。
    對戰時，造型代號寫在房間的玩家資料（skin），同學看得到你的坦克。 */
-const TANK_SKINS={forest:{n:'森林嫩葉',p:0},desert:{n:'暖金沙丘',p:150},glacier:{n:'冰藍山嶺',p:150},ember:{n:'珊瑚烈焰',p:300},volt:{n:'青綠閃電',p:300},nebula:{n:'紫夜星辰',p:500}};
+const TANK_SKINS={forest:{n:'森林嫩葉',p:0,t:0},desert:{n:'暖金沙丘',p:150,t:0},glacier:{n:'冰藍山嶺',p:150,t:0},ember:{n:'珊瑚烈焰',p:150,t:0},volt:{n:'青綠閃電',p:150,t:0},nebula:{n:'紫夜星辰',p:150,t:0},
+  rhino:{n:'鐵角犀衛',p:450,t:1,v:4},falcon:{n:'疾風獵鷹',p:450,t:1,v:4},tortoise:{n:'森甲巨龜',p:450,t:1,v:4},
+  stormwolf:{n:'雷霆天狼',p:1000,t:2,v:4},auroracorn:{n:'極光獨角獸',p:1000,t:2,v:4},abyssshark:{n:'深海巨鯊',p:1000,t:2,v:4},
+  solardragon:{n:'曜日龍皇',p:2000,t:3,v:4},phoenix:{n:'熾天鳳凰',p:2000,t:3,v:4},astraltemple:{n:'星穹聖殿',p:2000,t:3,v:4}};
+const TANK_TIER=['基本','進階','史詩','傳說'],TK_OLD={ember:300,volt:300,nebula:500};
+/* 調價退差額：以前用較高價買的，坦克保留、差額退回金幣。
+   退的總額直接寫成帳本裡固定的一格（cl.e.tkrf），兩台平板各算一次也只會是同一個數字，不會重複退。 */
+function tkRefund(){if(!user||!sum||!sum.tks||!sum.tks.own)return;const T=sum.tks;T.rf=T.rf||{};const got=[];
+  for(const k in TK_OLD)if(T.own[k]&&!T.rf[k]){T.rf[k]=1;got.push(k)}
+  if(!got.length)return;
+  const p=PET.P();if(!p){got.forEach(k=>delete T.rf[k]);return}
+  const diff=k=>TK_OLD[k]-TANK_SKINS[k].p,total=Object.keys(TK_OLD).reduce((a,k)=>a+(T.rf[k]===1?diff(k):0),0);
+  p.cl.e=p.cl.e||{};p.cl.e.tkrf=Math.max(p.cl.e.tkrf||0,total);p.coin=PET.coinOf(p);p.u=Date.now();saveSum(true);
+  const m=el('div','pmod','');m.id='tkrefund';m.innerHTML=`<div class="pmc rwh"><div class="pmh">坦克車庫改版</div><div class="rws">基本款的坦克全部改成 150 金幣。<br>你買過的${got.map(k=>'「'+TANK_SKINS[k].n+'」').join('')}還是你的，多付的金幣已經退給你：</div><div class="tkrf">${ico('rw-coin','ii')} +${got.reduce((a,k)=>a+diff(k),0)}</div><button class="go rwok">太好了！</button></div>`;
+  document.body.appendChild(m);tap(m.querySelector('.rwok'),()=>{m.remove();render()})}
 const tkOwn=k=>!!user&&(TANK_SKINS[k].p===0||(isTest(user.seat)&&!window.__tkShopTest)||!!(sum&&sum.tks&&sum.tks.own&&sum.tks.own[k]));
 function tankSkin(){const u=sum&&sum.tks&&sum.tks.use;return TANK_SKINS[u]&&tkOwn(u)?u:'forest'}
 const gIco=n=>`<img class="gi" src="img/game/tank-ui-${n}-v2.webp" alt="" draggable="false">`;
@@ -1845,19 +1864,23 @@ function garage(){return new Promise(done=>{if(!user||!sum){done();return}
   const box=el('div');box.id='garage';document.body.appendChild(box);
   const close=()=>{box.remove();done()};
   const coins=()=>{try{const p=PET.P();return p?PET.coinOf(p):0}catch(e){return 0}};
+  let gt=TANK_SKINS[tankSkin()].t;
   function paint(){const use=tankSkin(),c=coins();
+    const pv=(k,v)=>`img/game/tank-${k}-preview-${v.v?'v4':'v2'}.webp`;
     box.innerHTML=`<div class="gbox"><div class="gtop">${gIco('garage')}<div><div class="gt">坦克車庫</div><div class="gs">換造型只改外觀，能力都一樣。對戰時同學看得到你的坦克！</div></div><div class="gcoin">${gIco('coin')}<b>${isTest(user.seat)?'∞':c}</b></div></div>
-      <div class="glist">${Object.entries(TANK_SKINS).map(([k,v])=>{const own=tkOwn(k),on=use===k;
-        return `<div class="gcard${on?' on':''}${own?'':' lock'}"><img class="gprev" src="img/game/tank-${k}-preview-v2.webp" alt=""><div class="gn">${v.n}</div>
+      <div class="gtabs">${TANK_TIER.map((n,i)=>`<button class="gtab t${i}${gt===i?' on':''}" data-t="${i}">${n}<small>${i?TANK_SKINS[Object.keys(TANK_SKINS).find(k=>TANK_SKINS[k].t===i)].p:150} 金幣</small></button>`).join('')}</div>
+      <div class="glist">${Object.entries(TANK_SKINS).filter(([,v])=>v.t===gt).map(([k,v])=>{const own=tkOwn(k),on=use===k;
+        return `<div class="gcard t${v.t}${on?' on':''}${own?'':' lock'}"><img class="gprev" src="${pv(k,v)}" alt=""><div class="gn">${v.n}</div>
         ${on?`<button class="gb eq" disabled>${gIco('equipped')}使用中</button>`:own?`<button class="gb use" data-k="${k}">${gIco('unlock')}換上</button>`:
           `<button class="gb buy" data-k="${k}" ${c<v.p?'disabled':''}>${gIco(c<v.p?'lock':'coin')}${v.p} 金幣${c<v.p?'<small>不夠</small>':''}</button>`}</div>`}).join('')}</div>
       <div class="gfoot">金幣在練習、寵物、農場都拿得到　<button class="gx">${gIco('back')}好了</button></div></div>`;
+    box.querySelectorAll('.gtab').forEach(b=>tap(b,()=>{gt=+b.dataset.t;paint()}));
     tap(box.querySelector('.gx'),close);
     box.querySelectorAll('.gb.use').forEach(b=>tap(b,()=>{sum.tks=sum.tks||{own:{}};sum.tks.use=b.dataset.k;sum.tks.u=Date.now();saveSum(true);try{sfx.ok()}catch(e){}paint()}));
     box.querySelectorAll('.gb.buy').forEach(b=>tap(b,()=>{const k=b.dataset.k,v=TANK_SKINS[k];if(coins()<v.p)return;
       if(!confirm(`用 ${v.p} 金幣買「${v.n}」坦克嗎？`))return;
       const p=PET.P();if(!p||PET.coinOf(p)<v.p)return;PET.coinAdd(p,-v.p);
-      sum.tks=sum.tks||{own:{}};sum.tks.own=sum.tks.own||{};sum.tks.own[k]=1;sum.tks.use=k;sum.tks.u=Date.now();saveSum(true);
+      sum.tks=sum.tks||{own:{}};sum.tks.own=sum.tks.own||{};sum.tks.own[k]=1;if(TK_OLD[k]){sum.tks.rf=sum.tks.rf||{};sum.tks.rf[k]=sum.tks.rf[k]||2}sum.tks.use=k;sum.tks.u=Date.now();saveSum(true);
       try{sfx.ok()}catch(e){}toast(`🎉 買到「${v.n}」坦克了！`);paintNavs&&paintNavs();paint()}))}
   box.addEventListener('pointerdown',e=>{if(e.target===box)close()});paint()})}
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */

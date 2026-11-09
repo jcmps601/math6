@@ -378,7 +378,7 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
   document.querySelectorAll('#modes button').forEach(b=>{b.classList.toggle('on',b.dataset.m===mode);b.disabled=!host});
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
-    const ci=mode==='team'?i:i;return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/tank-${TKV.SKINS.includes(p.skin)?p.skin:'forest'}-body-v2.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主':''}${p.tk===false?' 🎟️ 沒有遊戲券':''}${p.off?' 📴 離線':''}</small></div></div>`}).join('');
+    const ci=mode==='team'?i:i;return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主':''}${p.tk===false?' 🎟️ 沒有遊戲券':''}${p.off?' 📴 離線':''}</small></div></div>`}).join('');
   const ready=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false).length;
   const why=ready<2?'至少要 2 個人才能開始':mode==='team'&&ready!==4?'2 對 2 要剛好 4 個人（有遊戲券、在線上）':'';
   $('#bStart').hidden=!host;$('#bStart').disabled=!!why;

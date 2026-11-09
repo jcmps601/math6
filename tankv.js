@@ -3,7 +3,7 @@
      state() → {map, seed, moves, out, mode}　canAct() 現在能不能操作　solo() 同一台平板輪流
      me() → 我是第幾個玩家（-1＝觀戰）　names() → [名字…]　skins() → [造型代號…]
      send(一步)　live(瞄準)　idle() 動畫播完
-   坦克圖：img/game/tank-{造型}-body-v2（車身，朝右）＋ tank-{造型}-barrel-v2（砲管，左端圓軸是旋轉中心）。
+   坦克圖：img/game/tank-{造型}-body-v2（車身，朝右）＋ tank-{造型}-barrel-v2（砲管，左端圓軸是旋轉中心）；進階以上的造型是 -v4，接點寫在 V4。
    圖只是外觀：被打中的判定、砲口位置照 tank.js（center() 24 px），不會因為圖比較大就改變。 */
 (function (root) {
   const TK = root.TK;
@@ -15,16 +15,19 @@
     ffa: [{ main: '#ef4444', dark: '#b91c1c', name: '紅' }, { main: '#3b82f6', dark: '#1d4ed8', name: '藍' }, { main: '#22c55e', dark: '#15803d', name: '綠' }, { main: '#f59e0b', dark: '#b45309', name: '黃' }],
     team: [{ main: '#ef4444', dark: '#b91c1c', name: '紅隊' }, { main: '#3b82f6', dark: '#1d4ed8', name: '藍隊' }, { main: '#ef4444', dark: '#b91c1c', name: '紅隊' }, { main: '#3b82f6', dark: '#1d4ed8', name: '藍隊' }]
   };
-  const SKINS = ['forest', 'desert', 'glacier', 'ember', 'volt', 'nebula'];
-  const SKIN_N = { forest: '森林嫩葉', desert: '暖金沙丘', glacier: '冰藍山嶺', ember: '珊瑚烈焰', volt: '青綠閃電', nebula: '紫夜星辰' };
+  const SKINS = ['forest', 'desert', 'glacier', 'ember', 'volt', 'nebula', 'rhino', 'falcon', 'tortoise', 'stormwolf', 'auroracorn', 'abyssshark', 'solardragon', 'phoenix', 'astraltemple'];
+  const SKIN_N = { forest: '森林嫩葉', desert: '暖金沙丘', glacier: '冰藍山嶺', ember: '珊瑚烈焰', volt: '青綠閃電', nebula: '紫夜星辰', rhino: '鐵角犀衛', falcon: '疾風獵鷹', tortoise: '森甲巨龜', stormwolf: '雷霆天狼', auroracorn: '極光獨角獸', abyssshark: '深海巨鯊', solardragon: '曜日龍皇', phoenix: '熾天鳳凰', astraltemple: '星穹聖殿' };
   /* 每款車身量好的砲塔接口（車身圖 256 px 寬的座標）和履帶底 */
   const PORT = { forest: [171, 71], desert: [170, 72], glacier: [176, 59], ember: [170, 70], volt: [175, 61], nebula: [170, 63] };
+  /* 進階、史詩、傳說九款：車身圖都裁成 256 寬。p 砲塔接口、bot 履帶底（車身圖高度）、piv 砲管旋轉中心、w/h 砲管圖大小、k 砲管縮放（對車身） */
+  const V4 = {"rhino":{"p":[175.8,42.3],"bot":164,"piv":[23.4,22.3],"w":200,"h":45,"k":0.6192},"falcon":{"p":[168.5,37.2],"bot":123,"piv":[15.4,16.4],"w":200,"h":32,"k":0.6352},"tortoise":{"p":[188.2,57.6],"bot":167,"piv":[20.0,19.6],"w":200,"h":39,"k":0.7986},"stormwolf":{"p":[193.6,52.1],"bot":159,"piv":[21.3,20.9],"w":200,"h":42,"k":0.6148},"auroracorn":{"p":[190.1,74.2],"bot":199,"piv":[20.6,20.6],"w":200,"h":41,"k":0.7587},"abyssshark":{"p":[196.9,61.6],"bot":177,"piv":[21.5,22.2],"w":200,"h":44,"k":0.6422},"solardragon":{"p":[180.1,67.6],"bot":177,"piv":[15.6,20.8],"w":200,"h":39,"k":0.7828},"phoenix":{"p":[185.0,58.5],"bot":187,"piv":[17.4,19.9],"w":200,"h":39,"k":0.739},"astraltemple":{"p":[173.4,92.2],"bot":203,"piv":[17.9,19.9],"w":200,"h":38,"k":0.818}};
+  const ART = sk => V4[sk] ? 'v4' : 'v2', bodyName = sk => `tank-${sk}-body-${ART(sk)}`, barName = sk => `tank-${sk}-barrel-${ART(sk)}`;
   const BODY_W = 256, BODY_BOTTOM = 182, BAR_PIV = [28, 37.5], BAR_W = 200, BAR_H = 72;
   const TANK_WW = 66, BAR_K = .62;   // 車身在場地上 66 寬；砲管縮到跟砲塔接口一樣粗
   const IMGC = {};
   const img = n => { let i = IMGC[n]; if (!i) { i = IMGC[n] = new Image(); i.src = 'img/game/' + n + '.webp'; } return i; };
   const ok = i => i && i.complete && i.naturalWidth > 0;
-  SKINS.forEach(s => { img(`tank-${s}-body-v2`); img(`tank-${s}-barrel-v2`); });
+  SKINS.forEach(s => { img(bodyName(s)); img(barName(s)); });
   ['wind-left', 'wind-right', 'health', 'wait'].forEach(n => img(`tank-ui-${n}-v2`));
   /* 場地背景（GPT 畫的，16:7；下面 1/3 是淡色，地面由程式畫才能炸出坑） */
   const bgImg = site => img(`tank-bg-${site}`);
@@ -392,19 +395,20 @@
     const t = V.T[i]; if (t.out || t.y > H + 40) return;
     const C = COL(i), sk = skinOf(i), tilt = slope(t.x) * .8, face = Math.cos(t.a * Math.PI / 180) >= 0 ? 1 : -1;
     let jx = 0; if (t.shakeT > 0) { jx = (Math.random() - .5) * 6; t.shakeT--; }
-    const body = img(`tank-${sk}-body-v2`), bar = img(`tank-${sk}-barrel-v2`), dead = t.dead;
+    const body = img(bodyName(sk)), bar = img(barName(sk)), dead = t.dead, g = V4[sk];
     c.save(); c.translate(t.x + jx, t.y + 1); c.rotate(tilt);
     if (t.kick > 0) { c.translate(-Math.cos(t.a * Math.PI / 180) * t.kick * .4, 0); t.kick *= .8; if (t.kick < .3) t.kick = 0; }
     c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(0, 1, 32, 5, 0, 0, 7); c.fill();
     if (ok(body) && ok(bar)) {
-      const s = TANK_WW / BODY_W, P = PORT[sk];
+      const s = TANK_WW / BODY_W, P = g ? g.p : PORT[sk], bot = g ? g.bot : BODY_BOTTOM, bh = body.naturalHeight / body.naturalWidth * BODY_W * s;
       c.save(); c.scale(face, 1); if (dead) c.globalAlpha = .55;
       /* 砲管：圓軸中心對準砲塔接口，跟著角度轉（朝左時整台鏡射） */
-      const la = (face > 0 ? t.a : 180 - t.a) * Math.PI / 180 - (face > 0 ? tilt : -tilt) * 0;
-      c.save(); c.translate((P[0] - BODY_W / 2) * s, (P[1] - BODY_BOTTOM) * s); c.rotate(-la); const bs = s * BAR_K;
-      c.drawImage(bar, -BAR_PIV[0] * bs, -BAR_PIV[1] * bs, BAR_W * bs, BAR_H * bs); c.restore();
-      c.drawImage(body, -BODY_W / 2 * s, -BODY_BOTTOM * s, BODY_W * s, body.naturalHeight / body.naturalWidth * BODY_W * s);
-      if (t.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = t.flash / 14 * .5; c.drawImage(body, -BODY_W / 2 * s, -BODY_BOTTOM * s, BODY_W * s, body.naturalHeight / body.naturalWidth * BODY_W * s); t.flash--; }
+      const la = (face > 0 ? t.a : 180 - t.a) * Math.PI / 180;
+      const barrel = () => { c.save(); c.translate((P[0] - BODY_W / 2) * s, (P[1] - bot) * s); c.rotate(-la); const bs = s * (g ? g.k : BAR_K), pv = g ? g.piv : BAR_PIV, bw = g ? g.w : BAR_W, bh2 = g ? g.h : BAR_H; c.drawImage(bar, -pv[0] * bs, -pv[1] * bs, bw * bs, bh2 * bs); c.restore(); };
+      if (!g) barrel();                                  // 基本款：砲管根部藏在車身後面
+      c.drawImage(body, -BODY_W / 2 * s, -bot * s, BODY_W * s, bh);
+      if (g) barrel();                                   // 進階以上：砲管的圓軸蓋在砲塔接口上
+      if (t.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = t.flash / 14 * .5; c.drawImage(body, -BODY_W / 2 * s, -bot * s, BODY_W * s, bh); t.flash--; }
       c.restore();
       if (dead) { c.fillStyle = 'rgba(40,40,40,.35)'; c.beginPath(); c.ellipse(0, -22, 30, 20, 0, 0, 7); c.fill(); }
     } else drawVecTank(c, t, C, dead);
@@ -486,7 +490,7 @@
       c.fillStyle = dead ? '#9ca3af' : C.main; rr(c, x, y, 10, CH, 5); c.fill();   // 隊伍色條
       if (act) { c.strokeStyle = C.main; c.lineWidth = 5; rr(c, x, y, cw, CH, 18); c.stroke(); }
       if (me === i) { c.fillStyle = C.main; rr(c, x + cw - 50, y - 6, 46, 20, 10); c.fill(); c.fillStyle = '#fff'; c.font = `900 14px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('我', x + cw - 27, y + 4); }
-      const sk = img(`tank-${skinOf(i)}-body-v2`);
+      const sk = img(bodyName(skinOf(i)));
       if (ok(sk)) { c.save(); if (dead) c.globalAlpha = .5; const s = 48 / sk.naturalWidth; c.drawImage(sk, x + 14, y + CH / 2 - sk.naturalHeight * s / 2, 48, sk.naturalHeight * s); c.restore(); }
       c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillStyle = dead ? '#6b7280' : '#1f2937'; c.font = `900 21px ${FONT}`;
       let name = nm(i); if (name.length > 7) name = name.slice(0, 7) + '…'; c.fillText(name, x + 68, y + 20);
@@ -659,5 +663,5 @@
     const n = names || [], row = (t, i) => { const st = t.st; return `<tr><td><i style="background:${(TEAMC[S.mode === 'team' ? 'team' : 'ffa'][i] || TEAMC.ffa[0]).main}"></i>${n[i] || '玩家' + (i + 1)}</td><td>${st.shots ? Math.round(st.hits / st.shots * 100) + '%' : '—'}<small>${st.hits}/${st.shots}</small></td><td>${st.far ? Math.round(st.far / 10) + ' 公尺' : '—'}</td><td>${st.best ? '-' + st.best : '—'}</td></tr>`; };
     return `<table class="tkst"><tr><th></th><th>命中率</th><th>最遠一砲</th><th>最痛一擊</th></tr>${S.T.map(row).join('')}</table>`;
   }
-  root.TKV = { mount, start, stop, update, setLive, busy, fit, unlock, turnAge, shown: () => shown, statsHTML, wIcon, SKINS, SKIN_N, _age: ms => { turnAt -= ms; }, _tick: n => { for (let k = 0; k < n && running; k++) frame(tPrev + 1000 / 60); }, _dbg: () => ({ shownN, queue: queue.length, anim: anim && anim.ph, aim, drive, V, pendingFire }) };
+  root.TKV = { mount, start, stop, update, setLive, busy, fit, unlock, turnAge, shown: () => shown, statsHTML, wIcon, SKINS, SKIN_N, bodyName, _age: ms => { turnAt -= ms; }, _tick: n => { for (let k = 0; k < n && running; k++) frame(tPrev + 1000 / 60); }, _dbg: () => ({ shownN, queue: queue.length, anim: anim && anim.ph, aim, drive, V, pendingFire }) };
 })(window);
