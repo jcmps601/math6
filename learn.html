@@ -2215,11 +2215,11 @@ function endRound(){try{STATC=null;statPush()}catch(e){}const r=round.res,first=
    ・一次就答對 10 點、第二次才答對 5 點;錯題本、各科都算
    ・魔王的血＝全班人數 × 每人血量:從 BOSS_NEW 那一週起每人 750(大約每人一週答對 75 題,全班要打一整週);之前的週維持 150,已經打倒的不會復活
    ・每個人一天最多打 BOSS_DAY 點(答對 50 題),免得一兩個人就把魔王打完
-   ・打倒以後,這週有出手(打滿 bossMin 點)的人都可以領 1 張遊戲券(上週的也還能領)
+   ・打倒以後,這週有出手(打滿 bossMin 點)的人都可以領獎(上週的也還能領):BOSS_NEW 那一週起是 BOSS_COIN 金幣,之前的週是 1 張遊戲券
    ・傷害存在 learn/boss/星期一日期/座號 = {s:這週打了幾點,t:時間}(只能寫自己那一格;Firebase 規則要加 BOSS_RULE 那一段)
    ・測試帳號也會寫,但不算進全班的血量(自己看得到自己打的) */
 const BOSSES=[{i:'🐲',n:'噴火龍・阿焰'},{i:'🐙',n:'墨汁章魚王'},{i:'🦂',n:'沙漠蠍子王'},{i:'👻',n:'搗蛋幽靈'},{i:'🤖',n:'鐵甲機器怪'},{i:'🦈',n:'鯊魚船長'},{i:'🐻‍❄️',n:'冰原大白熊'},{i:'🦖',n:'森林暴龍'}];
-const BOSS_NEW='2026-11-16',BOSS_DAY=500,BOSS_HIT={ok:10,ok2:5};
+const BOSS_NEW='2026-11-16',BOSS_DAY=500,BOSS_COIN=200,BOSS_HIT={ok:10,ok2:5};
 const bossMin=wk=>wk>=BOSS_NEW?200:50;
 const bossWk=(back=0)=>weekKeys(back)[0];
 const bossOf=wk=>{const n=Math.floor(new Date(wk+'T00:00:00').getTime()/6048e5),L=BOSSES.length,k=((n%L)+L)%L;return Object.assign({img:'boss-b'+k},BOSSES[k])};   // 圖：img/ui/boss-b0～b7
@@ -2260,6 +2260,8 @@ async function bossLoad(wk){if(BOSSC&&BOSSC.wk===wk&&Date.now()-BOSSC.at<20000)r
   const R={wk,at:Date.now(),ok:!!v,denied,rows:cls,tests:rows.filter(r=>isTest(r.seat)),tot,hp:bossHP(wk)};if(v&&tot>=R.hp&&user)LS.set(bdeadK(wk),1);if(v){if(wk===bossWk())BOSSC=R;else BOSSL[wk]=R}return R}   // 沒讀到雲端的不要記(連上線後要重讀)
 const bossClaimed=wk=>!!(sum&&sum.bossR&&sum.bossR[wk]);
 function bossClaim(wk){if(!sum||bossClaimed(wk))return;sum.bossR=sum.bossR||{};sum.bossR[wk]=1;
+  if(wk>=BOSS_NEW){const p=PET.P();p.cl.e=p.cl.e||{};p.cl.e['boss_'+wk]=BOSS_COIN;p.coin=PET.coinOf(p);p.u=Date.now();saveSum(true);sfx.ticket();confetti(90);   // 寫成帳本裡固定的一格：兩台平板都領也只算一次
+    toast(`🪙 ${bossOf(wk).n}被打倒了！拿到 ${BOSS_COIN} 金幣`);paintNavs();render();return}
   if(!isTest(user.seat))sum.tk=(sum.tk||0)+1;saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);
   toast(`🎟️ ${bossOf(wk).n}被打倒了！拿到 1 張遊戲券`);paintNavs();render()}
 const bossEnd=()=>{const d=new Date(),left=7-((d.getDay()+6)%7);return left<=1?'今天晚上 12 點換新魔王':`還有 ${left} 天`};
@@ -2282,7 +2284,7 @@ async function bossPaint(c,wk,tries=0){const B=bossOf(wk);let R,L=null;try{[R,L]
   /* 打倒了:有出手的人領獎(這週、上週) */
   const rw=c.querySelector('#bbrw');rw.innerHTML='';
   [[wk,Object.assign({},R,{tot})],[bossWk(1),L]].forEach(([w,X])=>{if(!X||X.tot<X.hp||bossClaimed(w))return;const m=myBoss(w);
-    if(m>=bossMin(w)){const b=el('button','go',`🎁 領獎勵${w===wk?'':'（上週）'}<small>遊戲券 1 張</small>`);tap(b,()=>bossClaim(w));rw.appendChild(b)}
+    if(m>=bossMin(w)){const b=el('button','go',`🎁 領獎勵${w===wk?'':'（上週）'}<small>${w>=BOSS_NEW?BOSS_COIN+' 金幣':'遊戲券 1 張'}</small>`);tap(b,()=>bossClaim(w));rw.appendChild(b)}
     else if(w===wk)rw.appendChild(el('div','bnote',`打滿 ${bossMin(w)} 點就能領獎勵（還差 ${bossMin(w)-m} 點）`))});
   /* 上次看到之後全班又打了多少:魔王晃一下、跳出傷害數字 */
   const gain=R.ok&&seen&&seen.wk===wk?R.tot-seen.tot:0;
