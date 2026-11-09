@@ -1,5 +1,7 @@
 /* 601 電子寵物（新版）
-   ・練習答對 → 寵物拿經驗、金幣。每天前 20 題答對「元氣加倍」拿全額，之後減半；完成每日任務 +30 經驗、+10 金幣；吃飽又開心經驗 ×1.2
+   ・練習答對 → 寵物拿經驗、金幣。每天前 20 題答對拿全額，之後減半；完成每日任務 +30 經驗、+10 金幣；吃飽又開心經驗 ×1.2
+   ・練習就是餵養：答對題目寵物會吃飽、開心；飽足和開心只有上學日才會下降（週末、不會歸零）
+   ・今日願望：① 練 10 題 ② 學習願望（訂正錯題、練沒開始或星星少的單元、這週沒碰的科目）③ 陪寵物；三個都完成得 1 顆愛心，一週集滿 5 顆送限定配件
    ・等級最高 Lv.30：Lv.7 第一次進化、Lv.18 最終進化。Lv.18 送普通蛋、Lv.30 送稀有蛋；達成學習成就送稀有／傳說蛋
    ・20 種寵物（初始 8、稀有 8、傳說 4），全部住在「寵物屋」，一次帶一隻在身邊；圖鑑記錄拿過的寵物
    ・配件 4 個部位（帽子、眼鏡、脖子、背後）所有寵物共用；異色每隻各自買；房間可以換
@@ -11,7 +13,6 @@
   const firstN = () => (sum && sum.first) || 0, totN = () => (sum && sum.total) || 0;
   const daysN = () => sum ? Object.values(sum.days || {}).filter(v => v > 0).length : 0;
   const stk = () => { try { return streak(); } catch (e) { return 0; } };
-  const mathU = () => UN.filter(u => u.g && u.s === 'math');
   const star3 = k => ((sum && sum.best && sum.best[k]) || 0) >= 9;
   const A = () => (P() && P().ach) || {};
   const SPECIES = {
@@ -26,11 +27,11 @@
     otter: { n: '波波海獺', f: ['波波', '浪浪', '海潮獺'], r: 1, emo: '🦦', pal: C3('#c9a27e', '#f8ecdf', '#8a6240'), say: '噗噗～',
       need: '一次就答對累計 300 題', pr: () => [firstN(), 300] },
     fox: { n: '燈燈狐', f: ['小燈', '燈燈狐', '千燈狐'], r: 1, emo: '🦊', pal: C3('#fff6e6', '#ffffff', '#d9a441'), say: '暖暖的～',
-      need: '連續 7 天完成每日任務', pr: () => [stk(), 7] },
+      need: '連續 7 天完成每日任務（週末可以休息）', pr: () => [stk(), 7] },
     hedgehog: { n: '栗栗蝟', f: ['栗栗', '栗刺刺', '栗子騎士'], r: 1, emo: '🦔', pal: C3('#b98257', '#f6e3cc', '#74482a'), say: '刺刺的喔！',
       need: '錯題本練會 20 題', pr: () => [A().wb || 0, 20] },
     deer: { n: '星角鹿', f: ['小星鹿', '星角鹿', '銀河鹿'], r: 1, emo: '🦌', pal: C3('#e6bb85', '#fbecd8', '#a7743e'), say: '一閃一閃～',
-      need: '4 個單元都拿到 3 顆星', pr: () => [mathU().filter(u => star3(u.key)).length, 4] },
+      need: '五科都有單元拿到 3 顆星', pr: () => [SUBJ.filter(S => UN.some(u => u.g && u.s === S.k && star3(u.key))).length, SUBJ.length] },
     panda: { n: '竹竹貓熊', f: ['竹竹', '拳拳', '竹林大師'], r: 1, emo: '🐼', pal: C3('#f8f9fa', '#ffffff', '#343a40'), say: '哈！嘿！',
       need: '練習天數滿 30 天', pr: () => [daysN(), 30] },
     octopus: { n: '墨墨章魚', f: ['墨墨', '彩墨', '畫家章魚'], r: 1, emo: '🐙', pal: C3('#c3a6ff', '#f0e8ff', '#7b52d6'), say: '畫一張畫給你！',
@@ -42,11 +43,11 @@
     whale: { n: '星空鯨', f: ['小星鯨', '夜光鯨', '銀河鯨王'], r: 2, emo: '🐳', pal: C3('#5866d8', '#e3e7ff', '#2a338f'), say: '噗～星星水花！',
       need: '一次就答對累計 1,500 題', pr: () => [firstN(), 1500] },
     lion: { n: '福氣獅', f: ['獅獅', '守門獅', '福氣獅王'], r: 2, emo: '🦁', pal: C3('#ffd166', '#fff4cf', '#d9480f'), say: '福氣來囉！',
-      need: '連續 21 天完成每日任務', pr: () => [stk(), 21] },
+      need: '連續 21 天完成每日任務（週末可以休息）', pr: () => [stk(), 21] },
     unicorn: { n: '彩虹馬', f: ['小彩', '彩虹駒', '天馬獨角獸'], r: 2, emo: '🦄', pal: C3('#fbfbff', '#ffffff', '#b197fc'), say: '彩虹出來了！',
       need: '圖鑑收集 8 隻寵物', pr: () => [dexN(), 8] },
     turtle: { n: '智慧龜', f: ['算算龜', '學者龜', '智慧神龜'], r: 2, emo: '🐢', pal: C3('#8fdcb4', '#e6fbef', '#3e9a6b'), say: '慢慢想，一定會懂！',
-      need: '所有單元和綜合都 3 顆星，而且一次就答對累計 1,000 題', pr: () => { const us = [...mathU(), MIX], n = us.filter(u => star3(u.key)).length; return [n === us.length && firstN() >= 1000 ? 1 : 0, 1, `3 顆星 ${n}/${us.length}・一次就答對 ${Math.min(firstN(), 1000)}/1000`]; } }
+      need: '五科的綜合複習都 3 顆星，而且一次就答對累計 1,000 題', pr: () => { const us = SUBJ.map(S => mixOf(S.k)).filter(Boolean), n = us.filter(u => star3(u.key)).length; return [n === us.length && firstN() >= 1000 ? 1 : 0, 1, `綜合 3 顆星 ${n}/${us.length}・一次就答對 ${Math.min(firstN(), 1000)}/1000`]; } },
   };
   const SP_KEYS = Object.keys(SPECIES), STARTERS = SP_KEYS.filter(k => !SPECIES[k].r);
   const TIER = ['', '稀有', '傳說'], EGG_N = ['普通蛋', '稀有蛋', '傳說蛋'];
@@ -196,6 +197,7 @@
     return '';
   }
   function accImg(id, q, ht, sp, st) {
+    if (ITEMS[id] && ITEMS[id].base) { const B = ITEMS[id].base; return accImg(B, q, ht, sp, st).split(`acc-${B}.webp`).join(`acc-${id}.webp`); }
     const A = adjOf(sp, st, id); if (A && !Array.isArray(A) && A.w) return absAcc(id, A);
     const out = accImg0(id, q, ht, sp), g = out.g;
     return wrapAdj(out.s, g.pv[0], g.pv[1], A);
@@ -231,6 +233,9 @@
     starring: { k: 'k', n: '星星光圈', lv: 17, p: 220 }, rainbowc: { k: 'k', n: '彩虹雲', lv: 24, p: 320 },
     balloon: { k: 'b', n: '彩色氣球', lv: 8, p: 110 }, butterfly: { k: 'b', n: '小蝴蝶', lv: 12, p: 160 }, starkid: { k: 'b', n: '小星星精靈', lv: 15, p: 200 }, rocketm: { k: 'b', n: '迷你火箭', lv: 20, p: 280 }, moon: { k: 'b', n: '月亮小夥伴', lv: 27, p: 400 }
   };
+  /* 限定配件：今日願望一週集滿 5 顆愛心才拿得到，商店不賣。圖是 img/pet/acc-代號.webp；戴的位置和 base 那個配件一樣 */
+  const LIM = [['lbow', 'bow', '薄荷蝴蝶結'], ['lflower', 'flower', '海風小花'], ['lcap', 'cap', '莓果棒球帽'], ['lparty', 'party', '藍天派對帽'], ['lberet', 'beret', '森林畫家帽'], ['ltophat', 'tophat', '星夜紳士帽'], ['lcrown', 'crown', '海洋皇冠']];
+  LIM.forEach(([id, base, n]) => { ITEMS[id] = { k: 'h', n, lv: 1, p: 0, lim: 1, base }; AR[id] = AR[base]; });
   const SLOTS = [['h', '👒 帽子'], ['g', '👓 眼鏡'], ['k', '✨ 腳下'], ['b', '🎈 身邊']];
   /* 舊版的脖子、背後配件（每隻寵物姿勢不同，戴起來不自然，已經拿掉）：買過的退錢 */
   const OLD_ITEMS = { bowtie: 20, bell: 35, scarf: 50, medal: 100, lei: 220, rainbow: 320, wings: 160, cape: 200, rocket: 280, swings: 400 };
@@ -261,7 +266,7 @@
   const stkImg = (i, cls) => STK_IMG[i] ? `<img class="${cls || 'pstki'}" src="${STK_IMG[i]}" alt="${STICKERS[i]}">` : (STICKERS[i] || '');
   /* 測試帳號（98、99）：金幣無限、配件不用等級、寵物頁上方有測試工具 */
   const TST = () => { try { return !!(user && isTest(user.seat)); } catch (e) { return false; } };
-  const EGG_NEED = [50, 100, 150], START_COIN = 30, FULL_DECAY = 2.5, JOY_DECAY = 3, PLAY_MS = 20 * 60 * 1000;
+  const EGG_NEED = [50, 100, 150], START_COIN = 30, DAY_FALL = 25, FLOOR = 20, DAY_FILL = 10, PLAY_MS = 20 * 60 * 1000, PLAY_MAX = 2;
   const GAIN = { ok: [2, 10], ok2: [1, 5] }, LATE = { ok: [1, 5], ok2: [0, 3] }, BOOST_N = 20, DAY_XP = 30, DAY_COIN = 10, CARE_K = 1.2;
   const OLD_DEF = { chick: 1, cat: 5, dragon: 2, bunny: 0, blob: 3, bear: 7 }, OLD_COLOR_PRICE = 30;
 
@@ -500,9 +505,10 @@
     if (p.cols) { const n = Object.keys(p.cols).filter(i => p.cols[i] && +i !== OLD_DEF[p.sp]).length; if (n) { coinAdd(p, n * OLD_COLOR_PRICE); p.refund = n * OLD_COLOR_PRICE; } delete p.cols; }
     delete p.c; p.x = 0; p.xo = {}; p.v = 2; p.u = Date.now();
   }
-  const hours = t => t ? Math.max(0, (Date.now() - t) / 3600e3) : 0;
-  const fullNow = p => Math.max(0, Math.round((p.full ?? 80) - hours(p.ft) * FULL_DECAY));
-  const joyNow = p => Math.max(0, Math.round((p.joy ?? 80) - hours(p.jt) * JOY_DECAY));
+  /* 飽足、開心只有上學日才下降：從上次變動那天到今天，過了幾個星期一～五（再多也一樣，最低停在 FLOOR） */
+  const schoolDays = t => { if (!t) return 0; const d = new Date(t), b = new Date(); d.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0); let n = 0; while (d < b && n < 8) { d.setDate(d.getDate() + 1); if (d.getDay() % 6) n++; } return n; };
+  const fullNow = p => Math.max(FLOOR, Math.round((p.full ?? 80) - schoolDays(p.ft) * DAY_FALL));
+  const joyNow = p => Math.max(FLOOR, Math.round((p.joy ?? 80) - schoolDays(p.jt) * DAY_FALL));
   const setFull = (p, v) => { p.full = Math.max(0, Math.min(100, v)); p.ft = Date.now(); };
   const setJoy = (p, v) => { p.joy = Math.max(0, Math.min(100, v)); p.jt = Date.now(); };
   const cared = p => p.st === 'pet' && fullNow(p) >= 50 && joyNow(p) >= 50;
@@ -526,13 +532,17 @@
 
   /* ───────── 練習答完一題（learn.html 的 finish 會呼叫）：回傳拿到的金幣 ───────── */
   function gain(res) {
-    const p = P(); if (!p || !GAIN[res]) return 0;
+    const p = P(); if (!p) return 0;
     const today = dkey(); if (p.dd !== today) { p.dd = today; p.dn = 0; }
-    p.dn = (p.dn || 0) + 1; const G = p.dn <= BOOST_N ? GAIN[res] : LATE[res];
-    let coin = G[0], xp = G[1];
-    if (((sum.days || {})[today] || 0) >= GOAL && p.gd !== today) { p.gd = today; xp += DAY_XP; coin += DAY_COIN; if (round) round.pday = 1; }
-    try { const wk = bossWk(); if (p.ach.bk !== wk) { p.ach.bk = wk; p.ach.bw = (p.ach.bw || 0) + 1; } } catch (e) { }
-    coinAdd(p, coin); if (round) round.pc = (round.pc || 0) + coin;
+    const right = !!GAIN[res]; let coin = 0, xp = 0, G = null;
+    if (right) { p.dn = (p.dn || 0) + 1; G = p.dn <= BOOST_N ? GAIN[res] : LATE[res]; coin = G[0]; xp = G[1]; }
+    /* 練習就是餵養：答對寵物就吃飽、開心；做滿每日任務再補一點 */
+    if (right && p.st === 'pet') { setFull(p, fullNow(p) + (res === 'ok' ? 2 : 1)); setJoy(p, joyNow(p) + 1); }
+    /* 每日任務獎勵：第 10 題答錯也要給，所以放在「答對才有」的外面 */
+    if (((sum.days || {})[today] || 0) >= GOAL && p.gd !== today) { p.gd = today; xp += DAY_XP; coin += DAY_COIN; if (round) round.pday = 1; if (p.st === 'pet') { setFull(p, fullNow(p) + DAY_FILL); setJoy(p, joyNow(p) + DAY_FILL); } }
+    if (right) { try { const wk = bossWk(); if (p.ach.bk !== wk) { p.ach.bk = wk; p.ach.bw = (p.ach.bw || 0) + 1; } } catch (e) { } wishHit(p); }
+    if (!coin && !xp) { wishTick(p); p.u = Date.now(); return 0; }
+    if (coin) coinAdd(p, coin); if (round) round.pc = (round.pc || 0) + coin;
     if (p.st === 'egg') {
       const was = p.ex || 0; p.ex = was + xp;
       if (was < EGG_NEED[0] && p.ex >= EGG_NEED[0]) toast('🥚 你的蛋在動了！快去「寵物」看看');
@@ -540,11 +550,78 @@
       xp = Math.round(xp * (cared(p) ? CARE_K : 1));
       const b = lvOf(p.xp || 0).lv, mb = maxLv(p); p.xp = (p.xp || 0) + xp; if (round) round.px = (round.px || 0) + xp;
       const a = lvOf(p.xp).lv;
-      const e = p.eggs[0]; if (e) { const need = EGG_NEED[e.t | 0], w = e.ex || 0; e.ex = Math.min(need, w + G[1]); if (w < need && e.ex >= need) setTimeout(() => toast(`🥚 蛋籃裡的${EGG_N[e.t | 0]}要孵化了！去「寵物屋」看看`), 2200); }
+      const e = p.eggs[0]; if (e && G) { const need = EGG_NEED[e.t | 0], w = e.ex || 0; e.ex = Math.min(need, w + G[1]); if (w < need && e.ex >= need) setTimeout(() => toast(`🥚 蛋籃裡的${EGG_N[e.t | 0]}要孵化了！去「寵物屋」看看`), 2200); }
       if (a > b) levelUp(p, b, a, mb);
     }
-    checkAch(p); p.u = Date.now(); pub(p);
+    checkAch(p); wishTick(p); p.u = Date.now(); pub(p);
     return coin;
+  }
+  /* ───────── 今日願望 ─────────
+     p.wish = {d 哪一天, k 種類(wb 訂正錯題、new 沒開始的單元、low 星星少的單元、sub 這週沒碰的科目), u 單元代號, s 科目, t 顯示的名字, need 要幾題, n 做了幾題, ok 學習願望完成, care 陪過寵物}
+     p.hw = {w 哪一週, n 幾顆愛心, d 上次拿愛心的那天, g 這週的禮物領了沒} */
+  const WISH_XP = 20, WISH_COIN = 10, HEART_NEED = 5;
+  const seedOf = t => { let h = 7; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0; return h; };
+  function makeWish(p, today) {
+    const r0 = seedOf(today + '|' + (user ? user.seat : 0)), one = A => A[r0 % A.length], last = p.wish ? p.wish.k : '';
+    const seen = u => (sum.dn && sum.dn[u.key]) || (sum.best && sum.best[u.key] != null), label = u => `${subjOf(u.s).n}「${u.nav || u.name}」`, best = u => starN(sum.best[u.key] || 0);
+    const U = UN.filter(u => u.g && live(u) && uqN(u.key) < UNIT_CAP), W = wbLoad().length, C = [];
+    if (W) C.push({ k: 'wb', need: Math.min(3, W) });
+    const N = U.filter(u => !seen(u)); if (N.length) { const u = one(N); C.push({ k: 'new', u: u.key, t: label(u), need: 5 }); }
+    const S = U.filter(u => seen(u) && best(u) < 3); if (S.length) { const m = Math.min(...S.map(best)), u = one(S.filter(x => best(x) === m)); C.push({ k: 'low', u: u.key, t: label(u), need: 5 }); }
+    const ago = Date.now() - 7 * 864e5, R = sum.rh || {}, recent = k => (R[k] || []).some(x => x.t > ago);
+    const J = SUBJ.filter(S => mixOf(S.k)), old = J.filter(S => !recent(mixOf(S.k).key) && !UN.some(u => u.s === S.k && recent(u.key))), sj = one(old.length ? old : J);
+    if (sj) C.push({ k: 'sub', s: sj.k, t: sj.n, need: 5 });
+    const L = C.filter(c => c.k !== last), c = W >= 5 && last !== 'wb' ? C[0] : one(L.length ? L : C);
+    return Object.assign({}, c, { d: today, n: 0 });
+  }
+  function wishToday(p) { const today = dkey(); if (!p.wish || p.wish.d !== today) p.wish = makeWish(p, today); return p.wish; }
+  const wishSay = w => w.k === 'wb' ? `幫我把錯題本訂正 ${w.need} 題！` : w.k === 'new' ? `我想看你挑戰${w.t}，答對 ${w.need} 題！` : w.k === 'low' ? `${w.t}再練一下，答對 ${w.need} 題！` : `好久沒練${w.t}了，答對 ${w.need} 題！`;
+  const wishParts = p => { const w = wishToday(p), a = ((sum.days || {})[dkey()] || 0) >= GOAL, b = !!w.ok, c = !!w.care || p.st === 'egg'; return { w, a, b, c, n: (a ? 1 : 0) + (b ? 1 : 0) + (p.st === 'egg' ? 0 : c ? 1 : 0), all: a && b && c }; };
+  const heartsOf = p => { const wk = bossWk(); if (!p.hw || p.hw.w !== wk) p.hw = { w: wk, n: 0, d: '', g: 0 }; return p.hw; };
+  /* 這一題算不算學習願望（答對才算）；訂正錯題由 note('wb') 算 */
+  function wishHit(p) {
+    const w = wishToday(p), q = round && round.qs && round.qs[cur]; if (!q || w.ok || w.k === 'wb') return;
+    const U = q.uk && UN.find(u => u.key === q.uk); if (!U) return;
+    if ((w.u && U.key === w.u) || (w.s && U.s === w.s)) w.n = (w.n || 0) + 1;
+  }
+  function giveXp(p, n) {
+    if (p.st === 'egg') { p.ex = (p.ex || 0) + n; return; }
+    const b = lvOf(p.xp || 0).lv, mb = maxLv(p); p.xp = (p.xp || 0) + n; const a = lvOf(p.xp).lv; if (a > b) levelUp(p, b, a, mb);
+  }
+  function wishTick(p) {
+    const { w } = wishParts(p);
+    if (!w.ok && ((w.n || 0) >= w.need || (w.k === 'wb' && !wbLoad().length))) {
+      w.ok = 1; coinAdd(p, WISH_COIN); giveXp(p, WISH_XP); p.u = Date.now();
+      setTimeout(() => { try { toast(`🐾 學習願望完成！經驗 +${WISH_XP}、🪙+${WISH_COIN}`); sfx.ticket(); } catch (e) { } }, 500);
+    }
+    const P2 = wishParts(p), H = heartsOf(p), today = dkey();
+    if (P2.all && H.d !== today) {
+      H.d = today; H.n = (H.n || 0) + 1; p.u = Date.now();
+      let t = `❤️ 今日大滿足！本週愛心 ${Math.min(H.n, HEART_NEED)} / ${HEART_NEED}`;
+      if (H.n >= HEART_NEED && !H.g) {
+        H.g = 1; const g = LIM.find(([id]) => !p.own[id]);
+        if (g) { p.own[g[0]] = 1; t = `🎁 集滿 ${HEART_NEED} 顆愛心！得到限定配件「${g[2]}」，去衣櫃換上吧！`; } else { coinAdd(p, 100); t = `🎁 集滿 ${HEART_NEED} 顆愛心！得到 🪙100`; }
+      }
+      setTimeout(() => { try { toast(t); sfx.win(); confetti(80); } catch (e) { } }, 2800);
+    }
+    const e = document.getElementById('wish'); if (e) e.replaceWith(wishCard(e.classList.contains('np')));
+  }
+  function careMark(p) { const w = wishToday(p); if (w.care) return; w.care = 1; wishTick(p); }
+  function wishCard(noPic) {
+    const p = P(), { w, a, b, c } = wishParts(p), n = Math.min(((sum.days || {})[dkey()] || 0), GOAL), H = heartsOf(p), egg = p.st === 'egg', nm = egg ? '蛋蛋' : nameOf(p);
+    const C = el('div', 'cd' + (noPic ? ' np' : ''), ''); C.id = 'wish';
+    const hearts = '❤️'.repeat(Math.min(H.n || 0, HEART_NEED)) + '🤍'.repeat(Math.max(0, HEART_NEED - (H.n || 0)));
+    const row = (k, on, txt, pr) => `<button class="wr${on ? ' d' : ''}" data-w="${k}"${on ? ' disabled' : ''}><i>${on ? '✅' : '⬜'}</i><span>${txt}</span>${pr ? `<b>${pr}</b>` : ''}${on ? '' : '<u>▶</u>'}</button>`;
+    C.innerHTML = `${noPic ? '' : `<div class="wv">${egg ? eggSVG(Math.min(1, (p.ex || 0) / EGG_NEED[0]), '') : petArt(look(p, { mood: moodOf(p) }))}</div>`}<div class="wi"><div class="wt"><span>🐾 ${nm}的今日願望</span><small>${H.g ? '本週禮物領到了 🎁' : `<em>${hearts}</em> 集滿 ${HEART_NEED} 顆送限定配件`}</small></div>
+      ${row(1, a, `練習 ${GOAL} 題`, a ? '' : `${n}/${GOAL}`)}${row(2, b, wishSay(w), b ? '' : `${Math.min(w.n || 0, w.need)}/${w.need}`)}${egg ? '' : row(3, c, night() ? `摸摸${nm}的頭，陪牠睡覺` : `陪${nm}：餵點心或一起玩`)}</div>`;
+    C.querySelectorAll('.wr:not(.d)').forEach(B => tap(B, () => {
+      const k = +B.dataset.w;
+      if (k === 1) startPractice((mixOf(subj) || MIX).key);
+      else if (k === 2) { if (w.k === 'wb') startPractice('wb'); else if (w.u) { const i = UN.findIndex(u => u.key === w.u); if (i >= 0) startPractice(i); } else { const M = mixOf(w.s); if (M) startPractice(M.key); } }
+      else if (view === 'pet') say(night() ? '點我的頭，摸摸我～' : '點下面的「一起玩」或「餵點心」吧！', 2500);
+      else { view = 'pet'; paintNavs(); render(); }
+    }));
+    return C;
   }
   function levelUp(p, b, a, mb) {
     const sb = stageOf(b), sa = stageOf(a), ma = maxLv(p);
@@ -576,11 +653,11 @@
     got.forEach((t, i) => setTimeout(() => { toast(t); try { sfx.win(); confetti(80); } catch (e) { } }, 1600 + i * 2600));
   }
   /* 其他地方的事件：wb 錯題練會一題、hv 農場收成一次 */
-  function note(k, n) { const p = P(); if (!p) return; p.ach[k] = (p.ach[k] || 0) + (n || 1); checkAch(p); p.u = Date.now(); }
+  function note(k, n) { const p = P(); if (!p) return; p.ach[k] = (p.ach[k] || 0) + (n || 1); checkAch(p); if (k === 'wb') { const w = wishToday(p); if (!w.ok && w.k === 'wb') w.n = (w.n || 0) + (n || 1); wishTick(p); } p.u = Date.now(); }
   function endMsg() {
     const c = round && round.pc || 0; if (!c) return '';
     const p = P(), boost = Math.min(p.dn || 0, BOOST_N);
-    return `<div class="tkget petend">🪙 拿到 ${c} 枚金幣${round.px ? `・${nameOf(p)}經驗 +${round.px}` : p.st === 'egg' ? `・🥚 孵蛋進度 ${Math.min(100, Math.round((p.ex || 0) / EGG_NEED[0] * 100))}%` : ''}${round.pday ? '・✅ 每日任務獎勵 +30 經驗' : ''}<small class="pboost">⚡ 今天的元氣加倍 ${boost} / ${BOOST_N}${boost >= BOOST_N ? '（之後經驗減半，明天再加倍）' : ''}</small></div>`;
+    return `<div class="tkget petend">🪙 拿到 ${c} 枚金幣${round.px ? `・${nameOf(p)}經驗 +${round.px}` : p.st === 'egg' ? `・🥚 孵蛋進度 ${Math.min(100, Math.round((p.ex || 0) / EGG_NEED[0] * 100))}%` : ''}${round.pday ? '・✅ 每日任務獎勵 +30 經驗' : ''}<small class="pboost">⚡ 今日全額經驗 ${boost} / ${BOOST_N}${boost >= BOOST_N ? '（之後經驗減半，明天重新計算）' : ''}</small><small class="pboost">🐾 今日願望完成 ${wishParts(p).n} / ${p.st === 'egg' ? 2 : 3}</small></div>`;
   }
 
   /* ───────── 首頁的小卡片 ───────── */
@@ -603,8 +680,9 @@
   function moodLine(p, short) {
     if (night()) return short ? '😴 睡覺中' : '😴 Zzz…（晚上要睡覺囉，明天見）';
     const f = fullNow(p), j = joyNow(p);
-    if (f < 25) return short ? '肚子好餓…' : '肚子咕嚕咕嚕叫…可以給我吃點心嗎？';
-    if (j < 25) return short ? '好無聊…' : '好無聊喔…陪我玩一下好不好？';
+    if (f < 25) return short ? '好想一起練習…' : '好久沒一起練習了…肚子餓餓的，陪我練習好不好？';
+    if (j < 25) return short ? '好想一起玩…' : '好久沒一起玩了…陪我練習好不好？';
+    if (!short) { const w = wishToday(p); if (!w.ok && Math.random() < .6) return wishSay(w); }
     if (cared(p)) return short ? '✨ 精神很好' : pick2(['今天也一起練習吧！', '我最喜歡你了！', '答對題目我就會長大喔！', SPECIES[p.sp].say]);
     return short ? '還不錯' : pick2(['有點餓了…', '摸摸我的頭～', SPECIES[p.sp].say]);
   }
@@ -621,7 +699,7 @@
     Sg.innerHTML = `${roomArt(p.room)}<div class="ptag"><b>${nameOf(p)}</b><small>${S.f[st]}（${S.n}）${S.r ? `<i class="ptier r${S.r}">${TIER[S.r]}</i>` : ''}</small></div><div class="pcoin">🪙 <b id="pcoin">${p.coin || 0}</b></div>
       <div class="pbub" id="pbub">${moodLine(p)}</div><div class="ppet" id="ppet">${petArt(look(p, { mood: moodOf(p), cls: 'big' }))}</div><div id="pfx"></div><div id="plikes"></div>`;
     /* 寬版：左邊場景（約 60%）、右邊照顧資訊（約 40%）；窄版上下排 */
-    const TOP = el('div', 'ptop'), R = el('div', 'pright'); TOP.appendChild(Sg); TOP.appendChild(R); Pn.appendChild(TOP);
+    const TOP = el('div', 'ptop'), R = el('div', 'pright'); TOP.appendChild(Sg); TOP.appendChild(R); Pn.appendChild(TOP); Pn.appendChild(wishCard(true));
     tap(Sg.querySelector('#ppet'), () => act('pat'));
     /* 狀態 */
     const nx = EVO.find(v => v > L.lv), today = dkey(), dn = p.dd === today ? p.dn || 0 : 0;
@@ -631,7 +709,7 @@
       <div class="prow"><span class="pl">🍙 飽足</span><div class="pbar"><i class="f" id="pbf" style="width:${fullNow(p)}%"></i><b id="pbft">${fullNow(p)}</b></div></div>
       <div class="prow"><span class="pl">💖 開心</span><div class="pbar"><i class="j" id="pbj" style="width:${joyNow(p)}%"></i><b id="pbjt">${joyNow(p)}</b></div></div>
       <div class="pcare" id="pcare">${careLine(p)}</div>
-      <div class="pday"><span>⚡ 元氣加倍 <b>${Math.min(dn, BOOST_N)}</b> / ${BOOST_N}</span><span>${p.gd === today ? '✅' : '⬜'} 每日任務獎勵 +30 經驗</span></div>`;
+      <div class="pday"><span>⚡ 今日全額經驗 <b>${Math.min(dn, BOOST_N)}</b> / ${BOOST_N}</span></div>`;
     R.appendChild(B);
     const A = el('div', 'pacts');
     [['pat', '🖐️', '摸摸頭'], ['play', '⚽', '一起玩'], ['food', '🍽️', '餵點心'], ['wear', '👒', '換造型'], ['name', '✏️', '改名字']].forEach(([k, i, n]) => {
@@ -646,7 +724,7 @@
     [['food', '🍽️ 點心'], ['wear', '👒 衣櫃'], ['house', `🏠 寵物屋${er ? '<i class="pdot"></i>' : ''}`], ['class', '🐾 全班']].forEach(([k, n]) => { const b = el('button', '', n); b.dataset.k = k; tap(b, () => { tab = k; paintTab(); }); T.appendChild(b); });
     Pn.appendChild(T);
     const C = el('div', 'cd ptab'); C.id = 'ptab'; Pn.appendChild(C); paintTab();
-    Pn.appendChild(el('div', 'phow', `💡 一次就答對：經驗 +10、🪙+2；第二次才答對：經驗 +5、🪙+1。每天前 ${BOOST_N} 題答對拿全額，之後減半。完成每日任務再 +30 經驗、🪙+10；吃飽又開心經驗 ×1.2！`));
+    Pn.appendChild(el('div', 'phow', `💡 一次就答對：經驗 +10、🪙+2；第二次才答對：經驗 +5、🪙+1。答對題目寵物也會吃飽、開心。每天前 ${BOOST_N} 題答對拿全額，之後減半。完成每日任務再 +30 經驗、🪙+10；吃飽又開心經驗 ×1.2！`));
     loadLikes();
     if (p.refund) { const n = p.refund; delete p.refund; save(p); setTimeout(() => toast(`🎨 換顏色改成「異色」了，以前買的顏色退還 🪙${n}`), 600); }
     if (p.refund2) { const n = p.refund2; delete p.refund2; save(p); setTimeout(() => toast(`🎀 脖子、背後的配件換成新的「腳下」「身邊」了，以前買的退還 🪙${n}`), 1800); }
@@ -710,12 +788,13 @@
     w.classList.remove('hop', 'squish', 'spin', 'nom'); void w.offsetWidth; w.classList.add(cls);
     clearTimeout(bounce.t); bounce.t = setTimeout(() => { w.dataset.mood = ''; w.classList.remove(cls); refresh(); }, ms || 1200);
   }
-  /* 摸摸頭：一小時最多加 10 次開心（農場裡點寵物也算） */
+  /* 摸摸頭：只有動畫和表情，不加數值（免得上課一直點）；晚上不能餵、不能玩，摸摸頭也算陪過牠 */
   function patJoy() {
     const p = P(); if (!p || p.st !== 'pet') return false;
-    const hr = Math.floor(Date.now() / 3600e3); if (!p.pat || p.pat.h !== hr) p.pat = { h: hr, n: 0 };
-    p.pat.n++; const ok = p.pat.n <= 10; if (ok) setJoy(p, joyNow(p) + 2); save(p); return ok;
+    if (night() && !wishToday(p).care) { careMark(p); save(p); }
+    return true;
   }
+  const playLeft = p => { const today = dkey(); return p.pld && p.pld.d === today ? Math.max(0, PLAY_MAX - p.pld.n) : PLAY_MAX; };
   function act(k) {
     const p = P(); if (p.st !== 'pet') return;
     if (night() && k !== 'pat') { say('😴 噓…牠在睡覺，明天早上再一起玩吧', 2500); return; }
@@ -725,22 +804,23 @@
       say(night() ? '呼嚕…Zzz' : pick2(['嘿嘿，好舒服～', '再摸一下！', '我好喜歡你喔！', SPECIES[p.sp].say]), 2200);
       tone2(880, .08);
     } else if (k === 'play') {
+      if (playLeft(p) <= 0) { say('今天玩夠了，明天再一起玩！', 2500); return; }
       const left = PLAY_MS - (Date.now() - (p.pt || 0));
       if (left > 0) { say(`玩累了，休息一下…（${Math.ceil(left / 60000)} 分鐘後再玩）`, 2500); return; }
-      p.pt = Date.now(); setJoy(p, joyNow(p) + 20); setFull(p, fullNow(p) - 5);
+      p.pld = { d: dkey(), n: PLAY_MAX - playLeft(p) + 1 }; p.pt = Date.now(); setJoy(p, joyNow(p) + 20); careMark(p);
       const S = document.getElementById('pstage'), ball = el('div', 'pball', '⚽'); S.appendChild(ball); setTimeout(() => ball.remove(), 1700);
       setTimeout(() => { bounce('hop', 'happy', 1300); fx('⭐', 'star', 4); }, 650);
       say('耶！好好玩！', 2500); tone2(660, .1); setTimeout(() => tone2(990, .12), 120); save(p);
     }
   }
-  function paintPlay() { const p = P(), b = document.querySelector('.pact[data-k=play]'); if (!b) return; const left = PLAY_MS - (Date.now() - (p.pt || 0)); b.classList.toggle('cool', left > 0); b.querySelector('span').textContent = left > 0 ? '⏳' : '⚽'; }
+  function paintPlay() { const p = P(), b = document.querySelector('.pact[data-k=play]'); if (!b) return; const left = PLAY_MS - (Date.now() - (p.pt || 0)), wait = left > 0 || playLeft(p) <= 0; b.classList.toggle('cool', wait); b.querySelector('span').textContent = wait ? '⏳' : '⚽'; }
   function tone2(f, d) { try { if (typeof tone === 'function' && sndOn) tone(f, d, 'triangle', .07); } catch (e) { } }
   function feed(F) {
     const p = P(), f = fullNow(p);
     if (night()) { say('😴 牠睡著了，明天早上再吃吧', 2200); return; }
     if (f >= 100) { say('吃不下了啦～肚子好飽！', 2000); return; }
     if ((p.coin || 0) < F.p) { say(`金幣不夠…還差 ${F.p - (p.coin || 0)} 枚，去練習賺金幣吧！`, 2600); return; }
-    coinAdd(p, -F.p); setFull(p, f + F.f); if (F.j) setJoy(p, joyNow(p) + F.j);
+    coinAdd(p, -F.p); setFull(p, f + F.f); if (F.j) setJoy(p, joyNow(p) + F.j); careMark(p);
     eatFx(`<img src="${IMG}food-${F.id}.webp" alt="">`, F.n); save(p); refresh(); paintTab();
   }
   function eatFx(icon, n) {
@@ -755,7 +835,7 @@
     if (!(Fm.store[id] > 0)) return '倉庫裡沒有了';
     const f = fullNow(p); if (f >= 100) return `${nameOf(p)}吃不下了，肚子好飽！`;
     Fm.store[id]--; if (!Fm.store[id]) delete Fm.store[id]; Fm.u = Date.now();
-    setFull(p, f + V.f); if (V.j) setJoy(p, joyNow(p) + V.j); save(p);
+    setFull(p, f + V.f); if (V.j) setJoy(p, joyNow(p) + V.j); careMark(p); save(p);
     return `😋 ${nameOf(p)}吃了${FARM.CROPS[id].n}！🍙+${V.f}${V.j ? ` 💖+${V.j}` : ''}`;
   }
   /* 自己做的確認視窗（不用瀏覽器的 confirm） */
@@ -780,9 +860,9 @@
       const own = p.own, ML = maxLv(p), L = lvOf(p.xp || 0).lv; let h = '';
       SLOTS.forEach(([k, n]) => {
         h += `<div class="psec">${n}</div><div class="pgrid">`;
-        Object.entries(ITEMS).filter(([, I]) => I.k === k).forEach(([id, I]) => {
+        Object.entries(ITEMS).filter(([id, I]) => I.k === k && (!I.lim || own[id] || TST())).forEach(([id, I]) => {
           const on = p[k] === id, has = own[id], lock = !has && !TST() && ML < I.lv;
-          h += `<button class="pitem w${on ? ' on' : ''}${lock ? ' lock' : ''}" data-i="${id}">${itemSVG(id)}<b>${I.n}</b><em>${on ? '✅ 穿著' : has ? '換上' : lock ? (I.lv - L === 1 ? '🔒 再升 1 級，就能使用' : `🔒 升到 Lv.${I.lv} 解鎖`) : `🪙 ${I.p}`}</em></button>`;
+          h += `<button class="pitem w${on ? ' on' : ''}${lock ? ' lock' : ''}" data-i="${id}">${itemSVG(id)}<b>${I.lim ? '🎁 ' : ''}${I.n}</b><em>${on ? '✅ 穿著' : has ? '換上' : lock ? (I.lv - L === 1 ? '🔒 再升 1 級，就能使用' : `🔒 升到 Lv.${I.lv} 解鎖`) : `🪙 ${I.p}`}</em></button>`;
         });
         h += '</div>';
       });
@@ -1006,6 +1086,11 @@
   const css = `
   .pa{position:relative;width:100%;height:100%}.pa>svg,.pa>.pspk{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
   .pa .pmood{position:absolute;right:8%;top:18%;font-size:1.6em}
+  #wish{display:flex;gap:1rem;align-items:center;margin-top:1rem}#wish .wv{width:6.5rem;height:6.5rem;flex:none}#wish .wi{flex:1;min-width:0}
+  #wish .wt{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.2rem .8rem;font-size:1.3rem;font-weight:900;color:#c2255c}#wish .wt small{font-size:.95rem;color:#888;font-weight:800}#wish .wt em{font-style:normal;letter-spacing:.05em;filter:drop-shadow(0 0 1.5px #e8a0b4)}
+  #wish .wr{display:flex;align-items:center;gap:.55rem;width:100%;border:0;border-radius:14px;background:#fff4e6;color:#5c4a32;font:inherit;font-size:1.12rem;font-weight:800;text-align:left;padding:.5rem .8rem;margin-top:.4rem;cursor:pointer}
+  #wish .wr.d{background:#ebfbee;color:#2b8a3e;cursor:default}#wish .wr i{font-style:normal;flex:none}#wish .wr span{flex:1;min-width:0;line-height:1.3}#wish .wr b{flex:none;color:#e67700}#wish .wr u{flex:none;text-decoration:none;color:#e8590c}
+  @media (max-width:600px){#wish{align-items:flex-start;gap:.5rem}#wish .wv{width:3.8rem;height:3.8rem}#wish .wt{font-size:1.15rem}#wish .wr{font-size:1rem;padding:.45rem .6rem}}
   .pa .pflt{animation:pflt 2.6s ease-in-out infinite}@keyframes pflt{50%{transform:translateY(-5px)}}
   .pspk i{position:absolute;width:22%;height:22%;background:center/contain no-repeat;animation:pspk 1.8s ease-in-out infinite}
   .pspk i:nth-child(1){left:12%;top:24%}.pspk i:nth-child(2){right:10%;top:40%;animation-delay:.6s}.pspk i:nth-child(3){left:40%;top:6%;animation-delay:1.2s}
@@ -1150,5 +1235,5 @@
   const S = document.createElement('style'); S.textContent = css + `
   @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
-  window.PET = { _ADJ: ADJ, coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { wishCard, _ADJ: ADJ, coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();
