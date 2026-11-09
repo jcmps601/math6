@@ -1199,7 +1199,7 @@ function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);i
   if(it.t==='短文填空')big=big.replace(/(^|[^>])\((\d)\)(?!＿)/g,'$1<span class="ob">($2)＿＿</span>');
   /* 字的大小看長度:對話、句子用大字,只有長的短文才用小字 */
   const bc=it.bc==='p'?(n>160?'p':'p big'):it.bc!=null?it.bc:n>6?'s':'';
-  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:it.opts.every(o=>/^[○╳]/.test(o))?it.opts.slice():shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=(s==='zh'||s==='soc'||s==='sci'?1:3)),   // 並排:圖片,或很短的(ar、ee;國語只有單一個字才並排)
+  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:it.opts.every(o=>/^[○╳]/.test(o))?it.opts.slice():shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=(s==='zh'||s==='soc'||s==='sci'?1:s==='en'?2:3)),   // 並排:圖片,或很短的(ar、ee;國語只有單一個字才並排)
     big:(it.img?`<img class="qimg${it.tall?' tall':''}" src="${it.img}" alt="">`:'')+(big?`<div class="bx${bc?' '+bc:''}">${big}</div>`:''),
     say:it.say||'',au:it.au||'',rv:it.reveal||'',hd:it.au&&it.exp?it.exp:'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
     subj:s,kind,hints:it.hint?[].concat(it.hint):KIND_HINT[kind].slice(),
