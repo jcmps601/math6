@@ -4,7 +4,8 @@
      me() → 我是第幾個玩家（-1＝觀戰）　names() → [名字…]　skins() → [造型代號…]
      send(一步)　live(瞄準)　idle() 動畫播完
    坦克圖：img/game/tank-{造型}-body-v2（車身，朝右）＋ tank-{造型}-barrel-v2（砲管，左端圓軸是旋轉中心）；進階以上的造型是 -v4，接點寫在 V4。
-   圖只是外觀：被打中的判定、砲口位置照 tank.js（center() 24 px），不會因為圖比較大就改變。 */
+   圖只是外觀：被打中的判定、彈道照 tank.js，不會因為造型不同而改變（每台平板才算得一樣）。
+   每款砲口位置不同：瞄準點和砲彈畫面上從該款的砲口（muzzleAt）出發，飛幾步後接回真正的彈道（blendK），落點完全不變。 */
 (function (root) {
   const TK = root.TK;
   let W = TK.W, H = TK.H;
@@ -22,6 +23,8 @@
   /* 進階、史詩、傳說九款：車身圖都裁成 256 寬。p 砲塔接口、bot 履帶底（車身圖高度）、piv 砲管旋轉中心、w/h 砲管圖大小、k 砲管縮放（對車身） */
   const V4 = {"rhino":{"p":[175.8,42.3],"bot":164,"piv":[23.4,22.3],"w":200,"h":45,"k":0.6192},"falcon":{"p":[168.5,37.2],"bot":123,"piv":[15.4,16.4],"w":200,"h":32,"k":0.6352},"tortoise":{"p":[188.2,57.6],"bot":167,"piv":[20.0,19.6],"w":200,"h":39,"k":0.7986},"stormwolf":{"p":[193.6,52.1],"bot":159,"piv":[21.3,20.9],"w":200,"h":42,"k":0.6148},"auroracorn":{"p":[190.1,74.2],"bot":199,"piv":[20.6,20.6],"w":200,"h":41,"k":0.7587},"abyssshark":{"p":[196.9,61.6],"bot":177,"piv":[21.5,22.2],"w":200,"h":44,"k":0.6422},"solardragon":{"p":[180.1,67.6],"bot":177,"piv":[15.6,20.8],"w":200,"h":39,"k":0.7828},"phoenix":{"p":[185.0,58.5],"bot":187,"piv":[17.4,19.9],"w":200,"h":39,"k":0.739},"astraltemple":{"p":[173.4,92.2],"bot":203,"piv":[17.9,19.9],"w":200,"h":38,"k":0.818}};
   const ART = sk => V4[sk] ? 'v4' : 'v2', bodyName = sk => `tank-${sk}-body-${ART(sk)}`, barName = sk => `tank-${sk}-barrel-${ART(sk)}`;
+  /* 每款砲管圖量出來的砲口尖端 x（砲管圖座標） */
+  const MUZ_X = {"forest":197,"desert":197,"glacier":197,"ember":197,"volt":197,"nebula":197,"rhino":200,"falcon":200,"tortoise":200,"stormwolf":200,"auroracorn":200,"abyssshark":200,"solardragon":200,"phoenix":200,"astraltemple":200};
   const BODY_W = 256, BODY_BOTTOM = 182, BAR_PIV = [28, 37.5], BAR_W = 200, BAR_H = 72;
   const TANK_WW = 66, BAR_K = .62;   // 車身在場地上 66 寬；砲管縮到跟砲塔接口一樣粗
   const IMGC = {};
@@ -94,6 +97,7 @@
   let parts = [], texts = [], shells = [], shake = 0, banner = null, deco = null, clouds = [], tPrev = 0, hold = null, liveT = 0, timeoutSent = '', big = null;
   const COL = i => (TEAMC[shown && shown.mode === 'team' ? 'team' : 'ffa'])[i] || TEAMC.ffa[0];
   const nm = i => (host.names()[i] || COL(i).name + '色坦克');
+  const BLEND = 12;   // 畫面上的砲口差，飛幾步之內接回真正的彈道
   const skinOf = i => { const s = host.skins && host.skins()[i]; return SKINS.includes(s) ? s : SKINS[i % 2 ? 2 : 0]; };
   const L = () => LOOK[shown && shown.site] || LOOK.grass;
 
@@ -126,6 +130,18 @@
   function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
   const groundY = x => { const v = TK.gAt(V.g, x); return v >= TK.VOID - 1 ? H + 60 : v; };
   const tankCenter = i => [V.T[i].x, V.T[i].y - 16];
+  /* 某一台坦克在 x、角度 a 時，畫面上的砲管轉軸和砲口（跟 drawTank 同一套算法） */
+  function barrelAt(i, x, a) {
+    const sk = skinOf(i), g = V4[sk], s = TANK_WW / BODY_W, P = g ? g.p : PORT[sk], bot = g ? g.bot : BODY_BOTTOM, rad = a * Math.PI / 180, face = Math.cos(rad) >= 0 ? 1 : -1, tilt = slope(x) * .8;
+    const lx = (P[0] - BODY_W / 2) * s * face, ly = (P[1] - bot) * s, y0 = groundY(x) + 1;
+    const px = x + lx * Math.cos(tilt) - ly * Math.sin(tilt), py = y0 + lx * Math.sin(tilt) + ly * Math.cos(tilt);
+    const L = (MUZ_X[sk] - (g ? g.piv[0] : BAR_PIV[0])) * s * (g ? g.k : BAR_K);
+    return { px, py, mx: px + L * Math.cos(rad), my: py - L * Math.sin(rad) };
+  }
+  const blendK = i => { const k = 1 - i / BLEND; return k > 0 ? k * k : 0; };
+  /* 預覽的彈道點：第一點放到砲口，之後慢慢接回真正的彈道 */
+  function fromMuzzle(pts, i, x, a) { if (!pts.length) return pts; const B = barrelAt(i, x, a), dx = B.mx - pts[0][0], dy = B.my - pts[0][1]; return pts.map(([X, Y], n) => [X + dx * blendK(n), Y + dy * blendK(n)]); }
+  const shellXY = s => { const f = s.mzx != null ? blendK(s.t / TK.SUB) : 0; return [s.x + (s.mzx || 0) * f, s.y + (s.mzy || 0) * f]; };   // mzx、mzy 只給畫面用（tank.js 的 dx、dy 是鑽地彈的彈道，不能共用）
   const slope = x => Math.atan2(groundY(x + 14) - groundY(x - 14), 28);
   const angTxt = a => a < 90 ? `${a}°▶` : a > 90 ? `◀${180 - a}°` : '▲90°';
   const cur = () => host.state() || {};
@@ -219,10 +235,10 @@
       T.a = tA; aim[A.side].a = tA; aim[A.side].p = A.m.p; aim[A.side].w = A.m.w; aim[A.side].f = tA < 90 ? 1 : tA > 90 ? -1 : aim[A.side].f;
       A.ph = 'fly'; A.t = 0;
       A.F = TK.launch(A.pre, V.g, A.side, T.x, A.m.a, A.m.p, A.m.w); A.F.crates = V.crates.map(c => ({ ...c }));
-      shells = A.F.sh; shells.forEach(s => s.trail = []);
+      shells = A.F.sh; { const B = barrelAt(A.side, T.x, A.m.a), r = A.m.a * Math.PI / 180, dx = B.mx - (T.x + 26 * Math.cos(r)), dy = B.my - (groundY(T.x) - 16 - 26 * Math.sin(r)); shells.forEach(s => { s.trail = []; s.mzx = dx; s.mzy = dy; }); }
       lastShot[A.side] = { x: T.x, a: A.m.a, p: A.m.p };
-      snd.fire(); const [cx, cy] = tankCenter(A.side), ang = A.m.a * Math.PI / 180;
-      for (let i = 0; i < 10; i++)parts.push({ x: cx + 30 * Math.cos(ang), y: cy - 30 * Math.sin(ang), vx: Math.cos(ang) * (2 + Math.random() * 3) + (Math.random() - .5), vy: -Math.sin(ang) * (2 + Math.random() * 3) + (Math.random() - .5), life: 25, max: 25, r: 6 + Math.random() * 6, c: 'smoke' });
+      snd.fire(); const Bf = barrelAt(A.side, T.x, A.m.a), ang = A.m.a * Math.PI / 180;
+      for (let i = 0; i < 10; i++)parts.push({ x: Bf.mx, y: Bf.my, vx: Math.cos(ang) * (2 + Math.random() * 3) + (Math.random() - .5), vy: -Math.sin(ang) * (2 + Math.random() * 3) + (Math.random() - .5), life: 25, max: 25, r: 6 + Math.random() * 6, c: 'smoke' });
       T.kick = 8; return;
     }
     if (A.ph === 'fly') {
@@ -234,7 +250,7 @@
         shells = A.F.sh;
         for (const r of hits) { const e = A.m.imp[A.ii]; if (!e) continue; A.ii++; boom(e, A.m.w, r.s.sub, A); }
       }
-      for (const s of A.F.sh) if (s.live && s.t % 3 === 0) { (s.trail = s.trail || []).push([s.x, s.y]); if (s.trail.length > 26) s.trail.shift(); }
+      for (const s of A.F.sh) if (s.live && s.t % 3 === 0) { (s.trail = s.trail || []).push(shellXY(s)); if (s.trail.length > 26) s.trail.shift(); }
       if (!A.F.sh.some(s => s.live)) { while (A.ii < A.m.imp.length) boom(A.m.imp[A.ii++], A.m.w, A.m.w === 'c', A); A.ph = 'settle'; A.t = 0; }
       else if (A.t > 60 * 18) A.F.sh.forEach(s => s.live = false);
       return;
@@ -403,7 +419,7 @@
       const s = TANK_WW / BODY_W, P = g ? g.p : PORT[sk], bot = g ? g.bot : BODY_BOTTOM, bh = body.naturalHeight / body.naturalWidth * BODY_W * s;
       c.save(); c.scale(face, 1); if (dead) c.globalAlpha = .55;
       /* 砲管：圓軸中心對準砲塔接口，跟著角度轉（朝左時整台鏡射） */
-      const la = (face > 0 ? t.a : 180 - t.a) * Math.PI / 180;
+      const la = (face > 0 ? t.a : 180 - t.a) * Math.PI / 180 + face * tilt;   // 整台車跟著地形斜，砲管要轉回來，指的方向才等於瞄準角度
       const barrel = () => { c.save(); c.translate((P[0] - BODY_W / 2) * s, (P[1] - bot) * s); c.rotate(-la); const bs = s * (g ? g.k : BAR_K), pv = g ? g.piv : BAR_PIV, bw = g ? g.w : BAR_W, bh2 = g ? g.h : BAR_H; c.drawImage(bar, -pv[0] * bs, -pv[1] * bs, bw * bs, bh2 * bs); c.restore(); };
       if (!g) barrel();                                  // 基本款：砲管根部藏在車身後面
       c.drawImage(body, -BODY_W / 2 * s, -bot * s, BODY_W * s, bh);
@@ -439,10 +455,10 @@
   function drawAim(c) {
     if (anim || shown.over || pendingFire || !host.canAct()) return;
     const s = shown.turn, A = aim[s];
-    const Ls = lastShot[s]; if (Ls) { const pts = TK.preview(shown, s, Ls.x, Ls.a, Ls.p, 400); c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 2; c.setLineDash([3, 7]); c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); c.setLineDash([]); }
-    const pts = TK.preview(shown, s, drive.x, A.a, A.p, 24);
+    const Ls = lastShot[s]; if (Ls) { const pts = fromMuzzle(TK.preview(shown, s, Ls.x, Ls.a, Ls.p, 400), s, Ls.x, Ls.a); c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 2; c.setLineDash([3, 7]); c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); c.setLineDash([]); }
+    const pts = fromMuzzle(TK.preview(shown, s, drive.x, A.a, A.p, 24), s, drive.x, A.a);
     pts.forEach(([x, y], i) => { if (i % 2) return; c.fillStyle = `rgba(255,255,255,${.95 - i / pts.length * .7})`; c.beginPath(); c.arc(x, y, 4.6 - i / pts.length * 2, 0, 7); c.fill(); c.strokeStyle = 'rgba(0,0,0,.25)'; c.lineWidth = 1; c.stroke(); });
-    const cx = drive.x, cy = groundY(drive.x) - 20, a1 = -A.a * Math.PI / 180, base = A.a <= 90 ? 0 : -Math.PI;
+    const Bp = barrelAt(s, drive.x, A.a), cx = Bp.px, cy = Bp.py, a1 = -A.a * Math.PI / 180, base = A.a <= 90 ? 0 : -Math.PI;
     c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 3; c.beginPath(); c.arc(cx, cy, 52, Math.min(a1, base), Math.max(a1, base)); c.stroke();
     c.font = `900 22px ${FONT}`; c.textAlign = 'center'; const lx = cx + 76 * Math.cos(a1), ly = cy + 76 * Math.sin(a1);
     const tx = Math.min(90, A.a <= 90 ? A.a : 180 - A.a) + '°';
@@ -452,13 +468,14 @@
     for (const s of shells) {
       if (s.trail && s.trail.length) { for (let i = 0; i < s.trail.length; i++) { const [x, y] = s.trail[i], k = i / s.trail.length; c.fillStyle = `rgba(255,255,255,${k * .55})`; c.beginPath(); c.arc(x, y, 1 + k * 4, 0, 7); c.fill(); } }
       if (!s.live) continue;
+      const [X, Y] = shellXY(s);
       const w = anim && anim.m.w, bg = w === 's', r = bg ? 9 : (w === 't' || s.sub) ? 5 : 7;
-      if (bg) { const gl = c.createRadialGradient(s.x, s.y, 0, s.x, s.y, 26); gl.addColorStop(0, 'rgba(255,200,80,.9)'); gl.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gl; c.beginPath(); c.arc(s.x, s.y, 26, 0, 7); c.fill(); }
+      if (bg) { const gl = c.createRadialGradient(X, Y, 0, X, Y, 26); gl.addColorStop(0, 'rgba(255,200,80,.9)'); gl.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 26, 0, 7); c.fill(); }
       const col = { s: '#7c2d12', b: '#ea580c', c: '#d6336c', d: '#868e96', w: '#8b5a2b', p: '#7048e8' }[w] || '#1f2937';
-      c.fillStyle = s.sub ? ['#f59f00', '#1c7ed6', '#2f9e44', '#e03131', '#7048e8'][s.k % 5] : col; c.beginPath(); c.arc(s.x, s.y, r, 0, 7); c.fill();
-      if (w === 'p') { c.strokeStyle = '#e5dbff'; c.lineWidth = 2; c.beginPath(); c.arc(s.x, s.y, r + 4 + Math.sin(performance.now() / 80) * 2, 0, 7); c.stroke(); }
-      if (s.drill > 0) dust(s.x, s.y, 1);
-      c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(s.x - r * .35, s.y - r * .35, r * .35, 0, 7); c.fill();
+      c.fillStyle = s.sub ? ['#f59f00', '#1c7ed6', '#2f9e44', '#e03131', '#7048e8'][s.k % 5] : col; c.beginPath(); c.arc(X, Y, r, 0, 7); c.fill();
+      if (w === 'p') { c.strokeStyle = '#e5dbff'; c.lineWidth = 2; c.beginPath(); c.arc(X, Y, r + 4 + Math.sin(performance.now() / 80) * 2, 0, 7); c.stroke(); }
+      if (s.drill > 0) dust(X, Y, 1);
+      c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(X - r * .35, Y - r * .35, r * .35, 0, 7); c.fill();
     }
   }
   function drawParts(c, dt) {
