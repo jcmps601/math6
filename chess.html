@@ -589,14 +589,14 @@ async function openPick(){if(!inPlat()||!P.seats)return;if(!hasTicket())return m
   const L=$('#pickList');L.innerHTML='讀取中…';$('#pick').classList.add('on');
   let on={};try{on=await P.online()}catch(e){}
   L.innerHTML='';P.seats().filter(s=>s!==P.seat()).forEach(s=>{const b=document.createElement('button');const live=!!on[s];
-    b.className=live?'on':'';b.textContent=s>=98?'🧪 測試'+(s===99?1:2):P.seatName(s);b.dataset.s=s;b.disabled=!live;b.title=live?'在線上':'不在線上';b.onclick=()=>invite(s);L.appendChild(b)});
-  if(!L.children.length)L.textContent='現在沒有其他同學'}
+    b.className=live?'on':'';b.textContent=s>=98?'🧪 測試'+(s===99?1:2):P.seatName(s);b.dataset.s=s;b.disabled=!live;b.title=live?'在線上':'不在線上';const cd=P.invCool(s);if(cd&&live&&!false){b.disabled=true;b.className='';b.textContent+='⏳';b.dataset.cd=cd;b.title='剛邀請過，等一下才能再邀請'}b.onclick=()=>invite(s);L.appendChild(b)});
+  P.invNote(L);if(!L.children.length)L.textContent='現在沒有其他同學'}
 $('#pickX').onclick=()=>$('#pick').classList.remove('on');
 $('#bInv').onclick=openPick;
 async function invite(s){$('#pick').classList.remove('on');await $('#bNew').onclick();if(!G.pin||G.mode!=='net')return;
-  try{await P.invite(s,G.pin,G.type);G.inv=s;$('#waitNote').textContent=`已經邀請 ${P.seatName(s)}，等他按「接受」…`;$('#invMsg').textContent=''}catch(e){$('#invMsg').textContent='邀請送不出去，請檢查網路'}
+  try{await P.invite(s,G.pin,G.type);G.inv=s;$('#waitNote').textContent=`已經邀請 ${P.seatName(s)}，等他按「接受」…`;$('#invMsg').textContent=''}catch(e){$('#invMsg').textContent=P.invErr(e)}
   G.un.push(Net.on(`rooms/${G.pin}/dec`,v=>{if(!v||!$('#wait').classList.contains('on'))return;G.inv=0;
-    $('#invMsg').textContent=v.why==='noticket'?`${P.seatName(v.s)} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${P.seatName(v.s)} 正在跟別人下棋，等一下再邀請`:`${P.seatName(v.s)} 說下次再玩`}))}
+    $('#invMsg').textContent=P.decText(v)}))}
 setType(G.type);paintMe();paintRec();
 $('#bGarage').onclick=async()=>{if(!(inPlat()&&P.garage))return;await P.garage();paintPdOpt();paintMe()};if(inPlat()&&P.invite)$('#bInv').hidden=false;
 (async()=>{const q=new URLSearchParams(location.search);await netReady;

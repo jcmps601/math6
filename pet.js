@@ -287,7 +287,7 @@
     if (st === 2 && !o.sil && !pic) L.push(`<svg class="pal" viewBox="0 0 200 200"><defs><radialGradient id="${id}a"><stop offset=".55" stop-color="#fff7c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></radialGradient></defs><circle cx="100" cy="118" r="84" fill="url(#${id}a)"/></svg>`);
     if (!o.sil && o.k && ITEMS[o.k] && ITEMS[o.k].k === 'k') L.push(`<svg class="pal" viewBox="0 0 200 200"><g transform="${T}">${AC(o.k)}</g></svg>`);
     if (pic) L.push(`<svg class="pab" viewBox="0 0 200 200"${fil ? ` style="filter:${fil}"` : ''}><ellipse cx="100" cy="186" rx="${q ? Math.min(78, (q[11] - q[10]) * .36).toFixed(1) : 60}" ry="7" fill="#000" opacity=".13"/><image href="${IMG}${sp}-${st}.webp" x="4" y="4" width="192" height="184" preserveAspectRatio="xMidYMax meet"/></svg>`
-      + (mood === 'sleep' ? '<span class="pmood">💤</span>' : mood === 'sad' ? '<span class="pmood">💧</span>' : ''));
+      + (mood === 'sleep' ? '<span class="pmood">💤</span>' : ''));
     else L.push(bodySVG(sp, st, o.sil ? 'ok' : mood, id, fil, T));
     if (!o.sil) {
       const fr = ['g', 'h', 'b'].filter(k => o[k] && ITEMS[o[k]] && ITEMS[o[k]].k === k).map(k => AC(o[k])).join('');

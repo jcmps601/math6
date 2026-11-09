@@ -857,7 +857,7 @@ function listen(){G.un.forEach(f=>f());G.un=[
   Net.on(`rooms/${G.pin}/live`,v=>{G.live=v||{}}),
   Net.on(`rooms/${G.pin}/w`,v=>{G.w=v||{}}),
   Net.on(`rooms/${G.pin}/dec`,v=>{if(!v||!inPlat()||Date.now()-(v.t||0)>60000)return;G.inv.delete(v.s);
-    lmsg(v.why==='noticket'?`${P.seatName(v.s)} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${P.seatName(v.s)} 正在跟別人玩，等一下再邀請`:`${P.seatName(v.s)} 說下次再玩`)})];
+    lmsg(P.decText(v))})];
   if(!G.unConn)G.unConn=Net.conn(on=>{if(on&&G.mode==='net')armPlay(1)})}
 function armPlay(force){if(G.mode!=='net'||!G.slot)return;if(G.armed===G.pin&&!force)return;G.armed=G.pin;const p=`rooms/${G.pin}/players/${G.slot}`;Net.cancelDisc(p);Net.onDiscRm(p);Net.onDiscRm(`rooms/${G.pin}/live/${G.slot}`);
   Net.get(p).then(cur=>{if(!cur&&G.mode==='net')Net.set(p,meRec())}).catch(()=>{})}
@@ -895,9 +895,9 @@ $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bJoin').onclic
 async function openPick(){if(!inPlat()||!P.seats)return;const Lp=$('#pickList');Lp.innerHTML='讀取中…';$('#pick').classList.add('on');
   let on={};try{on=await P.online()}catch(e){}
   Lp.innerHTML='';P.seats().filter(s=>s!==P.seat()).forEach(s=>{const b=document.createElement('button'),live=!!on[s];
-    b.className=G.inv.has(s)?'sent':live?'on':'';b.textContent=s>=98?'🧪 測試'+(s===99?1:2):P.seatName(s);b.disabled=!live||G.inv.has(s);
-    b.onclick=async()=>{b.disabled=true;try{await P.invite(s,G.pin,'pm');G.inv.add(s);b.className='sent';lmsg(`已經邀請 ${P.seatName(s)}，等他按「接受」…`);$('#pick').classList.remove('on')}catch(e){b.disabled=false;lmsg('邀請送不出去，請檢查網路')}};Lp.appendChild(b)});
-  if(!Lp.children.length)Lp.textContent='現在沒有其他同學在線上'}
+    b.className=G.inv.has(s)?'sent':live?'on':'';b.textContent=s>=98?'🧪 測試'+(s===99?1:2):P.seatName(s);b.disabled=!live||G.inv.has(s);const cd=P.invCool(s);if(cd&&live&&!G.inv.has(s)){b.disabled=true;b.className='';b.textContent+='⏳';b.dataset.cd=cd;b.title='剛邀請過，等一下才能再邀請'}
+    b.onclick=async()=>{b.disabled=true;try{await P.invite(s,G.pin,'pm');G.inv.add(s);b.className='sent';lmsg(`已經邀請 ${P.seatName(s)}，等他按「接受」…`);$('#pick').classList.remove('on')}catch(e){b.disabled=false;lmsg(P.invErr(e))}};Lp.appendChild(b)});
+  P.invNote(Lp);if(!Lp.children.length)Lp.textContent='現在沒有其他同學在線上'}
 $('#pickX').onclick=()=>$('#pick').classList.remove('on');
 $('#bInv2').onclick=openPick;
 $('#bInv').onclick=async()=>{if(await create()){onState();openPick()}};

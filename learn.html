@@ -423,6 +423,7 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 #xqinv .xit{font-size:1.5rem;font-weight:900;color:#8e2a20;line-height:1.3}#xqinv .xis{font-size:1rem;font-weight:800;color:#999;margin:.2rem 0 .6rem}
 #xqinv .xir{display:flex;gap:.6rem;justify-content:center}#xqinv .xir button{border:0;border-radius:16px;font:900 1.3rem 'PingFang TC','Microsoft JhengHei',sans-serif;padding:.45rem 1.2rem;background:#f1f3f5;color:#666}
 #xqinv .xir button.xok{background:#2f9e44;color:#fff;box-shadow:0 4px 0 #2b8a3e}
+#xqinv .xdnd{border:0;background:none;color:#8a7a62;font:800 1rem 'PingFang TC','Microsoft JhengHei',sans-serif;margin-top:.45rem;padding:.25rem .6rem;text-decoration:underline}
 #xqcard .xi{flex:1;min-width:12rem}#xqcard .xr{font-size:1.15rem;font-weight:800;color:#7a5a32;margin-top:.25rem}#xqcard .xr b{color:#c0392b}
 #xqcard .xbtns{display:flex;gap:.5rem;flex-wrap:wrap;margin-left:auto}#xqcard .xbtns .go{margin:0}
 @media (max-width:760px){#xqcard{flex-wrap:wrap}#xqcard .xbtns{width:100%;margin-left:0}#xqcard .xbtns .go{flex:1 1 40%;font-size:1.15rem}}#xqcard .go.gray{background:#868e96;box-shadow:0 4px 0 #495057}
@@ -1669,7 +1670,8 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const xc=el('button','go xparty xcoop'+(coOK?'':' soon'),'<img class="ico bi" src="img/co/ui-invite.webp" alt="" draggable="false">雙人合作過關<small>'+(COOP_OPEN?'一起闖關':'準備中')+'</small>');
   tap(xc,()=>{if(coOK)openTool({...XQ_TOOL,f:'coop.html'});else toast('雙人合作過關還在準備中，關卡做多一點就開放！')});
   const xg=el('button','go xgar',`<img class="ico bi" src="img/game/tank-ui-garage-v2.webp" alt="" draggable="false">坦克車庫<small>${TANK_SKINS[tankSkin()].n}</small>`);tap(xg,()=>garage().then(()=>render()));
-  [xv,xb,xa,xp,xm,xc,xg].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
+  const dn=invDnd(),xd=el('button','go xgar',dn>0?`🔕 暫停邀請中<small>剩 ${invMin(dn)} 分・按我打開</small>`:'🔔 接受邀請中<small>按我暫停 40 分</small>');tap(xd,()=>{const off=invDnd()>0;invSetDnd(!off);toast(off?'🔔 可以收到同學的邀請了':'🔕 接下來 40 分鐘不會收到邀請');render()});
+  [xv,xb,xa,xp,xm,xc,xg,xd].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜<small>（下滿 ${WR_MIN} 局才上榜）</small>`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
@@ -1757,7 +1759,19 @@ async function presence(){clearInterval(onT);if(!user)return;const s=user.seat;
     try{onRef=db.ref(`${ROOT}/on/${s}`);await onRef.set(Date.now());if(onRef.onDisconnect)onRef.onDisconnect().remove()}catch(e){}resolveXqPending()};
   beat();onT=setInterval(beat,30000)}
 function presenceOff(){clearInterval(onT);try{if(onRef)onRef.remove()}catch(e){}onRef=null}
-async function sendInv(to,pin,g){if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:Date.now(),g:GK(g)}),8000)}
+/* 不讓邀請變成騷擾（兩邊都擋：發的人有冷卻時間，收的人的平板也會自己擋）
+   發邀請：同一個人 INV_GAP 內只能邀一次；INV_WIN 內全部最多邀 INV_MAX 次（重新整理也算，記在這台平板）。
+   收邀請：正在練習題目不跳出來；按「下次再說」之後 INV_NO 內不再跳出同一個人的邀請；同一個人 INV_WIN 內最多跳 INV_POP 次；
+   也可以自己按「暫停邀請」INV_DND（邀請視窗、遊戲頁都能按）。被擋下來的邀請會自動回覆，邀請的人看得到原因。 */
+const INV_GAP=3*60*1000,INV_WIN=10*60*1000,INV_MAX=6,INV_NO=10*60*1000,INV_POP=3,INV_DND=40*60*1000;
+const invsKey=()=>'learn601_invs_'+user.seat,invmKey=()=>'learn601_invm_'+user.seat,dndKey=()=>'learn601_invd_'+user.seat,invMin=ms=>Math.ceil(ms/60000);
+function invSent(){const c=Date.now()-INV_WIN;return LS.get(invsKey(),[]).filter(x=>x.t>c)}
+function invCool(to){if(!user)return 0;const L=invSent(),now=Date.now(),m=L.filter(x=>x.s===+to).pop();let w=m?m.t+INV_GAP-now:0;if(L.length>=INV_MAX)w=Math.max(w,L[L.length-INV_MAX].t+INV_WIN-now);return Math.max(0,w)}
+function invErr(e){return e&&e.cool?`邀請太多次了，${invMin(e.cool)} 分鐘後才能再邀請`:'邀請送不出去，請檢查網路'}
+function invNote(L){const ms=[...L.querySelectorAll('[data-cd]')].map(b=>+b.dataset.cd);if(!ms.length)return;const d=L.ownerDocument.createElement('div');d.style.cssText='grid-column:1/-1;align-self:center;font-weight:800;font-size:1rem;color:#b7791f;text-align:center';d.textContent=`有 ⏳ 的同學，最多再等 ${invMin(Math.max(...ms))} 分鐘才能邀請`;L.appendChild(d)}
+function invDecText(v){const n=seatName(v.s);return v.why==='noticket'?`${n} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${n} 正在跟別人玩，等一下再邀請`:v.why==='study'?`${n} 正在練習題目，等練完再邀請`:v.why==='cool'?`${n} 現在不方便，過一陣子再邀請`:v.why==='dnd'?`${n} 現在不接受邀請`:`${n} 說下次再玩`}
+async function sendInv(to,pin,g){const w=invCool(to);if(w>0)throw Object.assign(new Error('cool'),{cool:w});
+  if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:Date.now(),g:GK(g)}),8000);LS.set(invsKey(),[...invSent(),{s:+to,t:Date.now()}])}
 function unInv(to){try{if(db&&user)db.ref(`${ROOT}/inv/${to}/${user.seat}`).remove()}catch(e){}}
 /* 中途跑掉(按上一頁、關掉、斷線)的那一局:下棋時先記「有一局還沒下完」,下次回到平台時補記輸、補扣 1 張券 */
 const xqpKey=()=>'learn601_xqp_'+(user&&user.seat);
@@ -1784,19 +1798,29 @@ let invRef=null,invCb=null,invNow=null;
 async function listenInv(){if(invRef&&invCb)invRef.off('value',invCb);invRef=null;if(!user||!db)return;const s=user.seat;
   for(let i=0;i<20&&!(await ensureBind());i++)await new Promise(r=>setTimeout(r,3000));if(!user||user.seat!==s)return;
   invRef=db.ref(`${ROOT}/inv/${s}`);invCb=snap=>{const v=snap.val()||{},now=Date.now();
+    if(invNow){if(v[invNow.f]&&v[invNow.f].p===invNow.p)return;hideInv()}   // 正在看的邀請還在：不要被別人的邀請蓋掉，等這一個處理完再換下一個
     const list=Object.entries(v).filter(([f,x])=>x&&x.p&&now-x.t<INV_MS).sort((a,b)=>b[1].t-a[1].t);
-    if(!list.length){if(invNow&&!v[invNow.f])hideInv();return}
-    const [f,x]=list[0];if(invNow&&invNow.f===+f&&invNow.p===x.p)return;const iv={f:+f,p:x.p,t:x.t,g:GK(x.g)};
-    if(chessBusy()){invNow=iv;return declineInv('busy')}   // 正在跟別人下棋:自動回覆
+    if(!list.length)return;
+    const [f,x]=list[0],iv={f:+f,p:x.p,t:x.t,g:GK(x.g)};
+    const why=chessBusy()?'busy':invGate(+f);if(why)return bounceInv(iv,why);   // 不跳出來，自動回覆（刪掉之後會再通知一次，換下一個邀請）
+    invPop(+f);
     if(iv.g==='pm'){invNow=iv;db.ref(`rooms/${iv.p}/meta/game`).get().then(s=>{if(s.val()==='co')iv.co=1;if(invNow===iv)showInv(iv)}).catch(()=>{if(invNow===iv)showInv(iv)});return}   // 雙人合作過關也用 pm 的邀請
     showInv(iv)};
   invRef.on('value',invCb)}
+function invDnd(){return user?Math.max(0,LS.get(dndKey(),0)-Date.now()):0}
+function invSetDnd(on){if(on)LS.set(dndKey(),Date.now()+INV_DND);else LS.del(dndKey())}
+function invMuteSave(f,fn){const M=LS.get(invmKey(),{}),now=Date.now();for(const k in M)if(M[k].u<now&&!(M[k].h||[]).some(t=>t>now-INV_WIN))delete M[k];const m=M[f]||{u:0,h:[]};m.h=(m.h||[]).filter(t=>t>now-INV_WIN);fn(m,now);M[f]=m;LS.set(invmKey(),M)}
+const invPop=f=>invMuteSave(f,(m,now)=>m.h.push(now));
+const invNoMore=f=>invMuteSave(f,(m,now)=>{m.u=now+INV_NO});
+function invGate(f){if(invDnd()>0)return 'dnd';if($('#prac').classList.contains('on'))return 'study';const m=LS.get(invmKey(),{})[f],now=Date.now();return m&&(m.u>now||(m.h||[]).filter(t=>t>now-INV_WIN).length>=INV_POP)?'cool':''}
+function bounceInv(iv,why){dropInv(iv);try{db.ref(`rooms/${iv.p}/dec`).set({s:user.seat,why,t:Date.now()})}catch(e){}}
 function invBox(){let b=document.getElementById('xqinv');if(b)return b;b=el('div');b.id='xqinv';
-  b.innerHTML='<div class="xiv"><div class="xit"></div><div class="xis"></div><div class="xir"><button class="xok" id="invYes">✅ 接受</button><button class="xno" id="invNo">下次再說</button></div></div>';document.body.appendChild(b);
-  tap(b.querySelector('#invYes'),()=>acceptInv());tap(b.querySelector('#invNo'),()=>declineInv('no'));return b}
+  b.innerHTML='<div class="xiv"><div class="xit"></div><div class="xis"></div><div class="xir"><button class="xok" id="invYes">✅ 接受</button><button class="xno" id="invNo">下次再說</button></div><button class="xdnd" id="invDnd">🔕 這節課先不要邀請我</button></div>';document.body.appendChild(b);
+  tap(b.querySelector('#invYes'),()=>acceptInv());tap(b.querySelector('#invNo'),()=>{if(invNow)invNoMore(invNow.f);declineInv('no')});
+  tap(b.querySelector('#invDnd'),()=>{invSetDnd(true);declineInv('dnd');toast('🔕 接下來 40 分鐘不會收到邀請，可以到「遊戲」頁打開');if(view==='game')render()});return b}
 function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=x.co?`🤝 ${seatName(x.f)} 邀請你一起玩雙人合作過關！`:`${GAMES[x.g].i} ${seatName(x.f)} 邀請你${GAMES[x.g].v}${GAMES[x.g].n}！`;
   b.querySelector('.xis').textContent=x.co?'接受就會直接進到房間（開始時兩個人各用 1 張遊戲券）':(GAMES[x.g].many?'接受就會直接進到房間，大家到齊就開打':'接受就會直接進到棋盤')+'（輸的人用掉 1 張遊戲券，贏了不用）';b.classList.add('on');try{sfx.ok()}catch(e){}
-  clearTimeout(showInv.t);showInv.t=setTimeout(()=>{if(invNow===x)hideInv()},Math.max(5000,INV_MS-(Date.now()-x.t)))}
+  clearTimeout(showInv.t);showInv.t=setTimeout(()=>{if(invNow===x){hideInv();dropInv(x)}},Math.max(5000,INV_MS-(Date.now()-x.t)))}
 function hideInv(){invNow=null;const b=document.getElementById('xqinv');if(b)b.classList.remove('on')}
 function dropInv(x){try{db.ref(`${ROOT}/inv/${user.seat}/${x.f}`).remove()}catch(e){}}
 function declineInv(why){const x=invNow;if(!x)return;hideInv();dropInv(x);try{db.ref(`rooms/${x.p}/dec`).set({s:user.seat,why,t:Date.now()})}catch(e){}}
@@ -1842,7 +1866,7 @@ window.__learn601={
   isTest:()=>!!user&&isTest(user.seat),
   /* 象棋:戰績、邀請 */
   xqResult:r=>xqResult(r), xqStats:t=>xqStats(t), online:()=>onlineSeats(), seats:()=>allSeats(), seatName:s=>seatName(s),
-  invite:(to,pin,g)=>sendInv(to,pin,g), uninvite:to=>unInv(to), xqPending:p=>xqPending(p),
+  invite:(to,pin,g)=>sendInv(to,pin,g), uninvite:to=>unInv(to), xqPending:p=>xqPending(p), invCool:to=>invCool(to), invErr:e=>invErr(e), decText:v=>invDecText(v), invNote:L=>invNote(L),
   /* 大砲遊戲：坦克造型、打開車庫 */
   tankSkin:()=>tankSkin(), garage:()=>garage(),
   left:()=>playLeft(),
