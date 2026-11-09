@@ -226,12 +226,12 @@
   /* ───────── 配件：k 部位（h 帽子、g 眼鏡、k 脖子、b 背後），lv 最高等級要到幾級才能買，p 價錢 ───────── */
   const ITEMS = {
     bow: { k: 'h', n: '蝴蝶結', lv: 1, p: 20 }, flower: { k: 'h', n: '小花', lv: 2, p: 30 }, cap: { k: 'h', n: '棒球帽', lv: 3, p: 45 }, party: { k: 'h', n: '派對帽', lv: 4, p: 55 },
-    beret: { k: 'h', n: '畫家帽', lv: 5, p: 65 }, tophat: { k: 'h', n: '紳士帽', lv: 8, p: 100 }, magic: { k: 'h', n: '魔法師帽', lv: 11, p: 140 }, chef: { k: 'h', n: '廚師帽', lv: 14, p: 170 },
-    crown: { k: 'h', n: '皇冠', lv: 18, p: 250 }, helmet: { k: 'h', n: '太空頭盔', lv: 22, p: 300 }, halo: { k: 'h', n: '天使光環', lv: 25, p: 350 }, grad: { k: 'h', n: '學士帽', lv: 30, p: 500 },
-    round: { k: 'g', n: '圓眼鏡', lv: 2, p: 30 }, heart: { k: 'g', n: '愛心眼鏡', lv: 4, p: 50 }, sun: { k: 'g', n: '墨鏡', lv: 6, p: 80 }, star: { k: 'g', n: '星星眼鏡', lv: 9, p: 120 }, goggle: { k: 'g', n: '潛水鏡', lv: 16, p: 200 },
-    grass: { k: 'k', n: '小花草地', lv: 1, p: 20 }, petal: { k: 'k', n: '花瓣圈', lv: 3, p: 40 }, cloud: { k: 'k', n: '軟軟雲朵', lv: 5, p: 60 }, heartp: { k: 'k', n: '愛心光圈', lv: 10, p: 130 },
-    starring: { k: 'k', n: '星星光圈', lv: 17, p: 220 }, rainbowc: { k: 'k', n: '彩虹雲', lv: 24, p: 320 },
-    balloon: { k: 'b', n: '彩色氣球', lv: 8, p: 110 }, butterfly: { k: 'b', n: '小蝴蝶', lv: 12, p: 160 }, starkid: { k: 'b', n: '小星星精靈', lv: 15, p: 200 }, rocketm: { k: 'b', n: '迷你火箭', lv: 20, p: 280 }, moon: { k: 'b', n: '月亮小夥伴', lv: 27, p: 400 }
+    beret: { k: 'h', n: '畫家帽', lv: 5, p: 65 }, tophat: { k: 'h', n: '紳士帽', lv: 8, p: 120 }, magic: { k: 'h', n: '魔法師帽', lv: 11, p: 180 }, chef: { k: 'h', n: '廚師帽', lv: 14, p: 240 },
+    crown: { k: 'h', n: '皇冠', lv: 18, p: 400 }, helmet: { k: 'h', n: '太空頭盔', lv: 22, p: 550 }, halo: { k: 'h', n: '天使光環', lv: 25, p: 700 }, grad: { k: 'h', n: '學士帽', lv: 30, p: 1000 },
+    round: { k: 'g', n: '圓眼鏡', lv: 2, p: 30 }, heart: { k: 'g', n: '愛心眼鏡', lv: 4, p: 50 }, sun: { k: 'g', n: '墨鏡', lv: 6, p: 80 }, star: { k: 'g', n: '星星眼鏡', lv: 9, p: 150 }, goggle: { k: 'g', n: '潛水鏡', lv: 16, p: 300 },
+    grass: { k: 'k', n: '小花草地', lv: 1, p: 20 }, petal: { k: 'k', n: '花瓣圈', lv: 3, p: 40 }, cloud: { k: 'k', n: '軟軟雲朵', lv: 5, p: 60 }, heartp: { k: 'k', n: '愛心光圈', lv: 10, p: 170 },
+    starring: { k: 'k', n: '星星光圈', lv: 17, p: 350 }, rainbowc: { k: 'k', n: '彩虹雲', lv: 24, p: 650 },
+    balloon: { k: 'b', n: '彩色氣球', lv: 8, p: 130 }, butterfly: { k: 'b', n: '小蝴蝶', lv: 12, p: 210 }, starkid: { k: 'b', n: '小星星精靈', lv: 15, p: 300 }, rocketm: { k: 'b', n: '迷你火箭', lv: 20, p: 500 }, moon: { k: 'b', n: '月亮小夥伴', lv: 27, p: 800 }
   };
   /* 限定配件：今日願望一週集滿 5 顆愛心才拿得到，商店不賣。圖是 img/pet/acc-代號.webp；戴的位置和 base 那個配件一樣 */
   const LIM = [['lbow', 'bow', '薄荷蝴蝶結'], ['lflower', 'flower', '海風小花'], ['lcap', 'cap', '莓果棒球帽'], ['lparty', 'party', '藍天派對帽'], ['lberet', 'beret', '森林畫家帽'], ['ltophat', 'tophat', '星夜紳士帽'], ['lcrown', 'crown', '海洋皇冠']];
@@ -242,12 +242,12 @@
   /* 異色：在原本的樣子上套一層色調（每隻寵物各自買，等級看這隻寵物） */
   const XS = [
     { n: '原色', f: '', lv: 1, p: 0, c: '#dee2e6' },
-    { n: '晨曦', f: 'hue-rotate(-28deg) saturate(1.25)', lv: 10, p: 80, c: '#ff9f80' },
-    { n: '薄荷', f: 'hue-rotate(80deg) saturate(1.05)', lv: 15, p: 150, c: '#63e6be' },
-    { n: '夜空', f: 'hue-rotate(205deg) saturate(.95) brightness(.96)', lv: 20, p: 220, c: '#748ffc' },
-    { n: '閃亮金', f: 'sepia(.6) saturate(2.2) hue-rotate(-12deg) brightness(1.08)', lv: 25, p: 300, c: '#fcc419' }
+    { n: '晨曦', f: 'hue-rotate(-28deg) saturate(1.25)', lv: 10, p: 100, c: '#ff9f80' },
+    { n: '薄荷', f: 'hue-rotate(80deg) saturate(1.05)', lv: 15, p: 200, c: '#63e6be' },
+    { n: '夜空', f: 'hue-rotate(205deg) saturate(.95) brightness(.96)', lv: 20, p: 350, c: '#748ffc' },
+    { n: '閃亮金', f: 'sepia(.6) saturate(2.2) hue-rotate(-12deg) brightness(1.08)', lv: 25, p: 500, c: '#fcc419' }
   ];
-  const ROOMS = [{ id: 'home', n: '溫馨小房間', lv: 1, p: 0 }, { id: 'meadow', n: '草原', lv: 7, p: 100 }, { id: 'beach', n: '海邊', lv: 14, p: 180 }, { id: 'space', n: '星空', lv: 20, p: 260 }];
+  const ROOMS = [{ id: 'home', n: '溫馨小房間', lv: 1, p: 0 }, { id: 'meadow', n: '草原', lv: 7, p: 150 }, { id: 'beach', n: '海邊', lv: 14, p: 300 }, { id: 'space', n: '星空', lv: 20, p: 500 }];
   const FOODS = [
     { id: 'apple', i: '🍎', n: '蘋果', p: 3, f: 20, j: 0 },
     { id: 'rice', i: '🍙', n: '飯糰', p: 6, f: 35, j: 0 },

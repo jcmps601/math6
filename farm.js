@@ -9,15 +9,15 @@
   /* ───────── 作物 ───────── p 種子價錢、m 幾分鐘長大、w 要澆幾次水、y 收成幾個、s 一個賣多少、xp 經驗、lv 農場幾級才能種 */
   const CROPS = {
     cabbage: { n: '小白菜', lv: 1, p: 2, m: 3, w: 1, y: 3, s: 1, xp: 2, c: '#8ce99a' },
-    carrot: { n: '紅蘿蔔', lv: 1, p: 3, m: 10, w: 1, y: 4, s: 1, xp: 3, c: '#69db7c' },
+    carrot: { n: '紅蘿蔔', lv: 1, p: 3, m: 10, w: 1, y: 5, s: 1, xp: 3, c: '#69db7c' },
     strawberry: { n: '草莓', lv: 2, p: 5, m: 20, w: 2, y: 5, s: 2, xp: 5, c: '#51cf66' },
-    tomato: { n: '番茄', lv: 3, p: 6, m: 30, w: 2, y: 5, s: 2, xp: 6, c: '#40c057' },
+    tomato: { n: '番茄', lv: 3, p: 6, m: 30, w: 2, y: 6, s: 2, xp: 6, c: '#40c057' },
     corn: { n: '玉米', lv: 4, p: 8, m: 60, w: 2, y: 5, s: 3, xp: 8, c: '#94d82d' },
     eggplant: { n: '茄子', lv: 5, p: 10, m: 90, w: 2, y: 6, s: 3, xp: 10, c: '#51cf66' },
-    sunflower: { n: '向日葵', lv: 6, p: 12, m: 120, w: 3, y: 4, s: 5, xp: 12, c: '#69db7c' },
+    sunflower: { n: '向日葵', lv: 6, p: 12, m: 120, w: 3, y: 4, s: 6, xp: 12, c: '#69db7c' },
     pumpkin: { n: '南瓜', lv: 7, p: 15, m: 240, w: 3, y: 3, s: 9, xp: 16, c: '#40c057' },
-    watermelon: { n: '西瓜', lv: 8, p: 18, m: 360, w: 3, y: 3, s: 12, xp: 20, c: '#37b24d' },
-    grape: { n: '葡萄', lv: 10, p: 25, m: 480, w: 3, y: 6, s: 8, xp: 26, c: '#40c057' }
+    watermelon: { n: '西瓜', lv: 8, p: 22, m: 360, w: 3, y: 3, s: 12, xp: 20, c: '#37b24d' },
+    grape: { n: '葡萄', lv: 10, p: 27, m: 480, w: 3, y: 6, s: 7, xp: 26, c: '#40c057' }
   };
   const CK = Object.keys(CROPS);
   const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = 30, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 3, STEAL_PER_PLOT = 1, STEAL_WAIT = 60 * 60000;

@@ -1842,9 +1842,9 @@ function acceptInv(){const x=invNow;if(!x)return;
    買過的存在 sum.tks = {own:{代號:1}, use:正在用的, u:時間}，跟著摘要同步。測試帳號全部免費。
    對戰時，造型代號寫在房間的玩家資料（skin），同學看得到你的坦克。 */
 const TANK_SKINS={forest:{n:'森林嫩葉',p:0,t:0},desert:{n:'暖金沙丘',p:150,t:0},glacier:{n:'冰藍山嶺',p:150,t:0},ember:{n:'珊瑚烈焰',p:150,t:0},volt:{n:'青綠閃電',p:150,t:0},nebula:{n:'紫夜星辰',p:150,t:0},
-  rhino:{n:'鐵角犀衛',p:450,t:1,v:4},falcon:{n:'疾風獵鷹',p:450,t:1,v:4},tortoise:{n:'森甲巨龜',p:450,t:1,v:4},
-  stormwolf:{n:'雷霆天狼',p:1000,t:2,v:4},auroracorn:{n:'極光獨角獸',p:1000,t:2,v:4},abyssshark:{n:'深海巨鯊',p:1000,t:2,v:4},
-  solardragon:{n:'曜日龍皇',p:2000,t:3,v:4},phoenix:{n:'熾天鳳凰',p:2000,t:3,v:4},astraltemple:{n:'星穹聖殿',p:2000,t:3,v:4}};
+  rhino:{n:'鐵角犀衛',p:600,t:1,v:4},falcon:{n:'疾風獵鷹',p:600,t:1,v:4},tortoise:{n:'森甲巨龜',p:600,t:1,v:4},
+  stormwolf:{n:'雷霆天狼',p:1500,t:2,v:4},auroracorn:{n:'極光獨角獸',p:1500,t:2,v:4},abyssshark:{n:'深海巨鯊',p:1500,t:2,v:4},
+  solardragon:{n:'曜日龍皇',p:3500,t:3,v:4},phoenix:{n:'熾天鳳凰',p:3500,t:3,v:4},astraltemple:{n:'星穹聖殿',p:3500,t:3,v:4}};
 const TANK_TIER=['基本','進階','史詩','傳說'],TK_OLD={ember:300,volt:300,nebula:500};
 /* 調價退差額：以前用較高價買的，坦克保留、差額退回金幣。
    退的總額直接寫成帳本裡固定的一格（cl.e.tkrf），兩台平板各算一次也只會是同一個數字，不會重複退。 */
