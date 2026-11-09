@@ -1909,7 +1909,7 @@ addEventListener('popstate',()=>{if(vt){
 /* ===================== 計算紙 =====================
    題目卡片上蓋一層透明畫布,學生可以用平板的筆直接在題目上計算。
    用過筆之後,手指和手掌碰到不會畫(防誤觸);「停止畫筆」可以關掉畫筆,回到用手點按;換題會自動清空。 */
-const SCR={on:LS.get('learn601_draw',true),pen:'b',strokes:[],cur:null,penSeen:false};
+const SCR={on:LS.get('learn601_draw',true),pen:'b',strokes:[],cur:null,penSeen:false,long:false};
 const scrCv=$('#scr'),scrCx=scrCv.getContext('2d');
 function scrFit(){const f=$('#figc'),w=f.clientWidth,h=f.clientHeight,d=Math.min(2,devicePixelRatio||1);
   if(scrCv.width!==Math.round(w*d)||scrCv.height!==Math.round(h*d)){scrCv.width=Math.round(w*d);scrCv.height=Math.round(h*d)}
@@ -1926,7 +1926,7 @@ function scrLine(st){const P=st.p;if(!P.length)return;scrCx.globalCompositeOpera
   for(let i=1;i<P.length;i++){scrCx.beginPath();scrCx.lineWidth=st.w*(P[i-1][2]+P[i][2])/2;scrCx.moveTo(P[i-1][0],P[i-1][1]);scrCx.lineTo(P[i][0],P[i][1]);scrCx.stroke()}}
 function scrDraw(){scrCx.clearRect(0,0,scrCv.width,scrCv.height);SCR.strokes.forEach(scrLine);scrCx.globalCompositeOperation='source-over'}
 function scrClear(){SCR.strokes=[];SCR.cur=null;scrDraw()}
-function scrPaint(){$('#figc').classList.toggle('nodraw',!SCR.on||SCR.long);$('#pens').querySelectorAll('button').forEach(b=>b.classList.toggle('on',SCR.on&&b.dataset.p===SCR.pen))}
+function scrPaint(){$('#figc').classList.toggle('nodraw',!SCR.on||!!SCR.long);$('#pens').querySelectorAll('button').forEach(b=>b.classList.toggle('on',SCR.on&&b.dataset.p===SCR.pen))}
 const scrPt=e=>{const r=scrCv.getBoundingClientRect(),pr=e.pointerType==='pen'&&e.pressure>0?.55+e.pressure*.9:1;return [e.clientX-r.left,e.clientY-r.top,pr]};
 scrCv.addEventListener('pointerdown',e=>{if(!SCR.on)return;if(e.pointerType==='pen')SCR.penSeen=true;else if(e.pointerType==='touch'&&SCR.penSeen)return;   // 用過筆,手掌不畫
   e.preventDefault();try{scrCv.setPointerCapture(e.pointerId)}catch(x){}const er=SCR.pen==='e';
