@@ -148,6 +148,9 @@ const myPet=()=>{try{return inPlat()&&P.myPet?P.myPet():null}catch(e){return nul
 const hasTicket=()=>!inPlat()||isTestMe()||(P.tickets()||0)>0;
 const payTicket=()=>!inPlat()||P.useTicket('co');
 const TICKET_MS=Q.has('local')&&Q.get('tm')?+Q.get('tm')*1000:10*60*1000,GRACE_MS=Q.has('local')&&Q.get('gr')?+Q.get('gr')*1000:2*60*1000;   // 一張券玩 10 分鐘、時間到再給 2 分鐘收尾（?local 測試時可以用 tm、gr 改秒數）
+/* 付過的券記在平板上（房號＋開房時間＋第幾張＋座號），重新整理或重新加入同一個房間不會再扣一次 */
+const paidKey=pk=>pk+'_'+mySeat(),paidBefore=pk=>!!LS.get('co601_paid',{})[paidKey(pk)];
+function paidMark(pk){const m=LS.get('co601_paid',{}),t=Date.now();for(const k in m)if(t-m[k]>864e5)delete m[k];m[paidKey(pk)]=t;LS.set('co601_paid',m)}
 const NO_TK='要有 1 張遊戲券才能玩。回平台練習 10 題答對 8 題就能拿到！';
 function paintMe(){$('#me').innerHTML=`我是 <b>${myName()}</b>`+(inPlat()?`　<img class="ti" src="img/ui/rw-ticket.webp" alt="" style="width:1.4em;height:1.4em;vertical-align:-.4em">遊戲券 × ${P.tickets()||0}`:'')}
 let AC=null;function tone(f,d,type='triangle',v=.07,at=0){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+at,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
@@ -626,7 +629,7 @@ const msg=t=>{$('#msg').textContent=t||''},lmsg=t=>{$('#lmsg').textContent=t||''
 /* ═════════════ 世界 ═════════════ */
 let L=null;   // 目前的關卡：{grid, plates, doors, levers, gems, elev, spawn, exit}
 function build(i){const m=LEVELS[i].m,g=m.map(r=>r.padEnd(COLS,'.').slice(0,COLS).split(''));
-  const o={i,g,plates:[],levers:[],gems:[],elev:[],spawn:[[60,480],[100,480]],exit:[null,null]};
+  const o={i,g,plates:[],levers:[],gems:[],elev:[],spawn:[[60,480],[100,480]],exit:[null,null]};FR++;for(const k in HOLDT)delete HOLDT[k];
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const ch=g[r][c],x=c*TS,y=r*TS;
     if('xyz'.includes(ch)){o.plates.push({k:ch.toUpperCase(),c,r});g[r][c]='.'}
     else if('uv'.includes(ch)){o.levers.push({k:ch.toUpperCase(),c,r});g[r][c]='.'}
@@ -638,9 +641,17 @@ function build(i){const m=LEVELS[i].m,g=m.map(r=>r.padEnd(COLS,'.').slice(0,COLS
 const ELEV_A=3*TS,ELEV_P=5200;
 const elevY=e=>e.r*TS-ELEV_A*(.5-.5*Math.cos(((now()/ELEV_P)+e.ph)*Math.PI*2));
 /* 機關：門開了沒 */
-function pressed(k){if(!L)return false;
-  for(const p of L.plates){if(p.k!==k)continue;const px=p.c*TS,py=p.r*TS+TS-10;for(const A of bodies())if(A.x+A.w/2>px+4&&A.x-A.w/2<px+TS-4&&A.y>py-2&&A.y<=p.r*TS+TS+2)return true}
-  return false}
+/* 按鈕有沒有人踩：自己用真的位置；同學用他那台平板自己回報的（live.pl），不用猜的位置——
+   以前同學在按鈕上動一下，這邊會把他猜成跑出去，按鈕閃一下放開，過橋的人就掉下去。放開後多留 0.2 秒。 */
+const onPlate=(A,p)=>{const px=p.c*TS;return A.x+A.w/2>px+4&&A.x-A.w/2<px+TS-4&&A.y>p.r*TS+TS-12&&A.y<=p.r*TS+TS+2};
+const standOn=(A,k)=>!!A&&L.plates.some(p=>p.k===k&&onPlate(A,p));
+const myPl=()=>{let t='';if(ME&&L)for(const k of 'XYZ')if(standOn(ME,k))t+=k;return t};
+const HOLDT={};
+function pressed(k){if(!L)return false;const t=performance.now();
+  let on=standOn(ME,k);
+  if(!on){const v=pLive();if(v)on=typeof v.pl==='string'?v.pl.includes(k):standOn(other(),k)}
+  if(on){HOLDT[k]=t;return true}
+  return t-(HOLDT[k]||-1e9)<200}
 const leverOn=k=>!!(G.w&&G.w['L'+L.i+k]);
 const doorOpen=ch=>'XYZ'.includes(ch)?pressed(ch):'UV'.includes(ch)?leverOn(ch):false;
 function solidFor(ch,who){if(ch==='#')return true;if(ch==='m')return pressed('X');if(ch==='n')return pressed('Y');if(ch==='R')return who!==0;if(ch==='B')return who!==1;if('XYZUV'.includes(ch))return !doorOpen(ch);return false}
@@ -649,10 +660,17 @@ const tileAt=(c,r)=>c<0||c>=COLS||r<0||r>=ROWS?'#':L.g[r][c];
 const PW=28,PH=34;
 const bodies=()=>{const a=[];if(ME)a.push(ME);const o=other();if(o)a.push(o);return a};
 let ME=null;
-function other(){const v=G.live&&G.live[G.slot==='p0'?'p1':'p0'];if(!v||!L||v.l!==L.i)return null;const s=smooth(v);return {x:s.x,y:s.y,w:PW,h:PH,who:1-me(),f:v.f,a:v.a}}
+const pLive=()=>{const v=G.live&&G.live[G.slot==='p0'?'p1':'p0'];return v&&L&&v.l===L.i?v:null};
+/* 一個畫面只算一次（以前一個畫面裡重算很多次：平滑等於沒有，站在同學頭上也會越跟越少、滑下來） */
+let FR=0,OC=null,OCf=-1;
+function other(){if(OCf===FR)return OC;OCf=FR;return OC=other0()}
+function other0(){const v=pLive();if(!v)return null;const base={w:PW,h:PH,who:1-me(),f:v.f,a:v.a,dead:v.d?1:0};
+  /* 同學說他站在我頭上：直接畫在我頭上（跟著我真的位置，不會慢半拍） */
+  if(typeof v.rd==='number'&&ME&&!ME.dead&&Math.abs(v.rd)<=PW&&Math.abs(v.x-ME.x)<120&&Math.abs(v.y-(ME.y-PH))<60){OS.x=ME.x+v.rd;OS.y=ME.y-PH;OS.k=v.k0;return {...base,x:OS.x,y:OS.y}}
+  const s=smooth(v);return {...base,x:s.x,y:s.y}}
 /* 同學的位置：收到的是過去的，往前推一點點，再慢慢靠過去（看起來才順） */
 const OS={x:0,y:0,t:0,k:''};
-function smooth(v){const age=Math.min(.25,Math.max(0,(now()-v.t)/1000)),tx=v.x+(v.vx||0)*age,ty=v.y+(v.vy||0)*age*.5;
+function smooth(v){const age=Math.min(.1,Math.max(0,(now()-v.t)/1000)),tx=v.x+(v.vx||0)*age,ty=v.y+(v.vy||0)*age*.5;
   if(OS.k!==v.k0||Math.hypot(tx-OS.x,ty-OS.y)>120){OS.x=tx;OS.y=ty;OS.k=v.k0}else{OS.x+=(tx-OS.x)*.35;OS.y+=(ty-OS.y)*.35}return {x:OS.x,y:OS.y}}
 
 /* ═════════════ 自己的角色 ═════════════ */
@@ -698,13 +716,20 @@ function moveY(p,dy){let y=p.y+dy;
     for(let c=c0;c<=c1;c++){const r=Math.floor(y/TS);if(tileAt(c,r)==='-'&&p.y<=r*TS+1&&y>=r*TS){y=r*TS;p.vy=0;p.on=1}}
     for(const q of rects()){if(p.x+p.w/2>q.x+2&&p.x-p.w/2<q.x+q.w-2&&p.y<=q.y+6&&y>=q.y){y=q.y;p.vy=0;p.on=1;p.ride={who:q.who,x:q.x,y:q.y};if(q.who==='p'&&!p.onP)fxAdd(p.x,p.y-p.h-14,'💖')}}}
   p.y=y}
-function die(){const p=ME;p.dead=1;sfx.die();fxAdd(p.x,p.y-p.h/2,'💫');setTimeout(()=>{spawnMe();sendLive(1)},700)}
+function die(){const p=ME;p.dead=1;sfx.die();fxAdd(p.x,p.y-p.h/2,'💫');const lv=L;setTimeout(()=>{if(!L||L!==lv||ME!==p)return;spawnMe();sendLive(1)},700)}
 /* 小特效 */
 const FX=[],FXI={'✨':'gem-sparkle','💫':'stun-stars',dust:'jump-dust','💖':'coop-heart'};const fxAdd=(x,y,t)=>FX.push({x,y,t,s:now()});
 /* ═════════════ 連線：位置、機關 ═════════════ */
-let lastSend=0;
-function sendLive(force){if(G.mode!=='net'||!ME||!L)return;const t=Date.now();if(!force&&t-lastSend<80)return;lastSend=t;
-  Net.set(`rooms/${G.pin}/live/${G.slot}`,{x:Math.round(ME.x),y:Math.round(ME.y),vx:Math.round(ME.vx),vy:Math.round(ME.vy),f:ME.f,a:ME.a,l:L.i,k0:ME.k0,t:now()}).catch(()=>{})}
+let lastSend=0,lastSig='',lastPl='';
+/* 位置有變才送（每秒最多 12 次）；站著不動 0.6 秒送一次。踩上、離開按鈕馬上送。
+   pl＝我踩著哪些按鈕、rd＝我站在同學頭上時離他中心多遠、d＝我正在暈 */
+function sendLive(force){if(G.mode!=='net'||!ME||!L)return;const t=Date.now(),pl=myPl();
+  const o=ME.ride&&ME.ride.who==='p'?other():null,rd=o?Math.round(ME.x-o.x):null;
+  const v={x:Math.round(ME.x),y:Math.round(ME.y),vx:Math.round(ME.vx),vy:Math.round(ME.vy),f:ME.f,a:ME.a,l:L.i,k0:ME.k0,pl,d:ME.dead?1:0};if(rd!=null)v.rd=rd;
+  const sig=JSON.stringify(v);
+  if(!force){if(pl===lastPl&&t-lastSend<80)return;if(sig===lastSig&&t-lastSend<600)return}
+  lastSend=t;lastSig=sig;lastPl=pl;v.t=now();
+  Net.set(`rooms/${G.pin}/live/${G.slot}`,v).catch(()=>{})}
 function wset(k,v){if(G.mode==='net')Net.set(`rooms/${G.pin}/w/${k}`,v).catch(()=>{})}
 /* 過關：兩個人都站在自己的門（由開房間的人判斷） */
 function atExit(b,i){const e=L.exit[i];if(!e||!b)return false;return Math.abs(b.x-(e.c*TS+TS/2))<22&&b.y>e.r*TS&&b.y<=e.r*TS+TS+2}
@@ -782,9 +807,9 @@ function fit(){const wrap=$('#wrap'),r=wrap.getBoundingClientRect();if(!r.width)
 addEventListener('resize',fit);
 
 /* ═════════════ 遊戲迴圈 ═════════════ */
-let last=0,raf=0;
-function loop(t){raf=requestAnimationFrame(loop);if(!$('#game').classList.contains('on')||!L)return;const dt=Math.min(.033,(t-(last||t))/1000);last=t;
-  if(G.st&&G.st.phase==='play'){let left=dt;while(left>1e-4){const s=Math.min(left,1/120);step(s);left-=s}sendLive();checkClear();checkTime()}
+let last=0,raf=0,acc=0;
+function loop(t){raf=requestAnimationFrame(loop);FR++;if(!$('#game').classList.contains('on')||!L)return;const dt=Math.min(.033,(t-(last||t))/1000);last=t;
+  if(G.st&&G.st.phase==='play'){acc=Math.min(.05,acc+dt);while(acc>=1/120){step(1/120);acc-=1/120}sendLive();checkClear();checkTime()}   // 固定每 1/120 秒算一步（零碎的小步會讓站著的人被當成在空中）
   draw();paintTop()}
 raf=requestAnimationFrame(loop);
 /* 按鍵、觸控 */
@@ -794,6 +819,7 @@ addEventListener('keyup',e=>{const k=KM[e.key];if(k)K[k]=0});
 [['#kL','l'],['#kR','r'],['#kJ','j']].forEach(([s,k])=>{const b=$(s);
   const dn=e=>{e.preventDefault();if(k==='j')K.jp=1;K[k]=1;b.classList.add('dn');try{b.setPointerCapture(e.pointerId)}catch(x){}},up=e=>{K[k]=0;b.classList.remove('dn')};
   b.addEventListener('pointerdown',dn);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);b.addEventListener('contextmenu',e=>e.preventDefault())});
+const keysUp=()=>{K.l=K.r=K.j=K.jp=0;document.querySelectorAll('#ctl button.dn').forEach(b=>b.classList.remove('dn'))};addEventListener('blur',keysUp);document.addEventListener('visibilitychange',()=>{if(document.hidden)keysUp()});
 const touchy=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;$('#ctl').classList.toggle('on',touchy);
 $('#bRe').onclick=()=>{if(ME&&!ME.dead){spawnMe();sendLive(1)}};
 
@@ -802,7 +828,7 @@ function onState(){const st=G.st;if(!st)return;
   if(st.phase==='wait'){show('lobby');paintLobby();$('#over').classList.remove('on');return}
   if(st.phase==='play'||st.phase==='clear'||st.phase==='done'||st.phase==='time'){
     /* 開始玩、續玩：每一張券（tn）付一次 */
-    const pk=G.pin+'_'+G.created+'_'+(st.tn||1);if(G.paid!==pk){G.paid=pk;if(!payTicket()){lmsg(NO_TK);}paintMe()}
+    const pk=G.pin+'_'+G.created+'_'+(st.tn||1);if(G.paid!==pk){G.paid=pk;if(!paidBefore(pk)){if(payTicket())paidMark(pk);else lmsg(NO_TK)}paintMe()}
     if(!L||L.i!==st.lv||G.lvKey!==st.lvk){G.lvKey=st.lvk;L=build(st.lv);spawnMe();FX.length=0;sendLive(1)}
     show('game');armPlay();
     if(st.phase==='clear')paintClear();else if(st.phase==='time'){paintTimeUp();tryRenew()}else $('#over').classList.remove('on')}}
@@ -851,9 +877,10 @@ function paintLobby(){const pl=G.players,host=isHost();$('#pinBig').textContent=
 $('#bStart').onclick=()=>{if(!isHost())return;G.w={};Net.set(`rooms/${G.pin}/w`,null).catch(()=>{});startLevel(G.lvPick)};
 /* ═════════════ 建立、加入、離開 ═════════════ */
 function listen(){G.un.forEach(f=>f());G.un=[
-  Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&!G.leaving){closeRoom('房間關掉了')}return}G.st=v;onState()}),
+  Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&!G.leaving){closeRoom('房間關掉了',true)}return}G.st=v;onState()}),
   Net.on(`rooms/${G.pin}/players`,v=>{const before=SLOTS.filter(k=>G.players[k]).length;G.players=v||{};const after=SLOTS.filter(k=>G.players[k]).length;
-    if(after>before&&before)sfx.join();if(G.st&&G.st.phase!=='wait'&&!G.players[G.slot==='p0'?'p1':'p0'])partnerLeft();if(G.st)onState()}),
+    if(after>before&&before)sfx.join();if(G.st&&(G.st.phase!=='wait'||!isHost())&&!G.players[G.slot==='p0'?'p1':'p0'])partnerLeft();if(G.st)onState()}),
+  Net.on(`rooms/${G.pin}/gone`,v=>{G.gone=v||{}}),
   Net.on(`rooms/${G.pin}/live`,v=>{G.live=v||{}}),
   Net.on(`rooms/${G.pin}/w`,v=>{G.w=v||{}}),
   Net.on(`rooms/${G.pin}/dec`,v=>{if(!v||!inPlat()||Date.now()-(v.t||0)>60000)return;G.inv.delete(v.s);
@@ -861,8 +888,16 @@ function listen(){G.un.forEach(f=>f());G.un=[
   if(!G.unConn)G.unConn=Net.conn(on=>{if(on&&G.mode==='net')armPlay(1)})}
 function armPlay(force){if(G.mode!=='net'||!G.slot)return;if(G.armed===G.pin&&!force)return;G.armed=G.pin;const p=`rooms/${G.pin}/players/${G.slot}`;Net.cancelDisc(p);Net.onDiscRm(p);Net.onDiscRm(`rooms/${G.pin}/live/${G.slot}`);
   Net.get(p).then(cur=>{if(!cur&&G.mode==='net')Net.set(p,meRec())}).catch(()=>{})}
-function partnerLeft(){if(G.left===G.pin)return;G.left=G.pin;setTimeout(()=>{if(G.mode!=='net')return;if(!G.players[G.slot==='p0'?'p1':'p0']){
-  if(isHost())Net.update(`rooms/${G.pin}/state`,{phase:'wait',t:Date.now()}).catch(()=>{});else closeRoom('開房間的同學離開了')}G.left=''},OFF_MS/4)}
+/* 同學不見了：斷線（平板休眠、網路閃一下）等 20 秒，回來就繼續玩；他自己按「離開」的（gone）1 秒後就處理。
+   房主：回到選關卡；另一個人：回首頁（在等人的畫面房主離開也一樣，不會卡住） */
+function partnerLeft(){const pin=G.pin,os=G.slot==='p0'?'p1':'p0';if(G.left===pin)return;G.left=pin;const t0=Date.now();
+  const tick=()=>{if(G.mode!=='net'||G.pin!==pin){G.left='';return}
+    if(G.players[os]){G.left='';return}   // 回來了
+    const bye=G.gone&&G.gone[os]&&Date.now()-G.gone[os]<60000;
+    if(Date.now()-t0<(bye?1000:OFF_MS)){setTimeout(tick,500);return}
+    G.left='';
+    if(isHost()){if(G.st&&G.st.phase!=='wait')Net.update(`rooms/${pin}/state`,{phase:'wait',t:Date.now()}).catch(()=>{})}else closeRoom('開房間的同學離開了')};
+  setTimeout(tick,500)}
 const meRec=()=>({id:myId,name:myName(),seat:mySeat(),tk:hasTicket(),pet:myPet()||null});
 async function needOK(){if(!hasTicket()){msg(NO_TK);return false}return true}
 async function sweepRooms(){if(Net.mode!=='firebase'||sweepRooms.done)return;sweepRooms.done=1;
@@ -872,7 +907,7 @@ async function create(){if(!(await needOK()))return false;msg('建立中…');aw
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/meta`)))pin=p}
     if(!pin){msg('房間滿了，等一下再試');return false}const created=Date.now();
     await Net.set(`rooms/${pin}`,{meta:{game:'co',created},state:{phase:'wait',lv:0,t:created},players:{p0:meRec()}});
-    Object.assign(G,{mode:'net',pin,slot:'p0',st:null,players:{},created,armed:'',paid:''});G.lvPick=Math.min(progress(),LEVELS.length-1);msg('');listen();armPlay();return true
+    Object.assign(G,{mode:'net',pin,slot:'p0',st:null,players:{},created,armed:'',paid:'',gone:{},left:''});G.lvPick=Math.min(progress(),LEVELS.length-1);msg('');listen();armPlay();return true
   }catch(e){msg('連不上網路，請檢查網路後再試一次');return false}}
 async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');if(!(await needOK()))return;msg('加入中…');await netReady;
   try{const room=await Net.get(`rooms/${pin}`);if(!room||!room.meta)return msg('找不到這個房間，看看房號對不對');
@@ -880,13 +915,15 @@ async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數�
     const pl=room.players||{};let slot=SLOTS.find(k=>pl[k]&&pl[k].id===myId);
     if(!slot){if(pl.p1)return msg('這個房間已經有 2 個人了');slot='p1';await Net.set(`rooms/${pin}/players/p1`,meRec());
       await new Promise(r=>setTimeout(r,350));const chk=await Net.get(`rooms/${pin}/players/p1`);if(!chk||chk.id!==myId)return msg('有人先加入了，請再試一次')}
-    Object.assign(G,{mode:'net',pin,slot,st:room.state,players:{...pl,[slot]:meRec()},created:room.meta.created||0,armed:'',paid:''});msg('');listen();armPlay();onState()
+    Object.assign(G,{mode:'net',pin,slot,st:room.state,players:{...pl,[slot]:meRec()},created:room.meta.created||0,armed:'',paid:'',gone:{},left:''});Net.remove(`rooms/${pin}/gone/${slot}`).catch(()=>{});msg('');listen();armPlay();onState()
   }catch(e){msg('連不上網路，請再試一次')}}
-function closeRoom(t){G.un.forEach(f=>f());G.un=[];Object.assign(G,{mode:'',pin:'',slot:'',st:null,players:{},w:{},live:{}});L=null;ME=null;$('#over').classList.remove('on');show('home');paintMe();msg(t||'')}
+/* 把自己在房間裡的紀錄拿掉（不然同學會看到一個不會動的我）；房間沒人了就整個刪掉 */
+async function dropMe(pin,slot,bye){const p=`rooms/${pin}/players/${slot}`;Net.cancelDisc(p);
+  try{if(bye)await Net.set(`rooms/${pin}/gone/${slot}`,Date.now());await Net.remove(p);await Net.remove(`rooms/${pin}/live/${slot}`);const pl=await Net.get(`rooms/${pin}/players`);if(!pl||!Object.keys(pl).length)await Net.remove(`rooms/${pin}`)}catch(e){}}
+function closeRoom(t,kept){if(!kept&&G.mode==='net'&&G.pin&&G.slot&&Net)dropMe(G.pin,G.slot);G.un.forEach(f=>f());G.un=[];Object.assign(G,{mode:'',pin:'',slot:'',st:null,players:{},w:{},live:{}});L=null;ME=null;$('#over').classList.remove('on');show('home');paintMe();msg(t||'')}
 async function leave(){$('#over').classList.remove('on');$('#pick').classList.remove('on');
-  if(G.mode==='net'&&G.pin){G.leaving=true;const pin=G.pin,p=`rooms/${pin}/players/${G.slot}`;G.un.forEach(f=>f());G.un=[];Net.cancelDisc(p);
-    try{await Net.remove(p);await Net.remove(`rooms/${pin}/live/${G.slot}`);const pl=await Net.get(`rooms/${pin}/players`);if(!pl||!Object.keys(pl).length)await Net.remove(`rooms/${pin}`)}catch(e){}G.leaving=false}
-  closeRoom('')}
+  if(G.mode==='net'&&G.pin){G.leaving=true;G.un.forEach(f=>f());G.un=[];await dropMe(G.pin,G.slot,true);G.leaving=false}
+  closeRoom('',true)}
 $('#bOut').onclick=leave;$('#bLLeave').onclick=leave;
 $('#bNew').onclick=async()=>{if(await create())onState()};
 $('#bJoin').onclick=()=>join($('#pinIn').value.trim());
@@ -906,6 +943,6 @@ addEventListener('pagehide',()=>{if(G.inv.size&&inPlat()&&P.uninvite)G.inv.forEa
 window.__xqBusy=()=>false;window.__xqQuit=()=>leave();
 paintMe();if(inPlat()&&P.invite)$('#bInv').hidden=false;
 (async()=>{await netReady;if(Q.get('join')){$('#pinIn').value=Q.get('join');join(Q.get('join'))}else if(Q.has('pick')&&inPlat())$('#bInv').onclick()})();
-window.__co={G,get L(){return L},get ME(){return ME},LEVELS,build,solidFor,startLevel};
+window.__co={G,get L(){return L},get ME(){return ME},LEVELS,build,solidFor,startLevel,other:()=>other(),pressed:k=>pressed(k)};
 </script>
 </body></html>
