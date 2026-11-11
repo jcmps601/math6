@@ -40,7 +40,12 @@ button{font-family:inherit;cursor:pointer}
 .nv.on{border-color:var(--c,#adb5bd);background:#fff}
 .sp{flex:1}
 #sync{font-size:.95rem;font-weight:800;color:#999;text-align:center;padding:.2rem}
-#logout{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1rem;font-weight:900;color:#aaa;padding:.35rem}
+#logout,#pwBtn{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1rem;font-weight:900;color:#aaa;padding:.35rem}
+#pwm .pmc{max-width:24rem}#pwm .pwt{font-size:1.6rem;font-weight:900;color:#2e7554}#pwm .pws{font-size:1.05rem;font-weight:800;color:#777;margin:.2rem 0 .6rem}
+#pwm .pwd{display:flex;justify-content:center;gap:.7rem}#pwm .pwd i{width:1.5rem;height:1.5rem;border-radius:50%;border:4px solid #cfe8d6}#pwm .pwd i.f{background:var(--g);border-color:var(--g)}
+#pwm .pwmsg{min-height:1.6rem;font-size:1.05rem;font-weight:900;color:#e03131;margin:.4rem 0}
+#pwm .pwpad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}#pwm .pwpad button{border:0;border-radius:16px;background:#f1f3f5;font:900 1.7rem system-ui,sans-serif;padding:.55rem 0;box-shadow:0 4px 0 #dee2e6;color:#333}#pwm .pwpad button.emp{visibility:hidden}
+#pwm .pwx{margin-top:.7rem;border:0;border-radius:14px;padding:.45rem 1.4rem;font:900 1.05rem inherit;background:#f1f3f5;color:#777}
 #pane{min-width:0;min-height:0;overflow:auto;padding:1rem 1.2rem 1.5rem}
 .h1{font-size:2.2rem;font-weight:900;margin:.1rem 0 .8rem;display:flex;align-items:center;gap:.6rem}
 .h1 .tag{font-size:1.2rem;color:#fff;background:var(--c);border-radius:12px;padding:.15rem .6rem}
@@ -284,7 +289,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
  #seats .sg{grid-template-columns:repeat(5,1fr)}#login h1{font-size:2.3rem}
  #home.on,#prac.on{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;min-height:100vh}
  #side{flex-direction:row;border-right:0;border-bottom:3px solid var(--line);padding:.4rem;gap:.35rem;position:sticky;top:0;z-index:3;overflow-x:auto;align-items:stretch}
- #me{padding:0 .2rem}#me .nm,.sp,#logout,#sync{display:none}#me .av{width:2.8rem;height:2.8rem;font-size:1.4rem}
+ #me{padding:0 .2rem}#me .nm,.sp,#logout,#pwBtn,#sync{display:none}#me .av{width:2.8rem;height:2.8rem;font-size:1.4rem}
  .nv{flex:none;flex-direction:column;gap:.15rem;padding:.3rem .4rem;font-size:.85rem;text-align:center;min-width:4.2rem}.nv b{width:1.8rem;height:1.8rem;font-size:1rem}
  #pane{padding:.7rem .7rem 1.5rem;overflow:visible}.h1{font-size:1.6rem}.grid2{grid-template-columns:1fr}
  #ring{width:6.5rem;height:6.5rem}#today .t2{font-size:2rem}.go{font-size:1.4rem}#fire .n{font-size:2.8rem}
@@ -399,6 +404,8 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 }
 /* 手機直拿:長句子的選項自動換行、按鈕跟著變高 */
 @media (max-width:560px){#opts{min-height:0}#opts:not(.row) button{flex:none;max-height:none;min-height:3.4rem;height:auto;padding:.45rem .5rem}#opts.long button{font-size:1.2rem}#opts.xlong button{font-size:1.05rem}}
+/* 手機直拿：答完以後，「下一題」固定在畫面下方（作答時不固定，才不會擋到數字鍵盤的「檢查」） */
+@media (max-width:560px) and (orientation:portrait){#prac.sv #acts{position:sticky;bottom:0;z-index:6;background:var(--bg);padding:.45rem 0 calc(.45rem + env(safe-area-inset-bottom,0px));margin-top:.3rem;box-shadow:0 -6px 8px -6px rgba(0,0,0,.12)}}
 @media (max-width:480px){#top{flex-wrap:wrap;row-gap:.35rem}#dots{gap:.22rem}#dots i{width:.62rem;height:.62rem}}
 /* 小手機（寬度 400 以下） */
 @media (max-width:400px){#seats .sg{gap:.4rem}#seats button{font-size:1.6rem;border-radius:14px}#pinpad button{font-size:1.7rem}}
@@ -655,15 +662,15 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
  .uc .ui{top:.55rem;bottom:auto;right:.45rem}.uc .b{padding-right:2.9rem}.uc .s{padding-right:0}}
 .hgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:1rem;margin-top:1rem;align-items:stretch}
 .hgrid>.cd{margin-top:0!important}
-#next .nxh{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:1.25rem;font-weight:900;color:#2e7554}
-#next .nxh span{display:flex;align-items:center;gap:.35rem}#next .nxs{width:1.8rem;height:1.8rem}
-#next .nxr{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:.7rem;margin-top:.6rem}
-#next .nxu,#next .nxw{display:flex;flex-direction:column;gap:.4rem;background:#fffaf0;border-radius:18px;padding:.6rem .7rem;position:relative;border-top:.4rem solid var(--c,#e7ddcc)}
-#next .nxw{--c:#e8a0a0}
-#next .nxi{position:absolute;right:.5rem;top:.5rem;font-size:2.6rem;line-height:1}#next .nxi img{width:3rem;height:3rem}
-#next .nxt{padding-right:3.2rem}#next .nxt .a{font-size:.95rem;font-weight:900;color:var(--c)}#next .nxt .b{font-size:1.3rem;font-weight:900;color:#333;line-height:1.25}
-#next .nxt .s{font-size:1rem;font-weight:900;color:#657065;display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.15rem}#next .nxt .s b{color:#c92a2a;font-size:1.3rem}
-#next .go{margin:auto 0 0;align-self:stretch;font-size:1.15rem;padding:.5rem .6rem}
+#nextc .nxh{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:1.25rem;font-weight:900;color:#2e7554}
+#nextc .nxh span{display:flex;align-items:center;gap:.35rem}#nextc .nxs{width:1.8rem;height:1.8rem}
+#nextc .nxr{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:.7rem;margin-top:.6rem}
+#nextc .nxu,#nextc .nxw{display:flex;flex-direction:column;gap:.4rem;background:#fffaf0;border-radius:18px;padding:.6rem .7rem;position:relative;border-top:.4rem solid var(--c,#e7ddcc)}
+#nextc .nxw{--c:#e8a0a0}
+#nextc .nxi{position:absolute;right:.5rem;top:.5rem;font-size:2.6rem;line-height:1}#nextc .nxi img{width:3rem;height:3rem}
+#nextc .nxt{padding-right:3.2rem}#nextc .nxt .a{font-size:.95rem;font-weight:900;color:var(--c)}#nextc .nxt .b{font-size:1.3rem;font-weight:900;color:#333;line-height:1.25}
+#nextc .nxt .s{font-size:1rem;font-weight:900;color:#657065;display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.15rem}#nextc .nxt .s b{color:#c92a2a;font-size:1.3rem}
+#nextc .go{margin:auto 0 0;align-self:stretch;font-size:1.15rem;padding:.5rem .6rem}
 #playt{margin-top:1rem}
 #playt .pyt{display:flex;align-items:center;gap:.6rem}#playt .pyi{width:3rem;height:3rem}
 #playt .pyh{font-size:1.3rem;font-weight:900;color:#6d4c9a}#playt .pys{font-size:1rem;font-weight:800;color:#657065}#playt .pys b{color:#2e7554}
@@ -672,7 +679,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #playt .pybtn .pbi{width:2.6rem;height:2.6rem}#playt .pybtn b{font-size:1.1rem;color:#33443b}#playt .pybtn small{font-size:.85rem;color:#8a7a9a;font-weight:800}
 #playt .pybtn:active{transform:translateY(2px)}
 @media (max-width:900px),(orientation:portrait){.hgrid{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:520px){#next .nxr{grid-template-columns:minmax(0,1fr)}#playt .pybtn b{font-size:1rem}#playt .pybtn .pbi{width:2.2rem;height:2.2rem}}
+@media (max-width:520px){#nextc .nxr{grid-template-columns:minmax(0,1fr)}#playt .pybtn b{font-size:1rem}#playt .pybtn .pbi{width:2.2rem;height:2.2rem}}
 
 /* ═══ 學習排行榜 ═══ */
 #sboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;background:none;box-shadow:none;padding:0}
@@ -755,6 +762,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
   <div class="sp"></div>
   <div id="sync"></div>
   <div class="sidebtns"><button class="fsb" id="fsBtn">⛶ 全螢幕</button><button id="sndBtn">🔊 音效</button></div>
+  <button id="pwBtn"><img class="ico bi" src="img/ui/ic-lock-closed.webp" alt="">改密碼</button>
   <button id="logout"><img class="ico bi" src="img/ui/nav-out.webp" alt="">登出</button>
  </aside>
  <div id="pane"></div>
@@ -804,6 +812,11 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
   <div id="setmsg"></div>
  </div>
  <div class="cd">
+  <div>🔑 學生自己設的密碼（學生忘記時來這裡看，或按「重設」讓他用老師發的密碼重新設）</div>
+  <button id="pwload">查看</button><span id="pwmsg2"></span>
+  <div id="pwout" class="chips"></div>
+ </div>
+ <div class="cd">
   <div>② 全班練習紀錄</div>
   <button id="tabload">重新整理</button><div id="tabmsg"></div>
   <table id="tab"></table>
@@ -838,6 +851,19 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 <div id="toast"></div>
 <div id="end"><div class="box"><img id="endm" class="ico" alt="" draggable="false"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
 <!-- 國語、英語、自然、社會的題庫(數學的題目在下面的程式裡自動出題) -->
+<script>
+/* 時間用雲端的為準（防止改平板日期重領每日任務、重打魔王、讓作物提早成熟）：
+   連上雲端時算出「平板時鐘差多少」（差 10 分鐘以內當成正常，不校正），存起來；沒連線時沿用上次的差距，而且時間不會倒退。 */
+(function(){const RD=Date,g=k=>{try{return +localStorage.getItem(k)||0}catch(e){return 0}},p=(k,v)=>{try{localStorage.setItem(k,String(v))}catch(e){}};
+  let off=g('learn601_toff'),floor=g('learn601_tmax');
+  const now=()=>Math.max(RD.now()+off,floor);
+  class D extends RD{constructor(...a){if(a.length)super(...a);else super(now())}static now(){return now()}}
+  window.Date=D;
+  /* o＝雲端時間 − 目前（校正過的）時間，所以真正的差距要用雲端時間減平板原本的時鐘 */
+  window.__timeFix=o=>{let t=now()+o-RD.now();t=Math.abs(t)<600000?0:Math.round(t);off=t;floor=0;p('learn601_toff',t);p('learn601_tmax',RD.now()+t)};   // 雲端說的才算數，可以把跑到未來的時間拉回來
+  setInterval(()=>p('learn601_tmax',now()),30000);
+})();
+</script>
 <script src="ico.js"></script><script src="pet.js"></script><script src="farm.js"></script><script src="bank/m5.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script>
 <script>
 const NS='http://www.w3.org/2000/svg',$=s=>document.querySelector(s);
@@ -1290,6 +1316,7 @@ const fbReady=(async()=>{try{
   firebase.initializeApp(FIREBASE_CONFIG);db=firebase.database();fauth=firebase.auth();
   fauth.signInAnonymously().catch(()=>{});
   db.ref('.info/connected').on('value',s=>{online=!!s.val();paintSync();if(online)flush()});
+  db.ref('.info/serverTimeOffset').on('value',s=>{const o=+s.val();if(online&&isFinite(o)&&window.__timeFix)__timeFix(o)});
  }catch(e){db=null}paintSync();return !!db})();
 /* 要讀雲端時:等連上線(最多 ms 毫秒)。剛打開網頁時 SDK 載好了但還沒連上,直接讀會被當成「離線」 */
 async function fbOnline(ms=6000){if(!(await fbReady)||!db)return false;const t0=Date.now();while(!online&&Date.now()-t0<ms)await new Promise(r=>setTimeout(r,150));return online}
@@ -1351,15 +1378,45 @@ async function pinKey(k){if(pinBusy)return;
   if(k==='✕'){document.getElementById('pinbox').classList.remove('on');return}
   if(k==='⌫'){pinVal=pinVal.slice(0,-1);paintPin();return}
   if(pinVal.length>=4)return;pinVal+=k;paintPin();if(pinVal.length<4)return;
-  pinBusy=true;pinMsg('檢查中…');const r=await verify(pinSeat,pinVal);pinBusy=false;
-  if(r.ok){user={seat:pinSeat,pin:pinVal};boundKey='';LS.set('learn601_user',user);loadSum();resetIfCleared(r.val);mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
+  pinBusy=true;pinMsg('檢查中…');const r=await login4(pinSeat,pinVal);pinBusy=false;
+  if(r.ok){user={seat:pinSeat,pin:r.pin};boundKey='';LS.set('learn601_user',user);loadSum();resetIfCleared(r.val);mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
   const D=document.getElementById('pindots');D.classList.remove('no');void D.offsetWidth;D.classList.add('no');
   pinMsg(r.why==='bad'?'密碼不對，再試一次':r.why==='rules'?'平台還沒開通，請告訴老師':'連不上網路，第一次登入要有網路',true);pinVal='';setTimeout(paintPin,350)}
+/* ===== 自己設的密碼 =====
+   學生第一次用老師發的密碼（生日）登入後，要設一組自己的 4 碼密碼；設好以後登入只認自己的密碼，生日密碼在登入畫面就不能用了。
+   雲端：learn/pwset/座號 = true（有沒有設過，大家都讀得到）；learn/pw/座號/自己的密碼 = 老師發的密碼（要知道自己的密碼才讀得到）。
+   資料還是存在原本的位置（用老師發的密碼當鑰匙），所以老師的 pins.json、儀表板都不用改。Firebase 規則還沒加上這兩段時，這個功能不會啟動。 */
+const isPerm=e=>/permission/i.test(String(e&&(e.code||e.message)));
+async function pwIsSet(seat){try{return (await timeout(db.ref(`${ROOT}/pwset/${seat}`).get(),8000)).val()===true}catch(e){return isPerm(e)?null:undefined}}   // null＝規則還沒加；undefined＝連不上
+async function login4(seat,x){await fbReady;if(!db)return {ok:false,why:'off'};
+  if(isTest(seat)){const r=await verify(seat,x);return r.ok?Object.assign(r,{pin:x}):r}
+  const set=await pwIsSet(seat);if(set===undefined)return {ok:false,why:'off'};
+  if(set){let p;try{p=(await timeout(db.ref(`${ROOT}/pw/${seat}/${x}`).get(),8000)).val()}catch(e){return {ok:false,why:isPerm(e)?'bad':'off'}}
+    if(typeof p!=='string')return {ok:false,why:'bad'};const r=await verify(seat,p);return r.ok?Object.assign(r,{pin:p}):r}
+  const r=await verify(seat,x);return r.ok?Object.assign(r,{pin:x}):r}
+/* 進平台時檢查：還沒設自己的密碼就請他設 */
+async function pwCheck(){if(!user||isTest(user.seat)||document.getElementById('pwm'))return;await fbReady;if(!db)return;if((await pwIsSet(user.seat))===false)pwModal(true)}
+const PW_WEAK=x=>/^(\d)\1{3}$/.test(x)||['1234','4321','0123','2345','3456','4567','5678','6789'].includes(x);
+async function pwChange(){if(!user)return;if(isTest(user.seat))return toast('測試帳號不用改密碼');await fbReady;const st=db?await pwIsSet(user.seat):undefined;if(st===undefined)return toast('連上網路才能改密碼');if(st===null)return toast('這個功能還沒開放');pwModal(false)}
+function pwModal(force){const m=el('div','pmod','');m.id='pwm';let a='',b='',step=0,busy=false;
+  m.innerHTML=`<div class="pmc"><div class="pwt"></div><div class="pws"></div><div class="pwd"><i></i><i></i><i></i><i></i></div><div class="pwmsg"></div><div class="pwpad"></div>${force?'':'<button class="gray pwx">取消</button>'}</div>`;document.body.appendChild(m);
+  const T=m.querySelector('.pwt'),S=m.querySelector('.pws'),M=m.querySelector('.pwmsg'),D=[...m.querySelectorAll('.pwd i')],pad=m.querySelector('.pwpad');
+  const paint=()=>{T.textContent=step?'再輸入一次':'設定你自己的密碼';S.textContent=step?'確認跟剛剛的一樣':'4 個數字，不要用生日，也不要告訴同學';const v=step?b:a;D.forEach((d,i)=>d.classList.toggle('f',i<v.length))};
+  const fail=t=>{M.textContent=t;a='';b='';step=0;paint()};
+  async function done(){busy=true;M.textContent='儲存中…';
+    try{if(!(await ensureBind()))throw 0;await timeout(db.ref(`${ROOT}/pw/${user.seat}`).set({[a]:String(user.pin)}),10000);await timeout(db.ref(`${ROOT}/pwset/${user.seat}`).set(true),10000);
+      m.remove();toast('🔑 密碼設好了！下次登入用新密碼')}catch(e){busy=false;fail('連不上網路，等一下再試一次')}}
+  ['1','2','3','4','5','6','7','8','9','','0','⌫'].forEach(k=>{const bt=el('button',k?'':'emp',k);if(k)tap(bt,()=>{if(busy)return;M.textContent='';
+    if(k==='⌫'){if(step)b=b.slice(0,-1);else a=a.slice(0,-1);return paint()}
+    if(!step){if(a.length<4)a+=k;paint();if(a.length===4){if(a===String(user.pin))return fail('不能跟老師發的密碼一樣，換一組');if(PW_WEAK(a))return fail('這組太好猜了，換一組');step=1;setTimeout(paint,200)}}
+    else{if(b.length<4)b+=k;paint();if(b.length===4){if(a!==b)return fail('兩次不一樣，重新設一次');done()}}});pad.appendChild(bt)});
+  const x=m.querySelector('.pwx');if(x)tap(x,()=>m.remove());paint()}
 async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'};
   try{const s=await timeout(db.ref(`${ROOT}/u/${seat}/${pin}/sum`).get(),10000);return {ok:true,val:s.val()}}
   catch(e){if(!/permission/i.test(String(e&&(e.code||e.message))))return {ok:false,why:'off'};return {ok:false,why:(await rulesOK())===false?'rules':'bad'}}}
 /* 規則有沒有生效:新規則讓 learn/lb(排行榜)可以讀 */
 async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/lb`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
+tap(document.getElementById('pwBtn'),()=>pwChange());
 tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
@@ -1404,7 +1461,7 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
 function enterHome(){show$('home');presence();listenInv();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
-  verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush())}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
+  verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
    ・窄版（手機、直拿平板）：上方只留頭像和資源（金幣、水、遊戲券），底部固定 5 個：首頁、學習、寵物、農場、更多
@@ -1435,6 +1492,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>音效</b><small>${sndOn?'開著':'關著'}</small></button>
     <button data-k="fs">${ico(full?'ic-fullscreen-exit':'nav-fs')}<b>全螢幕</b><small>${full?'離開全螢幕':'畫面變大'}</small></button>
     <button data-k="help">${ico('pr-hint')}<b>獎勵說明</b><small>金幣、水滴、遊戲券</small></button>
+    <button data-k="pw">${ico('ic-lock-closed')}<b>改密碼</b><small>換一組自己的密碼</small></button>
     <button data-k="out">${ico('nav-out')}<b>登出</b><small>換別人用</small></button></div>
     <div class="msync">${(document.getElementById('sync')||{}).textContent||''}</div><button class="pmx">關閉</button></div>`;
   document.body.appendChild(m);
@@ -1442,6 +1500,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
   m.querySelectorAll('[data-k]').forEach(b=>tap(b,()=>{const k=b.dataset.k;
     if(k==='game'||k==='wb')return goView(k);
     if(k==='help'){closeMore();return rewardHelp()}
+    if(k==='pw'){closeMore();return pwChange()}
     if(k==='snd'){fire('sndBtn');return openMore()}
     if(k==='fs'){closeMore();return fire('fsBtn')}
     if(k==='out'){closeMore();return fire('logout')}}));
@@ -1502,7 +1561,7 @@ function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj&&live(u)),SM=mixOf(subj
   const L0=L.filter(u=>uqN(u.key)<UNIT_CAP);if(L0.length&&L0.length<L.length){const a=L0.find(u=>!((sum.dn&&sum.dn[u.key])||sum.best[u.key]!=null))||L0.slice().sort((a,b)=>starN(sum.best[a.key]||0)-starN(sum.best[b.key]||0))[0];return a}
   const nd=L.find(u=>!((sum.dn&&sum.dn[u.key])||sum.best[u.key]!=null));if(nd)return nd;
   const low=L.slice().sort((a,b)=>starN(sum.best[a.key]||0)-starN(sum.best[b.key]||0))[0];return starN(sum.best[low.key]||0)<3?low:(SM||low)}
-function nextCard(){const c=el('div','cd');c.id='next';const u=nextUnit(),SJ=subjOf(subj),W=wbLoad().length;
+function nextCard(){const c=el('div','cd');c.id='nextc';const u=nextUnit(),SJ=subjOf(subj),W=wbLoad().length;
   c.innerHTML=`<div class="nxh"><span>${ico(SJ.img,'nxs')}接下來練什麼</span></div>`;
   const sw=el('button','hmore','全部單元 ▶');tap(sw,()=>goView('learn'));c.querySelector('.nxh').appendChild(sw);
   const row=el('div','nxr');
@@ -2062,7 +2121,7 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&/frac|ratio/.test(round.qs[cur].type)?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
   else if(e.key==='Tab'||e.key==='/'||e.key===':'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
-function showQ(){const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
+function showQ(){$('#prac').classList.remove('sv');const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
   $('#prac').classList.toggle('en',isEn);$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
@@ -2164,7 +2223,7 @@ function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div 
   <button class="go" disabled>3</button></div>`;document.body.appendChild(m);const b=m.querySelector('button');let k=3;
   const t=setInterval(()=>{k--;if(k>0)b.textContent=k;else{clearInterval(t);b.disabled=false;b.textContent='我知道了'}},1000);tap(b,()=>{if(!b.disabled)m.remove()})}
 const dis=(b,v)=>{b.disabled=v;b.classList.toggle('off',v)};
-function finish(q,ok){solved=true;dis($('#hint'),true);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
+function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),true);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
   const uk=ukeyOf(pu),rew=!uk||uqN(uk)<UNIT_CAP;if(uk){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵
   const k=dkey();if(rew){sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
@@ -2345,10 +2404,13 @@ function paintXqAll(sel){const A=XQALL||{},rows=[...SEATS.flat(),...TEST_SEATS].
   $('#xqout').innerHTML=`<div style="margin:.4rem 0;color:#888;font-weight:800">全班共記錄 ${tot} 筆（每一局兩個人各記一筆）</div>`+h+'</table>';
   $('#xqout').querySelectorAll('tr.st').forEach(t=>t.onclick=()=>paintXqAll(+t.dataset.s===sel?null:+t.dataset.s))}
 
+/* 只讀某個時間以後的作答紀錄：紀錄的編號開頭是時間，所以可以從那個編號開始讀；from=0 讀全部 */
+function logRef(s,pin,from){let r=db.ref(`${ROOT}/u/${s}/${pin}/log`);return from?r.orderByKey().startAt(Math.floor(from).toString(36)):r}
+const dayStart=n=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d.getTime()};
 tap($('#aload'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#amsg');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
-  M.textContent='讀取中…（全班的作答紀錄，可能要十幾秒）';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
-  const days=+$('#aper').value,since=days?dkey(new Date(Date.now()-(days-1)*864e5)):'';
-  const rows=await Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/log`).get(),20000)).val()||{};return [s,Object.values(v)]}catch(e){return [s,null]}}));
+  M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
+  const days=+$('#aper').value,since=days?dkey(new Date(Date.now()-(days-1)*864e5)):'',from=days?dayStart(days+1):0;
+  const rows=await Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(logRef(s,pins[s],from).get(),20000)).val()||{};return [s,Object.values(v)]}catch(e){return [s,null]}}));
   const stu={},typ={},err={};let fail=0,total=0;
   rows.forEach(([s,logs])=>{if(!logs){fail++;return}const S=stu[s]={u:UN.map(()=>({n:0,ok1:0})),t:{}};
     logs.filter(l=>l&&l.k==='p'&&(!since||l.d>=since)).forEach(l=>(l.q||[]).map(q=>Object.assign({},q,{u:fixU(q,l.unit)})).forEach(q=>{if(q.u==null||!UN[q.u])return;total++;
@@ -2392,6 +2454,18 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
     const L=v.last?new Date(v.last):null;h+=`<tr><td>${s}</td><td>${(v.days||{})[today]||0}</td><td>${wk.filter(k=>((v.days||{})[k]||0)>=GOAL).length}</td><td>${v.total||0}</td><td>${v.total?Math.round(v.first/v.total*100):0}%</td><td>${L?`${L.getMonth()+1}/${L.getDate()} ${pad2(L.getHours())}:${pad2(L.getMinutes())}`:''}</td></tr>`});
   $('#tab').innerHTML=h;$('#tabmsg').textContent=`更新時間 ${new Date().toLocaleTimeString()}`});
 
+/* 老師頁：學生自己設的密碼。要用那個座號的身分才讀得到，所以一個一個座號「綁定」後讀（用 pins.json 裡老師發的密碼證明） */
+async function tBind(s,pin){if(!fauth.currentUser)await timeout(fauth.signInAnonymously(),10000);boundKey='';await timeout(db.ref(`${ROOT}/bind/${fauth.currentUser.uid}`).set({s:String(s),p:String(pin)}),10000)}
+async function pwTeacher(){const pins=LS.get('learn601_pins',null),M=$('#pwmsg2'),O=$('#pwout');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+  M.textContent='讀取中…';await fbReady;if(!db||!fauth){M.textContent='連不上 Firebase';return}O.innerHTML='';
+  const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let n=0;
+  for(const s of seats){let v;try{await tBind(s,pins[s]);v=(await timeout(db.ref(`${ROOT}/pw/${s}`).get(),10000)).val()}catch(e){if(isPerm(e)){M.textContent='❗ Firebase 規則還沒加上密碼的設定';return}M.textContent='讀取失敗，再按一次';return}
+    const pw=v&&Object.keys(v)[0];if(pw)n++;const c=el('span','chip'+(pw?'':' z'),`${s}<small>${pw||'還沒設'}</small>`);
+    if(pw){const b=el('button','gray','重設');b.style.cssText='margin-left:.3rem;font-size:.8rem;padding:.1rem .4rem';
+      b.onclick=async()=>{if(!confirm(`${s} 號的密碼要重設嗎？重設後他要用老師發的密碼登入，再設一組新的。`))return;try{await tBind(s,pins[s]);await db.ref(`${ROOT}/pwset/${s}`).remove();await db.ref(`${ROOT}/pw/${s}`).remove();pwTeacher()}catch(e){M.textContent='重設失敗，再試一次'}};c.appendChild(b)}
+    O.appendChild(c);M.textContent=`讀取中… ${s} 號`}
+  M.textContent=`${n} / ${seats.length} 人設好了`}
+tap($('#pwload'),()=>pwTeacher());
 /* ===================== 老師頁：班級儀表板 =====================
    打開老師頁就自動讀全班的「摘要」和「作答紀錄」，一眼看到：
    ・今天、這段時間的練習狀況（四個大數字）
@@ -2402,14 +2476,16 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
 let DASH=null,dPer='w',dSubj='math',dSel=null;
 const dSince=()=>dPer==='w'?weekKeys(0)[0]:+dPer?dkey(new Date(Date.now()-(+dPer-1)*864e5)):'';
 const dPerName=()=>({w:'本週','7':'最近 7 天','30':'最近 30 天','0':'全部'})[dPer];
+/* 儀表板要讀到哪一天：本週、最近 7 天都讀 9 天（多留 2 天）；最近 30 天讀 32 天；全部才整個讀 */
+const dFrom=()=>dPer==='0'?0:dayStart(dPer==='30'?32:9);
 async function dashLoad(){const pins=LS.get('learn601_pins',null),M=$('#dmsg');if(!pins){$('#dout').innerHTML='<div class="dnone">先在下面 ① 選擇 pins.json，這裡就會顯示全班的狀況</div>';return}
   M.textContent='讀取中…';if(!(await fbOnline())){M.textContent='📴 連不上 Firebase';return}
-  const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let done=0;
+  const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let done=0;const from=dFrom();
   const rows=await Promise.all(seats.map(async s=>{let sm=null,lg=null;
     try{sm=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),12000)).val()}catch(e){sm='err'}
-    try{lg=Object.values((await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/log`).get(),20000)).val()||{})}catch(e){lg=null}
+    try{lg=Object.values((await timeout(logRef(s,pins[s],from).get(),20000)).val()||{})}catch(e){lg=null}
     M.textContent=`讀取中… ${++done} / ${seats.length}`;return {s:+s,sum:sm,log:lg}}));
-  DASH={rows,t:Date.now()};M.textContent=`更新時間 ${pad2(new Date().getHours())}:${pad2(new Date().getMinutes())}`+(rows.some(r=>r.sum==='err'||!r.log)?'（有人讀取失敗）':'');dashRender()}
+  DASH={rows,t:Date.now(),from};M.textContent=`更新時間 ${pad2(new Date().getHours())}:${pad2(new Date().getMinutes())}`+(rows.some(r=>r.sum==='err'||!r.log)?'（有人讀取失敗）':'');dashRender()}
 /* 依目前選的時間範圍統計 */
 function dashStats(){const since=dSince(),today=dkey(),wk=weekKeys(0),now=Date.now();
   const all=DASH.rows.map(r=>{const v=r.sum&&r.sum!=='err'?r.sum:null,days=(v&&v.days)||{};
@@ -2462,7 +2538,7 @@ function dashRender(){if(!DASH)return;const {stu,weak,bad}=dashStats(),O=$('#dou
   O.innerHTML=h;
   O.querySelectorAll('[data-s]').forEach(e=>e.addEventListener('click',()=>{const s=+e.dataset.s;dSel=dSel===s?null:s;dashRender();if(dSel)setTimeout(()=>{const d=$('#ddet');d&&d.getBoundingClientRect().top>innerHeight&&d.scrollIntoView({block:'nearest',behavior:'smooth'})},50)}));
   O.querySelectorAll('.hsub button').forEach(b=>b.addEventListener('click',()=>{dSubj=b.dataset.k;dashRender()}))}
-document.querySelectorAll('#dper button').forEach(b=>b.addEventListener('click',()=>{dPer=b.dataset.p;document.querySelectorAll('#dper button').forEach(x=>x.classList.toggle('on',x===b));dashRender()}));
+document.querySelectorAll('#dper button').forEach(b=>b.addEventListener('click',()=>{dPer=b.dataset.p;document.querySelectorAll('#dper button').forEach(x=>x.classList.toggle('on',x===b));if(DASH&&DASH.from&&dFrom()<DASH.from)dashLoad();else dashRender()}));
 tap($('#dload'),()=>dashLoad());tap($('#tbload'),()=>{BOSSC=null;bossTeacher()});
 tap($('#dxls'),()=>{if(!DASH){$('#dmsg').textContent='先按「重新整理」讀取資料';return}dashXlsx()});
 
