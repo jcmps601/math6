@@ -374,6 +374,9 @@
     if (W0.tele) {
       let tx = clamp(ex, 24, S.W - 24);
       for (let it = 0; it < 4; it++) { const o = S.T.findIndex((t, q) => q !== F.i && !t.out && Math.abs(t.x - tx) < 62); if (o < 0) break; tx = clamp(S.T[o].x + (tx >= S.T[o].x ? 62 : -62), 24, S.W - 24); }
+      /* 兩台坦克靠很近時，推開幾次還是會疊在其中一台上：往兩邊找最近的空位，找不到就傳送失敗 */
+      const clash = x => S.T.some((t, q) => q !== F.i && !t.out && Math.abs(t.x - x) < 62);
+      if (clash(tx)) { let fx = null; for (let d = 2; d <= 240 && fx == null; d += 2) for (const c of [tx + d, tx - d]) if (c >= 24 && c <= S.W - 24 && !isVoid(g, c) && !clash(c)) { fx = c; break; } if (fx == null) return null; tx = fx; }
       if (isVoid(g, tx)) return null;   // 落到空隙：傳送失敗
       F.T[F.i].x = tx; return { k: r.s.k, x: tx, y: Math.round(gAt(g, tx)), hit: 0, d: new Array(n).fill(0) };
     }
