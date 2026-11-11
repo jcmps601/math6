@@ -1383,21 +1383,20 @@ async function pinKey(k){if(pinBusy)return;
   const D=document.getElementById('pindots');D.classList.remove('no');void D.offsetWidth;D.classList.add('no');
   pinMsg(r.why==='bad'?'密碼不對，再試一次':r.why==='rules'?'平台還沒開通，請告訴老師':'連不上網路，第一次登入要有網路',true);pinVal='';setTimeout(paintPin,350)}
 /* ===== 自己設的密碼 =====
-   學生第一次用老師發的密碼（生日）登入後，要設一組自己的 4 碼密碼；設好以後登入只認自己的密碼，生日密碼在登入畫面就不能用了。
+   學生（測試帳號也一樣，老師發的是 0000）第一次用老師發的密碼（生日）登入後，要設一組自己的 4 碼密碼；設好以後登入只認自己的密碼，生日密碼在登入畫面就不能用了。
    雲端：learn/pwset/座號 = true（有沒有設過，大家都讀得到）；learn/pw/座號/自己的密碼 = 老師發的密碼（要知道自己的密碼才讀得到）。
    資料還是存在原本的位置（用老師發的密碼當鑰匙），所以老師的 pins.json、儀表板都不用改。Firebase 規則還沒加上這兩段時，這個功能不會啟動。 */
 const isPerm=e=>/permission/i.test(String(e&&(e.code||e.message)));
 async function pwIsSet(seat){try{return (await timeout(db.ref(`${ROOT}/pwset/${seat}`).get(),8000)).val()===true}catch(e){return isPerm(e)?null:undefined}}   // null＝規則還沒加；undefined＝連不上
 async function login4(seat,x){await fbReady;if(!db)return {ok:false,why:'off'};
-  if(isTest(seat)){const r=await verify(seat,x);return r.ok?Object.assign(r,{pin:x}):r}
   const set=await pwIsSet(seat);if(set===undefined)return {ok:false,why:'off'};
   if(set){let p;try{p=(await timeout(db.ref(`${ROOT}/pw/${seat}/${x}`).get(),8000)).val()}catch(e){return {ok:false,why:isPerm(e)?'bad':'off'}}
     if(typeof p!=='string')return {ok:false,why:'bad'};const r=await verify(seat,p);return r.ok?Object.assign(r,{pin:p}):r}
   const r=await verify(seat,x);return r.ok?Object.assign(r,{pin:x}):r}
 /* 進平台時檢查：還沒設自己的密碼就請他設 */
-async function pwCheck(){if(!user||isTest(user.seat)||document.getElementById('pwm'))return;await fbReady;if(!db)return;if((await pwIsSet(user.seat))===false)pwModal(true)}
+async function pwCheck(){if(!user||document.getElementById('pwm'))return;await fbReady;if(!db)return;if((await pwIsSet(user.seat))===false)pwModal(true)}
 const PW_WEAK=x=>/^(\d)\1{3}$/.test(x)||['1234','4321','0123','2345','3456','4567','5678','6789'].includes(x);
-async function pwChange(){if(!user)return;if(isTest(user.seat))return toast('測試帳號不用改密碼');await fbReady;const st=db?await pwIsSet(user.seat):undefined;if(st===undefined)return toast('連上網路才能改密碼');if(st===null)return toast('這個功能還沒開放');pwModal(false)}
+async function pwChange(){if(!user)return;await fbReady;const st=db?await pwIsSet(user.seat):undefined;if(st===undefined)return toast('連上網路才能改密碼');if(st===null)return toast('這個功能還沒開放');pwModal(false)}
 function pwModal(force){const m=el('div','pmod','');m.id='pwm';let a='',b='',step=0,busy=false;
   m.innerHTML=`<div class="pmc"><div class="pwt"></div><div class="pws"></div><div class="pwd"><i></i><i></i><i></i><i></i></div><div class="pwmsg"></div><div class="pwpad"></div>${force?'':'<button class="gray pwx">取消</button>'}</div>`;document.body.appendChild(m);
   const T=m.querySelector('.pwt'),S=m.querySelector('.pws'),M=m.querySelector('.pwmsg'),D=[...m.querySelectorAll('.pwd i')],pad=m.querySelector('.pwpad');
@@ -2458,13 +2457,14 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
 async function tBind(s,pin){if(!fauth.currentUser)await timeout(fauth.signInAnonymously(),10000);boundKey='';await timeout(db.ref(`${ROOT}/bind/${fauth.currentUser.uid}`).set({s:String(s),p:String(pin)}),10000)}
 async function pwTeacher(){const pins=LS.get('learn601_pins',null),M=$('#pwmsg2'),O=$('#pwout');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
   M.textContent='讀取中…';await fbReady;if(!db||!fauth){M.textContent='連不上 Firebase';return}O.innerHTML='';
-  const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let n=0;
-  for(const s of seats){let v;try{await tBind(s,pins[s]);v=(await timeout(db.ref(`${ROOT}/pw/${s}`).get(),10000)).val()}catch(e){if(isPerm(e)){M.textContent='❗ Firebase 規則還沒加上密碼的設定';return}M.textContent='讀取失敗，再按一次';return}
-    const pw=v&&Object.keys(v)[0];if(pw)n++;const c=el('span','chip'+(pw?'':' z'),`${s}<small>${pw||'還沒設'}</small>`);
+  const P2={...pins};TEST_SEATS.forEach(t=>{if(!P2[t])P2[t]='0000'});   // 測試帳號：老師發的密碼是 0000
+  const seats=Object.keys(P2).filter(s=>!isTest(+s)).sort((a,b)=>a-b).concat(TEST_SEATS.map(String));let n=0;
+  for(const s of seats){let v;try{await tBind(s,P2[s]);v=(await timeout(db.ref(`${ROOT}/pw/${s}`).get(),10000)).val()}catch(e){if(isPerm(e)){M.textContent='❗ Firebase 規則還沒加上密碼的設定';return}M.textContent='讀取失敗，再按一次';return}
+    const pw=v&&Object.keys(v)[0];if(pw)n++;const c=el('span','chip'+(pw?'':' z'),`${isTest(+s)?'測試'+(TEST_SEATS.indexOf(+s)+1):s}<small>${pw||'還沒設'}</small>`);
     if(pw){const b=el('button','gray','重設');b.style.cssText='margin-left:.3rem;font-size:.8rem;padding:.1rem .4rem';
-      b.onclick=async()=>{if(!confirm(`${s} 號的密碼要重設嗎？重設後他要用老師發的密碼登入，再設一組新的。`))return;try{await tBind(s,pins[s]);await db.ref(`${ROOT}/pwset/${s}`).remove();await db.ref(`${ROOT}/pw/${s}`).remove();pwTeacher()}catch(e){M.textContent='重設失敗，再試一次'}};c.appendChild(b)}
+      b.onclick=async()=>{if(!confirm(isTest(+s)?`測試帳號 ${TEST_SEATS.indexOf(+s)+1} 的密碼要重設嗎？重設後用 0000 登入，再設一組新的。`:`${s} 號的密碼要重設嗎？重設後他要用老師發的密碼登入，再設一組新的。`))return;try{await tBind(s,P2[s]);await db.ref(`${ROOT}/pwset/${s}`).remove();await db.ref(`${ROOT}/pw/${s}`).remove();pwTeacher()}catch(e){M.textContent='重設失敗，再試一次'}};c.appendChild(b)}
     O.appendChild(c);M.textContent=`讀取中… ${s} 號`}
-  M.textContent=`${n} / ${seats.length} 人設好了`}
+  M.textContent=`${n} / ${seats.length} 人設好了（含 2 個測試帳號）`}
 tap($('#pwload'),()=>pwTeacher());
 /* ===================== 老師頁：班級儀表板 =====================
    打開老師頁就自動讀全班的「摘要」和「作答紀錄」，一眼看到：
