@@ -1,7 +1,7 @@
 /* 601 學習平台：離線也能用
    第一次有網路時打開平台，就把平台、遊戲和雲端程式存在平板上；之後沒網路也能打開練習。
    網頁本身「先抓網路上最新的，抓不到才用存起來的」，所以老師更新後學生一連網就會拿到新版。 */
-const CACHE = 'learn601-v79';
+const CACHE = 'learn601-v80';
 const PAGES = ['./learn.html', './game.html', './chess.html', './xq.js', './aq.js', './tank.js', './tankv.js', './party.html', './coop.html', './ico.js', './pet.js', './farm.js', ...['m5', 'zh', 'en', 'sci', 'soc'].map(k => `./bank/${k}.js`)];
 const SDK = ['app', 'database', 'auth'].map(n => `https://www.gstatic.com/firebasejs/10.12.2/firebase-${n}-compat.js`);
 
@@ -30,13 +30,26 @@ self.addEventListener('fetch', e => {
   /* 雲端資料庫、登入：不經過這裡 */
   if (url.hostname.endsWith('firebasedatabase.app') || url.hostname.endsWith('googleapis.com') && !url.hostname.startsWith('fonts')) return;
 
+  /* 圖片、錄音很少變動：有存就先用存的（馬上顯示），背景再抓新的存起來，下次打開就是新版 */
+  if (url.origin === self.location.origin && /\.(webp|png|jpe?g|gif|svg|mp3|m4a|ogg|wav)$/i.test(url.pathname)) {
+    if (req.headers.has('range')) return;   // 錄音分段讀取：交給瀏覽器自己處理
+    e.respondWith((async () => {
+      const c = await caches.open(CACHE);
+      const hit = await c.match(req, { ignoreSearch: true });
+      const net = fetch(req).then(res => { if (res && res.status === 200) c.put(req, res.clone()).catch(() => {}); return res; });
+      if (hit) { e.waitUntil(net.catch(() => {})); return hit; }
+      try { return await net; } catch (err) { return Response.error(); }
+    })());
+    return;
+  }
+
   /* 平台自己的網頁：先抓網路（最多等 5 秒），抓不到用存起來的 */
   if (url.origin === self.location.origin) {
     e.respondWith((async () => {
       const c = await caches.open(CACHE);
       try {
         const res = await withTimeout(fetch(req), 5000);
-        if (res && res.ok) c.put(req, res.clone());
+        if (res && res.status === 200) c.put(req, res.clone()).catch(() => {});
         return res;
       } catch (err) {
         const hit = await c.match(req, { ignoreSearch: true });
