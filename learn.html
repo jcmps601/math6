@@ -758,6 +758,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .pn{text-decoration:underline;text-decoration-thickness:.06em;text-underline-offset:.24em;text-decoration-skip-ink:none;margin:0 .07em}
 .bk{text-decoration:underline wavy;text-decoration-thickness:.05em;text-underline-offset:.22em;text-decoration-skip-ink:none;margin:0 .07em}
 .em{text-decoration:underline double;text-underline-offset:.2em}
+#verbar{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:9999;background:#1c7ed6;color:#fff;font-weight:800;font-size:1rem;padding:.35rem 1rem;border-radius:0 0 .8rem .8rem;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;max-width:96vw;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head><body>
 
@@ -1609,7 +1610,7 @@ function listenSum(){if(!db||!user)return;const p=base()+'/sum';if(sumRef&&sumRe
     mergeSum(v);LS.set('learn601_sum_'+user.seat,sum);
     if(JSON.stringify(sum.days)+(sum.amr||0)!==before&&view==='home'&&$('#home').classList.contains('on'))render()},()=>{})}
 function unlistenSum(){if(sumRef&&sumCb)try{sumRef.off('value',sumCb)}catch(e){}sumRef=null;sumCb=null}
-addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user){listenSum();flush()}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user){listenSum();flush()}});
 /* ===================== 早自修 =====================
    每天 10 題，依老師在老師頁設定的分組出題（存在 learn/u/座號/密碼/am：m 數學、z 國語，'x' 學扶、其他＝一般；ms、zs 是勾選的題型，空的＝全部）
    ・國語：一般＝1 篇閱讀測驗（最多 5 題，一天換一篇）；學扶＝4 題字詞、句段、篇章的基礎題
@@ -2699,6 +2700,24 @@ function xlsxBlob(sheets){const enc=new TextEncoder(),esc=v=>String(v).replace(/
 paintFS();paintSnd();
 /* 離線也能用:讓平板把平台存起來 */
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+/* ===== 自動更新 =====
+   學生把平台加到 iPad 主畫面後，打開時常常只是「從背景叫回來」，不會重新載入，就一直停在舊版。
+   所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
+   在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
+   進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
+const APP_VER='learn601-v86';let verNew=false,verBusy=false;
+async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
+  try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
+    if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
+function verSafe(){const on=id=>{const e=document.getElementById(id);return !!e&&e.classList.contains('on')};
+  return (on('home')||on('login'))&&!on('viewer')&&!on('pinbox')&&!on('end')&&!document.getElementById('pwm')}
+function verApply(){if(!verNew)return;
+  let last=0;try{last=+sessionStorage.getItem('learn601_vr')||0}catch(e){}
+  if(Date.now()-last<120000)return;   // 2 分鐘內剛更新過就不再重來（網路上的檔案還沒全部換好時，避免一直重新載入）
+  if(verSafe()){try{sessionStorage.setItem('learn601_vr',String(Date.now()))}catch(e){}location.reload();return}
+  if(!document.getElementById('verbar')){const b=document.createElement('div');b.id='verbar';b.textContent='🔄 平台有新版本，回到首頁就會自動更新';document.body.appendChild(b)}}
+setTimeout(verCheck,2500);setInterval(()=>{if(document.visibilityState==='visible')verCheck()},300000);setInterval(verApply,15000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')verCheck()});addEventListener('pageshow',e=>{if(e.persisted)verCheck()});
 addEventListener('hashchange',()=>{if(location.hash==='#setup')openSetup()});
 if(location.hash==='#setup')openSetup();
 else if(user){loadSum();enterHome()}
