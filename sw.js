@@ -1,7 +1,8 @@
 /* 601 學習平台：離線也能用
    第一次有網路時打開平台，就把平台、遊戲和雲端程式存在平板上；之後沒網路也能打開練習。
-   網頁本身「先抓網路上最新的，抓不到才用存起來的」，所以老師更新後學生一連網就會拿到新版。 */
-const CACHE = 'learn601-v85';
+   網頁本身「先抓網路上最新的，抓不到才用存起來的」，所以老師更新後學生一連網就會拿到新版。
+   改版時 CACHE 的版本號要跟 learn.html 的 APP_VER 一起改（learn.html 靠這個號碼知道有新版、自動重新載入）。 */
+const CACHE = 'learn601-v86';
 const PAGES = ['./learn.html', './game.html', './chess.html', './xq.js', './aq.js', './tank.js', './tankv.js', './party.html', './coop.html', './ico.js', './am.js', './pet.js', './farm.js', ...['m5', 'zh', 'en', 'sci', 'soc', 'am_zh'].map(k => `./bank/${k}.js`)];
 const SDK = ['app', 'database', 'auth'].map(n => `https://www.gstatic.com/firebasejs/10.12.2/firebase-${n}-compat.js`);
 
@@ -48,8 +49,10 @@ self.addEventListener('fetch', e => {
     e.respondWith((async () => {
       const c = await caches.open(CACHE);
       try {
-        const res = await withTimeout(fetch(req), 5000);
+        /* no-cache：一定跟網站確認是不是最新的（GitHub 會叫瀏覽器把網頁留 10 分鐘，不加的話剛更新完還會拿到舊的） */
+        const res = await withTimeout(fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }), 5000);
         if (res && res.status === 200) c.put(req, res.clone()).catch(() => {});
+        if (res && res.redirected && req.mode === 'navigate') return Response.redirect(res.url, 302);   // Safari 不接受「轉址過的網頁」直接回給頁面
         return res;
       } catch (err) {
         const hit = await c.match(req, { ignoreSearch: true });
