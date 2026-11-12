@@ -58,7 +58,7 @@ button{font-family:inherit;cursor:pointer}
 .go{border:0;border-radius:20px;background:var(--o);color:#fff;box-shadow:0 5px 0 #e8590c;font-size:1.7rem;font-weight:900;padding:.6rem 1.3rem;margin-top:.5rem}
 .go:active{transform:translateY(3px);box-shadow:0 2px 0 #e8590c}
 #fire{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem}
-#fire .n{font-size:3.6rem;font-weight:900;color:#f76707;line-height:1}#fire .l{font-size:1.25rem;font-weight:900;color:#999}
+#fire .n{font-size:3.6rem;font-weight:900;color:#f76707;line-height:1}#fire .l{font-size:1.25rem;font-weight:900;color:#999}#fire .cs{font-size:1.05rem;font-weight:800;color:#e8590c}
 #week{display:flex;gap:.45rem;margin-top:.6rem}#week div{display:flex;flex-direction:column;align-items:center;gap:.2rem;font-size:1rem;font-weight:900;color:#aaa}
 #week i{width:2.2rem;height:2.2rem;border-radius:50%;background:#f1f3f5;display:flex;align-items:center;justify-content:center;font-style:normal;color:#fff;font-size:1.2rem}
 #week i.y{background:var(--g)}#week i.p{background:#ffe8cc;color:#f76707}#week .td{color:#f76707}
@@ -1365,6 +1365,8 @@ async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true
     if(isLb&&!(await ensureBind()))break;
     /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
     const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
+    /* 進度（sum）上傳前先讀雲端合併：別台平板做的（例如週末在家）不會被這台舊的紀錄蓋掉 */
+    if(user&&sum&&it.p===base()+'/sum'){try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum))}catch(e){break}}
     try{await timeout(db.ref(it.p).set(it.v),12000);drop()}
     catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
   flushing=false;paintSync()}
@@ -1378,7 +1380,7 @@ let sum=null;
 const base=()=>`${ROOT}/u/${user.seat}/${user.pin}`;
 const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tc:0,tco:0,gb2:{}});
 function loadSum(){sum=Object.assign(blankSum(),LS.get('learn601_sum_'+user.seat,{}))}
-function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
+function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();dvPrune();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
@@ -1389,6 +1391,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   sum.amr=mx(sum.amr,r.amr);   // 早自修讀到第幾篇
+  if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
 /* 老師在雲端清除紀錄後,平板上留下的舊進度也要歸零(還有沒上傳的資料就不動) */
@@ -1450,7 +1453,7 @@ async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'}
 /* 規則有沒有生效:新規則讓 learn/lb(排行榜)可以讀 */
 async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/lb`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
 tap(document.getElementById('pwBtn'),()=>pwChange());
-tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
+tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();unlistenSum();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
 /* ===================== 介面:全螢幕、鎖右鍵、音效、彩帶 ===================== */
@@ -1493,7 +1496,7 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
-function enterHome(){show$('home');presence();listenInv();amLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
+function enterHome(){show$('home');presence();listenInv();listenSum();amLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
@@ -1539,6 +1542,15 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     if(k==='out'){closeMore();return fire('logout')}}));
   tap(m.querySelector('.pmx'),closeMore);tap(m,e=>{if(e.target===m)closeMore()})}
 function todayN(){return sum.days[dkey()]||0}
+/* 每台平板分開記「這一天在這台做了幾題」（sum.dv：裝置代號 → {日期: 題數}），一天的題數＝各台加起來。
+   以前只取兩台裡比較多的那台，在學校做一點、回家再做一點，就湊不滿 10 題。只留最近 21 天，舊的已經算進 sum.days。 */
+const DEV=(()=>{let d=LS.get('learn601_dev',null);if(!d){d='d'+Math.random().toString(36).slice(2,9);LS.set('learn601_dev',d)}return d})();
+function dvSum(k){let t=0;for(const v of Object.values(sum.dv||{}))t+=(v&&+v[k])||0;return t}
+function dvFix(k){const t=dvSum(k);if(t>(sum.days[k]||0))sum.days[k]=t}
+function dvAdd(k){sum.dv=sum.dv||{};const m=sum.dv[DEV]=sum.dv[DEV]||{};m[k]=(m[k]||0)+1;sum.days[k]=(sum.days[k]||0)+1;dvFix(k)}
+function dvPrune(){if(!sum.dv)return;const old=dkey(new Date(Date.now()-21*864e5));for(const d in sum.dv){const m=sum.dv[d]||{};for(const k in m)if(k<old)delete m[k];if(!Object.keys(m).length)delete sum.dv[d]}}
+/* 累計完成天數：做滿 10 題的天數，只會往上加 */
+function doneDays(){return Object.values(sum.days||{}).filter(v=>v>=GOAL).length}
 /* 連續完成天數：週末沒做不會中斷，有做一樣算 */
 function streak(){let n=0;const d=new Date();if((sum.days[dkey(d)]||0)<GOAL)d.setDate(d.getDate()-1);
   for(let i=0;i<800;i++){if((sum.days[dkey(d)]||0)>=GOAL)n++;else if(d.getDay()%6)break;d.setDate(d.getDate()-1)}return n}
@@ -1577,7 +1589,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div class="tinfo"><div class="t1">今日任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const SM=mixOf(subj),gb=el('button','go',(done?'再練一回':'繼續練習')+(SM?'':'（數學）')+' ▶');tap(gb,()=>startPractice((SM||MIX).key));t.querySelector('.tinfo').appendChild(gb);
   const tk=el('button','tkc',`${ico('rw-ticket','ii')}遊戲券 × ${tkN()}　<small>${tkInfo()}</small>`);tap(tk,()=>goView('game'));t.querySelector('.tinfo').appendChild(tk);
-  const f=el('div');f.id='fire';const st=streak();f.innerHTML=`<div class="n">${ico('rw-fire','fi')}${st}<span class="l">連續完成天數</span></div>`;
+  const f=el('div');f.id='fire';const st=streak(),cd=doneDays();f.innerHTML=`<div class="n">${ico('rw-fire','fi')}${cd}<span class="l">累計完成天數</span></div><div class="cs">${st>1?`🔥 已經連續 ${st} 天`:st===1?'今天完成了，明天繼續！':`今天做滿 ${GOAL} 題就加 1 天`}</div>`;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
@@ -1589,6 +1601,15 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const H=el('div','hsum');H.appendChild(bossCard());H.appendChild(PET.homeCard());H.appendChild(FARM.homeCard());P.appendChild(H);
   P.appendChild(playCard());
   P.appendChild(statCard())}
+/* 登入期間一直聽雲端的進度：另一台平板一有新紀錄，這台馬上合併（平板休眠後重新連上網路也會收到） */
+let sumRef=null,sumCb=null;
+function listenSum(){if(!db||!user)return;const p=base()+'/sum';if(sumRef&&sumRef.__p===p)return;unlistenSum();
+  sumRef=db.ref(p);sumRef.__p=p;const s0=user.seat;
+  sumCb=sumRef.on('value',sn=>{const v=sn.val();if(!v||!user||!sum||user.seat!==s0)return;const before=JSON.stringify(sum.days)+(sum.amr||0);
+    mergeSum(v);LS.set('learn601_sum_'+user.seat,sum);
+    if(JSON.stringify(sum.days)+(sum.amr||0)!==before&&view==='home'&&$('#home').classList.contains('on'))render()},()=>{})}
+function unlistenSum(){if(sumRef&&sumCb)try{sumRef.off('value',sumCb)}catch(e){}sumRef=null;sumCb=null}
+addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user){listenSum();flush()}});
 /* ===================== 早自修 =====================
    每天 10 題，依老師在老師頁設定的分組出題（存在 learn/u/座號/密碼/am：m 數學、z 國語，'x' 學扶、其他＝一般；ms、zs 是勾選的題型，空的＝全部）
    ・國語：一般＝1 篇閱讀測驗（最多 5 題，一天換一篇）；學扶＝4 題字詞、句段、篇章的基礎題
@@ -1687,23 +1708,23 @@ const STAT_RULE=`"stat": {
   }
 }`;
 const weekQ=()=>weekKeys(0).reduce((a,k)=>a+(sum.days[k]||0),0);
-function statMine(){return {w:bossWk(),tw:weekQ(),n:sum.total||0,f:Math.min(sum.first||0,sum.total||0),st:streak(),t:Date.now()}}
+function statMine(){return {w:bossWk(),tw:weekQ(),n:sum.total||0,f:Math.min(sum.first||0,sum.total||0),st:streak(),cd:doneDays(),t:Date.now()}}
 /* 練完一輪、打開平台時更新（數字沒變就不送） */
-function statPush(){if(!user||!sum)return;const v=statMine(),k=[v.w,v.tw,v.n,v.f,v.st].join('|');if(statPush.k===user.seat+k)return;statPush.k=user.seat+k;
+function statPush(){if(!user||!sum)return;const v=statMine(),k=[v.w,v.tw,v.n,v.f,v.st,v.cd].join('|');if(statPush.k===user.seat+k)return;statPush.k=user.seat+k;
   enqueue(`${ROOT}/stat/${user.seat}`,v,true)}
 let STATC=null;
 async function statAll(){if(STATC&&Date.now()-STATC.at<30000)return STATC;if(!(await fbOnline()))return null;
   let v,denied=false;try{v=(await timeout(db.ref(`${ROOT}/stat`).get(),8000)).val()||{}}catch(e){denied=/permission/i.test(String(e&&(e.code||e.message)));if(denied)return {denied:true};throw e}
   const wk=bossWk(),today=dkey(),ld=(()=>{const d=new Date();do d.setDate(d.getDate()-1);while(d.getDay()%6===0);return dkey(d)})(),rows=[];
   for(const [st,o] of Object.entries(v)){const seat=+st;if(!o||isTest(seat))continue;const day=dkey(new Date(+o.t||0));
-    rows.push({seat,tw:o.w===wk?(+o.tw||0):0,n:+o.n||0,f:+o.f||0,st:day>=ld?(+o.st||0):0})}   // 連續天數：上一個上學日之後都沒更新就斷了
-  if(user&&!isTest(user.seat)){const m=statMine(),i=rows.findIndex(r=>r.seat===user.seat),me={seat:user.seat,tw:m.tw,n:m.n,f:m.f,st:m.st};if(i>=0)rows[i]=me;else rows.push(me)}   // 自己的用這台平板上最新的
+    rows.push({seat,tw:o.w===wk?(+o.tw||0):0,n:+o.n||0,f:+o.f||0,st:day>=ld?(+o.st||0):0,cd:+(o.cd!=null?o.cd:o.st)||0})}   // 連續天數：上一個上學日之後都沒更新就斷了
+  if(user&&!isTest(user.seat)){const m=statMine(),i=rows.findIndex(r=>r.seat===user.seat),me={seat:user.seat,tw:m.tw,n:m.n,f:m.f,st:m.st,cd:m.cd};if(i>=0)rows[i]=me;else rows.push(me)}   // 自己的用這台平板上最新的
   STATC={at:Date.now(),rows};return STATC}
 const STAT_BOARDS=[
   {k:'tw',n:'本週練習',img:'pr-pen',c:'#1c7ed6',u:'題',sub:'這週做了幾題',v:r=>r.tw,on:r=>r.tw>0},
   {k:'n',n:'累計練習',img:'rw-trophy',c:'#2e7554',u:'題',sub:'全部做了幾題',v:r=>r.n,on:r=>r.n>0},
   {k:'acc',n:'一次就答對',img:'pr-ok',c:'#e8590c',u:'%',sub:`做滿 ${STAT_MIN} 題才上榜`,v:r=>r.n?Math.round(r.f/r.n*1000)/10:0,on:r=>r.n>=STAT_MIN},
-  {k:'st',n:'連續完成',img:'rw-fire',c:'#c2255c',u:'天',sub:`每天做滿 ${GOAL} 題，週末可以休息`,v:r=>r.st,on:r=>r.st>0}];
+  {k:'st',n:'完成天數',img:'rw-fire',c:'#c2255c',u:'天',sub:`做滿 ${GOAL} 題的天數，一直累計`,v:r=>r.cd,on:r=>r.cd>0}];
 function statRank(B,rows){const on=rows.filter(B.on).map(r=>({seat:r.seat,v:B.v(r),n:r.n})).sort((a,b)=>b.v-a.v||b.n-a.n||a.seat-b.seat);
   on.forEach(x=>x.rank=1+on.filter(y=>y.v>x.v).length);return on}
 const statFmt=(B,x)=>B.k==='acc'?`${x.v}%<small>${x.n} 題</small>`:`${x.v} ${B.u}`;
@@ -2285,7 +2306,7 @@ const dis=(b,v)=>{b.disabled=v;b.classList.toggle('off',v)};
 function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),true);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
   const uk=ukeyOf(pu),rew=!uk||uqN(uk)<UNIT_CAP;if(uk){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵
-  const k=dkey();if(rew){sum.days[k]=(sum.days[k]||0)+1;sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
+  const k=dkey();if(rew){dvAdd(k);sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
   const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):1;   // 這題的遊戲券分數
   let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
   if(!rew){}
