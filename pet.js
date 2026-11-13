@@ -256,7 +256,7 @@
     { id: 'feast', i: '🍱', n: '豪華便當', p: 18, f: 70, j: 10 }
   ];
   /* 農場收成的菜也可以餵（比賣掉划算）：飽足＝6＋賣價×5（最多 45），水果多一點開心 */
-  const FRUIT = { strawberry: 1, watermelon: 1, grape: 1 };
+  const FRUIT = { strawberry: 1, watermelon: 1, grape: 1, blueberry: 1, pineapple: 1 };
   const cropFood = id => { const C = window.FARM && FARM.CROPS[id]; return C ? { f: Math.min(45, 6 + C.s * 5), j: FRUIT[id] ? 8 : 0 } : null; };
   const NAMES = ['小布丁', '麻糬', '湯圓', '小餅乾', '奶茶', '豆花', '芒果', '布布', '泡芙', '棉花糖', '小可', '多多', '咪咪', '球球', '嘟嘟', '樂樂',
     '皮皮', '丸子', '小星', '月月', '雲朵', '珍珠', '可樂', '花生', '小米', '橘橘', '莓莓', '蜜蜜', '豆豆', '糖糖', '阿福', '旺旺', '跳跳', '小熊', '奇奇', '妞妞'];
