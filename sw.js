@@ -2,7 +2,7 @@
    第一次有網路時打開平台，就把平台、遊戲和雲端程式存在平板上；之後沒網路也能打開練習。
    網頁本身「先抓網路上最新的，抓不到才用存起來的」，所以老師更新後學生一連網就會拿到新版。
    改版時 CACHE 的版本號要跟 learn.html 的 APP_VER 一起改（learn.html 靠這個號碼知道有新版、自動重新載入）。 */
-const CACHE = 'learn601-v90';
+const CACHE = 'learn601-v91';
 const PAGES = ['./learn.html', './game.html', './chess.html', './xq.js', './aq.js', './tank.js', './tankv.js', './party.html', './coop.html', './ico.js', './am.js', './pet.js', './farm.js', ...['m5', 'zh', 'en', 'sci', 'soc', 'am_zh'].map(k => `./bank/${k}.js`)];
 const SDK = ['app', 'database', 'auth'].map(n => `https://www.gstatic.com/firebasejs/10.12.2/firebase-${n}-compat.js`);
 
