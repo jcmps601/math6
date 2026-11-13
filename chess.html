@@ -416,7 +416,8 @@ const canMove=()=>{const st=G.st;if(!st||st.phase!=='play'||!G.R||G.R.over)retur
 const replayNow=st=>G.type==='pd'?TK.replay(st.map,st.seed,st.moves||''):G.type==='aq'?AQ.replay(st.deck,st.moves||''):XQ.replay(st.moves||'');
 /* 場地：開房間的人選（或隨機）；同一個房間的下一局換人先手（第 1 局紅隊先、第 2 局藍隊先…） */
 const pdSiteChoice=()=>{const v=G.site||LS.get('pd_site','random');return TK.SITES[v]?v:'random'};
-const pdFresh=g=>{const v=pdSiteChoice(),ng=TK.newGame(2,'ffa',{site:TK.SITES[v]?v:undefined,first:((g||1)-1)%2,mv:G.ver===2?'v2':''});return {map:ng.map,seed:ng.seed,turn:PSIDE[((g||1)-1)%2]}};
+/* 誰先打：每一局抽籤（以前固定建房間的人先打）。開局時兩邊的平板都會播抽籤動畫 */
+const pdFresh=g=>{const v=pdSiteChoice(),f=Math.random()<.5?0:1,ng=TK.newGame(2,'ffa',{site:TK.SITES[v]?v:undefined,first:f,mv:G.ver===2?'v2':''});return {map:ng.map,seed:ng.seed,turn:PSIDE[f]}};
 /* 新的一局:暗棋要洗牌、大砲對轟要新地圖 */
 const fresh=g=>G.type==='aq'?{deck:AQ.deal()}:G.type==='pd'?pdFresh(g):{};
 /* 坦克造型：在平台裡用車庫買的 */
