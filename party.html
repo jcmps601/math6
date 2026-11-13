@@ -125,6 +125,9 @@ button{font-family:inherit;cursor:pointer}
 .btn.gar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}.btn.gar small{font-size:.75em;color:#9a7a52}
 #ovSt:empty{display:none}
 @media (max-width:560px){.sites button{font-size:.85rem;flex-direction:column;gap:.1rem}}
+.tsel{font-size:1.1rem;font-weight:800;padding:.35rem .6rem;border-radius:12px;border:3px solid #e9d5ae;background:#fff;color:#7a5a32}
+.tsk{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem}.tsk label{display:flex;align-items:center;gap:.35rem;font-weight:900;color:#7a5a32}.tsk select{flex:1;min-width:0}
+@media (max-width:560px){.tsk{grid-template-columns:1fr}}
 </style></head><body>
 
 <section class="scr on" id="home">
@@ -137,6 +140,7 @@ button{font-family:inherit;cursor:pointer}
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin"><img class="ti" src="img/ui/ic-room-join.webp" alt="" draggable="false">加入</button></div>
     <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請同學一起玩</button>
     <button class="btn g gar" id="bGarage" hidden><img class="ti" src="img/game/tank-ui-garage-v2.webp" alt="" draggable="false">坦克車庫<small id="mySkin"></small></button>
+    <button class="btn g" id="bTest" hidden>🧪 測試模式：單機、自選造型（只有測試帳號看得到）</button>
     <button class="btn g" id="bSolo" hidden style="display:none">👥 同一台平板輪流打（2～4 人）</button><!-- 學生喜歡各自用自己的平板：拿掉同一台輪流打 -->
   </div>
   <div id="msg"></div>
@@ -171,6 +175,13 @@ button{font-family:inherit;cursor:pointer}
 <div class="ov" id="pick"><div class="box"><div class="t"><img class="ti" src="img/ui/vs-inv.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.35em">邀請同學來玩大砲混戰</div>
   <div class="s">綠色的同學現在在平台上，按一下就會邀請他（可以邀請好幾個人）</div><div id="pickList"></div><button class="btn g" id="pickX">好了</button></div></div>
 
+<div class="ov" id="testBox"><div class="box"><div class="t">🧪 測試模式（單機）</div>
+  <div class="s">同一台平板輪流操作每一台坦克，不用遊戲券、不記戰績</div>
+  <div class="s">幾台坦克？</div><div class="nbtn" id="testN"><button data-n="2">2 台</button><button data-n="3">3 台</button><button data-n="4">4 台</button></div>
+  <div class="modes" id="testM" style="margin:0 auto"><button data-m="ffa">💥 各自為戰</button><button data-m="team">🤝 2 對 2</button></div>
+  <div class="s">場地</div><select id="testSite" class="tsel"></select>
+  <div class="s">每一台的造型</div><div id="testSk" class="tsk"></div>
+  <div class="row"><button class="btn" id="testGo">開始測試！</button><button class="btn g" id="testX">取消</button></div></div></div>
 <div class="ov" id="soloBox"><div class="box"><div class="t">同一台平板輪流打</div>
   <div class="s">幾個人一起玩？</div><div class="nbtn" id="soloN"><button data-n="2">2 人</button><button data-n="3">3 人</button><button data-n="4">4 人</button></div>
   <div class="modes" id="soloM" style="margin:0 auto"><button data-m="ffa">💥 各自為戰</button><button data-m="team">🤝 2 對 2</button></div>
@@ -257,7 +268,7 @@ const gameKey=()=>`pm${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;
 const tokCount=()=>((G.st&&G.st.moves)||'').split(',').filter(Boolean).length;
 const plName=p=>p?(p.seat&&inPlat()&&P.seatName?P.seatName(p.seat):p.name||'同學'):'同學';
 /* 名字：開局時存在 state.names（有人中途離開也看得到他的名字） */
-const names=()=>{if(G.mode==='solo')return order().map((_,i)=>'玩家 '+(i+1));const nm=String((G.st&&G.st.names)||'').split('|');return order().map((k,i)=>nm[i]||plName(G.players[k]))};
+const names=()=>{if(G.mode==='solo'){const sk=String((G.st&&G.st.skins)||'').split('|');return order().map((_,i)=>G.solo&&G.solo.opt&&sk[i]?`${i+1}・${TKV.SKIN_N[sk[i]]||''}`:'玩家 '+(i+1))}const nm=String((G.st&&G.st.names)||'').split('|');return order().map((k,i)=>nm[i]||plName(G.players[k]))};
 const hostSlot=()=>{const ks=SLOTS.filter(k=>G.players[k]&&!G.players[k].off);return ks[0]||SLOTS.find(k=>G.players[k])||''};
 const isHost=()=>G.mode==='net'&&hostSlot()===G.slot;
 const PALETTE=m=>m==='team'?['#ef4444','#3b82f6','#ef4444','#3b82f6']:['#ef4444','#3b82f6','#22c55e','#f59e0b'];
@@ -370,7 +381,7 @@ $('#bLeave').onclick=()=>{if(window.__xqBusy()&&!confirm(PM&&R()&&R().mode==='te
 $('#bOut').onclick=leave;$('#bLLeave').onclick=leave;
 $('#bBack').onclick=()=>{G.ovHide=gameKey();$('#over').classList.remove('on');
   if(isHost()&&G.st&&G.st.phase==='end')Net.update(`rooms/${G.pin}/state`,{phase:'wait',t:Date.now()}).catch(()=>{});onState()};
-$('#bAgain').onclick=()=>{$('#over').classList.remove('on');soloStart(G.solo.n,G.solo.m)};
+$('#bAgain').onclick=()=>{$('#over').classList.remove('on');soloStart(G.solo.n,G.solo.m,G.solo.opt)};
 
 /* ═════════════ 房間（等人） ═════════════ */
 function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode==='team'?'team':'ffa',col=PALETTE(mode);
@@ -455,9 +466,23 @@ document.querySelectorAll('#soloM button').forEach(b=>b.onclick=()=>{if(b.disabl
 $('#bSolo').onclick=()=>{return;if(!hasTicket())return msg(NO_TK);paintSolo();$('#soloBox').classList.add('on')};
 $('#soloX').onclick=()=>$('#soloBox').classList.remove('on');
 $('#soloGo').onclick=()=>{$('#soloBox').classList.remove('on');soloStart(soloN,soloM)};
-function soloStart(n,m){if(!hasTicket()){show('home');return msg(NO_TK)}const ng=TK.newGame(n,m),g=((G.st&&G.st.g)||0)+1;
-  G.solo={n,m,paid:(G.solo&&G.solo.paid)||0};Object.assign(G,{mode:'solo',pin:'',slot:'',players:{}});
-  G.st={phase:'play',order:[...Array(n).keys()].map(i=>'s'+i).join(','),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',g};onState()}
+function soloStart(n,m,opt){if(!hasTicket()){show('home');return msg(NO_TK)}const site=opt&&opt.site&&TK.SITES[opt.site]?opt.site:undefined,ng=TK.newGame(n,m,site?{site}:{}),g=((G.st&&G.st.g)||0)+1;
+  G.solo={n,m,opt,paid:(G.solo&&G.solo.paid)||0};Object.assign(G,{mode:'solo',pin:'',slot:'',players:{}});
+  G.st={phase:'play',order:[...Array(n).keys()].map(i=>'s'+i).join(','),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',g,...(opt&&opt.skins?{skins:opt.skins.slice(0,n).join('|')}:{})};onState()}
+/* 🧪 測試模式：只有測試帳號看得到。單機輪流操作，自己選台數、場地、每台的造型，用來檢查造型、移動、砲彈、特效 */
+let testN=2,testM='ffa',testSk=null;
+function paintTest(){if(!testSk){const all=TKV.SKINS;testSk=[all[all.length-3],all[all.length-2],all[all.length-1],all[6]]}
+  document.querySelectorAll('#testN button').forEach(b=>b.classList.toggle('on',+b.dataset.n===testN));
+  if(testN!==4)testM='ffa';document.querySelectorAll('#testM button').forEach(b=>{b.classList.toggle('on',b.dataset.m===testM);b.disabled=b.dataset.m==='team'&&testN!==4});
+  const S=$('#testSite');if(!S.options.length)S.innerHTML=['random',...TK.SITE_KEYS].map(k=>`<option value="${k}">${k==='random'?'隨機':TK.SITES[k].n}</option>`).join('');
+  const opt=TKV.SKINS.map(k=>`<option value="${k}">${TKV.SKIN_N[k]}</option>`).join('');
+  $('#testSk').innerHTML=[...Array(testN)].map((_,i)=>`<label>${i+1}<select class="tsel" data-i="${i}">${opt}</select></label>`).join('');
+  $('#testSk').querySelectorAll('select').forEach(x=>{x.value=testSk[+x.dataset.i];x.onchange=()=>{testSk[+x.dataset.i]=x.value}})}
+document.querySelectorAll('#testN button').forEach(b=>b.onclick=()=>{testN=+b.dataset.n;paintTest()});
+document.querySelectorAll('#testM button').forEach(b=>b.onclick=()=>{if(!b.disabled){testM=b.dataset.m;paintTest()}});
+$('#bTest').onclick=()=>{if(!isTestMe())return;paintTest();$('#testBox').classList.add('on')};
+$('#testX').onclick=()=>$('#testBox').classList.remove('on');
+$('#testGo').onclick=()=>{if(!isTestMe())return;$('#testBox').classList.remove('on');const v=$('#testSite').value;soloStart(testN,testM,{site:v==='random'?'':v,skins:testSk.slice(0,testN),test:1})};
 
 /* ═════════════ 邀請同學（在學習平台裡） ═════════════ */
 /* 名單打開時每 5 秒更新一次：同學剛上線也看得到，不用關掉再開 */
@@ -478,7 +503,7 @@ $('#bInv').onclick=async()=>{if(await create()){onState();openPick()}};
 window.addEventListener('pagehide',()=>{if(G.inv.size&&inPlat()&&P.uninvite)G.inv.forEach(s=>P.uninvite(s))});
 
 /* ═════════════ 開始 ═════════════ */
-paintMe();paintRec();paintSkin();if(inPlat()&&P.invite)$('#bInv').hidden=false;
+paintMe();paintRec();paintSkin();if(inPlat()&&P.invite)$('#bInv').hidden=false;$('#bTest').hidden=!isTestMe();
 $('#bGarage').onclick=openGarage;
 addEventListener('resize',()=>{if($('#game').classList.contains('on'))TKV.fit()});
 (async()=>{await netReady;
