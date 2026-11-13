@@ -86,7 +86,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 #bFire{min-width:7rem;font-size:1.4rem;flex-direction:column;gap:0}
 #bFire img{width:2.2rem;height:2.2rem}
 .acts{display:flex;flex-direction:column;gap:.4rem}.acts .btn{font-size:1rem;padding:.3rem .7rem;flex:1}
-#ctl.off .fine,#ctl.off #pad,#ctl.off #bFire,#ctl.off .acts .act{opacity:.4;filter:grayscale(.7);pointer-events:none}
+#ctl.off .fine,#ctl.off #pad,#ctl.off #bFire,#ctl.off .acts .act,#ctl.off .skills{opacity:.4;filter:grayscale(.7);pointer-events:none}
 #tip{position:absolute;left:50%;bottom:.4rem;transform:translateX(-50%);background:rgba(255,255,255,.92);border-radius:999px;padding:.25rem .9rem;font-weight:900;color:#7a5a32;font-size:.95rem;pointer-events:none;white-space:nowrap}
 #tip:empty{display:none}
 #pause{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(251,245,232,.75);font-size:1.4rem;font-weight:900;color:#d9480f;text-align:center;padding:1rem}
@@ -94,6 +94,8 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 #topBtns{position:absolute;right:.3rem;top:.3rem;display:flex;gap:.3rem;z-index:3}
 #topBtns .btn{min-height:48px;font-size:.95rem;padding:.2rem .8rem}
 @media (orientation:portrait),(max-width:760px){
+ .skills{flex:1 1 100%;justify-content:center}.skills button{flex:1;min-width:0}
+ .st{flex-wrap:wrap;row-gap:.1rem;white-space:normal}.lives img{width:1.1em;height:1.1em}
  #hud{grid-template-columns:1fr 1fr}#hud .mid{grid-column:1/-1;grid-row:1;flex-direction:row;gap:.8rem;padding:.2rem}
  .pl .av{width:2.6rem;height:2.6rem}.pl .nm{font-size:1rem}
  #ctl{flex-wrap:wrap;justify-content:center}#who{flex:1 1 100%;flex-direction:row;align-items:center;gap:.6rem;min-width:0}#who>div{flex:1}
@@ -106,7 +108,20 @@ button{font-family:inherit;cursor:pointer;color:inherit}
  #ctl{grid-column:2;grid-row:2;min-height:0;flex-wrap:wrap;align-content:flex-start;overflow:auto;padding:.3rem;gap:.3rem}
  #who{flex:1 1 100%;min-width:0;flex-direction:row;align-items:center;gap:.5rem}#who>div{flex:1}#who b{font-size:1rem}
  #pad{width:88px;height:88px}.fine{flex:1 1 7rem;min-width:0;gap:.15rem}.fine .r>span{display:none}.fine b{min-width:2.6rem;font-size:.9rem}
- #bFire{flex:1 1 100%;min-height:3rem;flex-direction:row;font-size:1.2rem}#bFire img{width:1.7rem;height:1.7rem}.acts{flex-direction:row;flex:1 1 100%}.acts .btn{min-height:44px}}
+ #bFire{flex:1 1 45%;min-height:48px;flex-direction:row;font-size:1.15rem}#bFire img{width:1.5rem;height:1.5rem}.acts{flex-direction:row;flex:1 1 50%;gap:.3rem}.acts .btn{min-height:48px;font-size:.9rem;padding:.2rem .4rem}.acts .btn .ic{display:none}
+ .st{flex-wrap:wrap;row-gap:0;white-space:normal}.lives img{width:1.05em;height:1.05em}.skills{flex:1 1 100%}.skills button{flex:1;min-width:0;min-height:48px;flex-direction:row;gap:.2rem;font-size:.85rem}.skills button img{width:1.2rem;height:1.2rem}.skills button small{display:none}#skTip{display:none}#pad{width:84px;height:84px}}
+/* 模式切換、技能 */
+.modes{display:flex;gap:.4rem;background:#f3e6c8;border-radius:999px;padding:.3rem;margin:.3rem auto;width:max-content;max-width:100%}
+.modes button{border:0;border-radius:999px;font-size:1.05rem;font-weight:900;padding:.4rem 1rem;background:none;color:#a0835a;min-height:44px}
+.modes button.on{background:#fff;color:#e2640f;box-shadow:0 3px 0 #e2cfa6}.modes button:disabled{cursor:default}
+.skills{display:flex;gap:.35rem;align-items:stretch;flex-wrap:wrap}
+.skills button{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:4.4rem;min-height:56px;border:4px solid #eadcbc;background:#fff;border-radius:14px;font-weight:900;font-size:.95rem;padding:.15rem .3rem;line-height:1.1}
+.skills button img{width:1.6rem;height:1.6rem;object-fit:contain}.skills button small{font-size:.72rem;color:#a0835a}
+.skills button.on{border-color:#f57c1f;background:#fff3e0;color:#e2640f}.skills button:disabled{opacity:.4;filter:grayscale(.8)}
+#skTip{flex:1 1 100%;font-size:.8rem;font-weight:900;color:#d9480f;min-height:1em}
+.lives{display:inline-flex;gap:.1rem;vertical-align:middle}.lives img{width:1.35em;height:1.35em}
+.ens{display:inline-flex;gap:.12rem;vertical-align:middle}.ens i{display:inline-block;width:.85em;height:1.1em;border-radius:.3em;background:#e6dcc6}.ens i.f{background:linear-gradient(#7ee8f2,#26b3c9)}
+.tag{display:inline-block;white-space:nowrap;font-size:.75rem;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:0 .35rem;margin-left:.2rem}
 /* 結算 */
 #over .box{min-width:min(26rem,100%)}
 #ovIcon{width:5rem;height:5rem;object-fit:contain}
@@ -132,7 +147,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   <div class="sub">線上對戰房間・房號</div>
   <div class="card" id="pinBig">----</div>
   <div class="slots" id="slots"></div>
-  <div class="card" style="padding:.6rem .9rem;width:min(34rem,100%)"><div class="s" style="font-weight:900;color:#7a5a32">場地 <small id="mapTip"></small></div><div class="maps" id="lMaps"></div></div>
+  <div class="card" style="padding:.6rem .9rem;width:min(34rem,100%)"><div class="modes" id="lMode"><button data-x="trap"><img class="ic" src="img/ps/ps2-ui-mode.webp" alt="">陷阱擂台</button><button data-x="classic">經典</button></div><div class="s" style="font-weight:900;color:#7a5a32">場地 <small id="mapTip"></small></div><div class="maps" id="lMaps"></div></div>
   <div class="row"><button class="btn o" id="bReady">我準備好了</button><button class="btn" id="bInv" hidden><img class="ic" src="img/ps/ps-ui-invite.webp" alt="">邀請同學</button><button class="btn w" id="bLLeave"><img class="ic" src="img/ps/ps-ui-leave.webp" alt="">離開</button></div>
   <div id="lmsg" style="font-weight:900;color:#7a5a32;min-height:1.4em"></div>
   <div id="invNote" style="font-weight:900;color:#d9480f;min-height:1.4em"></div>
@@ -151,13 +166,15 @@ button{font-family:inherit;cursor:pointer;color:inherit}
     <canvas id="pad" aria-label="瞄準盤：向後拉"></canvas>
     <div class="fine"><div class="r"><span>角度</span><button id="aL" aria-label="角度往左">↺</button><button id="aR" aria-label="角度往右">↻</button><b id="angV">0°</b></div>
       <div class="r"><span>力道</span><input type="range" id="pw" min="0" max="100" step="1" value="0" aria-label="力道"><b id="pwV">0%</b></div></div>
+    <div class="skills" id="skills" hidden><button data-k="n"><img src="img/ps/ps-ui-launch.webp" alt="">普通<small>0 能量</small></button><button data-k="h"><img src="img/ps/ps2-ui-heavy.webp" alt="">重擊<small>1 能量</small></button><button data-k="g"><img src="img/ps/ps2-ui-guard.webp" alt="">護盾<small>1 能量</small></button><small id="skTip"></small></div>
     <button class="btn o" id="bFire" disabled><img src="img/ps/ps-ui-launch.webp" alt="">發射</button>
     <div class="acts"><button class="btn w act" id="bCancel"><img class="ic" src="img/ps/ps-ui-cancel.webp" alt="">取消</button><button class="btn w act" id="bPass"><img class="ic" src="img/ps/ps-ui-pass.webp" alt="">略過</button></div>
   </div>
 </section>
 
 <div class="ov" id="setup"><div class="card box"><div class="t" id="setT"></div>
-  <div class="s">選場地</div><div class="maps" id="sMaps"></div>
+  <div class="modes" id="sMode"><button data-x="trap"><img class="ic" src="img/ps/ps2-ui-mode.webp" alt="">陷阱擂台</button><button data-x="classic">經典</button></div>
+  <div class="s" id="sMapT">選場地</div><div class="maps" id="sMaps"></div>
   <div class="s" id="setTip"></div>
   <div class="row"><button class="btn o" id="setGo">開始！</button><button class="btn w" id="setX">取消</button></div></div></div>
 <div class="ov" id="netBox"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-invite.webp" alt="">線上對戰</div>
@@ -165,7 +182,14 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   <div class="row" style="margin:.6rem 0"><button class="btn o" id="bNew">建立房間</button></div>
   <div class="row"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號" style="width:8rem;font:900 1.6rem Arial;text-align:center;letter-spacing:.2em;border:4px solid #eadcbc;border-radius:16px;padding:.3rem"><button class="btn" id="bJoin">加入</button></div>
   <div class="s" id="netMsg" style="color:#d9480f;min-height:1.3em"></div><button class="btn w" id="netX">返回</button></div></div>
-<div class="ov" id="helpBox"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-help.webp" alt="">玩法說明</div><ol class="help">
+<div class="ov" id="helpBox"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-help.webp" alt="">玩法說明</div>
+  <div class="s" style="text-align:left;color:#e2640f">陷阱擂台</div><ol class="help">
+  <li>每人 <b>3 顆</b><img src="img/ps/ps2-ui-life-full.webp" alt="">。碰撞不扣命；把對手送進<img src="img/ps/ps2-terrain-pit-open.webp" alt="">開著的洞，或從左右<b>缺口</b>撞出界，對手就少 1 命。</li>
+  <li><img src="img/ps/ps2-gadget-bomb-idle.webp" alt="">炸彈：碰到、倒數到 0、被別顆炸到都會爆，會把附近的人推開（不扣命）。淡淡的圈是它的範圍。</li>
+  <li><img src="img/ps/ps2-terrain-ice.webp" alt="">冰面滑很遠、<img src="img/ps/ps2-terrain-mud.webp" alt="">泥地會煞車；洞口會開開關關，出現<img src="img/ps/ps2-terrain-pit-warning.webp" alt="">就是下一回合要打開了。</li>
+  <li>撿<img src="img/ps/ps2-gadget-energy.webp" alt="">能量（最多 3）：<img src="img/ps/ps2-ui-heavy.webp" alt="">重擊衝更遠、<img src="img/ps/ps2-ui-guard.webp" alt="">護盾被撞被炸只受 6 成的力。</li>
+  <li>8 回合打完比剩下的命，一樣再比把對手撞掉幾次。掉命後會在安全點重生，輪到你之前不會被撞。</li></ol>
+  <div class="s" style="text-align:left;color:#e2640f">經典</div><ol class="help">
   <li>輪到你時，從自己的寵物<b>向後拉</b>（或拉下面的瞄準盤），放手後按<img src="img/ps/ps-ui-launch.webp" alt=""><b>發射</b>。拉越遠越用力。</li>
   <li>撞到對手：對手少 <b>18</b> 體力（每次出手最多一次，要撞得夠快）。</li>
   <li>撿<img src="img/ps/ps-objects-gem.webp" alt="">寶石：有人集滿 <b>5 顆</b>，等這一回合兩個人都打完就結束，寶石多的人贏。</li>
@@ -178,7 +202,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 <div class="ov" id="over"><div class="card box"><img id="ovIcon" src="img/ps/ps-ui-victory.webp" alt=""><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="res" id="ovR"></div><div class="s" id="ovN"></div>
   <div class="row"><button class="btn o" id="bAgain"><img class="ic" src="img/ps/ps-ui-rematch.webp" alt="">再玩一次</button><button class="btn w" id="bHome"><img class="ic" src="img/ps/ps-ui-leave.webp" alt="">回大廳</button></div></div></div>
 
-<script src="ps.js"></script>
+<script src="ps.js"></script><script src="ps2.js"></script>
 <script>
 /* ═════════════ 601 寵物彈射對戰（畫面、操作、連線） ═════════════
    規則、物理都在 ps.js（每台算出來一樣）。這裡負責：
@@ -193,7 +217,7 @@ const FIREBASE_CONFIG={ apiKey:"AIzaSyD-frW7ISsXAHsv1DSZpGzvn_ok9t1NJ4U", authDo
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const Q=new URLSearchParams(location.search);
 const myId=(()=>{let v=null;try{v=sessionStorage.getItem('ps_id')}catch(e){}if(!v){v=Math.random().toString(36).slice(2,10);try{sessionStorage.setItem('ps_id',v)}catch(e){}}return v})();
-const C=PS.CFG,TURN_IDLE=32000,OFF_MS=15000,STALE_MS=3*60*60*1000,BANNER_MS=1200;
+const C=PS.CFG,C2=PS2.CFG,ENG=S=>S&&S.mode==='trap'?PS2:PS,ROOM_VER='ps-r2',TURN_IDLE=32000,OFF_MS=15000,STALE_MS=3*60*60*1000,BANNER_MS=1200;
 
 /* ---- 連線：Firebase，或同一台電腦分頁間的本機模式（網址加 ?local，測試用） ---- */
 const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
@@ -247,7 +271,7 @@ let AC=null;const sndOn=()=>LS.get('learn601_snd',true)!==false;
 function tone(f,d,type='triangle',v=.07,at=0,f2){if(!sndOn())return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+at,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
 const sfx={fire(){tone(300,.18,'sine',.09,0,900)},bounce(){tone(520,.06,'triangle',.05)},bump(){tone(160,.15,'sine',.12,0,80)},hit(){tone(120,.25,'square',.06,0,60);tone(700,.08,'triangle',.05)},
   gem(){tone(988,.1,'triangle',.06);tone(1319,.14,'triangle',.06,.07)},heart(){[660,880,1047].forEach((f,i)=>tone(f,.12,'sine',.06,i*.06))},shield(){tone(400,.2,'sine',.07,0,800)},
-  spring(){tone(250,.18,'sine',.08,0,1000)},portal(){tone(900,.25,'sine',.06,0,200)},turn(){tone(660,.1,'triangle',.06);tone(990,.14,'triangle',.06,.09)},tick(){tone(1200,.04,'square',.03)},
+  spring(){tone(250,.18,'sine',.08,0,1000)},boom(){tone(90,.35,'sawtooth',.09,0,40);tone(200,.2,'square',.05,0,60)},fall(){tone(700,.45,'sine',.08,0,120)},portal(){tone(900,.25,'sine',.06,0,200)},turn(){tone(660,.1,'triangle',.06);tone(990,.14,'triangle',.06,.09)},tick(){tone(1200,.04,'square',.03)},
   win(){[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.07,i*.1))},pass(){tone(400,.18,'triangle',.05,0,250)}};
 
 /* ---- 圖片 ---- */
@@ -257,13 +281,15 @@ const ok=i=>i&&i.complete&&i.naturalWidth>0;
 const petSrc=p=>okPet(p)?`img/pet/${p.sp}-${p.st}.webp`:'';
 const ASSETS=['ps-arena-meadow','ps-objects-rock','ps-objects-wall','ps-objects-bumper','ps-objects-spring','ps-objects-portal-cyan','ps-objects-portal-purple','ps-objects-gem','ps-objects-heart','ps-objects-shield',
   'ps-pucks-red','ps-pucks-blue','ps-pucks-neutral','ps-pucks-guest','ps-fx-bounce','ps-fx-hit','ps-fx-gem','ps-fx-spring','ps-fx-portal-cyan','ps-fx-portal-purple','ps-fx-shield','ps-fx-victory','ps-fx-trail',
-  'ps-ui-heart','ps-ui-gem','ps-ui-victory','ps-ui-launch'];
+  'ps-ui-heart','ps-ui-gem','ps-ui-victory','ps-ui-launch',
+  'ps2-arena-gaps','ps2-terrain-pit-open','ps2-terrain-pit-warning','ps2-terrain-ice','ps2-terrain-mud','ps2-gadget-bomb-idle','ps2-gadget-bomb-armed','ps2-gadget-bomb-spent','ps2-gadget-energy',
+  'ps2-ui-life-full','ps2-ui-life-empty','ps2-ui-heavy','ps2-ui-guard','ps2-ui-warning','ps2-fx-bomb','ps2-fx-fall','ps2-fx-energy','ps2-fx-respawn','ps2-fx-chain','ps2-fx-switch','ps2-fx-heavy-trail'];
 let assetsOK=false;
 const assetsReady=Promise.all(ASSETS.map(n=>{const i=ps(n);return ok(i)?1:new Promise(r=>{i.onload=()=>r(1);i.onerror=()=>r(0);setTimeout(()=>r(ok(i)?1:0),12000)})})).then(a=>{assetsOK=a.every(Boolean);return assetsOK});
 
 /* ═════════════ 狀態 ═════════════ */
 const G={mode:'',pin:'',me:-1,g:0,players:{},st:null,un:[],rec:'',paid:'',map:'meadow',guest:'cat',arm:'',lastAct:0};
-const V={S:null,sim:null,acc:0,simEnd:null,fx:[],banner:null,aim:{on:false,ang:0,pow:0},turnAt:0,pending:false,pets:[null,null],names:['紅方','藍方'],pucks:['red','blue'],turnKey:'',paused:false,trail:[[],[]]};
+const V={skill:'n',falling:{},chainTx:null,S:null,sim:null,acc:0,simEnd:null,fx:[],banner:null,aim:{on:false,ang:0,pow:0},turnAt:0,pending:false,pets:[null,null],names:['紅方','藍方'],pucks:['red','blue'],turnKey:'',paused:false,trail:[[],[]]};
 const SIDE=['r','b'];
 const curS=()=>V.sim?V.sim.S:V.S;
 
@@ -275,12 +301,17 @@ function paintMe(){const p=myPet(),src=petSrc(p)||'img/ps/ps-pucks-guest.webp';
 async function paintRec(){const e=$('#rec');if(!inPlat()||!P.xqStats){e.textContent='';return}
   try{const s=await P.xqStats('ps');e.innerHTML=s.n?`我的彈射對戰戰績：<b>${s.w}</b> 勝 ${s.l} 敗${s.d?` ${s.d} 平手`:''}（共 ${s.n} 局）`:'還沒有玩過線上彈射對戰，快邀請同學！'}catch(x){}}
 const msg=t=>$('#msg').textContent=t||'';
-function mapBtns(box,sel,cb,withRandom=true){box.innerHTML=[...PS.MAP_IDS.map(id=>`<button data-m="${id}">${PS.MAPS[id].n}<small>${{meadow:'岩石、反彈墊',spring:'石牆、彈簧',portal:'岩石、傳送門'}[id]}</small></button>`),withRandom?'<button data-m="random">隨機<small>開局時抽一張</small></button>':''].join('');
+const MAP_DESC={meadow:'岩石、反彈墊',spring:'石牆、彈簧',portal:'岩石、傳送門','bomb-ice':'炸彈、冰面、泥地、洞口'};
+function mapBtns(box,sel,cb,withRandom=true,xm='classic'){const E=xm==='trap'?PS2:PS;box.innerHTML=[...E.MAP_IDS.map(id=>`<button data-m="${id}">${E.MAPS[id].n}<small>${MAP_DESC[id]||''}</small></button>`),withRandom&&E.MAP_IDS.length>1?'<button data-m="random">隨機<small>開局時抽一張</small></button>':''].join('');
+  if(!box.querySelector(`[data-m="${sel}"]`))sel=E.MAP_IDS[0];
   box.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.m===sel);b.onclick=()=>{box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.m)}})}
-const pickMap=m=>m==='random'||!PS.MAPS[m]?PS.MAP_IDS[Math.random()*PS.MAP_IDS.length|0]:m;
+const pickMap=(m,xm)=>{const E=xm==='trap'?PS2:PS;return m==='random'||!E.MAPS[m]?E.MAP_IDS[Math.random()*E.MAP_IDS.length|0]:m};
+function modeBtns(box,sel,cb,dis){box.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.x===sel);b.disabled=!!dis;b.onclick=()=>{if(dis)return;box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.x)}})}
 let setMode='';
 function openSetup(mode){setMode=mode;$('#setT').innerHTML='<img class="ic" src="img/ps/ps-ui-practice.webp" alt="">單人練習';
-  G.map=LS.get('ps_map','random');mapBtns($('#sMaps'),G.map,m=>{G.map=m;LS.set('ps_map',m)});
+  G.xmode=LS.get('ps_xmode','trap');const paintSet=()=>{if(G.xmode==='trap'){$('#sMapT').textContent='練習題目';$('#sMaps').innerHTML='<button class="on">炸彈出界練習<small>撞炸彈，把靶子推出右邊缺口</small></button>'}
+    else{$('#sMapT').textContent='選場地';G.map=LS.get('ps_map','random');mapBtns($('#sMaps'),G.map,m=>{G.map=m;LS.set('ps_map',m)})}};
+  modeBtns($('#sMode'),G.xmode,x=>{G.xmode=x;LS.set('ps_xmode',x);paintSet()});paintSet();
   $('#setTip').textContent=inPlat()?'用平台的遊戲時間（5 分鐘一張券）・不記勝負':'不記勝負';
   ov('setup',1)}
 $('#bPrac').onclick=()=>openSetup('prac');
@@ -293,8 +324,10 @@ $('#bNet').onclick=()=>{if(!hasTicket())return msg(NO_TK);$('#netMsg').textConte
 /* ═════════════ 單人練習、同台雙人 ═════════════ */
 function practiceTime(){if(!inPlat()||!P.startPlay)return true;if(P.left&&P.left()>0)return true;const r=P.startPlay('ps');return !!(r&&r.ok)}
 function startPractice(map){if(!practiceTime()){msg('🎟️ 遊戲時間用完了，遊戲券也沒有了。回平台練習 10 題答對 8 題就能拿到！');show('home');return}
-  G.mode='prac';G.me=-1;G.pmap=map||pickMap(G.map);V.pets=[myPet(),null];V.names=[myName(),'練習靶'];V.pucks=['neutral','guest'];
-  setState(PS.newGame(G.pmap,(Math.random()*4294967296)>>>0,0,true),true);$('#bReset').hidden=false;$('#bMap').hidden=false;show('game')}
+  G.mode='prac';G.me=-1;V.pets=[myPet(),null];V.names=[myName(),'練習靶'];V.pucks=['neutral','guest'];
+  if(G.xmode==='trap'){G.pmap=PS2.PRACTICE.map;setState(PS2.newGame(G.pmap,(Math.random()*4294967296)>>>0,0,true),true);$('#bMap').hidden=true}
+  else{G.pmap=map||pickMap(G.map);setState(PS.newGame(G.pmap,(Math.random()*4294967296)>>>0,0,true),true);$('#bMap').hidden=false}
+  $('#bReset').hidden=false;show('game')}
 $('#bReset').onclick=()=>{if(G.mode==='prac'&&!V.sim)startPractice(G.pmap)};
 $('#bMap').onclick=()=>{if(G.mode!=='prac'||V.sim)return;const i=PS.MAP_IDS.indexOf(G.pmap);startPractice(PS.MAP_IDS[(i+1)%PS.MAP_IDS.length])};
 
@@ -303,27 +336,32 @@ function setState(S,fresh){V.S=S;V.sim=null;V.fx=[];V.pending=false;clearAim();V
 const myTurn=()=>{const S=V.S;if(!S||S.over||V.sim||V.pending||V.paused)return false;if(G.mode==='net')return G.st&&G.st.phase==='play'&&S.turn===G.me;return true};
 const canAct=()=>myTurn()&&performance.now()>=V.turnAt;
 function turnStart(){const S=V.S;if(!S)return;const k=(G.g||0)+'|'+S.n;if(V.turnKey===k||S.over){paintCtl();return}V.turnKey=k;
-  V.turnAt=performance.now()+BANNER_MS;const t=S.turn,mine=G.mode!=='net'||t===G.me;
+  V.turnAt=performance.now()+BANNER_MS;V.skill='n';const t=S.turn,mine=G.mode!=='net'||t===G.me;
   V.banner={t:G.mode==='prac'?'輪到你了！':G.mode==='net'?(mine?'輪到你了！':`輪到 ${V.names[t]}`):`輪到 ${V.names[t]}`,c:t?'#1e88e5':'#e53935',at:performance.now()};
   if(mine)sfx.turn();clearAim();paintHud();paintCtl()}
-function paintHud(){const S=curS();if(!S)return;
+function paintHud(){const S=curS();if(!S)return;const T=S.mode==='trap';$('#skills').hidden=!T;
   [0,1].forEach(i=>{const e=$('#p'+i),b=S.B[i],p=V.pets[i];e.querySelector('.av').src=petSrc(p)||`img/ps/ps-pucks-${V.pucks[i]==='neutral'?'neutral':'guest'}.webp`;
     e.querySelector('.av').onerror=function(){this.onerror=null;this.src='img/ps/ps-pucks-guest.webp'};
     e.querySelector('.nm').textContent=V.names[i]+(G.mode==='net'&&i===G.me?'（我）':'');
-    e.querySelector('.hp i').style.width=Math.max(0,b.hp)+'%';
-    e.querySelector('.st').innerHTML=`<span><img src="img/ps/ps-ui-heart.webp" alt="">${b.hp}</span><span><img src="img/ps/ps-ui-gem.webp" alt="">${b.gem}${G.mode==='prac'?'':' / '+C.GOAL}</span>${b.sh?'<span><img src="img/ps/ps-objects-shield.webp" alt="">護盾</span>':''}`;
+    e.querySelector('.hp').style.display=T?'none':'';if(!T)e.querySelector('.hp i').style.width=Math.max(0,b.hp)+'%';
+    if(T){e.querySelector('.st').innerHTML=`<span class="lives">${[0,1,2].map(k=>`<img src="img/ps/ps2-ui-life-${k<b.life?'full':'empty'}.webp" alt="">`).join('')}</span><span class="ens" title="能量">${[0,1,2].map(k=>`<i class="${k<b.en?'f':''}"></i>`).join('')}</span>${b.gd?'<span class="tag">護盾</span>':''}${b.gh?'<span class="tag">保護中</span>':''}`}
+    else e.querySelector('.st').innerHTML=`<span><img src="img/ps/ps-ui-heart.webp" alt="">${b.hp}</span><span><img src="img/ps/ps-ui-gem.webp" alt="">${b.gem}${G.mode==='prac'?'':' / '+C.GOAL}</span>${b.sh?'<span><img src="img/ps/ps-objects-shield.webp" alt="">護盾</span>':''}`;
     e.classList.toggle('turn',!S.over&&S.turn===i&&G.mode!=='prac')});
   $('#p1').style.visibility=G.mode==='prac'?'hidden':'';
   $('#rnd').textContent=G.mode==='prac'?'練習中':S.over?'結束':`第 ${Math.min(C.ROUNDS,Math.floor(S.n/2)+1)} / ${C.ROUNDS} 回合`;
-  $('#mapN').textContent=PS.MAPS[S.map].n}
+  $('#mapN').textContent=G.mode==='prac'&&T?'炸彈出界練習':ENG(S).MAPS[S.map].n}
 function paintCtl(){const S=V.S,c=$('#ctl'),act=canAct();c.classList.toggle('off',!act);
   const t=S?S.turn:0;$('#whoN').textContent=!S?'':S.over?'這局結束了':G.mode==='prac'?'練習中':G.mode==='net'&&t!==G.me?`等 ${V.names[t]} 出手…`:`${V.names[t]} 出手`;
   $('#whoN').style.color=t?'#1e88e5':'#e53935';
   $('#bFire').disabled=!act||!V.aim.on;
+  if(S&&S.mode==='trap'){const en=S.B[S.turn]?S.B[S.turn].en:0;if(en<1&&V.skill!=='n')V.skill='n';
+    $('#skills').querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.k===V.skill);b.disabled=b.dataset.k!=='n'&&en<1});
+    $('#skTip').textContent=act&&en<1?'能量不夠：撿場上的能量水晶才能用重擊、護盾':act&&V.skill==='h'?'重擊：這一發最快 850（用掉 1 能量）':act&&V.skill==='g'?'護盾：到你下次出手前，被撞、被炸只受 6 成的力':''}
   $('#tip').textContent=act&&!V.aim.on?'向後拉瞄準，按發射出手':'';
   const deg=Math.round(((V.aim.ang*180/Math.PI)%360+360)%360);$('#angV').textContent=V.aim.on?deg+'°':'—';$('#pwV').textContent=Math.round(V.aim.pow*100)+'%';$('#pw').value=Math.round(V.aim.pow*100);
   drawPad()}
 function clearAim(){V.aim.on=false;V.aim.pow=0;paintCtl&&$('#ctl')&&paintCtl()}
+$('#skills').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!canAct()||b.disabled)return;V.skill=b.dataset.k;paintCtl()});   // 選技能不扣能量，發射被接受才扣
 
 /* ---- 發射、略過 ---- */
 function aimVec(){const p=V.aim.pow;if(!V.aim.on||p<=0)return null;return [Math.round(Math.cos(V.aim.ang)*p*C.VMAX),Math.round(Math.sin(V.aim.ang)*p*C.VMAX)]}
@@ -332,21 +370,22 @@ async function doAct(act){if(!myTurn())return;
   clearAim();
   if(G.mode!=='net'){runSim(V.S,act,null);return}
   /* 線上：先算好結果，用交易寫上去（確認還是輪到我、出手序號對） */
-  const S0=V.S,S2=PS.apply(S0,act),g=G.g,me=G.me;V.pending=true;paintCtl();
+  const S0=V.S,S2=ENG(S0).apply(S0,act),g=G.g,me=G.me;V.pending=true;paintCtl();
   let okW=false;
   try{okW=await Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='play'||cur.g!==g||cur.n!==S0.n)return;const s=cur.snap&&JSON.parse(cur.snap);if(!s||s.turn!==me)return;
       return {...cur,snap:JSON.stringify(S2),n:S2.n,last:{n:S2.n,by:me,a:act},tt:Net.TS,phase:S2.over?'end':'play'}})}catch(e){okW=false}
   V.pending=false;
   if(!okW){paintCtl();V.banner={t:'沒有送出去，再試一次',c:'#d9480f',at:performance.now()};return}
   G.lastAct=Date.now();runSim(S0,act,S2)}
-$('#bFire').onclick=()=>{const v=aimVec();if(v&&canAct())doAct({a:'s',v})};
+$('#bFire').onclick=()=>{const v=aimVec();if(v&&canAct())doAct(V.S.mode==='trap'?{a:'s',v,k:V.skill}:{a:'s',v})};
 $('#bPass').onclick=()=>{if(canAct())doAct({a:'p'})};
 $('#bCancel').onclick=()=>{clearAim()};
 
 /* ---- 播一次出手（auth：權威結果；沒有就用自己算的） ---- */
-function runSim(S0,act,auth){V.sim=PS.sim(S0,act);V.acc=0;V.simEnd=auth;V.trail=[[],[]];paintCtl()}
-function endSim(){const r=PS.finish(V.sim),S=V.simEnd||r.S;r.ev.forEach(fxEvent);V.sim=null;V.simEnd=null;V.S=S;paintHud();
+function runSim(S0,act,auth){V.sim=ENG(S0).sim(S0,act);V.heavy=act&&act.k==='h';V.acc=0;V.simEnd=auth;V.trail=[[],[]];V.falling={};paintCtl()}
+function endSim(){const r=ENG(V.sim.S).finish(V.sim),S=V.simEnd||r.S;r.ev.forEach(fxEvent);V.sim=null;V.simEnd=null;V.S=S;paintHud();
   if(S.over)return gameOver();
+  if(G.mode==='prac'&&S.mode==='trap'&&r.ev.some(e=>e.k==='chain'&&e.list.some(c=>c.i===1))){V.banner={t:'成功！再試一次',c:'#2e7d32',at:performance.now()};sfx.win();setTimeout(()=>{if(G.mode==='prac'&&!V.sim&&V.S===S)startPractice()},1600)}   // 練習：把靶子推出去了 → 自動重來
   if(G.mode==='net')syncNet();else turnStart()}
 
 /* ═════════════ 畫面（canvas） ═════════════ */
@@ -388,9 +427,22 @@ function drawAim(c,S){if(!V.aim.on||!myTurn()||V.sim)return;const b=S.B[S.turn],
   c.font='900 22px sans-serif';c.textAlign='center';c.lineWidth=5;c.strokeStyle='#fff';c.fillStyle='#4a3420';const tx=b.x-ux*(R+30),ty=b.y-uy*(R+30)+8;c.strokeText(Math.round(p*100)+'%',tx,ty);c.fillText(Math.round(p*100)+'%',tx,ty);c.restore()}
 /* 效果：單張圖片用縮放、透明度做動畫 */
 const FXD={bounce:[160,'ps-fx-bounce',40,62],bump:[180,'ps-fx-bounce',50,72],hit:[260,'ps-fx-hit',60,100],gem:[260,'ps-fx-gem',44,84],heart:[280,'ps-fx-gem',44,84],shieldGet:[280,'ps-fx-shield',50,86],shield:[300,'ps-fx-shield',60,100],
+  bomb:[300,'ps2-fx-bomb',90,300],fall:[600,'ps2-fx-fall',40,110],energy:[260,'ps2-fx-energy',44,90],respawn:[600,'ps2-fx-respawn',50,110],chain:[700,'ps2-fx-chain',80,200],pitT:[320,'ps2-fx-switch',40,120],bombBack:[300,'ps2-fx-respawn',30,80],
   spring:[200,'ps-fx-spring',50,80],portalA:[320,'ps-fx-portal-cyan',40,100],portalB:[320,'ps-fx-portal-purple',40,100],victory:[850,'ps-fx-victory',200,520]};
 function fxAdd(k,x,y,rot){const d=FXD[k];if(!d)return;if(V.fx.length>=10)V.fx.shift();V.fx.push({k,x,y,t:performance.now(),d:d[0],n:d[1],s0:d[2],s1:d[3],rot:rot||0})}
-function fxEvent(e){const now=performance.now(),M=PS.MAPS[curS().map];
+function fxEvent(e){const now=performance.now(),S0=curS(),M=ENG(S0).MAPS[S0.map];
+  if(S0.mode==='trap')switch(e.k){
+    case 'bomb':fxAdd('bomb',e.x,e.y);sfx.boom();V.spentAt=V.spentAt||{};V.spentAt[e.id]=now;return;
+    case 'fall':case 'outside':{const b=S0.B[e.i];V.falling[e.i]={x:e.k==='fall'?e.x:b.x,y:e.k==='fall'?e.y:b.y,t:now};fxAdd('fall',e.x,e.y);sfx.fall();paintHud();return}
+    case 'energy':fxAdd('energy',e.x,e.y);sfx.gem();paintHud();return;
+    case 'respawn':fxAdd('respawn',e.x,e.y);paintHud();return;
+    case 'skill':paintHud();return;
+    case 'pitOpen':fxAdd('pitT',e.x,e.y);V.banner={t:'洞口打開了！',c:'#e2640f',at:now};sfx.portal();return;
+    case 'pitClose':fxAdd('pitT',e.x,e.y);return;
+    case 'bombBack':fxAdd('bombBack',e.x,e.y);return;
+    case 'chain':{const L=e.list.map(c=>c.tags.filter(t=>t!=='碰撞'||c.tags.length<=2)).filter(t=>t.length);const best=L.sort((a,b)=>b.length-a.length)[0];
+      if(best&&best.length>=2){V.chainTx={s:(best.length>=3?'連鎖！':'')+best.join(' → '),t:now};if(best.length>=3)fxAdd('chain',480,200)}return}
+    case 'bump':if(e.g)fxAdd('shield',e.x,e.y);break}
   switch(e.k){case 'bounce':if(now-(V.lastB||0)>70){V.lastB=now;fxAdd('bounce',e.x,e.y);sfx.bounce()}if(e.bump){V.bump=V.bump||{};V.bump[e.bump]=now}break;
     case 'bump':fxAdd('bump',e.x,e.y);sfx.bump();break;
     case 'hit':fxAdd('hit',e.x,e.y);sfx.hit();V.hurt=V.hurt||{};V.hurt[e.i]=now;break;
@@ -402,9 +454,38 @@ function fxEvent(e){const now=performance.now(),M=PS.MAPS[curS().map];
 function drawFx(c,now){V.fx=V.fx.filter(f=>now-f.t<f.d);for(const f of V.fx){const k=(now-f.t)/f.d,s=f.s0+(f.s1-f.s0)*(1-Math.pow(1-k,2)),a=k<.2?1:1-(k-.2)/.8;drawImg(c,f.n,f.x,f.y,s,s,f.rot+(f.k.startsWith('portal')?k*2:0),Math.max(0,a))}}
 function drawTrail(c,i,b){const T=V.trail[i];if(!V.sim){T.length=0;return}T.push([b.x,b.y]);if(T.length>9)T.shift();const sp=Math.hypot(b.vx||0,b.vy||0);if(sp<120||T.length<3)return;
   const [x0,y0]=T[0],ang=Math.atan2(b.y-y0,b.x-x0),len=Math.min(110,Math.hypot(b.x-x0,b.y-y0)+40);
-  c.save();c.translate(b.x-Math.cos(ang)*(C.PR+len/2-10),b.y-Math.sin(ang)*(C.PR+len/2-10));c.rotate(ang);c.globalAlpha=Math.min(.85,sp/600);const im=ps('ps-fx-trail');if(ok(im))c.drawImage(im,-len/2,-C.PR*.55,len,C.PR*1.1);c.restore()}
+  c.save();c.translate(b.x-Math.cos(ang)*(C.PR+len/2-10),b.y-Math.sin(ang)*(C.PR+len/2-10));c.rotate(ang);c.globalAlpha=Math.min(.85,sp/600);const im=ps(V.heavy&&i===curS().turn?'ps2-fx-heavy-trail':'ps-fx-trail');if(ok(im))c.drawImage(im,-len/2,-C.PR*.55,len,C.PR*1.1);c.restore()}
 function drawBanner(c,now){const B=V.banner;if(!B)return;const k=(now-B.at)/BANNER_MS;if(k>1.15){V.banner=null;return}
   const a=k<.15?k/.15:k>.85?Math.max(0,1-(k-.85)/.3):1;c.save();c.globalAlpha=a;c.font='900 52px "PingFang TC","Microsoft JhengHei",sans-serif';c.textAlign='center';c.lineWidth=12;c.strokeStyle='#fff';c.fillStyle=B.c;c.strokeText(B.t,480,110);c.fillText(B.t,480,110);c.restore()}
+/* ═════════════ 陷阱擂台的畫面 ═════════════ */
+const BG2={gx0:78,gx1:1505,gy0:86,gy1:900,W:1585,H:992};   // 新場地圖：綠色內場對齊邊界，左右缺口（端柱）在 y245–360
+function drawBG2(c){const im=ps('ps2-arena-gaps'),sx=(C2.R-C2.L)/(BG2.gx1-BG2.gx0),sy=(C2.B-C2.T)/(BG2.gy1-BG2.gy0);
+  if(ok(im))c.drawImage(im,C2.L-BG2.gx0*sx,C2.T-BG2.gy0*sy,BG2.W*sx,BG2.H*sy);else{c.fillStyle='#8bc34a';c.fillRect(C2.L,C2.T,C2.R-C2.L,C2.B-C2.T)}
+  c.save();c.font='900 18px "PingFang TC","Microsoft JhengHei",sans-serif';c.textAlign='center';c.fillStyle='rgba(229,57,53,.85)';
+  for(const x of [C2.L-20,C2.R+20]){c.save();c.translate(x,(C2.GAP0+C2.GAP1)/2);c.rotate(x<480?-Math.PI/2:Math.PI/2);c.fillText('出界',0,6);c.restore()}c.restore()}
+function stretch(c,n,x,y,w,h,a){const im=ps(n);if(!ok(im))return;c.save();if(a!=null)c.globalAlpha=a;c.drawImage(im,x-w/2,y-h/2,w,h);c.restore()}
+function drawTrapScene(c,S,now){const M=PS2.MAPS[S.map],aiming=myTurn()&&V.aim.on;
+  drawBG2(c);
+  for(const o of M.o){if(o.t==='ice')stretch(c,'ps2-terrain-ice',o.x,o.y,o.w+18,o.h+16);if(o.t==='mud')stretch(c,'ps2-terrain-mud',o.x,o.y,o.w+16,o.h+14)}
+  for(const o of M.o){if(o.t!=='pit')continue;const open=PS2.pitOpen(S,o),warn=PS2.pitWarn(S,o),d=o.r*2+6;
+    if(open){drawImg(c,'ps2-terrain-pit-open',o.x,o.y,d,d);if(warn){c.save();c.strokeStyle='rgba(255,152,0,.95)';c.lineWidth=5;c.setLineDash([10,7]);c.lineDashOffset=-now/50;c.beginPath();c.arc(o.x,o.y,o.r+7,0,7);c.stroke();c.restore();drawImg(c,'ps2-ui-warning',o.x+o.r*.8,o.y-o.r*.8,26,26)}}
+    else if(warn){const k=(Math.sin(now/260)+1)/2;drawImg(c,'ps2-terrain-pit-warning',o.x,o.y,d,d,0,.75+.25*k)}}
+  for(const o of M.o)if(o.t==='bumper'){let s=1;if(V.bump&&V.bump[o.id]){const k=(now-V.bump[o.id])/180;if(k<1)s=1+.12*Math.sin(k*Math.PI)}drawImg(c,'ps-objects-bumper',o.x,o.y,o.r*2.1*s,o.r*2.1*s)}
+  for(const it of S.it){const bob=Math.sin(now/380+it.x)*2;c.save();c.fillStyle='rgba(0,0,0,.14)';c.beginPath();c.ellipse(it.x,it.y+12,12,5,0,0,7);c.fill();c.restore();drawImg(c,'ps2-gadget-energy',it.x,it.y+bob-4,34,34)}
+  for(const bm of S.bombs){if(bm.st==='gone')continue;
+    if(bm.st==='live'){c.save();c.fillStyle=aiming?'rgba(255,87,34,.12)':'rgba(255,87,34,.06)';c.strokeStyle=aiming?'rgba(255,87,34,.55)':'rgba(255,87,34,.25)';c.lineWidth=2;c.setLineDash([8,8]);c.beginPath();c.arc(bm.x,bm.y,C2.BLAST_R,0,7);c.fill();c.stroke();c.restore();
+      const armed=bm.fuse<=1,k=armed?(Math.sin(now/150)+1)/2:0;if(armed){c.save();c.fillStyle=`rgba(255,193,7,${.25+.35*k})`;c.beginPath();c.arc(bm.x,bm.y,C2.BOMB_R+10,0,7);c.fill();c.restore()}
+      drawImg(c,armed?'ps2-gadget-bomb-armed':'ps2-gadget-bomb-idle',bm.x,bm.y-4,C2.BOMB_R*2.6,C2.BOMB_R*2.6);
+      if(!S.pr){c.save();c.font='900 20px sans-serif';c.textAlign='center';c.lineWidth=5;c.strokeStyle='#fff';c.fillStyle=armed?'#e53935':'#4a3420';c.strokeText(bm.fuse,bm.x+C2.BOMB_R+6,bm.y-C2.BOMB_R+4);c.fillText(bm.fuse,bm.x+C2.BOMB_R+6,bm.y-C2.BOMB_R+4);c.restore()}}
+    else{const t=V.spentAt&&V.spentAt[bm.id];if(t&&now-t<900)drawImg(c,'ps2-gadget-bomb-spent',bm.x,bm.y,C2.BOMB_R*2.6,C2.BOMB_R*2.6,0,.85*(1-(now-t)/900))}}   // 破殼只顯示一下就消失
+  if(G.mode==='prac'&&!V.sim&&S.bombs.some(b=>b.st==='live')){const b0=S.B[0],bm=S.bombs[0];c.save();c.strokeStyle='rgba(255,255,255,.75)';c.lineWidth=4;c.setLineDash([6,10]);c.beginPath();c.moveTo(b0.x,b0.y);c.lineTo(bm.x,bm.y);c.lineTo(C2.R+10,300);c.stroke();c.restore()}   // 練習：關鍵路線
+  for(const [i,f] of Object.entries(V.falling)){const k=(now-f.t)/650;if(k>1)continue;c.save();c.globalAlpha=1-k;c.translate(f.x,f.y);c.scale(1-k*.8,1-k*.8);if(!drawImg(c,'ps-pucks-'+V.pucks[i],0,0,C.PR*2.1,C.PR*2.1)){}c.restore()}
+  S.B.forEach((b,i)=>drawTrail(c,i,b));S.B.forEach((b,i)=>{if(b.out)return;c.save();if(b.gh)c.globalAlpha=.45;drawPuck(c,i,b,now,S);c.restore();
+    if(b.gd){c.save();c.strokeStyle='rgba(66,165,245,.9)';c.lineWidth=4;c.beginPath();c.arc(b.x,b.y,C.PR+9,0,7);c.stroke();c.restore();drawImg(c,'ps2-ui-guard',b.x+C.PR,b.y-C.PR,22,22)}
+    if(b.gh){c.save();c.font='900 15px "PingFang TC","Microsoft JhengHei",sans-serif';c.textAlign='center';c.lineWidth=4;c.strokeStyle='#fff';c.fillStyle='#2e7d32';c.strokeText('保護中・輪到你時恢復',b.x,b.y+C.PR+20);c.fillText('保護中・輪到你時恢復',b.x,b.y+C.PR+20);c.restore()}});
+  drawAim(c,S);drawFx(c,now);drawBanner(c,now);
+  if(V.chainTx&&now-V.chainTx.t<2400){const a=Math.min(1,(2400-(now-V.chainTx.t))/400);c.save();c.globalAlpha=a;c.font='900 30px "PingFang TC","Microsoft JhengHei",sans-serif';c.textAlign='center';c.lineWidth=8;c.strokeStyle='#fff';c.fillStyle='#e2640f';c.strokeText(V.chainTx.s,480,235);c.fillText(V.chainTx.s,480,235);c.restore()}
+  if(Q.has('debug')){c.save();c.strokeStyle='#f0f';c.lineWidth=1;c.strokeRect(C2.L,C2.T,C2.R-C2.L,C2.B-C2.T);c.strokeStyle='#f00';[C2.L,C2.R].forEach(x=>{c.beginPath();c.moveTo(x,C2.GAP0);c.lineTo(x,C2.GAP1);c.stroke()});M.o.forEach(o=>{c.beginPath();if(o.w)c.rect(o.x-o.w/2,o.y-o.h/2,o.w,o.h);else c.arc(o.x,o.y,o.t==='pit'?(C2.PIT_DR||o.dr):o.r,0,7);c.stroke()});c.restore()}}
 let raf=0,tPrev=0;
 function loopOn(){if(!raf){tPrev=performance.now();raf=requestAnimationFrame(frame)}}
 function loopOff(){cancelAnimationFrame(raf);raf=0}
@@ -414,6 +495,7 @@ function frame(now){raf=requestAnimationFrame(frame);
   if(V.paused||V.pending)V.turnAt+=dt;   // 暫停、送出中：倒數先停
   timerTick(now);
   const S=curS(),c=ctx;c.setTransform(K*DPR,0,0,K*DPR,-VX*K*DPR,-VY*K*DPR);c.clearRect(VX,VY,VW,VH);if(!S)return;
+  if(S.mode==='trap')return drawTrapScene(c,S,now);
   drawBG(c);const M=PS.MAPS[S.map];M.o.filter(o=>o.t.startsWith('portal')||o.t==='spring').forEach(o=>drawObj(c,o,now));
   S.it.forEach(it=>drawItem(c,it,now));M.o.filter(o=>!o.t.startsWith('portal')&&o.t!=='spring').forEach(o=>drawObj(c,o,now));
   S.B.forEach((b,i)=>drawTrail(c,i,b));S.B.forEach((b,i)=>{if(G.mode==='prac'||i<2)drawPuck(c,i,b,now,S)});
@@ -457,8 +539,8 @@ function gameOver(){const S=V.S;paintHud();paintCtl();
   $('#ovT').textContent=draw?'🤝 平手！':me>=0?(w===me?'🎉 你贏了！':'再接再厲！'):`🏆 ${V.names[w]} 贏了！`;
   $('#ovT').style.color=draw?'#7a5a32':w===1?'#1e88e5':'#e53935';$('#ovIcon').style.display=draw?'none':'';
   $('#ovS').textContent=S.why||G.abort||'';
-  $('#ovR').innerHTML=[0,1].map(i=>`<div class="${SIDE[i]}${w===i?' w':''}"><img class="av" src="${petSrc(V.pets[i])||'img/ps/ps-pucks-guest.webp'}" alt="" onerror="this.src='img/ps/ps-pucks-guest.webp'">${V.names[i]}${w===i?' 🏆':''}<br><img class="ic" src="img/ps/ps-ui-gem.webp" alt=""> ${S.B[i].gem}　<img class="ic" src="img/ps/ps-ui-heart.webp" alt=""> ${S.B[i].hp}</div>`).join('');
-  $('#ovN').textContent=G.mode==='net'&&inPlat()&&!draw&&w!==me&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':G.mode==='net'?'寶石只是這一局的分數，不會變成金幣':'';
+  $('#ovR').innerHTML=[0,1].map(i=>`<div class="${SIDE[i]}${w===i?' w':''}"><img class="av" src="${petSrc(V.pets[i])||'img/ps/ps-pucks-guest.webp'}" alt="" onerror="this.src='img/ps/ps-pucks-guest.webp'">${V.names[i]}${w===i?' 🏆':''}<br>${S.mode==='trap'?`<span class="lives">${[0,1,2].map(k=>`<img src="img/ps/ps2-ui-life-${k<S.B[i].life?'full':'empty'}.webp" alt="">`).join('')}</span><br><small>撞掉對手 ${S.B[i].ko} 次</small></div>`:`<img class="ic" src="img/ps/ps-ui-gem.webp" alt=""> ${S.B[i].gem}　<img class="ic" src="img/ps/ps-ui-heart.webp" alt=""> ${S.B[i].hp}</div>`}`).join('');
+  $('#ovN').textContent=G.mode==='net'&&inPlat()&&!draw&&w!==me&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':G.mode==='net'?(S.mode==='trap'?'生命、能量只是這一局的資料':'寶石只是這一局的分數，不會變成金幣'):'';
   $('#bAgain').hidden=false;$('#bAgain').disabled=false;$('#bAgain').innerHTML='<img class="ic" src="img/ps/ps-ui-rematch.webp" alt="">再玩一次';
   setTimeout(()=>{if(V.S===S&&S.over){ov('over',1);fxAdd('victory',480,300);if(draw||me<0||w===me)sfx.win()}},500)}
 $('#bAgain').onclick=()=>{if(G.mode==='net')askRematch()};
@@ -474,13 +556,13 @@ const meP=()=>({id:myId,seat:mySeat(),name:myName(),pet:myPet(),ready:0});
 const netDown=()=>Net.mode==='local'&&!Q.has('local');   // Firebase 載不到（沒網路）：線上對戰不能用
 $('#bNew').onclick=async()=>{netMsg('建立中…');await netReady;if(netDown())return netMsg('連不上網路，線上對戰要有網路才能玩');await sweep();
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/meta`)))pin=p}if(!pin)return netMsg('房間滿了，等一下再試');
-    const created=Date.now();await Net.set(`rooms/${pin}`,{meta:{game:'ps',ver:PS.VER,created},state:{phase:'wait',g:0,sel:LS.get('ps_map','random'),t:created},players:{r:meP()}});
+    const created=Date.now();const xm=LS.get('ps_xmode','trap');await Net.set(`rooms/${pin}`,{meta:{game:'ps',ver:ROOM_VER,created},state:{phase:'wait',g:0,xm,sel:xm==='trap'?PS2.MAP_IDS[0]:LS.get('ps_map','random'),t:created},players:{r:meP()}});
     Net.onDiscRm(`rooms/${pin}`);enterRoom(pin,0);ov('netBox',0)}catch(e){netMsg('連不上網路，請檢查網路後再試一次')}};
 $('#bJoin').onclick=()=>join($('#pinIn').value.trim());
 $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bJoin').onclick()});
 async function join(pin){if(!/^\d{4}$/.test(pin))return netMsg('房號是 4 個數字');if(!hasTicket())return netMsg(NO_TK);netMsg('加入中…');await netReady;if(netDown())return netMsg('連不上網路，線上對戰要有網路才能玩');
   try{const room=await Net.get(`rooms/${pin}`);if(!room||!room.meta||room.meta.game!=='ps')return netMsg('找不到這個房間，看看房號對不對');
-    if(room.meta.ver!==PS.VER)return netMsg('房間的版本不一樣：請兩個人都重新整理網頁再試');
+    if(room.meta.ver!==ROOM_VER)return netMsg('房間的版本不一樣：請兩個人都重新整理網頁（或按平台的「更新」）再試');
     const pl=room.players||{};let me=pl.r&&pl.r.id===myId?0:pl.b&&pl.b.id===myId?1:-1;
     if(me<0){if(pl.b)return netMsg('這個房間已經有兩個人了');if(room.state&&room.state.phase!=='wait')return netMsg('這個房間已經開始了');me=1;await Net.set(`rooms/${pin}/players/b`,meP())}
     ov('netBox',0);enterRoom(pin,me)}catch(e){netMsg('連不上網路，請再試一次')}}
@@ -506,13 +588,15 @@ function onRoom(room){if(G.mode!=='net')return;
 function syncNet(){const st=G.st;if(!st||!st.snap||st.g!==G.g||V.sim||V.pending)return;
   const N=st.n|0,S=V.S;if(!S)return;
   if(N>S.n){const auth=JSON.parse(st.snap);if(N===S.n+1&&st.last&&st.last.n===N&&st.last.by!==G.me)runSim(S,st.last.a,auth);else{setState(auth,false);if(auth.over)gameOver()}return}
-  if(N===S.n&&!PS.same(S,JSON.parse(st.snap))){setState(JSON.parse(st.snap),false);if(V.S.over)gameOver();return}   // 對不上：以雲端為準
+  if(N===S.n&&JSON.stringify(S)!==st.snap&&!PS.same(S,JSON.parse(st.snap))){setState(JSON.parse(st.snap),false);if(V.S.over)gameOver();return}   // 對不上：以雲端為準
   if(S.over&&!$('#over').classList.contains('on'))gameOver();
   turnStart();paintCtl()}
 function paintLobby(){const st=G.st||{},pl=G.players||{};
   $('#slots').innerHTML=[0,1].map(i=>{const p=pl[SIDE[i]];if(!p)return `<div class="card slot ${SIDE[i]} empty"><div class="pk"><img src="img/ps/ps-pucks-${SIDE[i]==='r'?'red':'blue'}.webp" alt=""></div>等同學加入…</div>`;
     const src=petSrc(p.pet);return `<div class="card slot ${SIDE[i]}"><div class="pk"><img src="img/ps/ps-pucks-${i?'blue':'red'}.webp" alt=""><img src="${src||'img/ps/ps-pucks-guest.webp'}" alt="" onerror="this.src='img/ps/ps-pucks-guest.webp'"></div>${V.names[i]}${i===G.me?'（我）':''}<span class="rd${p.ready?' y':''}">${p.off?'📴 斷線中':p.ready?'✅ 準備好了':'還沒準備'}</span></div>`}).join('');
-  const host=G.me===0;mapBtns($('#lMaps'),st.sel||'random',m=>{if(host)Net.update(`rooms/${G.pin}/state`,{sel:m}).catch(()=>{})});
+  const host=G.me===0,xm=st.xm==='classic'?'classic':'trap';
+  modeBtns($('#lMode'),xm,x=>{if(host)Net.update(`rooms/${G.pin}/state`,{xm:x,sel:x==='trap'?PS2.MAP_IDS[0]:'random'}).catch(()=>{});if(host)LS.set('ps_xmode',x)},!host);
+  mapBtns($('#lMaps'),st.sel||'random',m=>{if(host)Net.update(`rooms/${G.pin}/state`,{sel:m}).catch(()=>{})},true,xm);
   $('#lMaps').querySelectorAll('button').forEach(b=>b.disabled=!host);$('#mapTip').textContent=host?'（你是房主，可以選）':'（房主選）';
   const mine=pl[SIDE[G.me]],r=$('#bReady');r.textContent=mine&&mine.ready?'取消準備':'我準備好了';r.disabled=!assetsOK&&!(mine&&mine.ready);
   $('#lmsg').textContent=!assetsOK?'圖片載入中…':!pl.b?'等同學加入（可以按「邀請同學」）':!(pl.r.ready&&pl.b.ready)?'兩個人都按「準備好了」就開始':'開始囉！';
@@ -521,7 +605,7 @@ $('#bReady').onclick=async()=>{const mine=G.players[SIDE[G.me]];if(!mine)return;
   Net.update(`rooms/${G.pin}/players/${SIDE[G.me]}`,{ready:mine.ready?0:1,pet:myPet()}).catch(()=>{})};
 /* 房主：兩個人都準備好 → 開局（先手：第一局隨機，之後輪流） */
 async function maybeStart(){const st=G.st||{},pl=G.players;if(G.me!==0||st.phase!=='wait'||!pl.r||!pl.b||!pl.r.ready||!pl.b.ready||G.starting)return;G.starting=1;
-  try{const g=(st.g|0)+1,first=st.first==null||g===1?(Math.random()<.5?0:1):1-st.first,map=pickMap(st.sel),S=PS.newGame(map,(Math.random()*4294967296)>>>0,first);
+  try{const g=(st.g|0)+1,first=st.first==null||g===1?(Math.random()<.5?0:1):1-st.first,xm=st.xm==='classic'?'classic':'trap',map=pickMap(st.sel,xm),S=(xm==='trap'?PS2:PS).newGame(map,(Math.random()*4294967296)>>>0,first);
     await Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='wait')return;return {...cur,phase:'play',g,first,map,snap:JSON.stringify(S),n:0,last:null,tt:Net.TS,ab:null,pets:[pl.r.pet||null,pl.b.pet||null],names:V.names.join('|'),seats:[pl.r.seat||0,pl.b.seat||0].join(','),t:Date.now()}});
     Net.cancelDisc(`rooms/${G.pin}`)}catch(e){}G.starting=0}
 /* 對局中：自己斷線時雲端記下時間（onDisconnect），回來就清掉 */
@@ -535,20 +619,20 @@ async function netTick(){if(G.mode!=='net')return;const st=G.st;if(!st||st.phase
   const op=G.players[SIDE[1-G.me]];
   if(op&&op.off&&srvNow()-op.off>OFF_MS){Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='play'||cur.g!==G.g)return;return {...cur,phase:'end',ab:`${V.names[1-G.me]} 斷線超過 15 秒，這局不算`}}).catch(()=>{});return}
   const S=V.S;if(!S||S.over||V.sim||V.pending||S.turn===G.me||(op&&op.off))return;
-  if(st.tt&&srvNow()-st.tt>TURN_IDLE){const S2=PS.apply(S,{a:'p'}),n0=S.n;   // 幫一直沒動作的對手略過
+  if(st.tt&&srvNow()-st.tt>TURN_IDLE){const S2=ENG(S).apply(S,{a:'p'}),n0=S.n;   // 幫一直沒動作的對手略過
     Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='play'||cur.g!==G.g||cur.n!==n0)return;return {...cur,snap:JSON.stringify(S2),n:S2.n,last:{n:S2.n,by:1-G.me,a:{a:'p'},proxy:G.me},tt:Net.TS,phase:S2.over?'end':'play'}}).catch(()=>{})}}
 function abortOver(){V.paused=false;$('#pause').classList.remove('on');ov('over',1);$('#ovT').textContent='⏸️ 這局不算';$('#ovT').style.color='#7a5a32';$('#ovIcon').style.display='none';$('#ovS').textContent=G.abort;$('#ovR').innerHTML='';$('#ovN').textContent='不記勝負、不用遊戲券';$('#bAgain').hidden=false;paintCtl()}
 /* 戰績、遊戲券：這局有我、有結果，就記一次 */
 function record(){const st=G.st,S=V.S;if(!inPlat()||!S||!S.over||!P.xqResult)return;const k=`ps${G.pin}_${st.t||0}_${G.g}`;if(G.rec===k)return;G.rec=k;
   const w=S.win===2?2:S.win===G.me?1:0,seats=String(st.seats||'').split(',').map(Number),o=seats[1-G.me]||0;
   P.xqResult({k,o,w,r:(S.why||'').split('・')[0].slice(0,20),n:S.n,g:'ps'});if(w===0&&!isTestMe())payTicket();paintRec()}
-async function forfeit(){const S=V.S;if(!S)return;const S2=PS.clone(S);S2.over=1;S2.win=1-G.me;S2.why=`${V.names[G.me]} 中途離開`;
+async function forfeit(){const S=V.S;if(!S)return;const S2=JSON.parse(JSON.stringify(S));S2.over=1;S2.win=1-G.me;S2.why=`${V.names[G.me]} 中途離開`;
   try{await Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='play'||cur.g!==G.g)return;return {...cur,phase:'end',snap:JSON.stringify(S2),n:S2.n,last:null}})}catch(e){}
   V.S=S2;record()}
 /* 再玩一次：兩個人都按了，房主重新開局（換人先） */
 function askRematch(){const p=`rooms/${G.pin}/players/${SIDE[G.me]}`;Net.update(p,{re:G.g}).catch(()=>{});$('#bAgain').disabled=true;$('#bAgain').textContent='等對方也按「再玩一次」…'}
 function rematchCheck(){const st=G.st,pl=G.players;if(G.me!==0||!st||st.phase!=='end'||!pl.r||!pl.b||pl.r.re!==G.g||pl.b.re!==G.g||G.starting)return;G.starting=1;
-  const g=G.g+1,first=1-(st.first|0),map=pickMap(st.sel),S=PS.newGame(map,(Math.random()*4294967296)>>>0,first);
+  const g=G.g+1,first=1-(st.first|0),xm=st.xm==='classic'?'classic':'trap',map=pickMap(st.sel,xm),S=(xm==='trap'?PS2:PS).newGame(map,(Math.random()*4294967296)>>>0,first);
   Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='end'||cur.g!==G.g)return;return {...cur,phase:'play',g,first,map,snap:JSON.stringify(S),n:0,last:null,tt:Net.TS,ab:null,pets:[pl.r.pet||null,pl.b.pet||null],t:Date.now()}}).catch(()=>{}).finally(()=>{G.starting=0})}
 setInterval(()=>{if(G.mode==='net')rematchCheck()},700);
 async function leaveRoom(){G.leaving=1;const pin=G.pin,me=G.me;G.un.forEach(f=>f());G.un=[];clearInterval(G.tick);
