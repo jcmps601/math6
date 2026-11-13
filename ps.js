@@ -7,7 +7,7 @@
 (function (root) {
   const CFG = {
     W: 960, H: 600, L: 48, T: 48, R: 912, B: 552, PR: 28,
-    HP: 100, DMG: 18, DMG_SPEED: 100, GOAL: 5, ROUNDS: 8, SHOTS: 16, AIM_S: 8, SIM_S: 4,
+    HP: 100, DMG: 18, DMG_SPEED: 100, GOAL: 5, ROUNDS: 8, SHOTS: 16, AIM_S: 15, SIM_S: 4,   // 瞄準時間：指導語 8 秒，對國小學生、平板太趕，改 15 秒
     HEAL: 15, SH_LIFE: 2,
     HZ: 120, VMAX: 680, VCAP: 760, DECEL: 220, STOP: 18,
     E_WALL: .85, E_PET: .75, E_ROCK: .9, E_BUMP: 1.08,
@@ -214,7 +214,8 @@
     const cmp = why => { if (a.gem !== b.gem) end(a.gem > b.gem ? 0 : 1, why + '・寶石比較多'); else if (a.hp !== b.hp) end(a.hp > b.hp ? 0 : 1, why + '・寶石一樣，比剩下的體力'); else end(2, why + '・寶石和體力都一樣'); };
     const end = (w, why) => { S.over = 1; S.win = w; S.why = why; };
     if (ka || kb) return ka && kb ? end(2, '兩隻同時體力歸零') : end(ka ? 1 : 0, '把對手的體力撞光了');
-    if (a.gem >= CFG.GOAL || b.gem >= CFG.GOAL) return cmp('寶石先集滿 5 顆');
+    /* 寶石滿 5 顆：要等這一回合兩個人都出手完才結束（後出手的人也有一樣多次機會，比較公平） */
+    if ((a.gem >= CFG.GOAL || b.gem >= CFG.GOAL) && S.n % 2 === 0) return cmp('有人集滿 5 顆寶石');
     if (S.n >= CFG.SHOTS) return cmp('8 回合打完了');
   }
   /* 一口氣算完一次出手（線上對戰：出手的平板用這個算出權威結果） */
