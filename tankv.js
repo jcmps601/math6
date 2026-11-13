@@ -117,6 +117,7 @@
   let key = '', outKey = '', shown = null, shownN = 0, queue = [], anim = null, pendingFire = false;
   const V = { g: null, gv: 0, T: [], wind: 0, turn: 0, crates: [] };
   let aim = [], drive = { i: -1, x: 0, fuel: TK.FUEL }, live = null, lastShot = [], turnAt = 0, turnKey = '';
+  let lot = null;   // 開局抽籤動畫 {t 已過影格, n 人數, first 先打的人, last 上一次亮的人}
   let parts = [], texts = [], shells = [], shake = 0, banner = null, deco = null, clouds = [], tPrev = 0, hold = null, liveT = 0, timeoutSent = '', big = null;
   const COL = i => (TEAMC[shown && shown.mode === 'team' ? 'team' : 'ffa'])[i] || TEAMC.ffa[0];
   const nm = i => (host.names()[i] || COL(i).name + '色坦克');
@@ -198,7 +199,34 @@
     const sizeChanged = W !== shown.W || H !== shown.H; W = shown.W; H = shown.H; if (sizeChanged) fit();
     const g0 = TK.decode(st.map); aim = g0.xs.map(x => ({ a: x < W / 2 ? 45 : 135, p: 60, w: 'n', f: x < W / 2 ? 1 : -1 })); lastShot = g0.xs.map(() => null);
     V.T = g0.xs.map((x, i) => ({ x, tx: x, hp: TK.HP, y: 0, flash: 0, dead: 0, a: aim[i].a }));
+    lot = null;
     makeDeco(st.seed); snapView(true); startTurn(); paintCtl(); buildWeapons();
+    /* 新的一局（還沒有人打過）：先播抽籤，決定誰先開始；抽籤時不能操作、倒數也先不跑 */
+    if (!toks.length && !shown.over && shown.n >= 2) { lot = { t: 0, n: shown.n, first: shown.turn, last: -1 }; banner = null; turnAt = performance.now() + LOT_MS; paintCtl(); }
+  }
+  const LOT_F = 150, LOT_MS = LOT_F * 1000 / 60;   // 抽籤 2.5 秒：前 1.7 秒輪流亮、慢慢停下，後面顯示結果
+  function drawLot(c, dt) {
+    if (!lot) return; lot.t += dt;
+    if (lot.t >= LOT_F) { lot = null; turnKey = ''; startTurn(); turnAt = performance.now(); paintCtl(); return; }
+    const n = lot.n, spin = n * 4 + lot.first, p = Math.min(1, lot.t / (LOT_F * .68)), e = 1 - Math.pow(1 - p, 3), cur = Math.min(spin, Math.floor(e * spin)) % n, done = p >= 1;
+    if (cur !== lot.last) { lot.last = cur; if (done) snd.turn(); else snd.click(); }
+    const fade = Math.min(1, lot.t / 8, (LOT_F - lot.t) / 12);
+    c.save(); c.globalAlpha = fade; c.fillStyle = 'rgba(30,20,10,.45)'; c.fillRect(0, 0, W, H);
+    const cw = Math.min(300, (W - 120) / n - 24), ch = 230, gap = 24, x0 = W / 2 - (n * cw + (n - 1) * gap) / 2, y0 = H / 2 - ch / 2 + 20;
+    c.textAlign = 'center'; c.font = `900 56px ${FONT}`; c.lineWidth = 10; c.strokeStyle = '#fff';
+    const title = done ? `🎉 ${nm(lot.first)} 先開始！` : '🎲 抽籤決定誰先開始…';
+    c.strokeText(title, W / 2, y0 - 40); c.fillStyle = done ? COL(lot.first).main : '#7a4a12'; c.fillText(title, W / 2, y0 - 40);
+    for (let i = 0; i < n; i++) {
+      const on = i === cur, x = x0 + i * (cw + gap), pop = on ? (done ? 1.12 + Math.sin(lot.t / 4) * .03 : 1.06) : 1;
+      c.save(); c.translate(x + cw / 2, y0 + ch / 2); c.scale(pop, pop); c.translate(-cw / 2, -ch / 2);
+      c.globalAlpha = fade * (done && !on ? .45 : 1);
+      c.fillStyle = on ? '#fff8e1' : '#fff'; rr(c, 0, 0, cw, ch, 26); c.fill();
+      c.lineWidth = on ? 10 : 4; c.strokeStyle = on ? COL(i).main : '#e9d5ae'; rr(c, 0, 0, cw, ch, 26); c.stroke();
+      const bi = img(bodyName(skinOf(i))); if (ok(bi)) { const w = Math.min(cw - 40, 190), h = w * bi.naturalHeight / bi.naturalWidth; c.drawImage(bi, cw / 2 - w / 2, 22 + Math.max(0, 120 - h) / 2, w, Math.min(h, 120)); }
+      c.font = `900 ${Math.min(38, cw / 6)}px ${FONT}`; c.fillStyle = COL(i).main; c.fillText(nm(i), cw / 2, ch - 34);
+      c.restore();
+    }
+    c.restore();
   }
   function snapView(hard) {
     V.g = Float64Array.from(shown.g); V.gv++; V.wind = shown.wind; V.turn = shown.turn; V.crates = shown.crates.map(c => ({ ...c }));
@@ -478,7 +506,7 @@
 
   /* ───────── 瞄準線、砲彈、粒子、文字 ───────── */
   function drawAim(c) {
-    if (anim || shown.over || pendingFire || !host.canAct()) return;
+    if (anim || lot || shown.over || pendingFire || !host.canAct()) return;
     const s = shown.turn, A = aim[s];
     const Ls = lastShot[s]; if (Ls) { const pts = fromMuzzle(TK.preview(shown, s, Ls.x, Ls.a, Ls.p, 400), s, Ls.x, Ls.a); c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 2; c.setLineDash([3, 7]); c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); c.setLineDash([]); }
     const pts = fromMuzzle(TK.preview(shown, s, drive.x, A.a, A.p, 24), s, drive.x, A.a);
@@ -541,7 +569,7 @@
   /* ───────── 上方的資訊列：每個人一張小卡（左邊一半、右邊一半），中間是風和倒數 ───────── */
   const CW = 262, CH = 64;
   function cardXY(i, n) { const Lh = Math.ceil(n / 2), cw = Math.min(CW, (W - 260) / n - 10); return { x: i < Lh ? 12 + i * (cw + 10) : W - 12 - cw - (n - 1 - i) * (cw + 10), w: cw }; }
-  function drawHUD(c) {
+  function drawHUD(c, dt) {
     const me = host.me(), n = V.T.length, heart = img('tank-ui-health-v2');
     for (let i = 0; i < n; i++) {
       const t = V.T[i], C = COL(i), { x, w: cw } = cardXY(i, n), y = 10, act = !shown.over && !anim && V.turn === i, gone = t.out, dead = t.dead || gone;
@@ -579,13 +607,14 @@
     /* 場地名稱 */
     c.font = `900 15px ${FONT}`; c.fillStyle = 'rgba(255,255,255,.9)'; c.textAlign = 'center'; c.lineWidth = 4; c.strokeStyle = 'rgba(0,0,0,.25)'; const sn = TK.SITES[shown.site].n; c.strokeText(sn, cx, cy + CH + 66); c.fillText(sn, cx, cy + CH + 66);
     /* 倒數：在風的下面 */
-    if (!shown.over && !anim) {
+    if (!shown.over && !anim && !lot) {
       const left = Math.max(0, (turnMs() - (performance.now() - turnAt)) / 1000), tx = cx, ty = cy + CH + 30;
       c.fillStyle = 'rgba(255,253,246,.95)'; c.beginPath(); c.arc(tx, ty, 26, 0, 7); c.fill();
       c.strokeStyle = '#e2e8f0'; c.lineWidth = 6; c.beginPath(); c.arc(tx, ty, 20, 0, 7); c.stroke();
       c.strokeStyle = left <= 8 ? '#ef4444' : COL(V.turn).main; c.beginPath(); c.arc(tx, ty, 20, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left / (turnMs() / 1000)); c.stroke();
       c.fillStyle = left <= 8 ? '#ef4444' : '#0f172a'; c.font = `900 18px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(Math.ceil(left), tx, ty + 1); c.textBaseline = 'alphabetic';
     }
+    drawLot(c, dt);
     if (banner && banner.life > 0) {
       banner.life--; const k = Math.min(1, banner.life / 20), age = 90 - banner.life, sc = age < 10 ? .6 + age * .04 : 1;
       c.save(); c.globalAlpha = k; c.translate(W / 2, H / 2 - 60); c.scale(sc, sc); c.font = `900 66px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 11; c.strokeStyle = '#fff'; c.strokeText(banner.t, 0, 0); c.fillStyle = banner.c; c.fillText(banner.t, 0, 0); c.restore();
@@ -622,7 +651,7 @@
     drawAim(c);
     for (let i = 0; i < V.T.length; i++) drawTank(c, i, now);
     drawShells(c); drawParts(c, dt);
-    c.setTransform(K, 0, 0, K, 0, 0); drawHUD(c);
+    c.setTransform(K, 0, 0, K, 0, 0); drawHUD(c, dt);
     if (hold) holdTick(now);
   }
   function timer() {
@@ -662,7 +691,7 @@
   }
   function stopHold() { hold = null; }
   function holdTick(now) { if (!hold) return; if (!myInput()) return stopHold(); if (now >= hold.at) { act(hold.k, true); hold.at = now + (hold.k[0] === 'x' ? 16 : 55); } }
-  const myInput = () => !!shown && !shown.over && !anim && !queue.length && !pendingFire && host.canAct();
+  const myInput = () => !!shown && !shown.over && !anim && !lot && !queue.length && !pendingFire && host.canAct();
   function act(k, rep) {
     const s = shown.turn, A = aim[s];
     if (k === 'a+') { if (A.a < 90) A.a++; else if (A.a > 90) A.a--; if (!rep) snd.click(); }
