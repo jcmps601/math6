@@ -255,7 +255,7 @@
     { id: 'cake', i: '🍰', n: '草莓蛋糕', p: 12, f: 30, j: 20 },
     { id: 'feast', i: '🍱', n: '豪華便當', p: 18, f: 70, j: 10 }
   ];
-  /* 農場收成的菜也可以餵（比賣掉划算）：飽足＝6＋賣價×5（最多 45），水果多一點開心 */
+  /* 農場收成的菜也可以餵（便宜的菜餵比較划算，貴的菜賣掉比較划算）：飽足＝6＋賣價×5（最多 45），水果多一點開心 */
   const FRUIT = { strawberry: 1, watermelon: 1, grape: 1, blueberry: 1, pineapple: 1 };
   const cropFood = id => { const C = window.FARM && FARM.CROPS[id]; return C ? { f: Math.min(45, 6 + C.s * 5), j: FRUIT[id] ? 8 : 0 } : null; };
   const NAMES = ['小布丁', '麻糬', '湯圓', '小餅乾', '奶茶', '豆花', '芒果', '布布', '泡芙', '棉花糖', '小可', '多多', '咪咪', '球球', '嘟嘟', '樂樂',
@@ -853,7 +853,7 @@
     if (tab === 'food') {
       const Fm = window.FARM && FARM.F(), crops = Fm ? Object.keys(FARM.CROPS).filter(id => Fm.store[id] > 0) : [];
       C.innerHTML = `<div class="pgrid">${FOODS.map((F, i) => `<button class="pitem${(p.coin || 0) < F.p ? ' poor' : ''}" data-f="${i}"><img class="fii" src="${IMG}food-${F.id}.webp" alt=""><b>${F.n}</b><small>🍙+${F.f}${F.j ? ` 💖+${F.j}` : ''}</small><em>🪙 ${F.p}</em></button>`).join('')}</div>
-        <div class="psec">🌾 農場收成的菜 <small>比賣掉划算喔</small></div>${crops.length ? `<div class="pgrid">${crops.map(id => { const V = cropFood(id); return `<button class="pitem" data-c="${id}"><img class="fci" src="img/farm/pr-${id}.webp" alt=""><b>${FARM.CROPS[id].n} ×${Fm.store[id]}</b><small>🍙+${V.f}${V.j ? ` 💖+${V.j}` : ''}</small><em>免費</em></button>`; }).join('')}</div>` : '<div class="pnone">倉庫裡還沒有菜。去「農場」種菜，收成以後可以拿來餵寵物！</div>'}`;
+        <div class="psec">🌾 農場收成的菜 <small>便宜的菜餵牠划算，貴的菜賣掉划算</small></div>${crops.length ? `<div class="pgrid">${crops.map(id => { const V = cropFood(id); return `<button class="pitem" data-c="${id}"><img class="fci" src="img/farm/pr-${id}.webp" alt=""><b>${FARM.CROPS[id].n} ×${Fm.store[id]}</b><small>🍙+${V.f}${V.j ? ` 💖+${V.j}` : ''}</small><em>免費</em></button>`; }).join('')}</div>` : '<div class="pnone">倉庫裡還沒有菜。去「農場」種菜，收成以後可以拿來餵寵物！</div>'}`;
       C.querySelectorAll('[data-f]').forEach(b => tap(b, () => feed(FOODS[+b.dataset.f])));
       C.querySelectorAll('[data-c]').forEach(b => tap(b, () => { const id = b.dataset.c, t = feedCrop(id); if (t.startsWith('😋')) { eatFx(`<img src="img/farm/pr-${id}.webp" alt="">`, FARM.CROPS[id].n); refresh(); paintTab(); } else say(t, 2200); }));
     } else if (tab === 'wear') {
