@@ -23,7 +23,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .sub{font-size:clamp(1rem,min(4vw,3vh),1.3rem);font-weight:900;color:#7a5a32}
 #me{display:flex;align-items:center;gap:.7rem;padding:.6rem 1rem;font-weight:900;color:#7a5a32;font-size:1.1rem}
 #me .pv{width:3.2rem;height:3.2rem;object-fit:contain}#me small{display:block;font-size:.9rem;color:#a0835a}
-.entries{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem;width:min(40rem,100%)}
+.entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;width:min(30rem,100%)}
 .entry{display:flex;flex-direction:column;align-items:center;gap:.3rem;border:0;padding:.9rem .5rem;min-height:9rem;font-weight:900;font-size:1.25rem;color:#4a3420}
 .entry img{width:3.6rem;height:3.6rem;object-fit:contain}.entry small{font-size:.9rem;color:#a0835a;font-weight:800}
 .entry:active{transform:translateY(3px)}
@@ -122,7 +122,6 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   <div class="card" id="me"></div>
   <div class="entries">
     <button class="card entry" id="bPrac"><img src="img/ps/ps-ui-practice.webp" alt="">單人練習<small>自己試試看</small></button>
-    <button class="card entry" id="bLocal"><img src="img/ps/ps-pucks-blue.webp" alt="">同台雙人<small>一台平板輪流</small></button>
     <button class="card entry" id="bNet"><img src="img/ps/ps-ui-invite.webp" alt="">線上對戰<small>跟同學連線</small></button>
   </div>
   <div class="row"><button class="btn w" id="bHelp"><img class="ic" src="img/ps/ps-ui-help.webp" alt="">玩法說明</button><button class="btn w" id="bExit"><img class="ic" src="img/ps/ps-ui-leave.webp" alt="">回平台</button></div>
@@ -158,7 +157,6 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 
 <div class="ov" id="setup"><div class="card box"><div class="t" id="setT"></div>
   <div class="s">選場地</div><div class="maps" id="sMaps"></div>
-  <div id="guestBox"><div class="s">藍方用哪一隻？（只是這一局的外觀）</div><div class="pets" id="gPets"></div></div>
   <div class="s" id="setTip"></div>
   <div class="row"><button class="btn o" id="setGo">開始！</button><button class="btn w" id="setX">取消</button></div></div></div>
 <div class="ov" id="netBox"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-invite.webp" alt="">線上對戰</div>
@@ -169,10 +167,10 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 <div class="ov" id="helpBox"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-help.webp" alt="">玩法說明</div><ol class="help">
   <li>輪到你時，從自己的寵物<b>向後拉</b>（或拉下面的瞄準盤），放手後按<img src="img/ps/ps-ui-launch.webp" alt=""><b>發射</b>。拉越遠越用力。</li>
   <li>撞到對手：對手少 <b>18</b> 體力（每次出手最多一次，要撞得夠快）。</li>
-  <li>撿<img src="img/ps/ps-objects-gem.webp" alt="">寶石，先拿到 <b>5 顆</b>就結束，寶石多的人贏。</li>
+  <li>撿<img src="img/ps/ps-objects-gem.webp" alt="">寶石：有人集滿 <b>5 顆</b>，等這一回合兩個人都打完就結束，寶石多的人贏。</li>
   <li><img src="img/ps/ps-objects-heart.webp" alt="">補 15 體力；<img src="img/ps/ps-objects-shield.webp" alt="">護盾擋一次撞擊。</li>
   <li><img src="img/ps/ps-objects-bumper.webp" alt="">反彈墊彈得更遠、<img src="img/ps/ps-objects-spring.webp" alt="">彈簧換方向加速、<img src="img/ps/ps-objects-portal-cyan.webp" alt="">傳送門會把你送到另一個門。</li>
-  <li>每次瞄準 <b>8 秒</b>，時間到自動略過。雙方各打 8 次，或有人體力歸零就結束。</li>
+  <li>每次瞄準 <b>15 秒</b>，時間到自動略過。雙方各打 8 次，或有人體力歸零就結束。</li>
   <li>所有寵物能力都一樣，只有長相不同。寶石只是這一局的分數，不是平台金幣。</li></ol>
   <button class="btn" id="helpX">知道了</button></div></div>
 <div class="ov" id="pick"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-invite.webp" alt="">邀請誰？</div><div class="s">亮的是現在在線上的同學</div><div id="pickList"></div><div class="s" id="invMsg"></div><button class="btn w" id="pickX">關閉</button></div></div>
@@ -183,20 +181,18 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 <script>
 /* ═════════════ 601 寵物彈射對戰（畫面、操作、連線） ═════════════
    規則、物理都在 ps.js（每台算出來一樣）。這裡負責：
-   ・三種玩法：單人練習（跟練習靶）、同台雙人（一台平板輪流）、線上雙人（rooms/房號，跟其他對戰同一個 Firebase，meta.game='ps'）。
+   ・兩種玩法：單人練習（跟練習靶）、線上雙人（同台雙人先拿掉：學生喜歡用自己的平板）（rooms/房號，跟其他對戰同一個 Firebase，meta.game='ps'）。
    ・線上：輪到誰，誰的平板先算好結果（快照），用「交易」寫上雲端（確認局號、出手序號，連點、重送都不會多射）；對手照著動作播動畫，播完對齊快照。
-   ・瞄準 8 秒沒發射就略過；對手的平板如果一直沒動作（超過 22 秒），另一台會幫他略過，場面不會卡住。
+   ・瞄準 15 秒沒發射就略過；對手的平板如果一直沒動作（超過 32 秒），另一台會幫他略過，場面不會卡住。
    ・斷線：先暫停，15 秒沒回來這局就不算（不記勝負、不扣券）。按「離開」算輸。
-   ・遊戲券沿用平台：線上輸的人用 1 張（贏、平手不用）；同台雙人一局 1 張；單人練習用平台的 5 分鐘遊戲時間。
+   ・遊戲券沿用平台：線上輸的人用 1 張（贏、平手不用）；單人練習用平台的 5 分鐘遊戲時間。
    ・寵物只改外觀，所有寵物能力一樣；對戰的體力、寶石只是這一局的資料，不影響寵物養成、平台金幣。 */
 const $=s=>document.querySelector(s);
 const FIREBASE_CONFIG={ apiKey:"AIzaSyD-frW7ISsXAHsv1DSZpGzvn_ok9t1NJ4U", authDomain:"quiz601.firebaseapp.com", databaseURL:"https://quiz601-default-rtdb.asia-southeast1.firebasedatabase.app", projectId:"quiz601", storageBucket:"quiz601.firebasestorage.app", messagingSenderId:"994429474121", appId:"1:994429474121:web:dc20be24938c4d9f2fa7c2" };
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const Q=new URLSearchParams(location.search);
 const myId=(()=>{let v=null;try{v=sessionStorage.getItem('ps_id')}catch(e){}if(!v){v=Math.random().toString(36).slice(2,10);try{sessionStorage.setItem('ps_id',v)}catch(e){}}return v})();
-const C=PS.CFG,TURN_IDLE=22000,OFF_MS=15000,STALE_MS=3*60*60*1000,BANNER_MS=1200;
-const STARTERS=['chick','cat','dragon','bunny','blob','bear','dog','penguin'];
-const PET_N={chick:'啾啾鳥',cat:'喵喵貓',dragon:'火火龍',bunny:'跳跳兔',blob:'QQ 果凍',bear:'圓圓熊',dog:'汪汪狗',penguin:'咕咕企鵝'};
+const C=PS.CFG,TURN_IDLE=32000,OFF_MS=15000,STALE_MS=3*60*60*1000,BANNER_MS=1200;
 
 /* ---- 連線：Firebase，或同一台電腦分頁間的本機模式（網址加 ?local，測試用） ---- */
 const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
@@ -282,17 +278,13 @@ function mapBtns(box,sel,cb,withRandom=true){box.innerHTML=[...PS.MAP_IDS.map(id
   box.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.m===sel);b.onclick=()=>{box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.m)}})}
 const pickMap=m=>m==='random'||!PS.MAPS[m]?PS.MAP_IDS[Math.random()*PS.MAP_IDS.length|0]:m;
 let setMode='';
-function openSetup(mode){setMode=mode;$('#setT').innerHTML=mode==='prac'?'<img class="ic" src="img/ps/ps-ui-practice.webp" alt="">單人練習':'<img class="ic" src="img/ps/ps-pucks-blue.webp" alt="">同台雙人';
+function openSetup(mode){setMode=mode;$('#setT').innerHTML='<img class="ic" src="img/ps/ps-ui-practice.webp" alt="">單人練習';
   G.map=LS.get('ps_map','random');mapBtns($('#sMaps'),G.map,m=>{G.map=m;LS.set('ps_map',m)});
-  $('#guestBox').hidden=mode!=='local';
-  if(mode==='local'){$('#gPets').innerHTML=STARTERS.map(sp=>`<button data-p="${sp}"><img src="img/pet/${sp}-0.webp" alt="" onerror="this.src='img/ps/ps-pucks-guest.webp'">${PET_N[sp]}</button>`).join('')+'<button data-p="">　<img src="img/ps/ps-pucks-guest.webp" alt="">爪印</button>';
-    G.guest=LS.get('ps_guest','cat');$('#gPets').querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.p===G.guest);b.onclick=()=>{G.guest=b.dataset.p;LS.set('ps_guest',G.guest);$('#gPets').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))}})}
-  $('#setTip').textContent=mode==='prac'?(inPlat()?'用平台的遊戲時間（5 分鐘一張券）・不記勝負':'不記勝負'):(inPlat()?'一局用 1 張遊戲券・不記戰績':'');
+  $('#setTip').textContent=inPlat()?'用平台的遊戲時間（5 分鐘一張券）・不記勝負':'不記勝負';
   ov('setup',1)}
 $('#bPrac').onclick=()=>openSetup('prac');
-$('#bLocal').onclick=()=>{if(!hasTicket())return msg(NO_TK);openSetup('local')};
 $('#setX').onclick=()=>ov('setup',0);
-$('#setGo').onclick=()=>{ov('setup',0);if(setMode==='prac')startPractice();else startLocal()};
+$('#setGo').onclick=()=>{ov('setup',0);startPractice()};
 $('#bHelp').onclick=()=>ov('helpBox',1);$('#helpX').onclick=()=>ov('helpBox',0);
 $('#bExit').onclick=()=>{try{if(window.parent!==window&&window.parent.closeTool)return window.parent.closeTool()}catch(e){}history.back()};
 $('#bNet').onclick=()=>{if(!hasTicket())return msg(NO_TK);$('#netMsg').textContent='';ov('netBox',1)};$('#netX').onclick=()=>ov('netBox',0);
@@ -302,10 +294,6 @@ function practiceTime(){if(!inPlat()||!P.startPlay)return true;if(P.left&&P.left
 function startPractice(map){if(!practiceTime()){msg('🎟️ 遊戲時間用完了，遊戲券也沒有了。回平台練習 10 題答對 8 題就能拿到！');show('home');return}
   G.mode='prac';G.me=-1;G.pmap=map||pickMap(G.map);V.pets=[myPet(),null];V.names=[myName(),'練習靶'];V.pucks=['neutral','guest'];
   setState(PS.newGame(G.pmap,(Math.random()*4294967296)>>>0,0,true),true);$('#bReset').hidden=false;$('#bMap').hidden=false;show('game')}
-function startLocal(){if(!payTicket()){msg(NO_TK);return}
-  G.mode='local';G.me=-1;G.lfirst=G.lfirst==null?(Math.random()<.5?0:1):1-G.lfirst;G.lmap=pickMap(G.map);
-  V.pets=[myPet(),G.guest?{sp:G.guest,st:0}:null];V.names=[inPlat()?myName():'紅方','藍方'];V.pucks=['red','blue'];
-  setState(PS.newGame(G.lmap,(Math.random()*4294967296)>>>0,G.lfirst),true);$('#bReset').hidden=true;$('#bMap').hidden=true;show('game')}
 $('#bReset').onclick=()=>{if(G.mode==='prac'&&!V.sim)startPractice(G.pmap)};
 $('#bMap').onclick=()=>{if(G.mode!=='prac'||V.sim)return;const i=PS.MAP_IDS.indexOf(G.pmap);startPractice(PS.MAP_IDS[(i+1)%PS.MAP_IDS.length])};
 
@@ -472,10 +460,10 @@ function gameOver(){const S=V.S;paintHud();paintCtl();
   $('#ovN').textContent=G.mode==='net'&&inPlat()&&!draw&&w!==me&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':G.mode==='net'?'寶石只是這一局的分數，不會變成金幣':'';
   $('#bAgain').hidden=false;$('#bAgain').disabled=false;$('#bAgain').innerHTML='<img class="ic" src="img/ps/ps-ui-rematch.webp" alt="">再玩一次';
   setTimeout(()=>{if(V.S===S&&S.over){ov('over',1);fxAdd('victory',480,300);if(draw||me<0||w===me)sfx.win()}},500)}
-$('#bAgain').onclick=()=>{if(G.mode==='local'){ov('over',0);if(!hasTicket())return toHome(NO_TK);startLocal()}else if(G.mode==='net')askRematch()};
+$('#bAgain').onclick=()=>{if(G.mode==='net')askRematch()};
 $('#bHome').onclick=()=>{ov('over',0);if(G.mode==='net')leaveRoom();else toHome()};
 $('#bGLeave').onclick=async()=>{if(G.mode==='net'&&G.st&&G.st.phase==='play'&&!V.S.over){if(!confirm('現在離開算輸，確定要離開嗎？'))return;await forfeit()}
-  if(G.mode==='net')return leaveRoom();if(G.mode==='local'&&V.S&&!V.S.over&&!confirm('這局還沒結束，確定要離開嗎？'))return;toHome()};
+  if(G.mode==='net')return leaveRoom();toHome()};
 function toHome(t){V.S=null;V.sim=null;G.mode='';ov('over',0);show('home');paintMe();paintRec();msg(t||'')}
 
 /* ═════════════ 線上對戰 ═════════════ */
