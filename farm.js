@@ -18,12 +18,12 @@
     pumpkin: { n: '南瓜', lv: 7, p: 15, m: 240, w: 3, y: 3, s: 9, xp: 16, c: '#40c057' },
     watermelon: { n: '西瓜', lv: 8, p: 22, m: 360, w: 3, y: 3, s: 12, xp: 20, c: '#37b24d' },
     grape: { n: '葡萄', lv: 10, p: 27, m: 480, w: 3, y: 6, s: 7, xp: 26, c: '#40c057' },
-    /* 2026-11 新增的高等級作物（sd＝種子的叫法；沒寫就是「種子」） */
-    potato: { n: '馬鈴薯', lv: 12, p: 30, m: 180, w: 3, y: 6, s: 8, xp: 30, c: '#78b94c', sd: '種薯' },
-    bellpepper: { n: '甜椒', lv: 15, p: 38, m: 240, w: 3, y: 6, s: 10, xp: 36, c: '#5bb950' },
-    shiitake: { n: '香菇', lv: 18, p: 46, m: 360, w: 3, y: 8, s: 9, xp: 44, c: '#a6764b', sd: '菌種' },
-    blueberry: { n: '藍莓', lv: 22, p: 58, m: 480, w: 3, y: 8, s: 11, xp: 54, c: '#5b8bd0' },
-    pineapple: { n: '鳳梨', lv: 26, p: 70, m: 600, w: 3, y: 5, s: 22, xp: 64, c: '#e0b23a', sd: '冠芽種苗' }
+    /* 2026-11 新增的高等級作物（sd＝種子的叫法；沒寫就是「種子」）。每滴水淨賺 5.3→8，接在葡萄 5 後面慢慢往上，不讓農場收入蓋過練習 */
+    potato: { n: '馬鈴薯', lv: 12, p: 32, m: 180, w: 3, y: 6, s: 8, xp: 30, c: '#78b94c', sd: '種薯' },
+    bellpepper: { n: '甜椒', lv: 15, p: 36, m: 240, w: 3, y: 6, s: 9, xp: 36, c: '#5bb950' },
+    shiitake: { n: '香菇', lv: 18, p: 44, m: 360, w: 3, y: 8, s: 8, xp: 44, c: '#a6764b', sd: '菌種' },
+    blueberry: { n: '藍莓', lv: 22, p: 50, m: 480, w: 3, y: 8, s: 9, xp: 54, c: '#5b8bd0' },
+    pineapple: { n: '鳳梨', lv: 26, p: 60, m: 600, w: 3, y: 6, s: 14, xp: 64, c: '#e0b23a', sd: '冠芽種苗' }
   };
   const seedN = C => C.sd || '種子', TOP_LV = Math.max(...Object.values(CROPS).map(C => C.lv));
   const CK = Object.keys(CROPS);
