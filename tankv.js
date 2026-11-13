@@ -474,9 +474,8 @@
       /* 砲管：圓軸中心對準砲塔接口，跟著角度轉（朝左時整台鏡射） */
       const la = (face > 0 ? t.a : 180 - t.a) * Math.PI / 180 + face * tilt;   // 整台車跟著地形斜，砲管要轉回來，指的方向才等於瞄準角度
       const barrel = () => { c.save(); c.translate((P[0] - BODY_W / 2) * s, (P[1] - bot) * s); c.rotate(-la); const bs = s * (g ? g.k : BAR_K), pv = g ? g.piv : BAR_PIV, bw = g ? g.w : BAR_W, bh2 = g ? g.h : BAR_H; c.drawImage(bar, -pv[0] * bs, -pv[1] * bs, bw * bs, bh2 * bs); c.restore(); };
-      if (!g) barrel();                                  // 基本款：砲管根部藏在車身後面
       c.drawImage(body, -BODY_W / 2 * s, -bot * s, BODY_W * s, bh);
-      if (g) barrel();                                   // 進階以上：砲管的圓軸蓋在砲塔接口上
+      barrel();                                          // 砲管的圓軸蓋在砲塔接口上（基本款以前畫在車身後面，仰角大時砲管像從砲塔後面冒出來、跟接口分開）
       if (t.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = t.flash / 14 * .5; c.drawImage(body, -BODY_W / 2 * s, -bot * s, BODY_W * s, bh); t.flash--; }
       c.restore();
       if (dead) { c.fillStyle = 'rgba(40,40,40,.35)'; c.beginPath(); c.ellipse(0, -22, 30, 20, 0, 0, 7); c.fill(); }
