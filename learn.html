@@ -1342,6 +1342,8 @@ function show$(id){document.querySelectorAll('.scr').forEach(s=>s.classList.togg
 
 /* ===================== 雲端(Firebase)＋離線佇列 ===================== */
 let db=null,fauth=null,online=false,flushing=false,boundKey='';
+/* 雲端時間：每台平板的時鐘可能差幾分鐘，「誰在線上」「邀請還有沒有效」都用雲端時間比，才不會看不到同學 */
+let SRV_O=0,presBeat=null;const srvNow=()=>Math.round(Date.now()+SRV_O);
 const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
 const fbReady=(async()=>{try{
   await timeout(loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js'),15000);
@@ -1349,8 +1351,8 @@ const fbReady=(async()=>{try{
   await timeout(loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js'),15000);
   firebase.initializeApp(FIREBASE_CONFIG);db=firebase.database();fauth=firebase.auth();
   fauth.signInAnonymously().catch(()=>{});
-  db.ref('.info/connected').on('value',s=>{online=!!s.val();paintSync();if(online)flush()});
-  db.ref('.info/serverTimeOffset').on('value',s=>{const o=+s.val();if(online&&isFinite(o)&&window.__timeFix)__timeFix(o)});
+  db.ref('.info/connected').on('value',s=>{online=!!s.val();paintSync();if(online){flush();if(presBeat)presBeat()}});   // 一連上（或斷線後重新連上）就馬上報到「在線上」
+  db.ref('.info/serverTimeOffset').on('value',s=>{const o=+s.val();if(isFinite(o))SRV_O=o;if(online&&isFinite(o)&&window.__timeFix)__timeFix(o)});
  }catch(e){db=null}paintSync();return !!db})();
 /* 要讀雲端時:等連上線(最多 ms 毫秒)。剛打開網頁時 SDK 載好了但還沒連上,直接讀會被當成「離線」 */
 async function fbOnline(ms=6000){if(!(await fbReady)||!db)return false;const t0=Date.now();while(!online&&Date.now()-t0<ms)await new Promise(r=>setTimeout(r,150));return online}
@@ -1657,8 +1659,9 @@ function playCard(){const c=el('div','cd');c.id='playt';
   const B=c.querySelector('.pyb');
   [['vs-pd','大砲對轟','2 人',()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'})],['vs-pd','大砲混戰','2～4 人',()=>openTool({...XQ_TOOL,f:'party.html'})],['vs-vs','更多對戰','軍棋・暗棋',()=>goView('game')]]
     .forEach(([im,n,sub,fn])=>{const b=el('button','pybtn',`${ico(im,'pbi')}<b>${n}</b><small>${sub}</small>`);tap(b,fn);B.appendChild(b)});
-  onlineSeats().then(o=>{const e=c.querySelector('#pyon');if(!e)return;const L=Object.keys(o).map(Number).filter(s=>s!==user.seat&&(isTest(user.seat)||!isTest(s)));
+  const paintOn=()=>onlineSeats().then(o=>{const e=c.querySelector('#pyon');if(!e)return;const L=Object.keys(o).map(Number).filter(s=>s!==user.seat&&(isTest(user.seat)||!isTest(s)));
     e.innerHTML=!online?'📴 連上網路才能跟同學一起玩':L.length?`現在有 <b>${L.length}</b> 位同學在線上：${L.slice(0,6).map(s=>seatName(s)).join('、')}${L.length>6?'…':''}`:'現在沒有同學在線上，可以先練習，等一下再來看看'}).catch(()=>{});
+  paintOn();const T=setInterval(()=>{if(!c.isConnected)return clearInterval(T);if(document.visibilityState==='visible')paintOn()},15000);   // 首頁開著時每 15 秒更新一次誰在線上
   return c}
 /* 單元卡片（首頁、學習頁共用）：目前科目的單元＋綜合＋錯題 */
 function unitCards(){const SM=mixOf(subj),SJ=subjOf(subj),G=el('div');G.id='ucards';
@@ -1895,13 +1898,14 @@ async function xqHist(seat){const s=seat||(user&&user.seat);const m={};
 const xqG=x=>GK(x.g);
 async function xqStats(type,seat){const H=(await xqHist(seat)).filter(x=>!type||xqG(x)===type);return {n:H.length,w:H.filter(x=>x.w===1).length,l:H.filter(x=>x.w===0).length,d:H.filter(x=>x.w===2).length,h:H}}
 async function onlineSeats(){const out={};try{if(db&&online){const v=(await timeout(db.ref(`${ROOT}/on`).get(),8000)).val()||{};const now=Date.now();
-  for(const k in v)if(v[k]&&now-v[k]<ON_MS)out[k]=1}}catch(e){}return out}
+  for(const k in v)if(v[k]&&Math.abs(srvNow()-v[k])<ON_MS)out[k]=1}}catch(e){}return out}
 let onT=0,onRef=null;
-async function presence(){clearInterval(onT);if(!user)return;const s=user.seat;
-  const beat=async()=>{if(!db||!online||!user||user.seat!==s)return;if(!(await ensureBind()))return;
-    try{onRef=db.ref(`${ROOT}/on/${s}`);await onRef.set(Date.now());if(onRef.onDisconnect)onRef.onDisconnect().remove()}catch(e){}resolveXqPending()};
-  beat();onT=setInterval(beat,30000)}
-function presenceOff(){clearInterval(onT);try{if(onRef)onRef.remove()}catch(e){}onRef=null}
+async function presence(){clearInterval(onT);if(!user)return;const s=user.seat;let busy=false;
+  const beat=async()=>{if(busy||!db||!online||!user||user.seat!==s)return;busy=true;try{if(!(await ensureBind()))return;
+    onRef=db.ref(`${ROOT}/on/${s}`);await onRef.set(srvNow()-1000);if(onRef.onDisconnect)onRef.onDisconnect().remove()}catch(e){}finally{busy=false}resolveXqPending()};
+  presBeat=beat;beat();onT=setInterval(beat,30000)}
+function presenceOff(){clearInterval(onT);presBeat=null;try{if(onRef)onRef.remove()}catch(e){}onRef=null}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&presBeat)presBeat()});   // 從背景切回來馬上報到
 /* 不讓邀請變成騷擾（兩邊都擋：發的人有冷卻時間，收的人的平板也會自己擋）
    發邀請：同一個人 INV_GAP 內只能邀一次；INV_WIN 內全部最多邀 INV_MAX 次（重新整理也算，記在這台平板）。
    收邀請：正在練習題目不跳出來；按「下次再說」之後 INV_NO 內不再跳出同一個人的邀請；同一個人 INV_WIN 內最多跳 INV_POP 次；
@@ -1914,7 +1918,7 @@ function invErr(e){return e&&e.cool?`邀請太多次了，${invMin(e.cool)} 分�
 function invNote(L){const ms=[...L.querySelectorAll('[data-cd]')].map(b=>+b.dataset.cd);if(!ms.length)return;const d=L.ownerDocument.createElement('div');d.style.cssText='grid-column:1/-1;align-self:center;font-weight:800;font-size:1rem;color:#b7791f;text-align:center';d.textContent=`有 ⏳ 的同學，最多再等 ${invMin(Math.max(...ms))} 分鐘才能邀請`;L.appendChild(d)}
 function invDecText(v){const n=seatName(v.s);return v.why==='noticket'?`${n} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${n} 正在跟別人玩，等一下再邀請`:v.why==='study'?`${n} 正在練習題目，等練完再邀請`:v.why==='cool'?`${n} 現在不方便，過一陣子再邀請`:v.why==='dnd'?`${n} 現在不接受邀請`:`${n} 說下次再玩`}
 async function sendInv(to,pin,g){const w=invCool(to);if(w>0)throw Object.assign(new Error('cool'),{cool:w});
-  if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:Date.now(),g:GK(g)}),8000);LS.set(invsKey(),[...invSent(),{s:+to,t:Date.now()}])}
+  if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:srvNow(),g:GK(g)}),8000);LS.set(invsKey(),[...invSent(),{s:+to,t:Date.now()}])}
 function unInv(to){try{if(db&&user)db.ref(`${ROOT}/inv/${to}/${user.seat}`).remove()}catch(e){}}
 /* 中途跑掉(按上一頁、關掉、斷線)的那一局:下棋時先記「有一局還沒下完」,下次回到平台時補記輸、補扣 1 張券 */
 const xqpKey=()=>'learn601_xqp_'+(user&&user.seat);
@@ -1940,9 +1944,9 @@ async function resolveXqPending(){const p=user&&LS.get(xqpKey(),null);if(!p||!p.
 let invRef=null,invCb=null,invNow=null;
 async function listenInv(){if(invRef&&invCb)invRef.off('value',invCb);invRef=null;if(!user||!db)return;const s=user.seat;
   for(let i=0;i<20&&!(await ensureBind());i++)await new Promise(r=>setTimeout(r,3000));if(!user||user.seat!==s)return;
-  invRef=db.ref(`${ROOT}/inv/${s}`);invCb=snap=>{const v=snap.val()||{},now=Date.now();
+  invRef=db.ref(`${ROOT}/inv/${s}`);invCb=snap=>{const v=snap.val()||{},now=srvNow();
     if(invNow){if(v[invNow.f]&&v[invNow.f].p===invNow.p)return;hideInv()}   // 正在看的邀請還在：不要被別人的邀請蓋掉，等這一個處理完再換下一個
-    const list=Object.entries(v).filter(([f,x])=>x&&x.p&&now-x.t<INV_MS).sort((a,b)=>b[1].t-a[1].t);
+    const list=Object.entries(v).filter(([f,x])=>x&&x.p&&Math.abs(now-x.t)<INV_MS).sort((a,b)=>b[1].t-a[1].t);
     if(!list.length)return;
     const [f,x]=list[0],iv={f:+f,p:x.p,t:x.t,g:GK(x.g)};
     const why=chessBusy()?'busy':invGate(+f);if(why)return bounceInv(iv,why);   // 不跳出來，自動回覆（刪掉之後會再通知一次，換下一個邀請）
@@ -2705,7 +2709,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v87';let verNew=false,verBusy=false;
+const APP_VER='learn601-v88';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
