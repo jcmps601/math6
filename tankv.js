@@ -26,7 +26,8 @@
   /* 每款砲管圖量出來的砲口尖端 x（砲管圖座標） */
   const MUZ_X = {"forest":197,"desert":197,"glacier":197,"ember":197,"volt":197,"nebula":197,"rhino":200,"falcon":200,"tortoise":200,"stormwolf":200,"auroracorn":200,"abyssshark":200,"solardragon":200,"phoenix":200,"astraltemple":200};
   const BODY_W = 256, BODY_BOTTOM = 182, BAR_PIV = [28, 37.5], BAR_W = 200, BAR_H = 72;
-  const TANK_WW = 66, BAR_K = .62;   // 車身在場地上 66 寬；砲管縮到跟砲塔接口一樣粗
+  const TANK_WW = 66, BAR_K = .62;
+  const FUEL_MIN = 6;   // 剩下的油少於這些（平地按一下「移動」走 3 小步的量，約 3%）就算沒油：顯示 0%、不能再開，免得顯示 1～3% 卻幾乎開不動   // 車身在場地上 66 寬；砲管縮到跟砲塔接口一樣粗
   const IMGC = {};
   const img = n => { let i = IMGC[n]; if (!i) { i = IMGC[n] = new Image(); i.src = 'img/game/' + n + '.webp'; } return i; };
   const ok = i => i && i.complete && i.naturalWidth > 0;
@@ -672,7 +673,7 @@
       const d = k === 'x+' ? 2 : -2;
       for (let i = 0; i < (rep ? 1 : 3); i++) {
         const to = drive.x + d, cost = TK.driveCost(shown, drive.x, to);
-        if (drive.fuel < cost) { if (!rep) texts.push({ x: drive.x, y: groundY(drive.x) - 110, t: '沒油了', c: '#64748b', life: 40, s: 24 }); break; }
+        if (drive.fuel < cost || drive.fuel < FUEL_MIN) { if (!rep) texts.push({ x: drive.x, y: groundY(drive.x) - 110, t: '沒油了', c: '#64748b', life: 40, s: 24 }); break; }
         if (!TK.canDrive(shown, s, drive.x, to)) { if (!rep) texts.push({ x: drive.x, y: groundY(drive.x) - 110, t: '開不過去', c: '#64748b', life: 40, s: 24 }); break; }
         drive.x = to; drive.fuel -= cost;
       }
@@ -709,7 +710,9 @@
     ctl.querySelector('#pdP').textContent = A.p; ctl.querySelector('#pdPB i').style.width = A.p + '%';
     let fuel = drive.i === s ? drive.fuel : TK.FUEL;
     /* 剩下的油不夠往左或往右開一步（例如上坡）就算 0%，不要顯示 1% 卻開不動 */
-    if (drive.i === s && fuel < TK.FUEL) { const x = drive.x, c = Math.min(TK.driveCost(shown, x, x - 2), TK.driveCost(shown, x, x + 2)); if (fuel < c) fuel = 0; }
+    if (drive.i === s && fuel < TK.FUEL) {   // 只看開得過去的方向（另一邊可能是懸崖、場地邊緣或別台坦克）
+      const x = drive.x, cs = [x - 2, x + 2].filter(to => TK.canDrive(shown, s, x, to)).map(to => TK.driveCost(shown, x, to));
+      if ((cs.length && fuel < Math.min(...cs)) || fuel < FUEL_MIN) fuel = 0; }
     const pc = fuel <= 0 ? 0 : Math.max(1, Math.round(fuel / TK.FUEL * 100));
     ctl.querySelector('#pdFB i').style.width = pc + '%'; ctl.querySelector('#pdF').textContent = pc + '%';
     ctl.querySelectorAll('[data-k],#pdFire').forEach(b => b.disabled = !on);
