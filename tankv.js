@@ -31,6 +31,9 @@
   const img = n => { let i = IMGC[n]; if (!i) { i = IMGC[n] = new Image(); i.src = 'img/game/' + n + '.webp'; } return i; };
   const ok = i => i && i.complete && i.naturalWidth > 0;
   SKINS.forEach(s => { img(bodyName(s)); img(barName(s)); });
+  /* 進階、史詩、傳說九款：基本彈換成跟坦克同造型的砲彈（圖檔彈頭朝右，飛的時候跟著方向轉）。其他武器、初階坦克照舊 */
+  const SHELL_SK = SKINS.slice(6), shellName = sk => `tank-${sk}-shell-v1`, SHELL_L = 40;   // 場上長 40（基本彈圓球直徑 14、坦克 66 寬；縮小的手機畫面也看得出造型）
+  SHELL_SK.forEach(s => img(shellName(s)));
   ['wind-left', 'wind-right', 'health', 'wait'].forEach(n => img(`tank-ui-${n}-v2`));
   /* 場地背景（GPT 畫的，16:7；下面 1/3 是淡色，地面由程式畫才能炸出坑） */
   const bgImg = site => img(`tank-bg-${site}`);
@@ -471,6 +474,14 @@
       const [X, Y] = shellXY(s);
       const w = anim && anim.m.w, bg = w === 's', r = bg ? 9 : (w === 't' || s.sub) ? 5 : 7;
       if (bg) { const gl = c.createRadialGradient(X, Y, 0, X, Y, 26); gl.addColorStop(0, 'rgba(255,200,80,.9)'); gl.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 26, 0, 7); c.fill(); }
+      const sk = (!w || w === 'n') && !s.sub && anim ? skinOf(anim.side) : null, si = sk && SHELL_SK.includes(sk) ? img(shellName(sk)) : null;
+      if (si && ok(si)) {
+        const L = SHELL_L, h = L * si.naturalHeight / si.naturalWidth;
+        c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 1));
+        c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 4; c.shadowOffsetY = 1;   // 淡淡的影子：亮的場地也看得清楚
+        c.drawImage(si, -L / 2, -h / 2, L, h); c.restore();
+        continue;
+      }
       const col = { s: '#7c2d12', b: '#ea580c', c: '#d6336c', d: '#868e96', w: '#8b5a2b', p: '#7048e8' }[w] || '#1f2937';
       c.fillStyle = s.sub ? ['#f59f00', '#1c7ed6', '#2f9e44', '#e03131', '#7048e8'][s.k % 5] : col; c.beginPath(); c.arc(X, Y, r, 0, 7); c.fill();
       if (w === 'p') { c.strokeStyle = '#e5dbff'; c.lineWidth = 2; c.beginPath(); c.arc(X, Y, r + 4 + Math.sin(performance.now() / 80) * 2, 0, 7); c.stroke(); }
