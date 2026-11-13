@@ -245,10 +245,27 @@
     addCoin(-C.p); f.p[k] = { c: id, t: Date.now() + k, w: 0 }; addXp(1); return true;   // +k：同一秒種的田，蟲和雜草也不一樣
   }
   /* 小特效：在田上面跳出字 */
+  /* 飄起來的字是畫在 SVG 裡的，ico.js 換不到：表情符號（🪙🐛🌿💧…）在這裡自己換成平台的圖示，
+     不然每台平板顯示的是自己系統的表情符號（iPad 的 🪙 看起來像月亮） */
+  let fxCtx = null;
+  ['rw-coin', 'ic-bug', 'ic-weed', 'ic-water-drop', 'ic-fertilizer-bag', 'ic-seed-sprout', 'nav-pet'].forEach(n => { const i = new Image(); i.src = `img/ui/${n}.webp`; });   // 先載好，第一次飄字才不會缺圖
+  function fxRow(text, col) {
+    const M = (window.ICO && ICO.MAP) || {}, keys = Object.keys(M).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const RE = keys.length ? new RegExp('(' + keys.join('|') + ')\uFE0F?', 'gu') : null, segs = []; let last = 0, m;
+    if (RE) while ((m = RE.exec(text))) { if (m.index > last) segs.push({ t: text.slice(last, m.index) }); segs.push({ i: M[m[1]] }); last = m.index + m[0].length; }
+    if (last < text.length) segs.push({ t: text.slice(last) });
+    const fam = getComputedStyle(document.body).fontFamily || 'sans-serif', FS = 36, IS = 42, GAP = 4;
+    if (!fxCtx) fxCtx = document.createElement('canvas').getContext('2d'); fxCtx.font = `900 ${FS}px ${fam}`;
+    segs.forEach(sg => { sg.w = sg.i ? IS + GAP : fxCtx.measureText(sg.t).width; });
+    let x = -segs.reduce((a, sg) => a + sg.w, 0) / 2;
+    const esc = t => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    return segs.map(sg => { const o = sg.i ? `<image href="img/ui/${sg.i}.webp" x="${(x + GAP / 2).toFixed(1)}" y="${-IS + 8}" width="${IS}" height="${IS}"/>`
+      : `<text x="${x.toFixed(1)}" font-size="${FS}" font-weight="900" fill="${col}" stroke="#fff" stroke-width="8" paint-order="stroke" xml:space="preserve">${esc(sg.t)}</text>`; x += sg.w; return o; }).join('');
+  }
   function fx(k, text, cls, cropId) {
     const G = document.getElementById('ffx'); if (!G) return; const [X, Y] = plotC(k);
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.setAttribute('transform', `translate(${X} ${Y - 110})`);
-    g.innerHTML = (cropId ? `<image href="${IMG}pr-${cropId}.webp" x="-34" y="-104" width="68" height="68"/>` : '') + `<text text-anchor="middle" font-size="36" font-weight="900" fill="${cls === 'water' ? '#1c7ed6' : '#e67700'}" stroke="#fff" stroke-width="8" paint-order="stroke">${text}</text>`;
+    g.innerHTML = (cropId ? `<image href="${IMG}pr-${cropId}.webp" x="-34" y="-104" width="68" height="68"/>` : '') + fxRow(text, cls === 'water' ? '#1c7ed6' : '#e67700');
     g.innerHTML = `<g class="ffx ${cls || ''}">${g.innerHTML}</g>`; G.appendChild(g); setTimeout(() => g.remove(), 1500);
   }
   function modal(html) { const m = el('div', 'pmod', `<div class="pmc fmc">${html}</div>`); document.body.appendChild(m); tap(m, e => { if (e.target === m) m.remove(); }); return m; }
