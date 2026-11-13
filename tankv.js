@@ -707,8 +707,11 @@
     ctl.querySelectorAll('[data-w]').forEach(b => { const w = b.dataset.w, n = TK.left(shown, s, w), bonus = shown.T[s].bonus[w] || 0; b.classList.toggle('on', A.w === w); b.classList.toggle('bonus', bonus > 0); b.disabled = !on || n <= 0; b.querySelector('em').textContent = n === Infinity ? '∞' : '×' + Math.max(0, n); });
     ctl.querySelector('#pdA').textContent = angTxt(A.a);
     ctl.querySelector('#pdP').textContent = A.p; ctl.querySelector('#pdPB i').style.width = A.p + '%';
-    const fuel = drive.i === s ? drive.fuel : TK.FUEL;
-    ctl.querySelector('#pdFB i').style.width = (fuel / TK.FUEL * 100) + '%'; ctl.querySelector('#pdF').textContent = Math.round(fuel / TK.FUEL * 100) + '%';
+    let fuel = drive.i === s ? drive.fuel : TK.FUEL;
+    /* 剩下的油不夠往左或往右開一步（例如上坡）就算 0%，不要顯示 1% 卻開不動 */
+    if (drive.i === s && fuel < TK.FUEL) { const x = drive.x, c = Math.min(TK.driveCost(shown, x, x - 2), TK.driveCost(shown, x, x + 2)); if (fuel < c) fuel = 0; }
+    const pc = fuel <= 0 ? 0 : Math.max(1, Math.round(fuel / TK.FUEL * 100));
+    ctl.querySelector('#pdFB i').style.width = pc + '%'; ctl.querySelector('#pdF').textContent = pc + '%';
     ctl.querySelectorAll('[data-k],#pdFire').forEach(b => b.disabled = !on);
     const w = ctl.querySelector('#pdWait');
     w.textContent = shown.over ? '' : anim || queue.length ? '💥 砲彈飛行中…' : pendingFire ? '發射！' : on ? '' : host.solo() ? '' :
