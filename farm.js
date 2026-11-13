@@ -379,7 +379,7 @@
     const st = PET.stageOf(PET.lvOf(p.xp).lv), nm = PET.nameOf(p), left = helpLeft(F(), st);
     e.innerHTML = st === 0 ? `🐾 ${nm}會在農場走來走去，提醒你哪塊田要照顧。<b>Lv.${PET.EVO[0]} 進化</b>以後會幫忙捉蟲、拔草！`
       : `🐾 點${nm}，牠會幫忙捉蟲、拔草${st >= 2 ? '、澆水' : ''}（今天還能 <b>${left}</b> 次）${st < 2 ? `。Lv.${PET.EVO[1]} 最終進化以後還會幫忙澆水！` : ''}`;
-    e.innerHTML += '<small>倉庫裡的菜可以拿去餵牠，比賣掉划算喔</small>';
+    e.innerHTML += '<small>倉庫裡的菜也可以拿去餵牠</small>';
   }
 
   /* 偷菜模式的開關：一天只能切換一次（不能先開著去偷、再關掉保護自己） */
