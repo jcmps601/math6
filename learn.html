@@ -1916,7 +1916,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 const INV_GAP=3*60*1000,INV_WIN=10*60*1000,INV_MAX=6,INV_NO=10*60*1000,INV_POP=3,INV_DND=40*60*1000;
 const invsKey=()=>'learn601_invs_'+user.seat,invmKey=()=>'learn601_invm_'+user.seat,dndKey=()=>'learn601_invd_'+user.seat,invMin=ms=>Math.ceil(ms/60000);
 function invSent(){const c=Date.now()-INV_WIN;return LS.get(invsKey(),[]).filter(x=>x.t>c)}
-function invCool(to){if(!user)return 0;const L=invSent(),now=Date.now(),m=L.filter(x=>x.s===+to).pop();let w=m?m.t+INV_GAP-now:0;if(L.length>=INV_MAX)w=Math.max(w,L[L.length-INV_MAX].t+INV_WIN-now);return Math.max(0,w)}
+function invCool(to){if(!user||isTest(user.seat))return 0;   // 老師的測試帳號：邀請不用等冷卻時間
+  const L=invSent(),now=Date.now(),m=L.filter(x=>x.s===+to).pop();let w=m?m.t+INV_GAP-now:0;if(L.length>=INV_MAX)w=Math.max(w,L[L.length-INV_MAX].t+INV_WIN-now);return Math.max(0,w)}
 function invErr(e){return e&&e.cool?`邀請太多次了，${invMin(e.cool)} 分鐘後才能再邀請`:'邀請送不出去，請檢查網路'}
 function invNote(L){const ms=[...L.querySelectorAll('[data-cd]')].map(b=>+b.dataset.cd);if(!ms.length)return;const d=L.ownerDocument.createElement('div');d.style.cssText='grid-column:1/-1;align-self:center;font-weight:800;font-size:1rem;color:#b7791f;text-align:center';d.textContent=`有 ⏳ 的同學，最多再等 ${invMin(Math.max(...ms))} 分鐘才能邀請`;L.appendChild(d)}
 function invDecText(v){const n=seatName(v.s);return v.why==='noticket'?`${n} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${n} 正在跟別人玩，等一下再邀請`:v.why==='study'?`${n} 正在練習題目，等練完再邀請`:v.why==='cool'?`${n} 現在不方便，過一陣子再邀請`:v.why==='dnd'?`${n} 現在不接受邀請`:`${n} 說下次再玩`}
@@ -1962,7 +1963,8 @@ function invSetDnd(on){if(on)LS.set(dndKey(),Date.now()+INV_DND);else LS.del(dnd
 function invMuteSave(f,fn){const M=LS.get(invmKey(),{}),now=Date.now();for(const k in M)if(M[k].u<now&&!(M[k].h||[]).some(t=>t>now-INV_WIN))delete M[k];const m=M[f]||{u:0,h:[]};m.h=(m.h||[]).filter(t=>t>now-INV_WIN);fn(m,now);M[f]=m;LS.set(invmKey(),M)}
 const invPop=f=>invMuteSave(f,(m,now)=>m.h.push(now));
 const invNoMore=f=>invMuteSave(f,(m,now)=>{m.u=now+INV_NO});
-function invGate(f){if(invDnd()>0)return 'dnd';if($('#prac').classList.contains('on'))return 'study';const m=LS.get(invmKey(),{})[f],now=Date.now();return m&&(m.u>now||(m.h||[]).filter(t=>t>now-INV_WIN).length>=INV_POP)?'cool':''}
+function invGate(f){if(invDnd()>0)return 'dnd';if($('#prac').classList.contains('on'))return 'study';if(isTest(f))return '';   // 測試帳號發的邀請：不擋次數
+  const m=LS.get(invmKey(),{})[f],now=Date.now();return m&&(m.u>now||(m.h||[]).filter(t=>t>now-INV_WIN).length>=INV_POP)?'cool':''}
 function bounceInv(iv,why){dropInv(iv);try{db.ref(`rooms/${iv.p}/dec`).set({s:user.seat,why,t:Date.now()})}catch(e){}}
 function invBox(){let b=document.getElementById('xqinv');if(b)return b;b=el('div');b.id='xqinv';
   b.innerHTML='<div class="xiv"><div class="xit"></div><div class="xis"></div><div class="xir"><button class="xok" id="invYes">✅ 接受</button><button class="xno" id="invNo">下次再說</button></div><button class="xdnd" id="invDnd">🔕 這節課先不要邀請我</button></div>';document.body.appendChild(b);
@@ -2712,7 +2714,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v96';let verNew=false,verBusy=false;
+const APP_VER='learn601-v97';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
