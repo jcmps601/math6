@@ -135,6 +135,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   <div class="card" style="padding:.6rem .9rem;width:min(34rem,100%)"><div class="s" style="font-weight:900;color:#7a5a32">場地 <small id="mapTip"></small></div><div class="maps" id="lMaps"></div></div>
   <div class="row"><button class="btn o" id="bReady">我準備好了</button><button class="btn" id="bInv" hidden><img class="ic" src="img/ps/ps-ui-invite.webp" alt="">邀請同學</button><button class="btn w" id="bLLeave"><img class="ic" src="img/ps/ps-ui-leave.webp" alt="">離開</button></div>
   <div id="lmsg" style="font-weight:900;color:#7a5a32;min-height:1.4em"></div>
+  <div id="invNote" style="font-weight:900;color:#d9480f;min-height:1.4em"></div>
 </section>
 
 <section class="scr" id="game">
@@ -173,7 +174,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   <li>每次瞄準 <b>15 秒</b>，時間到自動略過。雙方各打 8 次，或有人體力歸零就結束。</li>
   <li>所有寵物能力都一樣，只有長相不同。寶石只是這一局的分數，不是平台金幣。</li></ol>
   <button class="btn" id="helpX">知道了</button></div></div>
-<div class="ov" id="pick"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-invite.webp" alt="">邀請誰？</div><div class="s">亮的是現在在線上的同學</div><div id="pickList"></div><div class="s" id="invMsg"></div><button class="btn w" id="pickX">關閉</button></div></div>
+<div class="ov" id="pick"><div class="card box"><div class="t"><img class="ic" src="img/ps/ps-ui-invite.webp" alt="">邀請誰？</div><div class="s">亮的是現在在線上的同學（灰色的不在線上，按了沒有用）</div><div id="pickList"></div><div class="s" id="invMsg"></div><button class="btn w" id="pickX">關閉</button></div></div>
 <div class="ov" id="over"><div class="card box"><img id="ovIcon" src="img/ps/ps-ui-victory.webp" alt=""><div class="t" id="ovT"></div><div class="s" id="ovS"></div><div class="res" id="ovR"></div><div class="s" id="ovN"></div>
   <div class="row"><button class="btn o" id="bAgain"><img class="ic" src="img/ps/ps-ui-rematch.webp" alt="">再玩一次</button><button class="btn w" id="bHome"><img class="ic" src="img/ps/ps-ui-leave.webp" alt="">回大廳</button></div></div></div>
 
@@ -484,12 +485,14 @@ async function join(pin){if(!/^\d{4}$/.test(pin))return netMsg('房號是 4 個�
     if(me<0){if(pl.b)return netMsg('這個房間已經有兩個人了');if(room.state&&room.state.phase!=='wait')return netMsg('這個房間已經開始了');me=1;await Net.set(`rooms/${pin}/players/b`,meP())}
     ov('netBox',0);enterRoom(pin,me)}catch(e){netMsg('連不上網路，請再試一次')}}
 function enterRoom(pin,me){Object.assign(G,{mode:'net',pin,me,g:0,players:{},st:null,rec:'',abort:''});V.S=null;V.names=['紅方','藍方'];V.pucks=['red','blue'];
-  $('#pinBig').textContent=pin;$('#bInv').hidden=!(inPlat()&&P.invite);show('lobby');paintLobby();
+  invNote('');$('#pinBig').textContent=pin;$('#bInv').hidden=!(inPlat()&&P.invite);show('lobby');paintLobby();
   G.un.forEach(f=>f());G.un=[Net.on(`rooms/${pin}`,onRoom)];
   if(G.tick)clearInterval(G.tick);G.tick=setInterval(netTick,1000)}
 function onRoom(room){if(G.mode!=='net')return;
   if(!room||!room.meta){if(G.st&&G.st.phase==='play'&&V.S&&!V.S.over){G.abort='房間不見了，這局不算';}leftRoom('房間已經關閉了');return}
   G.players=room.players||{};G.st=room.state||{};const st=G.st;
+  if(room.dec&&room.dec.t&&room.dec.t>=(G.invAt||0)-5000&&G.decT!==room.dec.t&&inPlat()&&P.decText){G.decT=room.dec.t;G.inv=0;invNote(P.decText(room.dec))}
+  if(G.players.b&&$('#invNote').textContent)invNote('');
   if(!G.players[SIDE[G.me]]&&!G.leaving){leftRoom('你已經不在這個房間了');return}
   V.names=[0,1].map(i=>{const p=G.players[SIDE[i]];return p?(p.seat&&inPlat()&&P.seatName?P.seatName(p.seat):p.name||'同學'):(i?'藍方':'紅方')});
   if(st.phase==='wait'){if($('#game').classList.contains('on')||$('#over').classList.contains('on')){ov('over',0);V.S=null}show('lobby');paintLobby();return}
@@ -523,7 +526,7 @@ async function maybeStart(){const st=G.st||{},pl=G.players;if(G.me!==0||st.phase
     Net.cancelDisc(`rooms/${G.pin}`)}catch(e){}G.starting=0}
 /* 對局中：自己斷線時雲端記下時間（onDisconnect），回來就清掉 */
 function armPlay(){if(G.mode!=='net')return;const p=`rooms/${G.pin}/players/${SIDE[G.me]}`;Net.cancelDisc(`rooms/${G.pin}`);Net.update(p,{off:null,re:null}).catch(()=>{});Net.onDisc(p+'/off')}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&G.mode==='net'&&G.pin)armPlay()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&G.mode==='net'&&G.pin&&G.st&&G.st.phase==='play')armPlay()});   // 只有對局中才要；等人時不能取消「離開就刪房間」
 function paintPause(){const st=G.st||{},op=G.players[SIDE[1-G.me]],p=$('#pause');
   const off=st.phase==='play'&&op&&op.off&&!(V.S&&V.S.over);V.paused=!!off;
   if(off){const left=Math.max(0,Math.ceil((OFF_MS-(srvNow()-op.off))/1000));p.textContent=`⏸️ ${V.names[1-G.me]} 斷線了，等他回來…（${left} 秒）`;p.classList.add('on')}else p.classList.remove('on');paintCtl()}
@@ -560,7 +563,10 @@ async function openPick(again){clearTimeout(pickT);if(!inPlat()||!P.seats)return
   P.seats().filter(s=>s!==P.seat()).forEach(s=>{const b=document.createElement('button'),live=!!on[s];b.className=live?'on':'';b.textContent=s>=98?'🧪 測試'+(s===99?1:2):P.seatName(s);b.dataset.s=s;b.disabled=!live;
     const cd=P.invCool(s);if(cd&&live){b.disabled=true;b.dataset.cd=cd;b.textContent+=' ⏳'}b.onclick=()=>sendInv(s);L.appendChild(b)});
   P.invNote(L);if(!L.children.length)L.textContent='現在沒有其他同學';pickT=setTimeout(()=>openPick(true),5000)}
-async function sendInv(s){if(!G.pin)return;ov('pick',0);clearTimeout(pickT);try{await P.invite(s,G.pin,'ps');G.inv=s;$('#lmsg').textContent=`已經邀請 ${P.seatName(s)}，等他按「接受」…`}catch(e){$('#lmsg').textContent=P.invErr(e)}}
+/* 邀請的結果放在自己的一行（房間更新時不會被蓋掉）；對方拒絕、不方便，房間的 dec 會寫原因 */
+const invNote=t=>{$('#invNote').textContent=t||'';$('#invNote').style.color=/已經邀請|接受/.test(t||'')?'#2f7d32':'#d9480f'};
+async function sendInv(s){if(!G.pin)return;ov('pick',0);clearTimeout(pickT);invNote('邀請送出中…');G.invAt=Date.now();
+  try{await P.invite(s,G.pin,'ps');G.inv=s;invNote(`已經邀請 ${P.seatName(s)}，等他按「接受」…`)}catch(e){invNote(P.invErr(e))}}
 $('#bInv').onclick=()=>openPick();$('#pickX').onclick=()=>{ov('pick',0);clearTimeout(pickT)};
 window.__xqBusy=()=>false;   // 平台用：這個遊戲不用「沒下完算輸」的補記
 
