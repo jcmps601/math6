@@ -17,8 +17,15 @@
     sunflower: { n: '向日葵', lv: 6, p: 12, m: 120, w: 3, y: 4, s: 6, xp: 12, c: '#69db7c' },
     pumpkin: { n: '南瓜', lv: 7, p: 15, m: 240, w: 3, y: 3, s: 9, xp: 16, c: '#40c057' },
     watermelon: { n: '西瓜', lv: 8, p: 22, m: 360, w: 3, y: 3, s: 12, xp: 20, c: '#37b24d' },
-    grape: { n: '葡萄', lv: 10, p: 27, m: 480, w: 3, y: 6, s: 7, xp: 26, c: '#40c057' }
+    grape: { n: '葡萄', lv: 10, p: 27, m: 480, w: 3, y: 6, s: 7, xp: 26, c: '#40c057' },
+    /* 2026-11 新增的高等級作物（sd＝種子的叫法；沒寫就是「種子」） */
+    potato: { n: '馬鈴薯', lv: 12, p: 30, m: 180, w: 3, y: 6, s: 8, xp: 30, c: '#78b94c', sd: '種薯' },
+    bellpepper: { n: '甜椒', lv: 15, p: 38, m: 240, w: 3, y: 6, s: 10, xp: 36, c: '#5bb950' },
+    shiitake: { n: '香菇', lv: 18, p: 46, m: 360, w: 3, y: 8, s: 9, xp: 44, c: '#a6764b', sd: '菌種' },
+    blueberry: { n: '藍莓', lv: 22, p: 58, m: 480, w: 3, y: 8, s: 11, xp: 54, c: '#5b8bd0' },
+    pineapple: { n: '鳳梨', lv: 26, p: 70, m: 600, w: 3, y: 5, s: 22, xp: 64, c: '#e0b23a', sd: '冠芽種苗' }
   };
+  const seedN = C => C.sd || '種子', TOP_LV = Math.max(...Object.values(CROPS).map(C => C.lv));
   const CK = Object.keys(CROPS);
   const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = 30, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 3, STEAL_PER_PLOT = 1, STEAL_WAIT = 60 * 60000;
   /* 偷菜模式（自己選要不要參加）：兩個人都開才能互偷；一天只能切換一次；成熟 1 小時後才能被偷；每塊田最多被偷 1 個；每天最多偷 3 個；被偷的人拿到 🪙1 回禮 */
@@ -49,7 +56,7 @@
   /* ───────── 畫畫：用 img/farm 裡的圖 ─────────
      背景 bg.webp（1536×1024）正中間的空草地放 4 × 3 塊田（等角視角）；作物 4 個階段、田地、蟲、雜草都是圖片 */
   const IMG = 'img/farm/', BGW = 1536, BGH = 1024, VB_FULL = [0, 0, BGW, BGH], VB_ZOOM = [350, 90, 880, 690], VB_MINI = [30, 20, 1476, 960];
-  const CROPDIM = {"cabbage":[[190,94],[214,184],[441,383],[720,629]],"carrot":[[199,102],[209,210],[421,417],[748,632]],"strawberry":[[174,107],[210,222],[473,408],[724,638]],"tomato":[[239,120],[232,222],[387,479],[640,684]],"corn":[[129,84],[144,149],[280,340],[331,552]],"eggplant":[[160,86],[223,192],[378,400],[623,604]],"sunflower":[[176,119],[193,192],[285,443],[413,678]],"pumpkin":[[183,100],[215,198],[501,432],[709,556]],"watermelon":[[212,113],[234,220],[476,424],[738,611]],"grape":[[197,99],[212,211],[362,508],[651,678]]};   // 每張作物圖的原始大小（同一種作物 4 個階段同一個比例）
+  const CROPDIM = {"cabbage":[[190,94],[214,184],[441,383],[720,629]],"carrot":[[199,102],[209,210],[421,417],[748,632]],"strawberry":[[174,107],[210,222],[473,408],[724,638]],"tomato":[[239,120],[232,222],[387,479],[640,684]],"corn":[[129,84],[144,149],[280,340],[331,552]],"eggplant":[[160,86],[223,192],[378,400],[623,604]],"sunflower":[[176,119],[193,192],[285,443],[413,678]],"pumpkin":[[183,100],[215,198],[501,432],[709,556]],"watermelon":[[212,113],[234,220],[476,424],[738,611]],"grape":[[197,99],[212,211],[362,508],[651,678]],"potato":[[215,127],[259,244],[327,342],[408,421]],"bellpepper":[[195,101],[223,273],[372,367],[438,420]],"shiitake":[[265,122],[265,171],[270,251],[416,364]],"blueberry":[[176,98],[223,222],[330,321],[408,379]],"pineapple":[[171,169],[335,241],[427,343],[444,420]]};   // 每張作物圖的原始大小（同一種作物 4 個階段同一個比例）
   const TW = 196, TH = .345, DX = TW / 2 / .94, DY = TW * TH / .94, CX = 790, CY = 495;   // 田的寬、上面菱形的一半高(÷寬)、間距、中心
   const plotC = k => { const c = k % COLS, r = (k / COLS) | 0; return [CX + ((c - 1.5) - (r - 1)) * DX, CY + ((c - 1.5) + (r - 1)) * DY]; };
   const cropK = id => { const d = CROPDIM[id][3]; return Math.min(TW * .74 / d[0], 190 / d[1]); };
@@ -105,9 +112,9 @@
     if (!sum) return null;
     if (!sum.farm || !Array.isArray(sum.farm.p)) sum.farm = { xp: 0, water: START_WATER, fert: 1, p: Array(MAXP).fill(0), store: {}, log: [], u: Date.now() };
     const f = sum.farm; f.store = f.store || {}; f.log = f.log || []; while (f.p.length < MAXP) f.p.push(0);
-    if (tst()) {   // 測試帳號（98、99）：水、肥料用不完，農場直接 Lv.10（12 塊田、所有種子）
+    if (tst()) {   // 測試帳號（98、99）：水、肥料用不完，農場直接升到最高解鎖等級（12 塊田、所有種子）
       if ((f.water || 0) < 999) f.water = 999; if ((f.fert || 0) < 99) f.fert = 99;
-      if (lvOf(f.xp).lv < 10) { let x = 0; for (let l = 1; l < 10; l++) x += xpNeed(l); f.xp = Math.max(f.xp || 0, x); }
+      if (lvOf(f.xp).lv < TOP_LV) { let x = 0; for (let l = 1; l < TOP_LV; l++) x += xpNeed(l); f.xp = Math.max(f.xp || 0, x); }
     }
     return f;
   }
@@ -234,7 +241,7 @@
     f.fert--; P.f = (P.f || 0) + Math.round(S.left / 2); P.fz = 1; addXp(1); fx(k, '🧴 長得更快了！', 'water'); snd(760); save(); paint(); info(k);
   }
   function plant(k, id) {
-    const f = F(), C = CROPS[id]; if (coins() < C.p) { toast(`🪙 金幣不夠，${C.n}的種子要 ${C.p} 枚`); return false; }
+    const f = F(), C = CROPS[id]; if (coins() < C.p) { toast(`🪙 金幣不夠，${C.n}的${seedN(C)}要 ${C.p} 枚`); return false; }
     addCoin(-C.p); f.p[k] = { c: id, t: Date.now() + k, w: 0 }; addXp(1); return true;   // +k：同一秒種的田，蟲和雜草也不一樣
   }
   /* 小特效：在田上面跳出字 */
@@ -247,7 +254,7 @@
   function modal(html) { const m = el('div', 'pmod', `<div class="pmc fmc">${html}</div>`); document.body.appendChild(m); tap(m, e => { if (e.target === m) m.remove(); }); return m; }
   function seedModal(k) {
     const f = F(), lv = lvOf(f.xp).lv, empty = f.p.slice(0, plotsFor(lv)).filter(x => !x).length;
-    const m = modal(`<div class="pmh">🌱 ${k >= 0 ? '要種什麼？' : '種子一覽'}　<small>🪙 ${coins()}</small></div><div class="fseeds">${CK.map(id => { const C = CROPS[id], lock = lv < C.lv; return `<button data-c="${id}" class="${lock ? 'lock' : ''}">${cropImg(id, 3, 'fsc')}<b>${C.n}</b><small>⏰ ${mmss(C.m * 60000)}・💧×${C.w}</small><small>收成 ${C.y} 個・一個賣 🪙${C.s}</small><em>${lock ? (C.lv - lv === 1 ? '🔒 農場再升 1 級就能種' : `🔒 農場升到 Lv.${C.lv} 解鎖`) : `種子 🪙 ${C.p}`}</em></button>`; }).join('')}</div>
+    const m = modal(`<div class="pmh">🌱 ${k >= 0 ? '要種什麼？' : '種子一覽'}　<small>🪙 ${coins()}</small></div><div class="fseeds">${CK.map(id => { const C = CROPS[id], lock = lv < C.lv; return `<button data-c="${id}" class="${lock ? 'lock' : ''}">${cropImg(id, 3, 'fsc')}<b>${C.n}</b><small>⏰ ${mmss(C.m * 60000)}・💧×${C.w}</small><small>收成 ${C.y} 個・一個賣 🪙${C.s}</small><em>${lock ? (C.lv - lv === 1 ? '🔒 農場再升 1 級就能種' : `🔒 農場升到 Lv.${C.lv} 解鎖`) : `${seedN(C)} 🪙 ${C.p}`}</em></button>`; }).join('')}</div>
       ${k >= 0 && empty > 1 ? `<label class="fall"><input type="checkbox" id="fallchk"> 空的田（${empty} 塊）全部種一樣的</label>` : ''}<button class="pmx">關閉</button>`);
     m.querySelectorAll('[data-c]').forEach(b => tap(b, () => {
       const id = b.dataset.c, C = CROPS[id]; if (lv < C.lv) { toast(`農場升到 Lv.${C.lv} 才能種${C.n}`); return; }
@@ -521,8 +528,8 @@
   .fseeds .fsc{width:4.6rem;height:5rem;object-fit:contain;object-position:50% 100%}.fseeds b{font-size:1.1rem;color:#444}.fseeds small{font-size:.8rem;color:#888;font-weight:800}.fseeds em{font-style:normal;font-weight:900;color:#e67700;font-size:.95rem;margin-top:.1rem}
   .fseeds button.lock{opacity:.5;filter:grayscale(.6)}.fseeds button:active{transform:scale(.95)}
   .fall{display:block;font-size:1.1rem;font-weight:900;color:#5c940d;margin-bottom:.6rem}.fall input{width:1.3rem;height:1.3rem;vertical-align:middle}
-  .fsto{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.7rem;text-align:left}.fsi{display:flex;align-items:center;gap:.6rem;background:#fff9db;border-radius:14px;padding:.35rem .6rem}
-  .fsi .fpi{width:2.6rem;height:2.6rem;flex:none;object-fit:contain}.fsi b{flex:1;font-size:1.15rem}.fsi small{color:#888;font-weight:800}.fsi button{border:0;background:#ffe066;color:#e67700;border-radius:12px;padding:.35rem .7rem;font-weight:900;font-family:inherit}
+  .fsto{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.7rem;text-align:left}.fsi{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:.4rem .6rem;background:#fff9db;border-radius:14px;padding:.35rem .6rem}
+  .fsi .fpi{width:2.6rem;height:2.6rem;flex:none;object-fit:contain}.fsi b{flex:1;font-size:1.15rem;white-space:nowrap}.fsi small{color:#888;font-weight:800;white-space:nowrap}.fsi button{border:0;background:#ffe066;color:#e67700;border-radius:12px;padding:.35rem .7rem;font-weight:900;font-family:inherit}
   .fsell{font-size:1.3rem;margin-bottom:.4rem}
   .fvhead{font-size:1.05rem;font-weight:900;color:#5c940d;background:#f4fce3;border-radius:14px;padding:.55rem .8rem;margin-bottom:.7rem}
   .fvg{display:grid;grid-template-columns:repeat(auto-fill,minmax(10rem,1fr));gap:.7rem}
