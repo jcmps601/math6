@@ -1801,6 +1801,7 @@ function gBetter(g,a,b){if(!a)return false;if(!b)return true;const ta=tier(g,a),
 const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;if(g==='cups')return `${v} / 5`;if(g==='hunt')return `${v} ★`;return `${v} ${G[3]}`};
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 const COOP_OPEN=false;   // 雙人合作過關開放了沒
+const PS_OPEN=false;     // 寵物彈射對戰開放了沒（還沒開放：只有測試帳號看得到）
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">${ico('rw-ticket','tki')}<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
@@ -1815,9 +1816,11 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const coOK=COOP_OPEN||isTest(user.seat);
   const xc=el('button','go xparty xcoop'+(coOK?'':' soon'),'<img class="ico bi" src="img/co/ui-invite.webp" alt="" draggable="false">雙人合作過關<small>'+(COOP_OPEN?'一起闖關':'準備中')+'</small>');
   tap(xc,()=>{if(coOK)openTool({...XQ_TOOL,f:'coop.html'});else toast('雙人合作過關還在準備中，關卡做多一點就開放！')});
+  const psOK=PS_OPEN||isTest(user.seat),xs=el('button','go xparty','<img class="ico bi" src="img/ps/ps-ui-game.webp" alt="" draggable="false">寵物彈射對戰<small>'+(PS_OPEN?'練習・同台・連線':'測試中')+'</small>');
+  tap(xs,()=>openTool({...XQ_TOOL,n:'寵物彈射對戰',f:'sling.html'}));
   const xg=el('button','go xgar',`<img class="ico bi" src="img/game/tank-ui-garage-v2.webp" alt="" draggable="false">坦克車庫<small>${TANK_SKINS[tankSkin()].n}</small>`);tap(xg,()=>garage().then(()=>render()));
   const dn=invDnd(),xd=el('button','go xgar',dn>0?`🔕 暫停邀請中<small>剩 ${invMin(dn)} 分・按我打開</small>`:'🔔 接受邀請中<small>按我暫停 40 分</small>');tap(xd,()=>{const off=invDnd()>0;invSetDnd(!off);toast(off?'🔔 可以收到同學的邀請了':'🔕 接下來 40 分鐘不會收到邀請');render()});
-  [xv,xb,xa,xp,xm,xc,xg,xd].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
+  [xv,xb,xa,xp,xm,...(psOK?[xs]:[]),xc,xg,xd].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜<small>（下滿 ${WR_MIN} 局才上榜）</small>`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
@@ -1883,7 +1886,7 @@ async function loadBoard(L,fresh){const g=bg;let all;
    邀請:A 在象棋選同學 → 先開好房間 → learn/inv/對方座號/A 的座號 = {p:房號, t:時間};B 的平台跳出邀請,按「接受」就自動加入那個房間 */
 const INV_MS=2*60*1000, ON_MS=75*1000;
 /* 對戰遊戲的種類 */
-const GAMES={xq:{n:'軍棋',i:'♟️',v:'下',img:'vs-xq'},aq:{n:'暗棋',i:'🀄',v:'下',img:'vs-aq'},pd:{n:'大砲對轟',i:'🎯',v:'玩',img:'vs-pd'},pm:{n:'大砲混戰',i:'💥',v:'玩',img:'vs-pd',many:1}},GK=g=>GAMES[g]?g:'xq';
+const GAMES={xq:{n:'軍棋',i:'♟️',v:'下',img:'vs-xq'},aq:{n:'暗棋',i:'🀄',v:'下',img:'vs-aq'},pd:{n:'大砲對轟',i:'🎯',v:'玩',img:'vs-pd'},pm:{n:'大砲混戰',i:'💥',v:'玩',img:'vs-pd',many:1},ps:{n:'寵物彈射',i:'🐾',v:'玩',img:'vs-pd',room:1}},GK=g=>GAMES[g]?g:'xq';
 const seatName=s=>isTest(s)?testName(s).replace('🧪 ',''):s+' 號';
 const allSeats=()=>[...SEATS.flat(),...(user&&isTest(user.seat)?TEST_SEATS:[])];   // 測試帳號只會看到、邀請到測試帳號和全班
 function xqLocal(){return user?LS.get('learn601_xqh_'+user.seat,[]):[]}
@@ -1966,7 +1969,7 @@ function invBox(){let b=document.getElementById('xqinv');if(b)return b;b=el('div
   tap(b.querySelector('#invYes'),()=>acceptInv());tap(b.querySelector('#invNo'),()=>{if(invNow)invNoMore(invNow.f);declineInv('no')});
   tap(b.querySelector('#invDnd'),()=>{invSetDnd(true);declineInv('dnd');toast('🔕 接下來 40 分鐘不會收到邀請，可以到「遊戲」頁打開');if(view==='game')render()});return b}
 function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=x.co?`🤝 ${seatName(x.f)} 邀請你一起玩雙人合作過關！`:`${GAMES[x.g].i} ${seatName(x.f)} 邀請你${GAMES[x.g].v}${GAMES[x.g].n}！`;
-  b.querySelector('.xis').textContent=x.co?'接受就會直接進到房間（開始時兩個人各用 1 張遊戲券）':(GAMES[x.g].many?'接受就會直接進到房間，大家到齊就開打':'接受就會直接進到棋盤')+'（輸的人用掉 1 張遊戲券，贏了不用）';b.classList.add('on');try{sfx.ok()}catch(e){}
+  b.querySelector('.xis').textContent=x.co?'接受就會直接進到房間（開始時兩個人各用 1 張遊戲券）':(GAMES[x.g].many?'接受就會直接進到房間，大家到齊就開打':GAMES[x.g].room?'接受就會直接進到房間，兩個人都按「準備好了」就開打':'接受就會直接進到棋盤')+'（輸的人用掉 1 張遊戲券，贏了不用）';b.classList.add('on');try{sfx.ok()}catch(e){}
   clearTimeout(showInv.t);showInv.t=setTimeout(()=>{if(invNow===x){hideInv();dropInv(x)}},Math.max(5000,INV_MS-(Date.now()-x.t)))}
 function hideInv(){invNow=null;const b=document.getElementById('xqinv');if(b)b.classList.remove('on')}
 function dropInv(x){try{db.ref(`${ROOT}/inv/${user.seat}/${x.f}`).remove()}catch(e){}}
@@ -1975,7 +1978,7 @@ function acceptInv(){const x=invNow;if(!x)return;
   if(!isTest(user.seat)&&!((sum.tk||0)>0)){declineInv('noticket');toast('🎟️ 你的遊戲券用完了，先練習 10 題再來下棋吧！');return}
   hideInv();dropInv(x);
   if($('#prac').classList.contains('on'))leavePractice();
-  const t={...XQ_TOOL,f:(x.co?'coop.html':x.g==='pm'?'party.html':'chess.html')+'?join='+x.p};
+  const t={...XQ_TOOL,f:(x.co?'coop.html':x.g==='pm'?'party.html':x.g==='ps'?'sling.html':'chess.html')+'?join='+x.p};
   if(vt){vt=XQ_TOOL;document.getElementById('vtitle').textContent=t.n;frameGo(t.f)}else openTool(t)}
 
 /* ===================== 坦克車庫（大砲對轟、大砲混戰的造型） =====================
@@ -2709,7 +2712,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v95';let verNew=false,verBusy=false;
+const APP_VER='learn601-v96';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
