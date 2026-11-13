@@ -475,7 +475,12 @@
     /* 兩台裝置都有動過：買過的東西兩邊合起來；造型（帽子、眼鏡、房間、顏色）看哪一邊最後換的，
        不然在 A 台換的造型，會被 B 台比較新的整份資料蓋回去（看起來像「換了沒變」） */
     const un = k => { if (other[k] && typeof other[k] === 'object') pick[k] = Object.assign({}, other[k], pick[k] || {}); };
-    ['own', 'rooms', 'xo', 'dex', 'got', 'ach'].forEach(un);
+    ['own', 'rooms', 'xo', 'dex', 'got'].forEach(un);
+    /* 成就的次數（收成、錯題練會、打魔王週數）取兩邊比較大的；文字（例如這週的週次）用新的那邊 */
+    const ach = Object.assign({}, other.ach || {}, pick.ach || {}); for (const k in other.ach || {}) if (typeof other.ach[k] === 'number' && typeof ach[k] === 'number') ach[k] = Math.max(ach[k], other.ach[k]); pick.ach = ach;
+    /* 另一台孵出來的寵物、拿到的蛋不能被蓋掉（不然圖鑑有、寵物屋卻沒有；或任務達成了蛋卻不見） */
+    const box = Object.assign({}, pick.box || {}); for (const k in other.box || {}) if (!box[k] && k !== pick.sp) box[k] = other.box[k]; if (other.sp && other.st === 'pet' && other.sp !== pick.sp && !box[other.sp] && pick.st === 'pet') { const o = {}; PF.forEach(k => { if (other[k] !== undefined) o[k] = other[k]; }); box[other.sp] = o; } pick.box = box;
+    const eg = (pick.eggs || []).slice(); (other.eggs || []).forEach(e => { if (e && e.sp && !eg.some(x => x.sp === e.sp) && !(pick.dex || {})[e.sp] && pick.sp !== e.sp && !box[e.sp]) eg.push(e); }); pick.eggs = eg;
     if ((other.lu || 0) > (pick.lu || 0) && other.sp === pick.sp && other.st === pick.st) { LOOK.forEach(k => { pick[k] = other[k]; }); pick.lu = other.lu; }
     return pick;
   }
@@ -647,10 +652,13 @@
       if (left.length) { const sp = left[Math.floor(Math.random() * left.length)]; p.got[sp] = 1; p.eggs.push({ t: 1, sp, ex: 0 }); got.push('🥚 滿級了！得到一顆稀有蛋！'); } else { coinAdd(p, 200); got.push('🎁 滿級了！得到 🪙200！'); }
     }
     SP_KEYS.forEach(sp => {
-      const S = SPECIES[sp]; if (!S.r || p.got[sp] || p.dex[sp]) return;
+      const S = SPECIES[sp]; if (!S.r || p.dex[sp]) return;
+      /* 拿過蛋、可是蛋籃裡沒有、也沒孵出來（兩台平板的資料合併時蛋被蓋掉）：把蛋補回來 */
+      if (p.got[sp]) { if (!p.eggs.some(e => e.sp === sp) && p.sp !== sp && !(p.box || {})[sp]) { p.eggs.push({ t: S.r, sp, ex: 0 }); got.push(`🥚 找回你之前達成任務拿到的${EGG_N[S.r]}，已經放進蛋籃了！`); } return; }
       const r = S.pr(); if (r[0] >= r[1]) { p.got[sp] = 1; p.eggs.push({ t: S.r, sp, ex: 0 }); got.push(`🥚 達成「${S.need}」！得到一顆${EGG_N[S.r]}！`); }
     });
     got.forEach((t, i) => setTimeout(() => { toast(t); try { sfx.win(); confetti(80); } catch (e) { } }, 1600 + i * 2600));
+    return got.length;
   }
   /* 其他地方的事件：wb 錯題練會一題、hv 農場收成一次 */
   function note(k, n) { const p = P(); if (!p) return; p.ach[k] = (p.ach[k] || 0) + (n || 1); checkAch(p); if (k === 'wb') { const w = wishToday(p); if (!w.ok && w.k === 'wb') w.n = (w.n || 0) + (n || 1); wishTick(p); } p.u = Date.now(); }
@@ -694,6 +702,7 @@
     const p = P(), h = el('div', 'h1', `<span class="tag">🐾</span>我的寵物`); h.style.setProperty('--c', '#f06595'); Pn.appendChild(h);
     if (TST()) testTools(Pn, p);
     if (p.st === 'egg') return eggPage(Pn, p);
+    if (checkAch(p)) save(p);   // 打開寵物頁也檢查一次：條件是練習結束後才達成的（例如最後一回拿到 3 顆星），不用再答一題才拿得到蛋
     const L = lvOf(p.xp || 0), st = stageOf(L.lv), S = SPECIES[p.sp];
     const Sg = el('div', 'cd pstage' + (night() ? ' night' : '')); Sg.id = 'pstage';
     Sg.innerHTML = `${roomArt(p.room)}<div class="ptag"><b>${nameOf(p)}</b><small>${S.f[st]}（${S.n}）${S.r ? `<i class="ptier r${S.r}">${TIER[S.r]}</i>` : ''}</small></div><div class="pcoin">🪙 <b id="pcoin">${p.coin || 0}</b></div>
