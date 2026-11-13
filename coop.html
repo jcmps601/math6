@@ -929,14 +929,17 @@ $('#bNew').onclick=async()=>{if(await create())onState()};
 $('#bJoin').onclick=()=>join($('#pinIn').value.trim());
 $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bJoin').onclick()});
 /* 邀請同學（在學習平台裡） */
-async function openPick(){if(!inPlat()||!P.seats)return;const Lp=$('#pickList');Lp.innerHTML='讀取中…';$('#pick').classList.add('on');
+/* 名單打開時每 5 秒更新一次：同學剛上線也看得到 */
+let pickT=0;
+async function openPick(again){clearTimeout(pickT);if(!inPlat()||!P.seats)return;if(again&&!$('#pick').classList.contains('on'))return;const Lp=$('#pickList');if(!again){Lp.innerHTML='讀取中…';$('#pick').classList.add('on')}
   let on={};try{on=await P.online()}catch(e){}
+  if(again&&!$('#pick').classList.contains('on'))return;
   Lp.innerHTML='';P.seats().filter(s=>s!==P.seat()).forEach(s=>{const b=document.createElement('button'),live=!!on[s];
     b.className=G.inv.has(s)?'sent':live?'on':'';b.textContent=s>=98?'🧪 測試'+(s===99?1:2):P.seatName(s);b.disabled=!live||G.inv.has(s);const cd=P.invCool(s);if(cd&&live&&!G.inv.has(s)){b.disabled=true;b.className='';b.textContent+='⏳';b.dataset.cd=cd;b.title='剛邀請過，等一下才能再邀請'}
     b.onclick=async()=>{b.disabled=true;try{await P.invite(s,G.pin,'pm');G.inv.add(s);b.className='sent';lmsg(`已經邀請 ${P.seatName(s)}，等他按「接受」…`);$('#pick').classList.remove('on')}catch(e){b.disabled=false;lmsg(P.invErr(e))}};Lp.appendChild(b)});
-  P.invNote(Lp);if(!Lp.children.length)Lp.textContent='現在沒有其他同學在線上'}
+  P.invNote(Lp);if(!Lp.children.length)Lp.textContent='現在沒有其他同學在線上';pickT=setTimeout(()=>openPick(true),5000)}
 $('#pickX').onclick=()=>$('#pick').classList.remove('on');
-$('#bInv2').onclick=openPick;
+$('#bInv2').onclick=()=>openPick();
 $('#bInv').onclick=async()=>{if(await create()){onState();openPick()}};
 addEventListener('pagehide',()=>{if(G.inv.size&&inPlat()&&P.uninvite)G.inv.forEach(s=>P.uninvite(s))});
 /* 給平台用：合作遊戲沒有輸贏，離開不扣券 */
