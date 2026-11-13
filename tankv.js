@@ -34,6 +34,25 @@
   /* 進階、史詩、傳說九款：基本彈換成跟坦克同造型的砲彈（圖檔彈頭朝右，飛的時候跟著方向轉）。其他武器、初階坦克照舊 */
   const SHELL_SK = SKINS.slice(6), shellName = sk => `tank-${sk}-shell-v1`, SHELL_L = 40;   // 場上長 40（基本彈圓球直徑 14、坦克 66 寬；縮小的手機畫面也看得出造型）
   SHELL_SK.forEach(s => img(shellName(s)));
+  /* 傳說三款的主題特效：砲口（發射一次）、拖尾（跟著每顆砲彈）、命中（每次爆炸一次）。圖是靜態的，用大小、透明度做動畫。
+     ax、ay：錨點在圖上的位置（0～1，量過的）；砲口＝左邊發光起點，拖尾＝右邊亮尖（接彈尾），命中＝爆發中心。
+     大小以坦克車身寬 B（TANK_WW）為準：砲口寬 0.55B、150 ms；拖尾長 0.75B、透明度 .7；命中寬 1.05B、450 ms。其他坦克、缺圖時照原本的效果。 */
+  const FXM = {"solardragon-muzzle":{"ax":0.194,"ay":0.577},"solardragon-trail":{"ax":0.966,"ay":0.523},"solardragon-impact":{"ax":0.533,"ay":0.531},"phoenix-muzzle":{"ax":0.152,"ay":0.583},"phoenix-trail":{"ax":0.963,"ay":0.563},"phoenix-impact":{"ax":0.552,"ay":0.521},"astraltemple-muzzle":{"ax":0.318,"ay":0.542},"astraltemple-trail":{"ax":0.96,"ay":0.53},"astraltemple-impact":{"ax":0.498,"ay":0.517}};
+  const FX_SK = ['solardragon', 'phoenix', 'astraltemple'], fxName = (sk, k) => `fx-${sk}-${k}-v1`;
+  FX_SK.forEach(sk => ['muzzle', 'trail', 'impact'].forEach(k => img(fxName(sk, k))));
+  const fxImg = (sk, k) => { if (!FX_SK.includes(sk)) return null; const i = img(fxName(sk, k)); return ok(i) ? i : null; };
+  let fxs = [];   // 正在播的砲口、命中特效 {i 圖, x, y, ang, w 寬, ax, ay, life, max, k}
+  function fxAdd(sk, k, x, y, ang, wB, life) { const i = fxImg(sk, k); if (!i) return false; if (k === 'impact' && fxs.filter(f => f.k === 'impact').length >= 4) return true;   // 散花多顆同時命中：最多同時 4 個
+    const m = FXM[sk + '-' + k]; fxs.push({ i, x, y, ang, w: wB * TANK_WW, ax: m.ax, ay: m.ay, life, max: life, k }); return true; }
+  function fxDraw(c, i, x, y, ang, w, ax, ay, a) { const h = w * i.naturalHeight / i.naturalWidth; c.save(); c.globalAlpha = Math.max(0, Math.min(1, a)); c.translate(x, y); c.rotate(ang); c.drawImage(i, -ax * w, -ay * h, w, h); c.restore(); }
+  function drawFx(c, dt) {
+    for (const f of fxs) {
+      f.life -= dt; const p = 1 - Math.max(0, f.life) / f.max;   // 0 → 1
+      if (f.k === 'muzzle') fxDraw(c, f.i, f.x, f.y, f.ang, f.w * (.55 + .55 * Math.min(1, p * 2.5)), f.ax, f.ay, p < .35 ? 1 : 1 - (p - .35) / .65);
+      else fxDraw(c, f.i, f.x, f.y, 0, f.w * (.35 + .65 * (1 - (1 - p) * (1 - p))), f.ax, f.ay, (p < .4 ? 1 : 1 - (p - .4) / .6) * (f.sub ? .7 : 1));
+    }
+    fxs = fxs.filter(f => f.life > 0);
+  }
   ['wind-left', 'wind-right', 'health', 'wait'].forEach(n => img(`tank-ui-${n}-v2`));
   /* 場地背景（GPT 畫的，16:7；下面 1/3 是淡色，地面由程式畫才能炸出坑） */
   const bgImg = site => img(`tank-bg-${site}`);
@@ -173,7 +192,7 @@
     paintCtl();
   }
   function reset(st, toks) {
-    key = st.map + '#' + st.seed + '#' + (st.mode || ''); outKey = JSON.stringify(st.out || {}); queue = []; anim = null; shells = []; parts = []; texts = []; pendingFire = false; live = null; turnKey = ''; big = null;
+    key = st.map + '#' + st.seed + '#' + (st.mode || ''); outKey = JSON.stringify(st.out || {}); queue = []; anim = null; shells = []; parts = []; texts = []; fxs = []; pendingFire = false; live = null; turnKey = ''; big = null;
     shown = rp(toks.length); shownN = toks.length;
     const sizeChanged = W !== shown.W || H !== shown.H; W = shown.W; H = shown.H; if (sizeChanged) fit();
     const g0 = TK.decode(st.map); aim = g0.xs.map(x => ({ a: x < W / 2 ? 45 : 135, p: 60, w: 'n', f: x < W / 2 ? 1 : -1 })); lastShot = g0.xs.map(() => null);
@@ -206,7 +225,7 @@
     const m = TK.parse(q.tok, pre), side = m.i;
     if (pre.over || side !== pre.turn || !TK.alive(pre, side)) { shown = rp(q.i + 1); shownN = q.i + 1; snapView(); return next(); }   // 不算的一步：直接跳過
     const fromX = live && live.s === side ? live.x : (drive.i === side ? drive.x : pre.T[side].x);
-    anim = { m, side, pre, q, ph: 'drive', t: 0, fromX, toX: isFinite(m.x) ? m.x : pre.T[side].x, fromA: V.T[side].a, ii: 0 };
+    anim = { m, side, sk: skinOf(side), pre, q, ph: 'drive', t: 0, fromX, toX: isFinite(m.x) ? m.x : pre.T[side].x, fromA: V.T[side].a, ii: 0 };
     V.T[side].x = fromX; V.T[side].tx = fromX; live = null; pendingFire = false; paintCtl();
   }
   function finish() {
@@ -241,6 +260,7 @@
       shells = A.F.sh; { const B = barrelAt(A.side, T.x, A.m.a), r = A.m.a * Math.PI / 180, dx = B.mx - (T.x + 26 * Math.cos(r)), dy = B.my - (groundY(T.x) - 16 - 26 * Math.sin(r)); shells.forEach(s => { s.trail = []; s.mzx = dx; s.mzy = dy; }); }
       lastShot[A.side] = { x: T.x, a: A.m.a, p: A.m.p };
       snd.fire(); const Bf = barrelAt(A.side, T.x, A.m.a), ang = A.m.a * Math.PI / 180;
+      fxAdd(A.sk, 'muzzle', Bf.mx, Bf.my, -ang, .6, 9);   // 三連發也只有一次（發射只走這裡一次）
       for (let i = 0; i < 10; i++)parts.push({ x: Bf.mx, y: Bf.my, vx: Math.cos(ang) * (2 + Math.random() * 3) + (Math.random() - .5), vy: -Math.sin(ang) * (2 + Math.random() * 3) + (Math.random() - .5), life: 25, max: 25, r: 6 + Math.random() * 6, c: 'smoke' });
       T.kick = 8; return;
     }
@@ -276,7 +296,8 @@
     const P = sub ? TK.WEAP.c : W0, bg = w === 's', R = P.R * .9;
     TK.crater(shown, V.g, e.x, e.y, TK.crR(shown, w, sub)); V.gv++;
     snd.boom(bg); shake = Math.max(shake, bg ? 22 : (w === 't' || sub) ? 8 : w === 'd' ? 16 : 14);
-    parts.push({ x: e.x, y: e.y, r: R, life: 16, max: 16, c: 'flash' });
+    if (A && fxAdd(A.sk, 'impact', e.x, e.y, 0, sub ? .7 : bg ? 1.4 : 1.05, 27)) { const f = fxs[fxs.length - 1]; if (f && sub) f.sub = 1; parts.push({ x: e.x, y: e.y, r: R * .6, life: 10, max: 10, c: 'flash' }); }   // 傳說命中特效：原本的白光縮小，不要疊太亮
+    else parts.push({ x: e.x, y: e.y, r: R, life: 16, max: 16, c: 'flash' });
     const n = bg ? 46 : (w === 't' || sub) ? 12 : 28;
     for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = Math.random() * (bg ? 7 : 5) + 1; parts.push({ x: e.x, y: e.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 26 + Math.random() * 18, max: 44, r: 3 + Math.random() * (bg ? 9 : 6), c: 'fire' }); }
     dust(e.x, e.y, Math.round(n * .8));
@@ -470,11 +491,19 @@
   function drawShells(c) {
     for (const s of shells) {
       if (s.trail && s.trail.length) { for (let i = 0; i < s.trail.length; i++) { const [x, y] = s.trail[i], k = i / s.trail.length; c.fillStyle = `rgba(255,255,255,${k * .55})`; c.beginPath(); c.arc(x, y, 1 + k * 4, 0, 7); c.fill(); } }
-      if (!s.live) continue;
+      if (!s.live) {   // 砲彈停了：拖尾 6 影格（約 100 ms）內淡出
+        if (s.fxLast && anim && anim.sk) { s.fxFade = (s.fxFade || 0) + 1; const ti = fxImg(anim.sk, 'trail'), [x, y, ang, back, many] = s.fxLast, m = FXM[anim.sk + '-trail'];
+          if (ti && s.fxFade <= 6) fxDraw(c, ti, x - Math.cos(ang) * back, y - Math.sin(ang) * back, ang, TANK_WW * (many ? .5 : .75), m.ax, m.ay, (many ? .45 : .7) * (1 - s.fxFade / 6)); }
+        continue;
+      }
       const [X, Y] = shellXY(s);
       const w = anim && anim.m.w, bg = w === 's', r = bg ? 9 : (w === 't' || s.sub) ? 5 : 7;
       if (bg) { const gl = c.createRadialGradient(X, Y, 0, X, Y, 26); gl.addColorStop(0, 'rgba(255,200,80,.9)'); gl.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 26, 0, 7); c.fill(); }
-      const sk = (!w || w === 'n') && !s.sub && anim ? skinOf(anim.side) : null, si = sk && SHELL_SK.includes(sk) ? img(shellName(sk)) : null;
+      const ask = anim && anim.sk, sk = (!w || w === 'n') && !s.sub && anim ? ask : null, si = sk && SHELL_SK.includes(sk) ? img(shellName(sk)) : null;
+      /* 傳說三款：每顆砲彈後面接一條主題拖尾（亮尖接彈尾，往後淡出）；多顆時縮小、變淡 */
+      const ti = fxImg(ask, 'trail');
+      if (ti) { const ang = Math.atan2(s.vy || 0, s.vx || 1), many = shells.length > 1, back = si && ok(si) ? SHELL_L / 2 - 4 : r, m = FXM[ask + '-trail'];
+        fxDraw(c, ti, X - Math.cos(ang) * back, Y - Math.sin(ang) * back, ang, TANK_WW * (many ? .5 : .75), m.ax, m.ay, many ? .45 : .7); s.fxLast = [X, Y, ang, back, many]; }
       if (si && ok(si)) {
         const L = SHELL_L, h = L * si.naturalHeight / si.naturalWidth;
         c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 1));
@@ -500,6 +529,7 @@
       else { c.fillStyle = `rgba(110,110,120,${k * .45})`; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); }
     }
     parts = parts.filter(p => p.life > 0); if (parts.length > 600) parts.splice(0, parts.length - 600);
+    drawFx(c, dt);   // 傳說特效畫在煙、火花上面，傷害數字下面
     for (const t of texts) {
       t.life -= dt; t.y += (t.vy || -.5) * dt; const k = Math.min(1, t.life / 25), pop = 1 + Math.max(0, (t.age = (t.age || 0) + dt) < 8 ? (8 - t.age) / 16 : 0);
       c.save(); c.globalAlpha = Math.max(0, k); c.font = `900 ${t.s * pop}px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; c.strokeText(t.t, t.x, t.y); c.fillStyle = t.c; c.fillText(t.t, t.x, t.y); c.restore();
