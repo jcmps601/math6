@@ -268,15 +268,16 @@
     g.innerHTML = (cropId ? `<image href="${IMG}pr-${cropId}.webp" x="-34" y="-104" width="68" height="68"/>` : '') + fxRow(text, cls === 'water' ? '#1c7ed6' : '#e67700');
     g.innerHTML = `<g class="ffx ${cls || ''}">${g.innerHTML}</g>`; G.appendChild(g); setTimeout(() => g.remove(), 1500);
   }
-  function modal(html) { const m = el('div', 'pmod', `<div class="pmc fmc">${html}</div>`); document.body.appendChild(m); tap(m, e => { if (e.target === m) m.remove(); }); return m; }
+  function modal(html) { const m = el('div', 'pmod', `<div class="pmc fmc">${html}</div>`); document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m) m.remove(); }); return m; }   // 點外面關掉：用一般 click（以前用 tap，平板上會把框框裡的勾選吃掉）
   function seedModal(k) {
     const f = F(), lv = lvOf(f.xp).lv, empty = f.p.slice(0, plotsFor(lv)).filter(x => !x).length;
     const m = modal(`<div class="pmh">🌱 ${k >= 0 ? '要種什麼？' : '種子一覽'}　<small>🪙 ${coins()}</small></div><div class="fseeds">${CK.map(id => { const C = CROPS[id], lock = lv < C.lv; return `<button data-c="${id}" class="${lock ? 'lock' : ''}">${cropImg(id, 3, 'fsc')}<b>${C.n}</b><small>⏰ ${mmss(C.m * 60000)}・💧×${C.w}</small><small>收成 ${C.y} 個・一個賣 🪙${C.s}</small><em>${lock ? (C.lv - lv === 1 ? '🔒 農場再升 1 級就能種' : `🔒 農場升到 Lv.${C.lv} 解鎖`) : `${seedN(C)} 🪙 ${C.p}`}</em></button>`; }).join('')}</div>
-      ${k >= 0 && empty > 1 ? `<label class="fall"><input type="checkbox" id="fallchk"> 空的田（${empty} 塊）全部種一樣的</label>` : ''}<button class="pmx">關閉</button>`);
+      ${k >= 0 && empty > 1 ? `<button class="fall" id="fallchk" aria-pressed="false"><i></i>空的田（${empty} 塊）全部種一樣的</button>` : ''}<button class="pmx">關閉</button>`);
+    const fa = m.querySelector('#fallchk'); if (fa) tap(fa, () => { const on = !fa.classList.contains('on'); fa.classList.toggle('on', on); fa.setAttribute('aria-pressed', on); });   // 整條都可以按
     m.querySelectorAll('[data-c]').forEach(b => tap(b, () => {
       const id = b.dataset.c, C = CROPS[id]; if (lv < C.lv) { toast(`農場升到 Lv.${C.lv} 才能種${C.n}`); return; }
       if (k < 0) return;
-      const all = m.querySelector('#fallchk') && m.querySelector('#fallchk').checked; let n = 0;
+      const all = !!(m.querySelector('#fallchk') && m.querySelector('#fallchk').classList.contains('on')); let n = 0;
       if (all) { for (let i = 0; i < plotsFor(lv); i++) if (!f.p[i]) { if (!plant(i, id)) break; n++; } }
       else if (plant(k, id)) n = 1;
       if (n) { m.remove(); save(); paint(); snd(500); fx(k, `🌱 種了${n > 1 ? ` ${n} 塊` : ''}${C.n}`); info(k); }
@@ -544,7 +545,9 @@
   .fseeds button{background:linear-gradient(180deg,#fff,#f4fce3);border:3px solid #d8f5a2;border-radius:18px;padding:.4rem .3rem;display:flex;flex-direction:column;align-items:center;font-family:inherit}
   .fseeds .fsc{width:4.6rem;height:5rem;object-fit:contain;object-position:50% 100%}.fseeds b{font-size:1.1rem;color:#444}.fseeds small{font-size:.8rem;color:#888;font-weight:800}.fseeds em{font-style:normal;font-weight:900;color:#e67700;font-size:.95rem;margin-top:.1rem}
   .fseeds button.lock{opacity:.5;filter:grayscale(.6)}.fseeds button:active{transform:scale(.95)}
-  .fall{display:block;font-size:1.1rem;font-weight:900;color:#5c940d;margin-bottom:.6rem}.fall input{width:1.3rem;height:1.3rem;vertical-align:middle}
+  .fall{display:flex;align-items:center;gap:.55rem;margin:0 auto .7rem;font:900 1.1rem inherit;font-family:inherit;color:#5c940d;background:#f4fce3;border:3px solid #d8f5a2;border-radius:16px;padding:.55rem 1rem;min-height:3rem}
+  .fall i{flex:none;width:1.6rem;height:1.6rem;border:3px solid #82c91e;border-radius:8px;background:#fff;display:grid;place-items:center;font-style:normal}
+  .fall.on{background:#d8f5a2;border-color:#82c91e}.fall.on i{background:#82c91e}.fall.on i::after{content:'✓';color:#fff;font-weight:900;font-size:1.1rem}
   .fsto{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.7rem;text-align:left}.fsi{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:.4rem .6rem;background:#fff9db;border-radius:14px;padding:.35rem .6rem}
   .fsi .fpi{width:2.6rem;height:2.6rem;flex:none;object-fit:contain}.fsi b{flex:1;font-size:1.15rem;white-space:nowrap}.fsi small{color:#888;font-weight:800;white-space:nowrap}.fsi button{border:0;background:#ffe066;color:#e67700;border-radius:12px;padding:.35rem .7rem;font-weight:900;font-family:inherit}
   .fsell{font-size:1.3rem;margin-bottom:.4rem}
