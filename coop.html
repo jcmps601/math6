@@ -71,7 +71,7 @@ button{font-family:inherit;cursor:pointer}
 </style></head><body>
 <div class="scr on" id="home">
   <img class="hero" src="img/co/title.webp" alt=""><div class="logo">雙人<span>合作</span>過關</div>
-  <div class="note">兩個人<b>各用自己的平板</b>一起闖關！<br>開始時兩個人各用 <b>1 張遊戲券</b>，一張可以玩 <b>10 分鐘</b>。</div>
+  <div class="note">兩個人<b>各用自己的平板</b>一起闖關！<br>開始時兩個人各用 <b>1 張遊戲券</b>，一張可以玩 <b>5 分鐘</b>。</div>
   <div id="me"></div>
   <div class="menu">
     <button class="btn o" id="bInv" hidden><img class="ti" src="img/co/ui-invite.webp" alt="" draggable="false">邀請同學一起玩</button>
@@ -100,7 +100,7 @@ button{font-family:inherit;cursor:pointer}
    ・兩個人各用自己的平板連線（房間 rooms/房號）：p0＝紅色（開房間的人）、p1＝藍色
    ・每台平板只算「自己的角色」，位置每秒傳 12 次（rooms/房號/live/位置）；機關（按鈕、門）由兩個人的位置各自算，拉桿和寶石寫在 rooms/房號/w
    ・紅色牆只有紅色能過、藍色牆只有藍色能過；可以站在同學頭上跳得更高；碰到尖刺就回起點（不扣分、不會輸）
-   ・兩個人都走到自己顏色的門 → 過關。開始時兩個人各用 1 張遊戲券，一張玩 10 分鐘；時間到再給 2 分鐘把這一關做完，想繼續玩兩個人各再用 1 張 */
+   ・兩個人都走到自己顏色的門 → 過關。開始時兩個人各用 1 張遊戲券，一張玩 5 分鐘；時間到再給 2 分鐘把這一關做完，想繼續玩兩個人各再用 1 張 */
 const $=s=>document.querySelector(s);
 const FIREBASE_CONFIG={apiKey:"AIzaSyD-frW7ISsXAHsv1DSZpGzvn_ok9t1NJ4U",authDomain:"quiz601.firebaseapp.com",databaseURL:"https://quiz601-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"quiz601"};
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -147,7 +147,7 @@ const mySeat=()=>inPlat()?P.seat():0;
 const myPet=()=>{try{return inPlat()&&P.myPet?P.myPet():null}catch(e){return null}};
 const hasTicket=()=>!inPlat()||isTestMe()||(P.tickets()||0)>0;
 const payTicket=()=>!inPlat()||P.useTicket('co');
-const TICKET_MS=Q.has('local')&&Q.get('tm')?+Q.get('tm')*1000:10*60*1000,GRACE_MS=Q.has('local')&&Q.get('gr')?+Q.get('gr')*1000:2*60*1000;   // 一張券玩 10 分鐘、時間到再給 2 分鐘收尾（?local 測試時可以用 tm、gr 改秒數）
+const TICKET_MS=Q.has('local')&&Q.get('tm')?+Q.get('tm')*1000:5*60*1000,GRACE_MS=Q.has('local')&&Q.get('gr')?+Q.get('gr')*1000:2*60*1000;   // 一張券玩 5 分鐘、時間到再給 2 分鐘收尾（?local 測試時可以用 tm、gr 改秒數）
 /* 付過的券記在平板上（房號＋開房時間＋第幾張＋座號），重新整理或重新加入同一個房間不會再扣一次 */
 const paidKey=pk=>pk+'_'+mySeat(),paidBefore=pk=>!!LS.get('co601_paid',{})[paidKey(pk)];
 function paidMark(pk){const m=LS.get('co601_paid',{}),t=Date.now();for(const k in m)if(t-m[k]>864e5)delete m[k];m[paidKey(pk)]=t;LS.set('co601_paid',m)}
@@ -832,12 +832,12 @@ function onState(){const st=G.st;if(!st)return;
     if(!L||L.i!==st.lv||G.lvKey!==st.lvk){G.lvKey=st.lvk;L=build(st.lv);spawnMe();FX.length=0;sendLive(1)}
     show('game');armPlay();
     if(st.phase==='clear')paintClear();else if(st.phase==='time'){paintTimeUp();tryRenew()}else $('#over').classList.remove('on')}}
-/* 時間到：兩個人都按「再玩 10 分鐘」才繼續，各用 1 張券 */
+/* 時間到：兩個人都按「再玩 5 分鐘」才繼續，各用 1 張券 */
 function paintTimeUp(){const st=G.st,tn=(st.tn||1)+1,mine=st['rn_'+G.slot]===tn,his=st['rn_'+(G.slot==='p0'?'p1':'p0')]===tn,can=hasTicket();
   $('#ovI').style.display='none';$('#ovT').textContent='時間到！';$('#ovS').innerHTML='';
-  $('#ovM').textContent=mine?'等同學也按「再玩 10 分鐘」…':(can?'這張遊戲券的 10 分鐘用完了。想繼續玩，兩個人各用 1 張遊戲券。':NO_TK)+(his?'（同學已經準備好了！）':'');
+  $('#ovM').textContent=mine?'等同學也按「再玩 5 分鐘」…':(can?'這張遊戲券的 5 分鐘用完了。想繼續玩，兩個人各用 1 張遊戲券。':NO_TK)+(his?'（同學已經準備好了！）':'');
   const B=$('#ovB');B.innerHTML='';
-  if(!mine){const go=document.createElement('button');go.className='btn o';go.textContent='再玩 10 分鐘';go.disabled=!can;go.onclick=()=>{go.disabled=true;Net.update(`rooms/${G.pin}/state`,{['rn_'+G.slot]:tn}).catch(()=>{go.disabled=false})};B.appendChild(go)}
+  if(!mine){const go=document.createElement('button');go.className='btn o';go.textContent='再玩 5 分鐘';go.disabled=!can;go.onclick=()=>{go.disabled=true;Net.update(`rooms/${G.pin}/state`,{['rn_'+G.slot]:tn}).catch(()=>{go.disabled=false})};B.appendChild(go)}
   const out=document.createElement('button');out.className='btn k';out.textContent='離開';out.onclick=leave;B.appendChild(out);$('#over').classList.add('on')}
 function tryRenew(){const st=G.st;if(!isHost()||!st||st.phase!=='time')return;const tn=(st.tn||1)+1;if(st.rn_p0!==tn||st.rn_p1!==tn)return;
   const k=G.pin+'_'+G.created+'_'+tn;if(tryRenew.k===k)return;tryRenew.k=k;const te=now()+TICKET_MS;
