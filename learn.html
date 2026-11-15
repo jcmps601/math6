@@ -2115,7 +2115,9 @@ function scrFit(){const f=$('#figc'),w=f.clientWidth,h=f.clientHeight,d=Math.min
 function scrMore(){const f=$('#figc');f.classList.toggle('more',!!SCR.long&&getComputedStyle(f).overflowY!=='visible'&&f.scrollTop+f.clientHeight<f.scrollHeight-8)}
 function scrLong(){const f=$('#figc');if(!f.clientWidth)return;f.classList.remove('more');
   const l=getComputedStyle(f).overflowY==='visible'?f.getBoundingClientRect().bottom+scrollY>innerHeight+2:f.scrollHeight>f.clientHeight+2;
-  if(l!==!!SCR.long){SCR.long=l;f.classList.toggle('longq',l);scrPaint()}scrMore()}
+  /* 只會從「放得下」變成「放不下」，同一題不再變回來（變長後拿掉畫筆列、上方空間變小，又剛好放得下 → 來回切換，畫面會一直上下抖）；換題才重算 */
+  if(l&&!SCR.long){SCR.long=true;f.classList.add('longq');scrPaint()}scrMore()}
+function scrReset(){SCR.long=false;$('#figc').classList.remove('longq','more');scrPaint()}
 $('#figc').addEventListener('scroll',scrMore,{passive:true});$('#figc').addEventListener('load',()=>scrLong(),true);
 function scrLine(st){const P=st.p;if(!P.length)return;scrCx.globalCompositeOperation=st.e?'destination-out':'source-over';
   scrCx.strokeStyle=st.c;scrCx.lineCap=scrCx.lineJoin='round';
@@ -2238,7 +2240,7 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&/frac|ratio/.test(round.qs[cur].type)?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
   else if(e.key==='Tab'||e.key==='/'||e.key===':'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
-function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
+function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';scrReset();const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
   $('#prac').classList.toggle('en',isEn);$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
@@ -2772,7 +2774,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v106';let verNew=false,verBusy=false;
+const APP_VER='learn601-v107';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
