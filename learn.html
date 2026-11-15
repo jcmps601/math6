@@ -212,6 +212,8 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 .gr.on{border-color:#4dabf7;background:#e7f5ff}.gr.on .gck{background:#339af0;border-color:#339af0}.gr.on .gck::after{content:'✓';color:#fff;font-weight:900;font-size:1.8rem;line-height:1}
 .gr.ok{border-color:#69db7c;background:#ebfbee}.gr.no{border-color:#ff8787;background:#fff5f5}
 .gb button.right{border-color:#37b24d;background:#d3f9d8;color:#2b8a3e}.gr.no .gb button.on:not(.right){border-color:#ff8787;background:#ffe3e3;color:#e03131}
+.gr.ans .gck{background:#37b24d;border-color:#37b24d}.gr.ans .gck::after{content:'✓';color:#fff;font-weight:900;font-size:1.8rem;line-height:1}
+.gr.no .ga{color:#e03131}
 .gr .ga{flex:none;font-style:normal;font-weight:900;color:#2b8a3e;font-size:1.05rem;white-space:nowrap}
 #opts.gsend{justify-content:center}#opts.gsend button{flex:none;height:6rem;max-height:none;background:#40c057;color:#fff;border-color:#2f9e44;box-shadow:0 5px 0 #2b8a3e;font-size:2rem}
 #opts.gsend button.lack{background:#f1f3f5;color:#868e96;border-color:#dee2e6;box-shadow:0 4px 0 #dee2e6;font-size:1.5rem}
@@ -2352,7 +2354,8 @@ function grpSend(){const q=round.qs[cur];if(solved||q.type!=='grp'||$('#opts').c
   const k=[...s].filter((v,i)=>v!==q.ans[i]).length;wrong(`有 ${k} 句不對，再檢查一次`);if(!solved)lockOpts(q,1200)}
 /* 答完：每一句標出對錯，錯的那句寫出正確答案 */
 function grpShow(q){const chk=q.gk==='chk';$('#opts').style.display='none';$('#bigc').querySelectorAll('.gr').forEach(r=>{const i=+r.dataset.i,a=q.ans[i],m=chk?(gsel[i]||'╳'):gsel[i],good=m===a;
-  r.classList.add(good?'ok':'no');if(!good)r.insertAdjacentHTML('beforeend',`<em class="ga">${chk?(a==='○'?'要勾':'不勾'):'答案 '+a}</em>`);
+  r.classList.add(good?'ok':'no');if(!good)r.insertAdjacentHTML('beforeend',`<em class="ga">${chk?(a==='○'?'你漏勾了':'這個不用勾'):'答案 '+a}</em>`);
+  if(chk){r.classList.remove('on');r.classList.toggle('ans',a==='○')}   // 勾選題：框框改成顯示「正確答案」（綠色打勾＝要勾），錯的那句另外寫出來
   if(!chk)r.querySelectorAll('button').forEach(b=>b.classList.toggle('right',b.dataset.v===a))})}
 function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div class="pmc"><img src="img/ui/mascot-think.webp" alt="">
   <div class="rmt">慢慢看題目喔！</div><div class="rms">剛剛有 ${RUSH_MAX} 題還沒看完就選，<br>這一輪 10 題重新算。<br>看清楚題目再作答，得 ${TK_NEED} 分就有遊戲券。</div>
@@ -2769,7 +2772,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v105';let verNew=false,verBusy=false;
+const APP_VER='learn601-v106';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
