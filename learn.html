@@ -199,6 +199,23 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 #opts.row{align-items:center}#opts.row button{font-size:3rem;max-height:9rem;height:100%;min-height:5rem}
 #opts button.no{border-color:#ffa8a8;background:#fff5f5;color:#e03131;opacity:.6}
 #opts button.ok{border-color:#37b24d;background:#d3f9d8;color:#2b8a3e}
+.gins{font-size:1.15rem;font-weight:900;color:#7048e8;align-self:flex-start;margin:.1rem 0 .2rem}
+#figc{isolation:isolate}   /* 題組的句子浮在畫筆上面，但不能蓋到上面的標題列 */
+.gl{display:flex;flex-direction:column;gap:.5rem;width:100%;text-align:left;position:relative;z-index:6}
+.gr{display:flex;align-items:center;gap:.6rem;background:#fff;border:3px solid #e9ecef;border-radius:14px;padding:.45rem .6rem;font-size:1.5rem;font-weight:800;color:#333;line-height:1.35}
+.gr .gn{flex:none;color:#868e96;font-size:1.3rem}.gr .gs{flex:1;min-width:0}
+.gb{flex:none;display:flex;gap:.4rem}
+.gb button{width:3.3rem;height:3.3rem;border-radius:12px;border:3px solid #dee2e6;background:#f8f9fa;font:900 1.8rem 'PingFang TC','Microsoft JhengHei',sans-serif;color:#495057;box-shadow:0 3px 0 #dee2e6;padding:0}
+.gb button.on{border-color:#4dabf7;background:#d0ebff;color:#1971c2}
+.gl.chk .gr{cursor:pointer;user-select:none;-webkit-user-select:none}
+.gck{flex:none;width:2.6rem;height:2.6rem;border:3px solid #adb5bd;border-radius:10px;background:#fff;display:grid;place-items:center;font-style:normal}
+.gr.on{border-color:#4dabf7;background:#e7f5ff}.gr.on .gck{background:#339af0;border-color:#339af0}.gr.on .gck::after{content:'✓';color:#fff;font-weight:900;font-size:1.8rem;line-height:1}
+.gr.ok{border-color:#69db7c;background:#ebfbee}.gr.no{border-color:#ff8787;background:#fff5f5}
+.gb button.right{border-color:#37b24d;background:#d3f9d8;color:#2b8a3e}.gr.no .gb button.on:not(.right){border-color:#ff8787;background:#ffe3e3;color:#e03131}
+.gr .ga{flex:none;font-style:normal;font-weight:900;color:#2b8a3e;font-size:1.05rem;white-space:nowrap}
+#opts.gsend{justify-content:center}#opts.gsend button{flex:none;height:6rem;max-height:none;background:#40c057;color:#fff;border-color:#2f9e44;box-shadow:0 5px 0 #2b8a3e;font-size:2rem}
+#opts.gsend button.lack{background:#f1f3f5;color:#868e96;border-color:#dee2e6;box-shadow:0 4px 0 #dee2e6;font-size:1.5rem}
+@media (max-width:900px),(orientation:portrait){.gr{font-size:1.2rem;padding:.35rem .5rem;gap:.45rem}.gb button{width:2.8rem;height:2.8rem;font-size:1.5rem}.gck{width:2.2rem;height:2.2rem}#opts.gsend button{height:4.2rem;font-size:1.6rem}.gins{font-size:1rem}}
 .chmode #opts{display:flex}.chmode #pad,.chmode #ansline{display:none}
 #acts{display:flex;gap:.5rem}
 #acts button{flex:1;border:4px solid #e9ecef;background:#fff;border-radius:16px;font:900 1.4rem 'PingFang TC','Microsoft JhengHei',sans-serif;color:#666;padding:.35rem}
@@ -1245,7 +1262,7 @@ const KIND_HINT={listen:['再按 🔊 聽一次，仔細聽','先看清楚每個
   look:['再仔細看一次圖','先把不可能的選項刪掉'],think:['把題目再讀一次','先把不可能的選項刪掉']};
 /* 英語:彎的引號 ’ ‘ “ ” 換成直的 ' "(中文字型裡彎的引號是全形,It’s 會變成 It’  s) */
 const enQ=v=>typeof v==='string'?v.replace(/[’‘]/g,"'").replace(/[“”]/g,'"'):Array.isArray(v)?v.map(enQ):v;
-function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);it=o}let big=it.big==null?'':String(it.big);const n=[...big.replace(/<[^>]+>/g,'')].length,kind=bankKind(it);
+function bankQ(it,s){if(it.grp)return grpQ(it,s);if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);it=o}let big=it.big==null?'':String(it.big);const n=[...big.replace(/<[^>]+>/g,'')].length,kind=bankKind(it);
   /* 短文填空:其他還沒輪到的格子也畫成淡淡的底線,學生才看得出哪裡是空格 */
   /* 題目問「畫線的部分」:畫線的字一開始就要看得到(以前答完才出現) */
   if(it.reveal&&/畫線/.test(it.q||'')&&!big){big=String(it.reveal);it=Object.assign({},it,{reveal:'',bc:'',exp:''})}
@@ -1259,11 +1276,15 @@ function bankQ(it,s){if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);i
     subj:s,kind,hints:it.hint?[].concat(it.hint):KIND_HINT[kind].slice(),
     sol:it.au?[]:[].concat(it.exp||[])}}   // 聽力題答完把聽到的內容放在播音鍵下面(bankReveal)
 (()=>{const B=window.BANK||{};SUBJ.forEach(S=>(B[S.k]||[]).forEach((d,i)=>{
-  const items=(d.items||[]).filter(it=>it&&it.q&&Array.isArray(it.opts)&&it.opts.includes(it.a));
+  const items=(d.items||[]).filter(it=>it&&it.q&&(Array.isArray(it.grp)&&it.grp.length||Array.isArray(it.opts)&&it.opts.includes(it.a)));
   const by={};items.forEach(it=>{const t=it.t||'題目';(by[t]=by[t]||[]).push(it)});
   const g={};for(const t in by)g[t]=()=>bankQ(pick(by[t]),S.k);
   const [c,cb]=d.c?[d.c,d.cb||'#f8f9fa']:UCOL[i%UCOL.length],no=String(d.no||i+1),name=d.name||'單元 '+no;
   UN.push({key:S.k+no,s:S.k,term:d.term==='fin'?'fin':'mid',no,ic:d.ic||S.ic,name,nav:d.nav||name,c,cb,g:items.length?g:null,types:Object.keys(by),tools:[]})}))})();
+/* 題組（原本卷子上的勾選題、○╳ 活用題）：一題好幾句，每句都要選，全部選完按「送出」才一起看對錯 */
+const GCIRC='①②③④⑤⑥⑦⑧⑨⑩';
+function grpQ(it,s){return {type:'grp',gk:it.gk==='chk'?'chk':'ox',id:`${s}|g|${it.q}|${it.grp.map(r=>r[0]).join('|')}`,text:it.q,grp:it.grp.map(r=>r[0]),ans:it.grp.map(r=>r[1]).join(''),
+  opts:[],big:'',subj:s,kind:'think',hints:it.hint?[].concat(it.hint):KIND_HINT.think.slice(),sol:[].concat(it.exp||[])}}
 /* ===================== 早自修的題目（只給早自修出題，不出現在學習頁、儀表板的單元表） =====================
    amx 數學學扶題型（am.js）、amz 國語學扶題（bank/am_zh.js 的 XZ）、amr 一般組閱讀測驗（bank/am_zh.js 的 READ） */
 const AM_C='#f08c00',AM_CB='#fff4e6';
@@ -2205,7 +2226,7 @@ const pad=$('#pad');
 function buildPad(fracMode){pad.innerHTML='';['7','8','9','⌫','4','5','6','C','1','2','3',fracMode?'下一格':'.','0','檢查'].forEach(k=>{const b=el('button',k==='⌫'||k==='C'?'del':k==='檢查'?'ck':k==='下一格'?'nx':'',k);tap(b,()=>key(k));pad.appendChild(b)})}
 ['bw','bn','bd'].forEach(id=>tap($('#'+id),e=>{if(solved)return;act=e.currentTarget.dataset.k;paintF()}));
 function paintF(){['w','n','d'].forEach(k=>{const e=$('#b'+k);e.textContent=fv[k];e.classList.toggle('act',k===act&&!solved)})}
-function key(k){if(solved||!round)return;const q=round.qs[cur];if(q.type==='mc')return;if(k==='檢查')return check();
+function key(k){if(solved||!round)return;const q=round.qs[cur];if(q.type==='mc'||q.type==='grp')return;if(k==='檢查')return check();
   if(q.type==='frac'||q.type==='ratio'){$('#fbx').classList.remove('no');
     if(k==='下一格'){act=q.type==='ratio'?(act==='n'?'d':'n'):{w:'n',n:'d',d:'w'}[act];return paintF()}
     let v=fv[act];if(k==='⌫')v=v.slice(0,-1);else if(k==='C')v='';else if(/\d/.test(k)&&v.length<4)v=(v==='0'?'':v)+k;fv[act]=v;paintF();return}
@@ -2215,20 +2236,21 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&/frac|ratio/.test(round.qs[cur].type)?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
   else if(e.key==='Tab'||e.key==='/'||e.key===':'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
-function showQ(){$('#prac').classList.remove('sv');const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
+function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
   $('#prac').classList.toggle('en',isEn);$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
   const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none';$('#bigc').innerHTML=''}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
   stopAu();if(q.say||q.au)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
   $('#figc').classList.remove('solv');$('#steps').innerHTML='';fitBig();
-  const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac'||q.type==='ratio');A.classList.toggle('rtmode',q.type==='ratio');A.classList.toggle('chmode',q.type==='mc');if(q.type!=='mc')$('#body').classList.remove('wideo','halfo');
+  const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac'||q.type==='ratio');A.classList.toggle('rtmode',q.type==='ratio');A.classList.toggle('chmode',q.type==='mc'||q.type==='grp');if(q.type!=='mc')$('#body').classList.remove('wideo','halfo');
   $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';['bw','bn','bd'].forEach(id=>$('#'+id).className='ib');$('#rev').style.display='none';$('#rev').innerHTML='';
   $('#unit').textContent=q.unit;$('#pre').textContent=q.pre;
   if(q.type==='mc'){const O=$('#opts');O.innerHTML='';const ml=Math.max(...q.opts.map(o=>isImg(o)?0:txtLen(o)));
     O.className=(q.row?'row':'')+(ml>22?' xlong':ml>8?' long':'')+(q.opts.some(o=>/class="fr"/.test(o))?' hasfr':'');
     /* 長句選項：右邊選項欄變寬（沒有引文時更寬），比較不用捲動 */
     $('#body').classList.toggle('wideo',ml>8&&!q.big);$('#body').classList.toggle('halfo',ml>8&&!!q.big);q.opts.forEach(o=>{const b=el('button','',optHtml(o));b.dataset.v=o;tap(b,()=>choose(b,o));O.appendChild(b)});lockOpts(q)}
+  else if(q.type==='grp')grpBuild(q);
   else buildPad(q.type==='frac'||q.type==='ratio');
   paintF();$('#fb').textContent='';$('#fb').className='';dis($('#next'),true);$('#next').textContent='下一題 ▶';dis($('#hint'),false);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');
   paintDots();paintP();window.scrollTo&&window.scrollTo(0,0);setTimeout(scrLong,120)}
@@ -2298,7 +2320,7 @@ function check(){const q=round.qs[cur];
 /* 防亂點：題目出來後，選項先等「讀題時間」才能按（字越多越久；聽力題等錄音播完）。答錯一次後，剩下的選項也等一下 */
 let lkTok=0,optOpen=0;
 function lockOpts(q,ms){const O=$('#opts'),tok=++lkTok,t0=Date.now();optOpen=Infinity;
-  const txt=[q.text,q.big,...(q.opts||[]).filter(o=>!isImg(o))].join(' ').replace(/<[^>]+>/g,'').replace(/\s+/g,'');
+  const txt=[q.text,q.big,...(q.grp||[]),...(q.opts||[]).filter(o=>!isImg(o))].join(' ').replace(/<[^>]+>/g,'').replace(/\s+/g,'');
   const au=!ms&&!!(q.au||q.say), need=ms||q.lk||Math.min(READ_MAX,Math.max(READ_MIN,800+txt.length*45));
   O.classList.add('wait');O.classList.toggle('au',au);O.dataset.w=au?'🔊 聽完再選':ms?'再想一想…':'👀 先看題目…';O.style.setProperty('--lk',need+'ms');
   const open=()=>{if(tok!==lkTok)return;O.classList.remove('wait','au');optOpen=Date.now()};
@@ -2312,6 +2334,26 @@ function choose(b,o){if(solved||b.classList.contains('no')||$('#opts').classList
   b.classList.add('no');wrong(q.trapsMC&&q.trapsMC[o]);
   const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(!solved&&left<=1){round.res[cur]='no';finish(q,false)}
   if(!solved&&q.id)lockOpts(q,1200)}
+/* 題組：畫出每一句和 ○╳（或勾選框），右邊只有一顆「送出」 */
+let gsel=[];
+function grpBuild(q){gsel=q.grp.map(()=>'');const c=$('#bigc'),chk=q.gk==='chk';
+  c.innerHTML=`<div class="gins">${chk?'☑️ 把正確的都勾起來（可以勾很多個）':'👉 每一句都要選：對的點 ○，錯的點 ╳'}</div><div class="gl ${chk?'chk':'ox'}">`+
+    q.grp.map((t,i)=>`<div class="gr" data-i="${i}"><b class="gn">${GCIRC[i]||i+1}</b><span class="gs">${t}</span>${chk?'<i class="gck"></i>':'<span class="gb"><button data-v="○">○</button><button data-v="╳">╳</button></span>'}</div>`).join('')+'</div>';
+  c.querySelectorAll('.gr').forEach(r=>{const i=+r.dataset.i;
+    if(chk)tap(r,()=>{if(solved)return;gsel[i]=gsel[i]==='○'?'':'○';r.classList.toggle('on',gsel[i]==='○');grpLeft()});
+    else r.querySelectorAll('button').forEach(b=>tap(b,()=>{if(solved)return;gsel[i]=b.dataset.v;r.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));grpLeft()}))});
+  const O=$('#opts');O.innerHTML='';O.className='gsend';const b=el('button','','✔ 送出');tap(b,grpSend);O.appendChild(b);grpLeft();lockOpts(q)}
+/* ○╳ 題：送出鍵上寫還剩幾句沒選 */
+function grpLeft(){const q=round.qs[cur],b=$('#opts button');if(!b||q.gk==='chk')return;const n=gsel.filter(x=>!x).length;b.innerHTML=n?`還有 ${n} 句沒選`:'✔ 送出';b.classList.toggle('lack',!!n)}
+function grpSend(){const q=round.qs[cur];if(solved||q.type!=='grp'||$('#opts').classList.contains('wait'))return;
+  const a=q.grp.map((_,i)=>q.gk==='chk'?(gsel[i]||'╳'):gsel[i]),fb=$('#fb');
+  if(a.some(x=>!x)){fb.className='bad';fb.textContent=`還有 ${a.filter(x=>!x).length} 句沒選喔，每一句都要選`;return}
+  const s=a.join('');if(s===q.ans){right(q);return}
+  const k=[...s].filter((v,i)=>v!==q.ans[i]).length;wrong(`有 ${k} 句不對，再檢查一次`);if(!solved)lockOpts(q,1200)}
+/* 答完：每一句標出對錯，錯的那句寫出正確答案 */
+function grpShow(q){const chk=q.gk==='chk';$('#opts').style.display='none';$('#bigc').querySelectorAll('.gr').forEach(r=>{const i=+r.dataset.i,a=q.ans[i],m=chk?(gsel[i]||'╳'):gsel[i],good=m===a;
+  r.classList.add(good?'ok':'no');if(!good)r.insertAdjacentHTML('beforeend',`<em class="ga">${chk?(a==='○'?'要勾':'不勾'):'答案 '+a}</em>`);
+  if(!chk)r.querySelectorAll('button').forEach(b=>b.classList.toggle('right',b.dataset.v===a))})}
 function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div class="pmc"><img src="img/ui/mascot-think.webp" alt="">
   <div class="rmt">慢慢看題目喔！</div><div class="rms">剛剛有 ${RUSH_MAX} 題還沒看完就選，<br>這一輪 10 題重新算。<br>看清楚題目再作答，得 ${TK_NEED} 分就有遊戲券。</div>
   <button class="go" disabled>3</button></div>`;document.body.appendChild(m);const b=m.querySelector('button');let k=3;
@@ -2321,7 +2363,7 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
   const uk=ukeyOf(pu),rew=!uk||uqN(uk)<UNIT_CAP;if(uk){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵
   const k=dkey();if(rew){dvAdd(k);sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
-  const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):1;   // 這題的遊戲券分數
+  const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):q.type==='grp'?0.5:1;   // 這題的遊戲券分數
   let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
   if(!rew){}
   else if((sum.trs||0)>=RUSH_MAX){sum.tc=0;sum.tco=0;sum.trs=0;rushed=true;round.rushed=1;round.miss=0;logPush({k:'rush'})}
@@ -2333,10 +2375,11 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
   saveSum(round.got>0||rushed);if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
-  if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.id&&q.type==='mc'?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
+  if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.type==='grp'?'綠色的是正確答案，看一下再下一題':q.id&&q.type==='mc'?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
+    else if(q.type==='grp'){}
     else{const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):q.type==='ratio'?q.ans.join('：'):f(q.ans);r.style.display='inline-block';$('#box').style.display='none';$('#fbx').style.display='none'}}
-  if(q.id)bankReveal(q);
+  if(q.id)bankReveal(q);if(q.type==='grp')grpShow(q);
   dis($('#next'),false);$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintP();
   setTimeout(()=>{const s=$('#steps').lastElementChild;if(s&&s.scrollIntoView)s.scrollIntoView({block:'nearest'})},50)}
 /* 題庫題答完:答案填進底線;聽力題把聽到的內容、或答完才給看的字,放在播音鍵下面 */
@@ -2726,7 +2769,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v104';let verNew=false,verBusy=false;
+const APP_VER='learn601-v105';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
