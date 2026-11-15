@@ -1877,7 +1877,14 @@ async function loadWR(L){let all;try{all=await wrAll()}catch(e){L.innerHTML='<di
     let rows='';B.on.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;
       rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${Math.round(r.r*100)}%<small>${r.w}勝${r.l}敗${r.d?r.d+'和':''}</small></i></div>`});
     const tip=me&&!mine?`<div class="wrme">我下了 ${me.n} 局，再 ${WR_MIN-me.n} 局就上榜</div>`:'';
-    return `<div class="bcol" style="--dc:${COLS[g]||'#7a5a32'}"><div class="bh">${ico(G0.img,'hi2')}${G0.n}<small>${B.on.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去對戰！</div>'}${tip}</div>`}).join('')}
+    return `<div class="bcol" style="--dc:${COLS[g]||'#7a5a32'}"><div class="bh">${ico(G0.img,'hi2')}${G0.n}<small>${B.on.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去對戰！</div>'}${tip}</div>`}).join('')+await coBoard()}
+/* 雙人合作過關：比過了幾關（一樣多再比寶石） */
+async function coBoard(){let v={};try{v=(await timeout(db.ref(`${ROOT}/lb/coop`).get(),8000)).val()||{}}catch(e){}
+  const arr=Object.entries(v).map(([st,o])=>({seat:+st,s:o&&+o.s||0})).filter(r=>r.s>0&&!isTest(r.seat)).sort((a,b)=>b.s-a.s||a.seat-b.seat);
+  arr.forEach(r=>r.rank=1+arr.filter(x=>x.s>r.s).length);const mine=user&&arr.find(r=>r.seat===user.seat);let rows='';
+  arr.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;
+    rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${Math.floor(r.s/100)} 關<small>💎${r.s%100}</small></i></div>`});
+  return `<div class="bcol" style="--dc:#2563eb"><div class="bh"><img class="ico hi2" src="img/co/ui-invite.webp" alt="" draggable="false">雙人合作過關<small>${arr.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人過關，快找同學一起闖！</div>'}</div>`}
 /* 排行榜:每個遊戲的 4 個難度各自一個榜,雲端存在 lb/遊戲_難度/座號(例如 lb/tower_easy/12)。
    以前的 lb/遊戲/座號 只存一筆「最好的」,讀的時候放進那一筆的難度,舊成績不會不見。 */
 const DK=['easy','normal','hard','boss'];
@@ -2078,6 +2085,9 @@ window.__learn601={
     if(!((sum.tk||0)>0))return {ok:false};sum.tk--;sum.se=Date.now()+PLAY_MS;saveSum(true);logPush({k:'g',game:g,diff:d});return {ok:true,fresh:true}},
   /* 象棋:連線對戰輸的人用 1 張、同一台平板一局用 1 張(老師測試帳號不用) */
   myPet:()=>{try{const p=PET.P();return p&&p.st==='pet'&&p.sp?{sp:p.sp,st:PET.stageOf(PET.lvOf(p.xp||0).lv)}:null}catch(e){return null}},
+  /* 雙人合作過關的排行：s＝過關數×100＋寶石數，存在 lb/coop/座號（只會變多） */
+  coRecord(n,g){if(!user||!sum||isTest(user.seat))return;const s=Math.round(+n||0)*100+Math.min(99,Math.round(+g||0));if(!(s>(sum.co||0)))return;
+    sum.co=s;saveSum(true);enqueue(`${ROOT}/lb/coop/${user.seat}`,{d:0,s,t:Date.now()},true)},
   useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
     sum.tk--;saveSum(true);logPush({k:'g',game:g});return true},
   board:()=>lbAll().catch(()=>null),
@@ -2778,7 +2788,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v108';let verNew=false,verBusy=false;
+const APP_VER='learn601-v109';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
