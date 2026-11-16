@@ -1893,7 +1893,7 @@ async function bkBoards(){const g=async k=>{try{return (await timeout(db.ref(`${
 function bkCol(title,c,arr,fmt,empty){const mine=user&&arr.find(r=>r.seat===user.seat);let rows='';
   arr.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${fmt(r)}</i></div>`});
   return `<div class="bcol" style="--dc:${c}"><div class="bh">${title}<small>${arr.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||`<div class="ld">${empty}</div>`}</div>`}
-const bkRankCol=arr=>bkCol(`${ico('vs-vs','hi2')}方塊對戰段位`,'#d6336c',arr,r=>{const t=bkTier(r.s);return `${t.icon} ${t.name} ${t.rank} 段<small>${bkStarTxt(t.stars)}</small>`},'還沒有人上榜，快去對戰！');
+const bkRankCol=arr=>bkCol(`${ico('vs-vs','hi2')}方塊對戰段位`,'#d6336c',arr,r=>{const t=bkTier(r.s);return `<img src="img/bk/bk-rank-${t.tier}.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.4em">${t.name} ${t.rank} 段<small>${bkStarTxt(t.stars)}</small>`},'還沒有人上榜，快去對戰！');
 const bkSprintCol=arr=>bkCol('⏱ 方塊 40 排競速','#7048e8',arr,r=>bkMs(r.s),'還沒有人挑戰，搶第一！');
 /* 雙人合作過關：比過了幾關（一樣多再比寶石） */
 async function coBoard(){let v={};try{v=(await timeout(db.ref(`${ROOT}/lb/coop`).get(),8000)).val()||{}}catch(e){}
@@ -2814,7 +2814,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v112';let verNew=false,verBusy=false;
+const APP_VER='learn601-v113';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
