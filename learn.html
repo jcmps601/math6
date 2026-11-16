@@ -1842,7 +1842,7 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const dn=invDnd(),xd=el('button','go xgar',dn>0?`🔕 暫停邀請中<small>剩 ${invMin(dn)} 分・按我打開</small>`:'🔔 接受邀請中<small>按我暫停 40 分</small>');tap(xd,()=>{const off=invDnd()>0;invSetDnd(!off);toast(off?'🔔 可以收到同學的邀請了':'🔕 接下來 40 分鐘不會收到邀請');render()});
   [xv,xb,xa,xp,xm,...(bkOK?[xk]:[]),xg,xd].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
-  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰勝率排行榜<small>（下滿 ${WR_MIN} 局才上榜）</small>`));
+  P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰排行榜<small>（勝率：下滿 ${WR_MIN} 局才上榜；方塊對戰比段位、40 排比秒數）</small>`));
   const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
   P.appendChild(el('div','sec',ico('rw-trophy','hi2')+'全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
   /* 切換遊戲只換下面的排行榜，不重畫整頁（頁面不會跳） */
@@ -1869,11 +1869,32 @@ async function wrAll(){if(!(await fbOnline()))return null;const v=(await timeout
 async function loadWR(L){let all;try{all=await wrAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   const COLS={xq:'#c0392b',aq:'#8e5a2b',pd:'#2563eb',pm:'#e8590c',bk:'#d6336c'};
-  L.innerHTML=Object.entries(GAMES).filter(([g])=>g!=='ps'&&(g!=='bk'||BK_OPEN)).map(([g,G0])=>{const B=all[g],me=user&&B.all.find(x=>x.seat===user.seat),mine=me&&B.on.find(x=>x.seat===me.seat);
+  const bkb=BK_OPEN?await bkBoards():null;
+  L.innerHTML=Object.entries(GAMES).filter(([g])=>g!=='ps'&&(g!=='bk'||BK_OPEN)).map(([g,G0])=>{if(g==='bk'&&bkb)return bkRankCol(bkb.rank)+bkSprintCol(bkb.sprint);const B=all[g],me=user&&B.all.find(x=>x.seat===user.seat),mine=me&&B.on.find(x=>x.seat===me.seat);
     let rows='';B.on.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;
       rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${Math.round(r.r*100)}%<small>${r.w}勝${r.l}敗${r.d?r.d+'和':''}</small></i></div>`});
     const tip=me&&!mine?`<div class="wrme">我下了 ${me.n} 局，再 ${WR_MIN-me.n} 局就上榜</div>`:'';
     return `<div class="bcol" style="--dc:${COLS[g]||'#7a5a32'}"><div class="bh">${ico(G0.img,'hi2')}${G0.n}<small>${B.on.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去對戰！</div>'}${tip}</div>`}).join('')}
+/* ===================== 方塊對戰：段位（星星）、40 排競速 =====================
+   段位：存「半顆星」的數字 hs（sum.bks，雲端 lb/bkrank/座號），每 5 顆星（10）升一段，最低 0；
+     2 人：贏 +1 星（打贏段位比自己高的 +2）、輸 −1；3 人：+1、0、−1；4 人：+1.5、+0.5、−0.5、−1.5（跟 FB 版一樣分名次給）
+   段位名稱：1～2 新手、3～4 銅、5～6 銀、7～8 金、9～11 白金、12～14 鑽石、15～19 大師、20 以上 方塊之神
+   40 排競速：一個人玩，最快消完 40 排的時間（毫秒，越少越好），只記最好的（sum.bksp，雲端 lb/bksprint/座號）；不用遊戲券 */
+const BK_TIER=[[1,'新手','🌱'],[3,'銅牌','🥉'],[5,'銀牌','🥈'],[7,'金牌','🥇'],[9,'白金','💠'],[12,'鑽石','💎'],[15,'大師','👑'],[20,'方塊之神','🌈']];
+function bkTier(hs){hs=Math.max(0,+hs||0);const rank=1+Math.floor(hs/10),i=BK_TIER.reduce((a,t,j)=>rank>=t[0]?j:a,0);return {hs,rank,tier:i+1,name:BK_TIER[i][1],icon:BK_TIER[i][2],stars:(hs%10)/2}}
+const bkStarTxt=st=>'★'.repeat(Math.floor(st))+(st%1?'⯪':'')+'☆'.repeat(5-Math.ceil(st));
+const bkMs=ms=>{const s=ms/1000;return s>=60?`${Math.floor(s/60)}:${(s%60).toFixed(2).padStart(5,'0')}`:s.toFixed(2)+' 秒'};
+async function bkBoards(){const g=async k=>{try{return (await timeout(db.ref(`${ROOT}/lb/${k}`).get(),8000)).val()||{}}catch(e){return {}}};
+  const [a,b]=await Promise.all([g('bkrank'),g('bksprint')]);
+  const L=(v,f)=>Object.entries(v).map(([st,o])=>({seat:+st,s:o&&+o.s||0})).filter(r=>!isTest(r.seat)&&f(r));
+  const rank=L(a,r=>r.s>0).sort((x,y)=>y.s-x.s||x.seat-y.seat);rank.forEach(r=>r.rank=1+rank.filter(x=>x.s>r.s).length);
+  const sprint=L(b,r=>r.s>0).sort((x,y)=>x.s-y.s||x.seat-y.seat);sprint.forEach(r=>r.rank=1+sprint.filter(x=>x.s<r.s).length);
+  return {rank,sprint}}
+function bkCol(title,c,arr,fmt,empty){const mine=user&&arr.find(r=>r.seat===user.seat);let rows='';
+  arr.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${fmt(r)}</i></div>`});
+  return `<div class="bcol" style="--dc:${c}"><div class="bh">${title}<small>${arr.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||`<div class="ld">${empty}</div>`}</div>`}
+const bkRankCol=arr=>bkCol(`${ico('vs-vs','hi2')}方塊對戰段位`,'#d6336c',arr,r=>{const t=bkTier(r.s);return `${t.icon} ${t.name} ${t.rank} 段<small>${bkStarTxt(t.stars)}</small>`},'還沒有人上榜，快去對戰！');
+const bkSprintCol=arr=>bkCol('⏱ 方塊 40 排競速','#7048e8',arr,r=>bkMs(r.s),'還沒有人挑戰，搶第一！');
 /* 雙人合作過關：比過了幾關（一樣多再比寶石） */
 async function coBoard(){let v={};try{v=(await timeout(db.ref(`${ROOT}/lb/coop`).get(),8000)).val()||{}}catch(e){}
   const arr=Object.entries(v).map(([st,o])=>({seat:+st,s:o&&+o.s||0})).filter(r=>r.s>0&&!isTest(r.seat)).sort((a,b)=>b.s-a.s||a.seat-b.seat);
@@ -2084,6 +2105,13 @@ window.__learn601={
   /* 象棋:連線對戰輸的人用 1 張、同一台平板一局用 1 張(老師測試帳號不用) */
   myPet:()=>{try{const p=PET.P();return p&&p.st==='pet'&&p.sp?{sp:p.sp,st:PET.stageOf(PET.lvOf(p.xp||0).lv)}:null}catch(e){return null}},
   /* 雙人合作過關的排行：s＝過關數×100＋寶石數，存在 lb/coop/座號（只會變多） */
+  /* 方塊對戰：段位、40 排競速 */
+  bkTier:hs=>bkTier(hs), bkHS:()=>(sum&&sum.bks)||0,
+  bkStar(d){if(!user||!sum||isTest(user.seat))return null;const b=(sum.bks||0),a=Math.max(0,b+Math.round(+d||0));sum.bks=a;saveSum(true);
+    enqueue(`${ROOT}/lb/bkrank/${user.seat}`,{d:0,s:a,t:Date.now()},true);return {before:bkTier(b),after:bkTier(a)}},
+  bkSprint(ms){if(!user||!sum||!(ms>0))return {best:false};ms=Math.round(ms);const old=sum.bksp||0;if(old&&old<=ms)return {best:false,old};
+    sum.bksp=ms;saveSum(true);if(!isTest(user.seat))enqueue(`${ROOT}/lb/bksprint/${user.seat}`,{d:0,s:ms,t:Date.now()},true);return {best:true,old}},
+  bkBest:()=>(sum&&sum.bksp)||0, bkBoards:()=>bkBoards(), bkMs:ms=>bkMs(ms), bkStarTxt:st=>bkStarTxt(st),
   coRecord(n,g){if(!user||!sum||isTest(user.seat))return;const s=Math.round(+n||0)*100+Math.min(99,Math.round(+g||0));if(!(s>(sum.co||0)))return;
     sum.co=s;saveSum(true);enqueue(`${ROOT}/lb/coop/${user.seat}`,{d:0,s,t:Date.now()},true)},
   useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
@@ -2786,7 +2814,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v111';let verNew=false,verBusy=false;
+const APP_VER='learn601-v112';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
