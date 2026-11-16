@@ -1864,7 +1864,7 @@ async function paintXq(){const r=document.getElementById('xqrec'),h=document.get
 const WR_MIN=3;
 async function wrAll(){if(!(await fbOnline()))return null;const v=(await timeout(db.ref(`${ROOT}/xq`).get(),8000)).val()||{};const out={};
   Object.keys(GAMES).forEach(g=>{const arr=[];
-    Object.entries(v).forEach(([st,recs])=>{const seat=+st;if(isTest(seat)||!recs)return;const H=Object.values(recs).filter(x=>x&&GK(x.g)===g);if(!H.length)return;
+    Object.entries(v).forEach(([st,recs])=>{const seat=+st;if(isTest(seat)||!recs)return;const H=Object.entries(recs).filter(([k,x])=>x&&xqG({...x,k})===g).map(([,x])=>x);if(!H.length)return;
       const w=H.filter(x=>x.w===1).length,d=H.filter(x=>x.w===2).length,n=H.length;arr.push({seat,n,w,d,l:n-w-d,r:(w+d/2)/n})});
     const on=arr.filter(x=>x.n>=WR_MIN).sort((a,b)=>b.r-a.r||b.w-a.w||b.n-a.n||a.seat-b.seat);
     on.forEach(x=>x.rank=1+on.filter(y=>y.r>x.r||(y.r===x.r&&y.w>x.w)).length);
@@ -1923,13 +1923,14 @@ const allSeats=()=>[...SEATS.flat(),...(user&&isTest(user.seat)?TEST_SEATS:[])];
 function xqLocal(){return user?LS.get('learn601_xqh_'+user.seat,[]):[]}
 function xqResult(r){if(!user||!r||!r.k)return false;const key=String(r.k).replace(/[.#$\[\]\/]/g,'_').slice(0,46),H=xqLocal();if(H.some(x=>x.k===key))return false;
   const v={o:+r.o||0,w:r.w===2?2:r.w?1:0,r:String(r.r||'').slice(0,20),n:+r.n||0,t:Date.now(),g:GK(r.g)};   // w:1 贏、0 輸、2 和局;g:xq 象棋、aq 暗棋、pd 大砲對轟
-  H.push({...v,k:key});LS.set('learn601_xqh_'+user.seat,H.slice(-200));enqueue(`${ROOT}/xq/${user.seat}/${key}`,v);return true}
+  H.push({...v,k:key});LS.set('learn601_xqh_'+user.seat,H.slice(-200));enqueue(`${ROOT}/xq/${user.seat}/${key}`,v.g==='bk'?{...v,g:'pm'}:v);return true}
 /* 自己的戰績:雲端的(換平板也看得到)和這台平板的合在一起 */
 async function xqHist(seat){const s=seat||(user&&user.seat);const m={};
   if(user&&s===user.seat)xqLocal().forEach(x=>m[x.k]=x);
   try{if(db&&online){const v=(await timeout(db.ref(`${ROOT}/xq/${s}`).get(),8000)).val()||{};for(const k in v)if(v[k])m[k]={...v[k],k}}}catch(e){}
   return Object.values(m).sort((a,b)=>b.t-a.t)}
-const xqG=x=>GK(x.g);
+/* 雲端的對戰紀錄只收 xq、aq、pd、pm（資料庫規則），方塊對戰存成 pm、用紀錄代號開頭的 bk 認出來 */
+const xqG=x=>String(x.k||'').startsWith('bk')?'bk':GK(x.g);
 async function xqStats(type,seat){const H=(await xqHist(seat)).filter(x=>!type||xqG(x)===type);return {n:H.length,w:H.filter(x=>x.w===1).length,l:H.filter(x=>x.w===0).length,d:H.filter(x=>x.w===2).length,h:H}}
 async function onlineSeats(){const out={};try{if(db&&online){const v=(await timeout(db.ref(`${ROOT}/on`).get(),8000)).val()||{};const now=Date.now();
   for(const k in v)if(v[k]&&Math.abs(srvNow()-v[k])<ON_MS)out[k]=1}}catch(e){}await invAccCheck();return out}
@@ -1956,8 +1957,9 @@ function invCool(to){if(!user||isTest(user.seat))return 0;   // 老師的測試�
 function invErr(e){return e&&e.cool?`邀請太多次了，${invMin(e.cool)} 分鐘後才能再邀請`:'邀請送不出去，請檢查網路'}
 function invNote(L){const ms=[...L.querySelectorAll('[data-cd]')].map(b=>+b.dataset.cd);if(!ms.length)return;const d=L.ownerDocument.createElement('div');d.style.cssText='grid-column:1/-1;align-self:center;font-weight:800;font-size:1rem;color:#b7791f;text-align:center';d.textContent=`有 ⏳ 的同學，最多再等 ${invMin(Math.max(...ms))} 分鐘才能邀請`;L.appendChild(d)}
 function invDecText(v){const n=seatName(v.s);return v.why==='noticket'?`${n} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${n} 正在跟別人玩，等一下再邀請`:v.why==='study'?`${n} 正在練習題目，等練完再邀請`:v.why==='cool'?`${n} 現在不方便，過一陣子再邀請`:v.why==='dnd'?`${n} 現在不接受邀請`:`${n} 說下次再玩`}
+/* 方塊對戰的邀請也用 pm 送（資料庫只收 xq、aq、pd、pm），收到的人看房間的 meta/game 認出來 */
 async function sendInv(to,pin,g){const w=invCool(to);if(w>0)throw Object.assign(new Error('cool'),{cool:w});
-  if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:srvNow(),g:GK(g)}),8000);LS.set(invsKey(),[...invSent(),{s:+to,t:Date.now(),p:String(pin)}])}
+  if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:srvNow(),g:GK(g)==='bk'?'pm':GK(g)}),8000);LS.set(invsKey(),[...invSent(),{s:+to,t:Date.now(),p:String(pin)}])}
 function unInv(to){try{if(db&&user)db.ref(`${ROOT}/inv/${to}/${user.seat}`).remove()}catch(e){}}
 /* 中途跑掉(按上一頁、關掉、斷線)的那一局:下棋時先記「有一局還沒下完」,下次回到平台時補記輸、補扣 1 張券 */
 const xqpKey=()=>'learn601_xqp_'+(user&&user.seat);
@@ -1991,7 +1993,7 @@ async function listenInv(){if(invRef&&invCb)invRef.off('value',invCb);invRef=nul
     const [f,x]=list[0],iv={f:+f,p:x.p,t:x.t,g:GK(x.g)};
     const why=chessBusy()?'busy':invGate(+f);if(why)return bounceInv(iv,why);   // 不跳出來，自動回覆（刪掉之後會再通知一次，換下一個邀請）
     invPop(+f);
-    if(iv.g==='pm'){invNow=iv;db.ref(`rooms/${iv.p}/meta/game`).get().then(s=>{if(s.val()==='co')iv.co=1;if(invNow===iv)showInv(iv)}).catch(()=>{if(invNow===iv)showInv(iv)});return}   // 雙人合作過關也用 pm 的邀請
+    if(iv.g==='pm'){invNow=iv;db.ref(`rooms/${iv.p}/meta/game`).get().then(s=>{if(s.val()==='co')iv.co=1;if(s.val()==='bk')iv.g='bk';if(invNow===iv)showInv(iv)}).catch(()=>{if(invNow===iv)showInv(iv)});return}   // 雙人合作過關也用 pm 的邀請
     showInv(iv)};
   invRef.on('value',invCb)}
 function invDnd(){return user?Math.max(0,LS.get(dndKey(),0)-Date.now()):0}
@@ -2788,7 +2790,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v109';let verNew=false,verBusy=false;
+const APP_VER='learn601-v110';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
