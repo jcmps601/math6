@@ -19,19 +19,23 @@ button{font-family:inherit;cursor:pointer}
 #home>*,#lobby>*{flex:none;max-width:100%}
 .logo{font-size:clamp(1.9rem,min(7vw,7.5vh),3.4rem);font-weight:900;letter-spacing:.08em;color:#c2255c;text-shadow:0 4px 0 #fff9;display:flex;align-items:center;gap:.5rem;justify-content:center}
 .logo canvas{width:1.4em;height:1.4em}
-.note{font-size:clamp(.9rem,min(3.4vw,2.6vh),1.05rem);color:#5f3dc4;font-weight:800;max-width:36rem;background:#fffaffe6;border-radius:16px;padding:.55rem .95rem;line-height:1.65}.note b{color:#c2255c}
-#me{font-size:clamp(1rem,min(4vw,3vh),1.3rem);font-weight:900;color:#5f3dc4}#me button{border:0;background:none;color:#c2255c;font-size:1.1rem;font-weight:900;text-decoration:underline}
+.note{font-size:clamp(1rem,min(3.6vw,2.8vh),1.3rem);color:#5f3dc4;font-weight:800;max-width:36rem;background:#fffaffe6;border-radius:16px;padding:.55rem .95rem;line-height:1.65}.note b{color:#c2255c}
+/* 我的名片（名字、券、段位、戰績）：白底卡片，字才不會跟背景混在一起 */
+#pcard{background:#fffffff0;border-radius:20px;padding:.7rem 1.1rem;box-shadow:0 5px 0 #d0bfff;width:min(36rem,100%);display:flex;flex-direction:column;gap:.35rem}
+#pcard:has(#me:empty):has(#rec:empty){display:none}
+#home>#pcard{order:2}#home>#brd{order:3}#home>#mode{order:4}   /* 直的畫面：按鈕放前面，名片、排行榜接在下面 */
+#me{font-size:clamp(1.1rem,min(4.2vw,3.2vh),1.5rem);font-weight:900;color:#5f3dc4}#me button{border:0;background:none;color:#c2255c;font-size:1.1rem;font-weight:900;text-decoration:underline}
 .menu{display:flex;flex-direction:column;gap:.8rem;width:min(26rem,100%)}
 .join{display:flex;gap:.6rem}
 #pinIn{flex:1;min-width:0;font:900 clamp(1.4rem,min(6vw,4.5vh),2rem) 'Avenir Next',Arial,sans-serif;text-align:center;letter-spacing:.3em;border:4px solid #d0bfff;border-radius:18px;padding:.4rem;background:#fff;color:#3b2a5a}
 #msg,#lmsg{min-height:1.5em;font-size:1.15rem;font-weight:900;color:#c92a2a}
-#rec{font-size:1.1rem;font-weight:800;color:#5f3dc4;line-height:1.6}#rec b{color:#c2255c}
+#rec{font-size:clamp(1rem,min(3.8vw,2.8vh),1.3rem);font-weight:800;color:#5f3dc4;line-height:1.7}#rec:empty{display:none}#rec b{color:#c2255c}
 .tier{display:inline-flex;align-items:center;vertical-align:middle;gap:.15em;font-weight:900;color:#c2255c;white-space:nowrap}.tier img{width:1.5em;height:1.5em}
 .slot .tier{font-size:.8rem;margin-left:.3rem}
 #ovList .star{font-weight:900;color:#5f3dc4;background:#fff3bf;border-radius:12px;padding:.35rem .6rem;margin-bottom:.4rem;line-height:1.6}
-#brd{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}#brd:empty{display:none}
-#brd .bb{background:#fffaffe6;border-radius:16px;padding:.45rem .7rem;min-width:13rem;flex:1 1 13rem;max-width:18rem}
-#brd .bt{font-weight:900;color:#5f3dc4;margin-bottom:.2rem}#brd .br{display:flex;gap:.4rem;align-items:center;font-weight:800;color:#555;font-size:.92rem;padding:.1rem .2rem;border-radius:8px}
+#brd{display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center;width:min(36rem,100%)}#brd:empty{display:none}
+#brd .bb{background:#fffffff0;border-radius:18px;padding:.55rem .8rem;min-width:13rem;flex:1 1 13rem;box-shadow:0 4px 0 #d0bfff}
+#brd .bt{font-weight:900;color:#5f3dc4;margin-bottom:.3rem;font-size:clamp(1.05rem,min(3.8vw,2.8vh),1.3rem)}#brd .br{display:flex;gap:.4rem;align-items:center;font-weight:800;color:#444;font-size:clamp(.95rem,min(3.4vw,2.5vh),1.15rem);padding:.15rem .3rem;border-radius:8px}
 #brd .br.me{background:#ffe3ec}#brd .br em{font-style:normal;min-width:1.6rem}#brd .br span{flex:1;text-align:left}#brd .br i{font-style:normal;color:#c2255c}
 #bSprint small{display:block;font-size:.75em;opacity:.85}
 .pinrow{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center;font-size:1.3rem;font-weight:900;color:#5f3dc4}
@@ -44,10 +48,10 @@ button{font-family:inherit;cursor:pointer}
 .slot.empty{background:transparent;box-shadow:none;border:3px dashed #b197fc;color:#9775fa;font-weight:900;justify-content:center}
 #lwait{font-size:1.15rem;font-weight:900;color:#5f3dc4}
 @media (max-height:620px){#home,#lobby{gap:.5rem;padding:.6rem}.menu{gap:.5rem}}
-@media (orientation:landscape) and (max-height:720px) and (min-width:700px){
+@media (orientation:landscape) and (max-height:720px) and (min-width:700px),(orientation:landscape) and (min-width:1000px){
  #home.scr.on{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-rows:min-content;align-content:safe center;justify-items:center;column-gap:clamp(1rem,4vw,3rem);row-gap:.6rem;padding:.8rem clamp(1rem,4vw,3rem)}
  #home>:first-child{margin-top:0}#home>:last-child{margin-bottom:0}
- #home .logo{grid-column:1;grid-row:1}#home .note{grid-column:1;grid-row:2}#me{grid-column:1;grid-row:3}#rec{grid-column:1;grid-row:4}#brd{grid-column:1/span 2;grid-row:6}#mode{grid-column:1;grid-row:5}
+ #home .logo{grid-column:1;grid-row:1}#home .note{grid-column:1;grid-row:2}#pcard{grid-column:1;grid-row:3}#brd{grid-column:1;grid-row:4}#mode{grid-column:1;grid-row:5}
  #home .menu{grid-column:2;grid-row:1/span 4;align-self:center}#msg{grid-column:2;grid-row:5}}
 /* 遊戲畫面：直的（手機、直拿平板）＝上面同學、中間場地、下面按鈕；橫的＝按鈕在兩邊 */
 #game{flex-direction:column;align-items:stretch;padding:6px;gap:6px;position:relative}
@@ -108,7 +112,7 @@ body.land #bLeave{position:absolute;right:6px;top:6px;z-index:3}
 <section class="scr on" id="home">
   <div class="logo"><canvas id="logoCv" width="96" height="96"></canvas>方塊對戰</div>
   <div class="note">2～4 個人一起玩 <b>2 分鐘</b>！排滿一整排就消掉，<b>一次消越多排，越多垃圾送給對手</b>。<br>把對手塞到頂就是 <b>KO</b> 他一次（他會清空繼續玩），<b>時間到 KO 最多的人贏</b>！</div>
-  <div id="me"></div>
+  <div id="pcard"><div id="me"></div><div id="rec"></div></div>
   <div class="menu">
     <button class="btn" id="bNew">建立房間</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin">加入</button></div>
@@ -118,7 +122,6 @@ body.land #bLeave{position:absolute;right:6px;top:6px;z-index:3}
     <button class="btn g" id="bTest" hidden>🧪 單機測試：跟電腦對手玩（只有測試帳號看得到）</button>
   </div>
   <div id="msg"></div>
-  <div id="rec"></div>
   <div id="brd"></div>
   <div class="note" id="mode" hidden></div>
 </section>
