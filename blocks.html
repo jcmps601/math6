@@ -113,7 +113,7 @@ body.land #bLeave{position:absolute;right:6px;top:6px;z-index:3}
     <button class="btn" id="bNew">建立房間</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin">加入</button></div>
     <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請同學一起玩</button>
-    <button class="btn b" id="bSprint">⏱ 40 排競速<small>一個人練習・不用遊戲券</small></button>
+    <button class="btn b" id="bSprint">⏱ 40 排競速<small>一個人練習・一次用 1 張遊戲券</small></button>
     <button class="btn g" id="bHelp">📖 怎麼玩</button>
     <button class="btn g" id="bTest" hidden>🧪 單機測試：跟電腦對手玩（只有測試帳號看得到）</button>
   </div>
@@ -164,7 +164,7 @@ body.land #bLeave{position:absolute;right:6px;top:6px;z-index:3}
   🥊 被塞到頂＝被 <b>KO</b>（算給最後打你的人），場地清空、馬上繼續玩。<br>
   ⏱ 一局 <b>2 分鐘</b>，時間到比 <b>KO 數</b> → 送出排數 → 誰堆得比較低。2 人局先 KO 對手 5 次、3～4 人局先 KO 10 次就直接贏！<br>
   🏆 <b>段位</b>：2 人局贏 +1 顆星（打贏段位比你高的 +2）、輸 −1；3～4 人局照名次加減。每 5 顆星升一段：新手 → 銅牌 → 銀牌 → 金牌 → 白金 → 鑽石 → 大師 → 方塊之神！<br>
-  ⏱ <b>40 排競速</b>：一個人玩、不用遊戲券，比誰最快消完 40 排。<br>
+  ⏱ <b>40 排競速</b>：一個人玩、一次用 1 張遊戲券，比誰最快消完 40 排。<br>
   🎟️ 只有第一名不用遊戲券，其他人各用 1 張；中途離開也算輸。</div><button class="btn" id="helpX">知道了</button></div></div>
 <div class="ov" id="tutBox"><div class="box2"><div class="t2">👆 用手指玩</div><div class="tg">
   <span>↔️</span><div>手指在畫面上<b>左右拖</b><small>方塊會跟著手指走（哪裡都可以，不用按在方塊上）</small></div>
@@ -536,9 +536,11 @@ function botTick(now,el){RT.bots.forEach((b,i)=>{if(b.dead)return;if(now>=b.next
 function checkTestEnd(force){if(!RT||RT.over)return;const n=RT.bots.length+1,w=koWin(n);if(!force&&RT.myKO<w&&!RT.bots.some(b=>b.kos>=w))return;RT.over=true;RT.done=true;
   const place=1+RT.bots.filter(b=>b.kos>RT.myKO).length,win=place===1;
   setTimeout(()=>showOver({title:win?'🎉 你贏了！':'再接再厲！',sub:`單機測試・你 KO ${RT.myKO} 次，第 ${place} 名（共 ${n} 人）`,list:'',tk:'',test:true,win}),900)}
-/* ⏱ 40 排競速：一個人玩、不用遊戲券，最快消完 40 排；被頂到就失敗重來。最佳成績記在平台（排行榜比秒數） */
+/* ⏱ 40 排競速：一個人玩、一次用 1 張遊戲券（「再玩一次」也要再用 1 張），最快消完 40 排；被頂到就失敗重來。最佳成績記在平台（排行榜比秒數） */
 const SPRINT_N=40;
-function startSprint(){if(MODE==='swipe')showTut();G.mode='sprint';G.st={g:1,order:''};startLocal((Math.random()*4294967296)>>>0,'sprint');show('game');layout()}
+function startSprint(){if(!hasTicket()){$('#over').classList.remove('on');show('home');msg('🎟️ 40 排競速一次要用 1 張遊戲券。回平台練習 10 題答對 8 題就能拿到！');return}
+  if(!payTicket()){$('#over').classList.remove('on');show('home');msg('🎟️ 遊戲券扣不下來，請回平台看看還有沒有券');return}
+  msg('');paintMe();if(MODE==='swipe')showTut();G.mode='sprint';G.st={g:1,order:''};startLocal((Math.random()*4294967296)>>>0,'sprint');show('game');layout()}
 function sprintDone(){if(!RT||RT.done)return;RT.done=true;RT.endAt=tNow();const ms=RT.endAt-RT.t0;sfx.win();
   const r=inPlat()&&P.bkSprint?P.bkSprint(ms):{best:false},sec=(ms/1000).toFixed(2);
   setTimeout(()=>showOver({title:r.best?'🎉 新紀錄！':'⏱ 完成！',sub:`消完 40 排：${sec} 秒`+(r.best&&r.old?`（以前最快 ${(r.old/1000).toFixed(2)} 秒）`:!r.best&&r.old?`（最佳 ${(r.old/1000).toFixed(2)} 秒）`:''),list:'',tk:'',test:true,win:r.best}),700)}
