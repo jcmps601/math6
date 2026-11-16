@@ -773,6 +773,20 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .amk{margin:.35rem 0 .1rem}.amk small{color:#888;font-weight:700}.amg{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;margin:.2rem 0}.amg i{font-style:normal;font-size:.8rem;color:#aaa;min-width:4.2rem}
 .amg button{border:2px solid #e9ecef;background:#f8f9fa;border-radius:8px;padding:.1rem .45rem;font-size:.85rem;color:#666}.amg button.on{border-color:#ff922b;background:#ffe8cc;color:#d9480f;font-weight:800}
 @media (max-width:560px){#amc{flex-wrap:wrap}#amc .go{width:100%}}
+/* 老師頁：早自修完成情形 */
+#amrep .dhead,#amt .dhead{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}#amrep .dhead>b{font-size:1.7rem;margin-right:.6rem}
+.amday{display:flex;gap:.4rem;flex-wrap:wrap;margin:.7rem 0 .5rem}
+.amday button,#setup .amday button{border:3px solid #e9ecef;background:#fff;border-radius:14px;padding:.3rem .8rem;font-weight:900;font-size:1.1rem;color:#555;line-height:1.25;box-shadow:none}
+.amday button small{display:block;font-size:.85rem;color:#2b8a3e}.amday button small.p{color:#c92a2a}
+.amday button.on,#setup .amday button.on{border-color:#ff922b;background:#fff4e6;color:#d9480f}.amday button:disabled{opacity:.35}
+.amcare{display:grid;grid-template-columns:minmax(10rem,.8fr) minmax(0,1.6fr) minmax(0,1.6fr);gap:.8rem;margin-bottom:.4rem}
+.amgrp{overflow-x:auto;margin:.3rem 0 .8rem}.amgrp .at{width:100%;min-width:40rem}
+.amtag{display:inline-block;font-size:.8rem;padding:.05rem .4rem;border-radius:6px;background:#fff4e6;color:#e8590c;font-weight:900;margin:.05rem .1rem}
+.amwk{white-space:nowrap}.amwk i{display:inline-block;min-width:1.9rem;text-align:center;font-style:normal;font-size:.85rem;border-radius:6px;margin:0 1px;padding:.05rem 0;background:#f1f3f5;color:#adb5bd}
+.amwk i.ok{background:#d3f9d8;color:#2b8a3e}.amwk i.p{background:#ffe3e3;color:#c92a2a}.amwk i.sel{box-shadow:0 0 0 2px #ff922b}.amwk i.f{visibility:hidden}
+.amql{position:sticky;left:0;max-width:calc(100vw - 5rem);box-sizing:border-box;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(15rem,100%),1fr));gap:.3rem .8rem;text-align:left;font-size:1rem;padding:.3rem .2rem}
+.amql span{background:#f8f9fa;border-radius:10px;padding:.25rem .55rem}.amql span.no{background:#fff5f5;color:#c92a2a}.amql span.ok2{background:#fff9db}
+@media (max-width:760px){.amcare{grid-template-columns:1fr}}
 /* 閱讀測驗的專名號（人名、地名…）和書名號：每個名字的底線分開畫 */
 .pn{text-decoration:underline;text-decoration-thickness:.06em;text-underline-offset:.24em;text-decoration-skip-ink:none;margin:0 .07em}
 .bk{text-decoration:underline wavy;text-decoration-thickness:.05em;text-underline-offset:.22em;text-decoration-skip-ink:none;margin:0 .07em}
@@ -837,6 +851,10 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
  <h2>👩‍🏫 老師設定</h2>
  <div class="cd"><div id="rulemsg"></div></div>
  <div class="cd" id="tboss"><div class="dhead"><b>⚔️ 本週全班打魔王</b><button id="tbload">🔄 重新整理</button></div><div id="tbout"></div></div>
+ <div class="cd" id="amrep">
+  <div class="dhead"><b>🌅 早自修完成情形</b><div class="dper" id="amwk"><button data-w="0" class="on">本週</button><button data-w="1">上週</button></div><button id="amrload">🔄 重新整理</button><span id="amrmsg"></span></div>
+  <div id="amrout"><div class="dnone">選好下面 ① 的 pins.json 以後，這裡會顯示每天早自修誰做完了</div></div>
+ </div>
  <div class="cd" id="dash">
   <div class="dhead"><b>📊 班級儀表板</b>
    <div class="dper" id="dper"><button data-p="w" class="on">本週</button><button data-p="7">最近 7 天</button><button data-p="30">最近 30 天</button><button data-p="0">全部</button></div>
@@ -2553,13 +2571,13 @@ async function bossTeacher(){const O=$('#tbout');if(!O)return;O.textContent='讀
     ((R.tests||[]).length?`<div class="tbh" style="font-size:1rem;color:#888">🧪 ${R.tests.map(r=>`${testName(r.seat).replace('🧪 ','')} ${r.s} 點`).join('、')}（不算進全班）</div>`:'')}
 
 /* ===================== 老師設定 ===================== */
-function openSetup(){show$('setup');setTimeout(()=>{if(!DASH)dashLoad();bossTeacher()},300);$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
+function openSetup(){show$('setup');setTimeout(()=>{if(!DASH)dashLoad();if(!AMR)amrLoad();bossTeacher()},300);$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
 let tapT=[];tap(document.querySelector('#login h1'),()=>{const t=Date.now();tapT=tapT.filter(x=>t-x<2500);tapT.push(t);if(tapT.length>=5){tapT=[];openSetup()}});
 tap($('#setback'),()=>{history.replaceState(null,'',location.pathname);show$('login')});
 let pinData=null;
 $('#pinfile').addEventListener('change',async e=>{const fl=e.target.files[0];if(!fl)return;
   try{const o=JSON.parse(await fl.text());const ok=Object.keys(o).length>=1&&Object.entries(o).every(([k,v])=>/^\d+$/.test(k)&&/^\d{4}$/.test(String(v)));
-    if(!ok)throw 0;for(const k in o)o[k]=String(o[k]);pinData=o;LS.set('learn601_pins',o);$('#setmsg').textContent=`讀到 ${Object.keys(o).length} 位學生的密碼，已存在這台電腦`;dashLoad()}
+    if(!ok)throw 0;for(const k in o)o[k]=String(o[k]);pinData=o;LS.set('learn601_pins',o);$('#setmsg').textContent=`讀到 ${Object.keys(o).length} 位學生的密碼，已存在這台電腦`;dashLoad();amrLoad()}
   catch(_){pinData=null;$('#setmsg').textContent='檔案格式不對'}});
 tap($('#pinwrite'),async()=>{const o=pinData||LS.get('learn601_pins',null);if(!o){$('#setmsg').textContent='請先選擇 pins.json';return}
   $('#setmsg').textContent='寫入中…';await fbReady;if(!db){$('#setmsg').textContent='連不上 Firebase';return}
@@ -2689,6 +2707,48 @@ $('#amfile').addEventListener('change',async e=>{const f=e.target.files[0];e.tar
   const MXT=(UN[ukIdx('amx')]||{}).types||[],ZXT=(UN[ukIdx('amz')]||{}).types||[];let n=0;
   for(const s in o){const R=AMT[String(+s)];if(!R)continue;const v=o[s]||{};R.p={m:v.m==='x'?'x':'g',ms:(v.ms||[]).filter(k=>MXT.includes(k)),z:v.z==='x'?'x':'g',zs:(v.zs||[]).filter(k=>ZXT.includes(k))};R.ch=true;n++}
   M.textContent=`匯入 ${n} 人的分組，確認後按「儲存」`;amPaint()});
+/* ===================== 老師頁：早自修完成情形 =====================
+   讀全班的作答紀錄（單元代號 am）：選一天看誰做完 10 題、誰做一半、誰還沒開始；學扶、一般分開列；點一位看他每一題的對錯
+   ・紀錄是做完一輪（或中途離開）才寫進雲端；正在做的學生，今天的題數改看 sum.uq（即時的） */
+let AMR=null,amrW=0,amrDay=null,amrSel=null;
+async function amrLoad(){const pins=LS.get('learn601_pins',null),M=$('#amrmsg');if(!pins)return;
+  M.textContent='讀取中…';if(!(await fbOnline())){M.textContent='📴 連不上 Firebase';return}
+  const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let done=0;
+  const mon=new Date();mon.setHours(0,0,0,0);mon.setDate(mon.getDate()-((mon.getDay()+6)%7)-7);   // 上週一 0:00 起
+  const rows=await Promise.all(seats.map(async s=>{const b=`${ROOT}/u/${s}/${pins[s]}`;let am=null,uq=null,lg=null,ok=true;
+    try{const [a,u]=await Promise.all([timeout(db.ref(b+'/am').get(),12000),timeout(db.ref(b+'/sum/uq').get(),12000)]);am=a.val();uq=u.val()}catch(e){ok=false}
+    try{lg=Object.values((await timeout(logRef(s,pins[s],mon.getTime()).get(),20000)).val()||{}).filter(l=>l&&l.k==='p'&&l.unit==='am')}catch(e){lg=null;ok=false}
+    M.textContent=`讀取中… ${++done} / ${seats.length}`;return {s:+s,am,uq,lg,ok}}));
+  AMR={rows};const n=new Date();M.textContent=`更新時間 ${pad2(n.getHours())}:${pad2(n.getMinutes())}`+(rows.some(r=>!r.ok)?'（有人讀取失敗，再按一次重新整理）':'');amrRender()}
+function amrDayOf(r,d){const L=(r.lg||[]).filter(l=>l.d===d).sort((a,b)=>(a.ts||0)-(b.ts||0)),q=[];let fin=null;
+  L.forEach(l=>(l.q||[]).forEach(x=>{q.push(x);if(q.length===10)fin=l.ts}));
+  let n=q.length;if(r.uq&&r.uq.d===d&&r.uq.u)n=Math.max(n,r.uq.u.am||0);
+  return {n,q,fin,sec:L.reduce((a,l)=>a+(l.sec||0),0),ok1:q.filter(x=>x.r==='ok').length,rev:q.filter(x=>x.r==='no').length}}
+const amrX=r=>!!r.am&&(r.am.m==='x'||r.am.z==='x');
+function amrRender(){if(!AMR)return;const O=$('#amrout'),today=dkey(),wk=weekKeys(amrW).slice(0,5),WD='一二三四五';
+  if(!amrDay||!wk.includes(amrDay))amrDay=wk.filter(d=>d<=today).pop()||wk[0];const D=amrDay;
+  const S=AMR.rows.map(r=>({r,s:r.s,x:amrX(r),st:amrDayOf(r,D),wk:wk.map(d=>amrDayOf(r,d).n)})),N=S.length;
+  const fin=S.filter(x=>x.st.n>=10),part=S.filter(x=>x.st.n>0&&x.st.n<10),none=S.filter(x=>!x.st.n);
+  const md=d=>`${+d.slice(5,7)}/${+d.slice(8)}`,chip=(s,t)=>`<span class="chip" data-s="${s}">${s}${t?`<small>${t}</small>`:''}</span>`;
+  let h=`<div class="amday">${wk.map((d,i)=>{const c=S.filter(x=>x.wk[i]>=10).length;return `<button data-d="${d}" class="${d===D?'on':''}"${d>today?' disabled':''}>週${WD[i]} ${md(d)}${d>today?'':`<small class="${c<N?'p':''}">${c} / ${N} 人完成</small>`}</button>`}).join('')}</div>`;
+  h+=`<div class="amcare"><div class="kpi ${fin.length===N?'g':fin.length>=N*.8?'y':'r'}"><span class="kl">${md(D)} 做完 10 題</span><span class="kv">${fin.length}<small>/ ${N} 人</small></span></div>
+    <div class="cbox b"><div class="ct">做一半<b>${part.length}</b> 人</div><div class="chips">${part.sort((a,b)=>a.s-b.s).map(x=>chip(x.s,x.st.n+'/10')).join('')||'<span class="ok">👍 沒有</span>'}</div></div>
+    <div class="cbox a"><div class="ct">還沒開始<b>${none.length}</b> 人</div><div class="chips">${none.sort((a,b)=>a.s-b.s).map(x=>chip(x.s)).join('')||'<span class="ok">👍 全班都做了</span>'}</div></div></div>`;
+  const tm=t=>{if(!t)return '';const x=new Date(t);return `${pad2(x.getHours())}:${pad2(x.getMinutes())}`};
+  const subj=x=>{const U=UN[fixU(x,'am')];return U&&U.s==='zh'?'國語':'數學'};
+  const tbl=(L,title)=>{if(!L.length)return '';let t=`<div class="dsec">${title}<small>${L.length} 人・點一位看他每一題</small></div><div class="amgrp"><table class="at"><tr><th>座號</th><th>${md(D)} 題數</th><th>一次答對</th><th>看解答</th><th>做完時間</th><th>用時</th><th>這週（一～五）</th></tr>`;
+    L.sort((a,b)=>a.s-b.s).forEach(x=>{const st=x.st,p=pc(st.ok1,st.q.length),tg=x.x?`<br>${x.r.am.m==='x'?'<span class="amtag">數學學扶</span>':''}${x.r.am.z==='x'?'<span class="amtag">國語學扶</span>':''}`:'';
+      t+=`<tr class="st${amrSel===x.s?' sel':''}" data-s="${x.s}"><td><b>${x.s}</b>${tg}</td><td class="c ${st.n>=10?'g':st.n?'y':'r'}"><b>${st.n>=10?'✅ ':''}${Math.min(st.n,99)}</b><small>/ 10</small></td>
+        <td class="c ${st.q.length?cls(p):'n'}">${st.q.length?`<b>${p}%</b>`:'—'}</td><td>${st.q.length?st.rev:''}</td><td>${tm(st.fin)}</td><td>${st.sec?Math.max(1,Math.round(st.sec/60))+' 分':''}</td>
+        <td class="amwk">${x.wk.map((n,i)=>`<i class="${wk[i]>today?'f':n>=10?'ok':n?'':'p'}${wk[i]===D?' sel':''}">${wk[i]>today?'':n>=10?'✓':n||'✗'}</i>`).join('')}</td></tr>`;
+      if(amrSel===x.s)t+=`<tr><td colspan="7"><div class="amql">${st.q.map((q,i)=>`<span class="${q.r==='no'?'no':q.r==='ok2'?'ok2':''}">${i+1}. ${subj(q)}・${tName(fixU(q,'am'),q.t)}　${q.r==='ok'?'✅ 一次答對':q.r==='ok2'?'🟡 第二次才對':'❌ 看解答'}</span>`).join('')||(st.n?'正在做，做完這一輪才會出現每一題的紀錄':'這天沒有做早自修')}</div></td></tr>`});
+    return t+'</table></div>'};
+  h+=tbl(S.filter(x=>x.x),'🧡 學扶組')+tbl(S.filter(x=>!x.x),'💙 一般組');
+  O.innerHTML=h;
+  O.querySelectorAll('.amday button').forEach(b=>b.onclick=()=>{amrDay=b.dataset.d;amrSel=null;amrRender()});
+  O.querySelectorAll('[data-s]').forEach(e=>e.onclick=()=>{const s=+e.dataset.s;amrSel=amrSel===s?null:s;amrRender();const r=O.querySelector(`tr.st[data-s="${s}"]`);if(amrSel&&r)r.scrollIntoView({block:'nearest',behavior:'smooth'})})}
+tap($('#amrload'),()=>amrLoad());
+document.querySelectorAll('#amwk button').forEach(b=>b.addEventListener('click',()=>{amrW=+b.dataset.w;amrDay=null;amrSel=null;document.querySelectorAll('#amwk button').forEach(x=>x.classList.toggle('on',x===b));amrRender()}));
 /* ===================== 老師頁：班級儀表板 =====================
    打開老師頁就自動讀全班的「摘要」和「作答紀錄」，一眼看到：
    ・今天、這段時間的練習狀況（四個大數字）
@@ -2814,7 +2874,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v113';let verNew=false,verBusy=false;
+const APP_VER='learn601-v114';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
