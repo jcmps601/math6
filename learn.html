@@ -40,6 +40,7 @@ button{font-family:inherit;cursor:pointer}
 .nv.on{border-color:var(--c,#adb5bd);background:#fff}
 .sp{flex:1}
 #sync{font-size:.95rem;font-weight:800;color:#999;text-align:center;padding:.2rem}
+#offBtn{border:3px solid #ffc078;background:#fff4e6;border-radius:14px;font-size:1rem;font-weight:900;color:#e8590c;padding:.35rem}
 #logout,#pwBtn{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1rem;font-weight:900;color:#aaa;padding:.35rem}
 #pwm .pmc{max-width:24rem}#pwm .pwt{font-size:1.6rem;font-weight:900;color:#2e7554}#pwm .pws{font-size:1.05rem;font-weight:800;color:#777;margin:.2rem 0 .6rem}
 #pwm .pwd{display:flex;justify-content:center;gap:.7rem}#pwm .pwd i{width:1.5rem;height:1.5rem;border-radius:50%;border:4px solid #cfe8d6}#pwm .pwd i.f{background:var(--g);border-color:var(--g)}
@@ -310,7 +311,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
  #seats .sg{grid-template-columns:repeat(5,1fr)}#login h1{font-size:2.3rem}
  #home.on,#prac.on{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;min-height:100vh}
  #side{flex-direction:row;border-right:0;border-bottom:3px solid var(--line);padding:.4rem;gap:.35rem;position:sticky;top:0;z-index:3;overflow-x:auto;align-items:stretch}
- #me{padding:0 .2rem}#me .nm,.sp,#logout,#pwBtn,#sync{display:none}#me .av{width:2.8rem;height:2.8rem;font-size:1.4rem}
+ #me{padding:0 .2rem}#me .nm,.sp,#logout,#pwBtn,#offBtn,#sync{display:none}#me .av{width:2.8rem;height:2.8rem;font-size:1.4rem}
  .nv{flex:none;flex-direction:column;gap:.15rem;padding:.3rem .4rem;font-size:.85rem;text-align:center;min-width:4.2rem}.nv b{width:1.8rem;height:1.8rem;font-size:1rem}
  #pane{padding:.7rem .7rem 1.5rem;overflow:visible}.h1{font-size:1.6rem}.grid2{grid-template-columns:1fr}
  #ring{width:6.5rem;height:6.5rem}#today .t2{font-size:2rem}.go{font-size:1.4rem}#fire .n{font-size:2.8rem}
@@ -843,6 +844,7 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
   <div class="sp"></div>
   <div id="sync"></div>
   <div class="sidebtns"><button class="fsb" id="fsBtn">⛶ 全螢幕</button><button id="sndBtn">🔊 音效</button></div>
+  <button id="offBtn">🎒 帶回家準備</button>
   <button id="pwBtn"><img class="ico bi" src="img/ui/ic-lock-closed.webp" alt="">改密碼</button>
   <button id="logout"><img class="ico bi" src="img/ui/nav-out.webp" alt="">登出</button>
  </aside>
@@ -1561,6 +1563,7 @@ async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'}
 /* 規則有沒有生效:新規則讓 learn/lb(排行榜)可以讀 */
 async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/lb`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
 tap(document.getElementById('pwBtn'),()=>pwChange());
+tap(document.getElementById('offBtn'),()=>offPrep());
 tap(document.getElementById('logout'),()=>{if(Q.length){offLogoutWarn();return}if(!confirmLogout())return;presenceOff();unlistenSum();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
@@ -3042,7 +3045,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v120';let verNew=false,verBusy=false;
+const APP_VER='learn601-v121';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
