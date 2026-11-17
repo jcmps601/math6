@@ -787,6 +787,10 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .amql{position:sticky;left:0;max-width:calc(100vw - 5rem);box-sizing:border-box;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(15rem,100%),1fr));gap:.3rem .8rem;text-align:left;font-size:1rem;padding:.3rem .2rem}
 .amql span{background:#f8f9fa;border-radius:10px;padding:.25rem .55rem}.amql span.no{background:#fff5f5;color:#c92a2a}.amql span.ok2{background:#fff9db}
 @media (max-width:760px){.amcare{grid-template-columns:1fr}}
+/* 每日成語卡 */
+.cyc{text-align:center}.cyw{display:flex;justify-content:center;gap:.5rem;margin:.2rem 0 .6rem}.cyz{display:flex;flex-direction:column;align-items:center;min-width:3.2rem}.cyz b{font-size:2.8rem;font-weight:900;color:#d9480f;line-height:1.15}.cyz i{font-style:normal;font-size:1.05rem;font-weight:800;color:#495057;white-space:nowrap}
+.cyp{display:block;margin:.1rem auto .6rem;width:min(100%,28rem);max-height:26vh;object-fit:contain;border-radius:14px}
+.cys{text-align:left;font-size:1.5rem;line-height:1.7}.cyh{color:#d9480f;background:#fff4e6;border-radius:6px;padding:0 .15em}
 /* 閱讀測驗的專名號（人名、地名…）和書名號：每個名字的底線分開畫 */
 .pn{text-decoration:underline;text-decoration-thickness:.06em;text-underline-offset:.24em;text-decoration-skip-ink:none;margin:0 .07em}
 .bk{text-decoration:underline wavy;text-decoration-thickness:.05em;text-underline-offset:.22em;text-decoration-skip-ink:none;margin:0 .07em}
@@ -925,7 +929,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
   setInterval(()=>p('learn601_tmax',now()),30000);
 })();
 </script>
-<script src="ico.js"></script><script src="pet.js"></script><script src="farm.js"></script><script src="bank/m5.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script><script src="am.js"></script><script src="bank/am_zh.js"></script>
+<script src="ico.js"></script><script src="pet.js"></script><script src="farm.js"></script><script src="bank/m5.js"></script><script src="bank/zh.js"></script><script src="bank/en.js"></script><script src="bank/sci.js"></script><script src="bank/soc.js"></script><script src="am.js"></script><script src="bank/am_zh.js"></script><script src="bank/am_cy.js"></script>
 <script>
 const NS='http://www.w3.org/2000/svg',$=s=>document.querySelector(s);
 function mk(p,t,a={},s){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(s!=null)e.textContent=s;if(p)p.appendChild(e);return e}
@@ -1312,6 +1316,31 @@ if(window.XF){Object.assign(F,XF.FIG);UN.push({key:'amx',s:'math',term:'fin',hid
 if(window.AMZ){const by={};(AMZ.XZ||[]).forEach(it=>{if(it&&it.q&&it.opts.includes(it.a))(by[it.t]=by[it.t]||[]).push(it)});const g={};for(const t in by)g[t]=()=>bankQ(pick(by[t]),'zh');
   UN.push({key:'amz',s:'zh',term:'fin',hid:1,no:'早',ic:'🌅',name:'早自修・國語',nav:'早自修國語',c:AM_C,cb:AM_CB,g,types:Object.keys(by),tools:[]});
   UN.push({key:'amr',s:'zh',term:'fin',hid:1,no:'早',ic:'📖',name:'早自修・閱讀測驗',nav:'閱讀測驗',c:AM_C,cb:AM_CB,g:{'閱讀測驗':()=>{const R=AMZ.READ,p=pick(R);return amReadQ(p,pick(p.qs))}},types:['閱讀測驗'],tools:[]})}
+/* 早自修・每日成語（bank/am_cy.js）：全班同一天學同一個
+   ・從 start 那天起，週一～週四每天一個新成語（照課次順序）；週五不出新的，複習這週學過的；36 個學完從頭再輪
+   ・一天 2 題：①成語卡（注音＋例句）猜意思　②複習一個學過的（例句填空，或看意思選成語）
+   ・錯的選項只用同一課或已經學過的成語 */
+const CY=window.AMCY&&AMCY.L&&AMCY.L.length?AMCY:null;
+function cyDay(d){if(!CY)return null;const t=new Date(d+'T00:00:00'),s0=new Date(CY.start+'T00:00:00');if(t<s0)return null;const w=t.getDay();if(w===0||w===6)return null;
+  let n=0;for(const x=new Date(s0);x<t;x.setDate(x.getDate()+1)){const y=x.getDay();if(y>=1&&y<=4)n++}
+  const N=CY.L.length,wk=[];for(let k=1;k<=4&&n-k>=0;k++){const x=new Date(t);x.setDate(t.getDate()-k);const y=x.getDay();if(y>=1&&y<=4&&y<w)wk.push((n-k)%N)}   // 這週已經學過的
+  return w===5?{rev:1,n,wk}:{i:n%N,n,wk}}
+const cyRuby=c=>[...c.c].map((h,k)=>`<span class="cyz"><b>${h}</b><i>${c.z[k]}</i></span>`).join('');
+const cyMark=(c,x)=>c.s.replace(c.c,x);
+function cyOthers(i,learned,k){const c=CY.L[i],L=CY.L.map((x,j)=>j).filter(j=>j!==i&&(CY.L[j].l===c.l||learned.includes(j)));return shuf(L).slice(0,k)}
+function cyLearnQ(i,learned){const c=CY.L[i],o=cyOthers(i,learned,3).map(j=>CY.L[j].e);
+  const q=bankQ({t:'每日成語',q:`讀一讀例句，猜猜看「${c.c}」是什麼意思？`,big:`<div class="cyc"><div class="cyw">${cyRuby(c)}</div>${c.p?`<img class="cyp" src="img/cy/${c.p}.webp" alt="" onerror="this.remove()">`:''}<div class="cys">${cyMark(c,`<b class="cyh">${c.c}</b>`)}</div></div>`,bc:'p',opts:[c.e,...o],a:c.e,
+    hint:['看例句裡這個成語前後發生了什麼事','把每個意思放進例句裡讀讀看，哪一個最通順？'],exp:`${c.c}：${c.e}`},'zh');q.u=ukIdx('amc');q.t='每日成語';q.lk=4000;q.cy=i;return q}
+function cyRevQ(i,learned,mode){const c=CY.L[i],o=cyOthers(i,learned,3).map(j=>CY.L[j].c);let q;
+  if(mode)q=bankQ({t:'成語複習',q:`哪一個成語的意思是「${c.e.replace(/。$/,'')}」？`,opts:[c.c,...o],a:c.c,hint:['想一想學過的成語卡','先刪掉意思不一樣的'],exp:`${c.c}：${c.e}`},'zh');
+  else q=bankQ({t:'成語複習',q:'句子的空格裡，最適合填入哪一個成語？',big:cyMark(c,'（　　　　）'),bc:'p',opts:[c.c,...o],a:c.c,hint:['讀完整句，想想空格要表達什麼意思','把每個成語放進去讀讀看'],exp:`${c.c}：${c.e}<br>${c.s}`},'zh');
+  q.u=ukIdx('amc');q.t='成語複習';q.cy=i;return q}
+function cyQs(){const D=cyDay(dkey());if(!D)return [];const N=CY.L.length,learned=[...Array(Math.min(D.n,N)).keys()];
+  if(D.rev){const P=D.wk.length?shuf(D.wk):shuf(learned);if(!P.length)return [];return [cyRevQ(P[0],learned,0),cyRevQ(P[1%P.length],learned,P.length>1?1:1)]}
+  const old=learned.filter(j=>j!==D.i),r=old.length?(D.wk.length&&Math.random()<.6?pick(D.wk):pick(old)):D.i;
+  return [cyLearnQ(D.i,learned),cyRevQ(r,learned,Math.random()<.5?1:0)]}
+const cyTodayName=()=>{const D=cyDay(dkey());return !D?'':D.rev?'成語複習':CY.L[D.i].c};
+if(CY)UN.push({key:'amc',s:'zh',term:'fin',hid:1,no:'早',ic:'🀄',name:'早自修・每日成語',nav:'每日成語',c:AM_C,cb:AM_CB,g:{'每日成語':()=>cyLearnQ(ri(0,CY.L.length-1),[]),'成語複習':()=>cyRevQ(ri(0,CY.L.length-1),[],0)},types:['每日成語','成語複習'],tools:[]});
 /* 一篇閱讀測驗的一題：文章放在題目下面（每一題都看得到文章） */
 function amReadQ(p,x,again){const q=bankQ({t:'閱讀測驗',q:`〈${p.t}〉${x.q}`,big:p.p.join('<br>'),bc:'p',opts:x.opts,a:x.a,hint:['回到文章裡，找出和題目有關的句子','把每個選項和文章比一比，刪掉文章沒說的'],exp:''},'zh');
   q.u=ukIdx('amr');q.t='閱讀測驗';if(again)q.lk=READ_MIN;return q}
@@ -1670,13 +1699,13 @@ const AM_GEN=[['u1','gcd'],['u1','lcm'],['u1','pf'],['u2','same'],['u2','diff'],
 function amQs(){let zq=[];AMK=null;
   if(amX('z')&&ukIdx('amz')>=0){const iz=ukIdx('amz');zq=listFor(amList('amz',AMP.zs),4).map(t=>genQ(iz,t))}
   else if(window.AMZ&&AMZ.READ.length){const R=AMZ.READ;AMK=(sum.amr||0)%R.length;const p=R[AMK];zq=p.qs.slice(0,5).map((x,j)=>amReadQ(p,x,j>0))}
-  const n=10-zq.length;let mq;
+  const cq=cyQs(),n=10-zq.length-cq.length;let mq;
   if(amX('m')&&ukIdx('amx')>=0){const im=ukIdx('amx');mq=listFor(amList('amx',AMP.ms),n).map(t=>genQ(im,t))}
   else{const pool=AM_GEN.filter(([k,t])=>ukIdx(k)>=0&&UN[ukIdx(k)].types.includes(t));let L=[];while(L.length<n)L.push(...shuf(pool));mq=L.slice(0,n).map(([k,t])=>genQ(ukIdx(k),t))}
-  return [...zq,...mq]}
+  return [...cq,...zq,...mq]}
 function amCard(){const n=uqN('am'),done=n>=10,c=el('div','cd');c.id='amc';
   const zt=amX('z')?'國語 4 題':(window.AMZ&&AMZ.READ.length?`閱讀測驗〈${AMZ.READ[(sum.amr||0)%AMZ.READ.length].t}〉`:'國語');
-  c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修</div><div class="b">${done?'今天的早自修完成了！':`${zt}＋數學`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,10)} / 10 題`}</div></div>`;
+  const cn=cyTodayName();c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修${cn?`・今日成語「${cn}」`:''}</div><div class="b">${done?'今天的早自修完成了！':`${cn?'成語＋':''}${zt}＋數學`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,10)} / 10 題`}</div></div>`;
   const g=el('button','go'+(done?' gray':''),done?'再練一次':n?'繼續 ▶':'開始 ▶');tap(g,()=>startPractice('am'));c.appendChild(g);return c}
 /* 首頁：接下來練什麼——目前科目裡還沒完成的第一個單元；都完成了就挑星星最少的；都 3 顆星就練綜合 */
 function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj&&live(u)),SM=mixOf(subj);if(!L.length)return SM||null;
@@ -2874,7 +2903,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v114';let verNew=false,verBusy=false;
+const APP_VER='learn601-v115';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
