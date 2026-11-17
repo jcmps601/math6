@@ -608,7 +608,8 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
  #today{gap:.8rem;padding:.9rem}#today #ring{width:5.6rem;height:5.6rem}#today .tinfo{min-width:0}#today .t2{font-size:1.9rem}#today .go{font-size:1.25rem;padding:.45rem .9rem}#today .tkc{font-size:1rem;padding:.25rem .6rem}#today .tkc small{font-size:.8rem}
  #today #fire .n{font-size:2rem}#today #fire .n .fi{width:1.9rem;height:1.9rem}
 }
-@media (max-width:420px){.rp{font-size:.95rem;padding:.1rem .45rem .1rem .25rem}#me .nm{display:none}}
+@media (max-width:460px){.rp{font-size:.95rem;padding:.1rem .45rem .1rem .25rem}}
+@media (max-width:420px){#me .nm{display:none}}
 
 /* ═══ 2026-11-05 版面改版：登入、密碼、錯題本 ═══ */
 #login h1{background:none!important;color:#2e7554!important;-webkit-background-clip:initial;background-clip:initial}
@@ -625,7 +626,8 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 
 /* ═══ 2026-11-05 V2：學生看得懂的提示 ═══ */
 #sync{display:flex;align-items:center;justify-content:center;gap:.2rem;line-height:1.3}#sync .ii{width:1.5em;height:1.5em;flex:none}
-@media (max-width:480px){#sync{font-size:0}#sync .ii{width:1.7rem;height:1.7rem}}   /* 手機：只留雲朵圖示（文字會被擠成直的） */
+@media (max-width:600px){#sync{font-size:0}#sync .ii{width:1.7rem;height:1.7rem}}   /* 窄畫面：只留雲朵圖示（文字會被擠成直的） */
+#me .nm,#me .nm small,#sync,#res .rp{white-space:nowrap}   /* 頂部列的字不要斷成兩行（例如「不上排行／榜」） */
 #fb .fbm{width:2.4em;height:2.4em;vertical-align:-.8em;margin-right:.2em}
 .uc .s{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
 .ust{font-size:.85rem;font-weight:900;border-radius:999px;padding:.05rem .55rem;color:#657065;background:#eef1ec}.ust.d{color:#2e7554;background:#eaf4de}
@@ -2909,7 +2911,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v117';let verNew=false,verBusy=false;
+const APP_VER='learn601-v118';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
