@@ -469,7 +469,10 @@
   const LOOK = ['h', 'g', 'k', 'b', 'x', 'room', 'nm'];   // 外觀：換的時候記 p.lu（最後換造型的時間）
   function mergePet(a, b) {
     if (!a) return b; if (!b) return a;
-    const pick = (b.u || 0) > (a.u || 0) ? b : a, other = pick === a ? b : a;
+    /* 兩份不是同一隻（pb 建立時間不同）：通常是新平板、清過資料，雲端還沒讀回來就先開了一份空的。
+       這時不能看誰比較新，要留進度比較多的那一份（不然高等的寵物會被空的蛋蓋掉） */
+    const sc = p => (p.st === 'pet' ? 1e9 : 0) + (Object.keys(p.dex || {}).length + Object.keys(p.box || {}).length) * 1e7 + (p.xp || 0);
+    const pick = (a.pb || 0) !== (b.pb || 0) ? (sc(b) > sc(a) ? b : a) : ((b.u || 0) > (a.u || 0) ? b : a), other = pick === a ? b : a;
     const la = pick.cl || { b: pick.coin || 0 }, lb = other.cl || { b: other.coin || 0 }, mx = (x, y) => { const o = Object.assign({}, x); for (const k in y || {}) o[k] = Math.max(o[k] || 0, y[k] || 0); return o; };
     pick.cl = { b: Math.max(la.b || 0, lb.b || 0), e: mx(la.e, lb.e), s: mx(la.s, lb.s) }; pick.coin = coinOf(pick);
     /* 兩台裝置都有動過：買過的東西兩邊合起來；造型（帽子、眼鏡、房間、顏色）看哪一邊最後換的，
@@ -486,7 +489,7 @@
   }
   function P() {
     if (!sum) return null;
-    if (!sum.pet) sum.pet = { st: 'egg', ex: 0, coin: START_COIN, xp: 0, own: {}, v: 2, u: Date.now() };
+    if (!sum.pet) sum.pet = { st: 'egg', ex: 0, coin: START_COIN, xp: 0, own: {}, v: 2, u: 0, pb: Date.now() };   // 新的空寵物：u 0、pb 記建立時間（合併時不會蓋掉雲端原本的寵物）
     const p = sum.pet; if (!p.cl) p.cl = { b: p.coin || 0, e: {}, s: {} }; p.cl.e = p.cl.e || {}; p.cl.s = p.cl.s || {};   // 雲端存回來時空的 {} 會不見
     if (p.v !== 2) migrate(p);
     if (TST() && coinOf(p) < 50000) coinAdd(p, 99999 - coinOf(p));
