@@ -292,6 +292,39 @@ function cup(g,x,y,col,lab,w=140,h=160){const G=mk(g,'g',{transform:`translate($
 /* ================== 題目 ================== */
 const S=(a,o={})=>Object.assign({a},o);           // 數字格
 const F=v=>({fx:String(v)});                       // 已填好
+/* ---------- 5-4 比的應用 ----------
+   比和實際數量分兩列看：上面「比（份數）」、下面「實際數量」。
+   ① 找對應：已知的實際數量對到它的份數　② 1 份是多少　③ 用份數乘回去
+   比的數字是「幾份」（藍、橘），實際數量帶單位（綠），不會混在一起 */
+const AC='#2b8a3e';
+function portion(c,cfg){const N=cfg.cols.length,x0=200,W=780,cw=W/N,yB=150,hB=74,yV=330,hV=86;let st=cfg.pre?-1:0;const per=cfg.per;
+  const L=mk(svg,'g',cfg.pre?{opacity:0}:{});
+  txt(L,95,yB+hB/2+12,'比',{'font-size':40,fill:'#555'});txt(L,95,yB+hB/2+48,'（幾份）',{'font-size':24,fill:'#888'});
+  txt(L,95,yV+hV/2+2,'實際',{'font-size':40,fill:AC});txt(L,95,yV+hV/2+36,'數量',{'font-size':30,fill:AC});
+  mk(L,'line',{x1:40,y1:yV-38,x2:980,y2:yV-38,stroke:'#eee','stroke-width':3,'stroke-dasharray':'8 8'});
+  const cols=cfg.cols.map((o,i)=>{const cx=x0+cw*(i+.5),bw=Math.min(cw-36,o.p*64),bx=cx-bw/2,u=bw/o.p,col=o.c||(i===0?PQ:HQ);
+    txt(L,cx,yB-28,o.n,{'font-size':38,fill:'#333'});
+    const cells=[];for(let k=0;k<o.p;k++)cells.push(mk(L,'rect',{x:bx+k*u,y:yB,width:u,height:hB,fill:o.tot?'#f3f0ff':(i===0?'#e7f5ff':'#fff4e6'),stroke:col,'stroke-width':u<20?2:4,rx:u<20?2:6}));
+    txt(L,cx,yB+hB+44,(o.pl||o.p)+' 份',{'font-size':36,fill:col});
+    const box=mk(L,'rect',{x:cx-cw/2+18,y:yV,width:cw-36,height:hV,rx:18,fill:'#fff',stroke:o.v!=null?AC:'#ced4da','stroke-width':4,'stroke-dasharray':o.v!=null?'':'10 8'});
+    const vt=txt(L,cx,yV+hV/2+14,o.v!=null?o.v+' '+cfg.u:'？',{'font-size':o.v!=null?40:46,fill:o.v!=null?AC:'#adb5bd'});
+    return {o,cx,bx,u,cells,col,box,vt}});
+  const K=cols[cfg.known];
+  if(cfg.pre){const P0=mk(svg,'g');cfg.pre.draw(P0);const b0=c.tool(cfg.pre.lab,()=>{if(st!==-1)return;st=-2;b0.disabled=true;cfg.pre.go(P0);
+    later(1500,()=>{P0.remove();L.setAttribute('opacity',1);st=0})},true)}
+  const b1=c.tool('① 找對應',()=>{if(st!==0)return;st=1;
+    mk(svg,'rect',{x:K.cx-cw/2+6,y:yB-70,width:cw-12,height:yV+hV-yB+84,rx:22,fill:'none',stroke:'#fcc419','stroke-width':6,class:'popin'});
+    qArrow(svg,K.cx,yB+hB+60,K.cx-40,yV-30,K.cx,yV-6,'#f59f00',{cls:'popin',L:26,W:14,sw:5});
+    pill(svg,500,505,`${K.o.p} 份 ＝ ${K.o.v} ${cfg.u}`,'#e67700',{fs:42});b1.disabled=true},true);
+  const b2=c.tool('② 1 份是多少',()=>{if(st!==1)return;st=2;b2.disabled=true;
+    cols.forEach(Q=>Q.cells.forEach((r,k)=>later(30*k,()=>{if(Q.u>=40)txt(svg,Q.bx+Q.u*(k+.5),yB+hB/2+13,String(per),{'font-size':Math.min(36,Q.u*.62),fill:Q.col,stroke:'none',class:'popin'})})));
+    cols.filter(Q=>Q.u<40).forEach(Q=>txt(svg,Q.cx,yB+hB/2+12,`每份 ${per}`,{'font-size':32,fill:Q.col,class:'popin'}));
+    pill(svg,500,505,`1 份 ＝ ${K.o.v} ÷ ${K.o.p} ＝ ${per} ${cfg.u}`,'#e67700',{fs:42})},true);
+  const b3=c.tool('③ 算出答案',()=>{if(st!==2)return;st=3;b3.disabled=true;
+    cfg.ask.forEach((i,j)=>later(350*j,()=>{const Q=cols[i];Q.box.setAttribute('stroke',AC);Q.box.setAttribute('stroke-dasharray','');Q.box.setAttribute('fill','#ebfbee');
+      const t=`${Q.o.p}×${per}＝${(Q.o.p*per)} ${cfg.u}`;Q.vt.textContent=t;Q.vt.setAttribute('fill',AC);const un=[...t].reduce((a,ch)=>a+(/[\u2e80-\uffff]/.test(ch)?1:.6),0);Q.vt.setAttribute('font-size',Math.min(40,(cw-60)/un));}));
+    later(350*cfg.ask.length,()=>c.done())},true);
+  return cols}
 const PAGES=[
 /* ---------- 5-1 比 ---------- */
 {sec:'5-1',bd:'1',sub:'①',p:72,toc:'紅茶',q:'土耳其紅茶是用 1 杯濃茶和 2 杯開水調配成的。濃茶和開水的數量有什麼關係？怎麼記？',
@@ -461,23 +494,12 @@ const PAGES=[
  build(c,mode='a'){const H={a:['96：72','96 和 72 的最大公因數是 24','同除以 24'],b:[[[3,10],'：1',[1,2]],['1',[1,2],' ＝ ',[3,2],' ＝ ',[15,10]],['通分：',[3,10],'：',[15,10]],'再同乘以 10'],c:['6：1.2','先同乘以 10：60：12','再同除以 12']}[mode];
   const L=t=>Array.isArray(t)?t:[t];const n=H.length-1,gap=n>2?94:100;mathS(svg,500,n>2?170:200,L(H[0]),{fs:n>2?100:120});let k=0;c.tool('提示',()=>{if(k>=n)return;k++;mathS(svg,500,(n>2?218:250)+k*gap,L(H[k]),{fs:n>2?44:50,fill:PQ,cls:'popin'});if(k===n)c.done()},true);
  }},
-/* ---------- 5-4 比的應用 ---------- */
 {sec:'5-4',bd:'1',sub:'',p:78,toc:'男生人數',q:'班上女生對男生的人數比是 4：5，已知女生有 12 個人，男生有幾個人？',
- rows:[{parts:['4：5＝12：□　12÷4＝',S(3)]},{parts:['□＝5×',S(3),'＝',S(15)]},{parts:['男生有',S(15),'個人']}],
- build(c){let g=0;const grp=()=>{const y=85+g*120;for(let i=0;i<4;i++)emo(svg,95+i*88,y,'👧',76,{class:'popin'});for(let i=0;i<5;i++)emo(svg,560+i*88,y,'👦',76,{class:'popin'});
-    txt(svg,470,y+20,'：',{'font-size':60,fill:'#888'});g++;cntG.textContent=`女生 ${4*g} 人`;cntB.textContent=`男生 ${5*g} 人`};
-  const cntG=txt(svg,227,460,'',{'font-size':46,fill:'#e64980'}),cntB=txt(svg,736,460,'',{'font-size':46,fill:'#1c7ed6'});grp();
-  const b=c.tool('再來一組（女 4、男 5）',()=>{if(g>=3)return;grp();if(g===3){b.disabled=true;pill(svg,480,525,'都 × 3',O,{fs:46});c.done()}},true);
- }},
+ rows:[{parts:['4：5＝12：□']},{parts:['1 份是 12÷4＝',S(3)]},{parts:['□＝5×',S(3),'＝',S(15)]},{parts:['男生有',S(15),'個人']}],
+ build(c){portion(c,{u:'人',per:3,known:0,ask:[1],cols:[{n:'女生 👧',p:4,v:12},{n:'男生 👦',p:5}]})}},
 {sec:'5-4',bd:'2',sub:'',p:78,toc:'奶茶',q:'厚奶茶中牛奶對紅茶的比是 3：6，紅茶有 540 毫升，牛奶有幾毫升？',
- rows:[{parts:['3：6＝□：540　540÷6＝',S(90)]},{parts:['□＝3×',S(90),'＝',S(270)]},{parts:['牛奶有',S(270),'毫升']}],
- build(c){const u=120,x0=190,H=82;strip(svg,x0,145,u*3,H,3,'#fff4e6',{stroke:'#e8a35a',sw:5});txt(svg,x0-75,200,'牛奶',{'font-size':38});
-  strip(svg,x0,295,u*6,H,6,'#e8a35a',{stroke:'#fff',sw:5});txt(svg,x0-75,350,'紅茶',{'font-size':38,fill:'#a0522d'});
-  const h=mk(svg,'rect',{x:x0,y:295,width:u*6,height:H,fill:'rgba(0,0,0,0)'});brace(svg,x0,x0+u*6,390,'#a0522d','540 毫升',40);
-  const hint=txt(svg,620,200,'點紅茶，算出 1 份',{fill:'#888','font-size':32,'text-anchor':'start'});
-  tap(h,()=>{if(!hint.parentNode)return;hint.remove();for(let i=0;i<6;i++)later(120*i,()=>txt(svg,x0+u*(i+.5),350,'90',{'font-size':42,fill:'#fff',stroke:'none',class:'popin'}));
-    later(900,()=>{for(let i=0;i<3;i++)txt(svg,x0+u*(i+.5),200,'90',{'font-size':42,fill:'#a0522d',class:'popin'});brace(svg,x0,x0+u*3,98,'#e8590c','',0);pill(svg,x0+u*1.5,70,'270 毫升',O,{fs:40});c.done()})});
- }},
+ rows:[{parts:['3：6＝□：540']},{parts:['1 份是 540÷6＝',S(90)]},{parts:['□＝3×',S(90),'＝',S(270)]},{parts:['牛奶有',S(270),'毫升']}],
+ build(c){portion(c,{u:'毫升',per:90,known:1,ask:[0],cols:[{n:'牛奶 🥛',p:3},{n:'紅茶 🍵',p:6,v:540}]})}},
 {sec:'5-4',bd:'3',sub:'',p:78,toc:'算算看',q:'算算看，4：3＝2：□，□是多少？',
  rows:[{parts:['2÷4＝',FR(S(1),S(2))]},{parts:['□＝3×',FR(F(1),F(2)),'＝',FR(S(3),S(2))]},{parts:['也可以寫成小數',S(1.5)]}],
  build(c){const X=[130,265,400,535,670,805,920],T=['4','：','3','＝','2','：','□'];T.forEach((s,i)=>txt(svg,X[i],330,s,{'font-size':100,fill:i===0||i===4?PQ:i===2||i===6?HQ:'#333'}));
@@ -490,21 +512,77 @@ const PAGES=[
  }},
 {sec:'5-4',bd:'4',sub:'',p:79,toc:'食鹽水',q:'食鹽對水的重量比是 3：17。調製了 100 公克的食鹽水，用了幾公克的食鹽？水有幾公克？',
  rows:[{lb:'①',parts:['3＋17＝',S(20)]},{parts:['食鹽對食鹽水的比是',S(3),'：',S(20)]},{parts:['比值是',FR(S(3),S(20))]},{lb:'②',parts:['100×',FR(F(3),F(20)),'＝',S(15),'公克']},{lb:'③',parts:['100－15＝',S(85),'公克']}],
- build(c){const x0=80,u=42,y=170,H=84;for(let i=0;i<20;i++)mk(svg,'rect',{x:x0+i*u,y,width:u-4,height:H,rx:6,fill:i<3?'#dee2e6':'#74c0fc',stroke:i<3?'#868e96':'#339af0','stroke-width':3});
-  txt(svg,x0+1.5*u,y-22,'食鹽 3 份',{'font-size':36,fill:'#495057'});txt(svg,x0+11.5*u,y-22,'水 17 份',{'font-size':36,fill:'#1971c2'});let st=0;
-  c.tool('① 合起來',()=>{if(st!==0)return;st=1;brace(svg,x0,x0+20*u-4,y+H+10,'#5f3dc4','食鹽水 20 份',38);},true);
-  c.tool('② 100 公克',()=>{if(st!==1)return;st=2;txt(svg,500,410,'100 ÷ 20 ＝ 5（1 份 5 公克）',{'font-size':42,fill:'#5f3dc4',class:'popin'});
-    for(let i=0;i<20;i++)later(40*i,()=>txt(svg,x0+i*u+u/2-2,y+56,'5',{'font-size':32,fill:i<3?'#343a40':'#fff',stroke:'none',class:'popin'}));},true);
-  c.tool('③ 食鹽和水',()=>{if(st!==2)return;st=3;pill(svg,270,510,'食鹽 15 公克',G,{fs:42});pill(svg,720,510,'水 85 公克',PQ,{fs:42});c.done()},true);
- }},
+ build(c){portion(c,{u:'公克',per:5,known:2,ask:[0,1],cols:[{n:'食鹽',p:3},{n:'水',p:17},{n:'食鹽水',p:20,pl:'3＋17＝20',v:100,c:'#7048e8',tot:1}]})}},
 {sec:'5-4',bd:'試試看',sub:'',p:79,toc:'試試看',q:'把一條長 35 公分的緞帶剪成兩條，長度的比是 3：4，這兩條緞帶各長幾公分？',
  rows:[{parts:['3＋4＝',S(7)]},{parts:['35×',FR(F(3),F(7)),'＝',S(15),'公分']},{parts:['35－15＝',S(20),'公分']}],
- build(c){const x0=110,u=110,y=230,H=74;const segs=[];for(let i=0;i<7;i++)segs.push(mk(svg,'rect',{x:x0+i*u,y,width:u,height:H,fill:'#ff8787',stroke:'#fff','stroke-width':4}));
-  brace(svg,x0,x0+7*u,y+H+12,'#c92a2a','35 公分（7 份）',40);const sc=emo(svg,x0+3*u,y-60,'✂️',86);const hint=txt(svg,640,170,'點剪刀，剪成 3：4',{fill:'#888','font-size':32});
-  tap(sc,()=>{if(!hint.parentNode)return;hint.remove();sc.remove();for(let i=3;i<7;i++){segs[i].setAttribute('transform','translate(40 0)');segs[i].setAttribute('fill','#ffa94d')}
-    for(let i=0;i<7;i++)txt(svg,x0+i*u+u/2+(i>=3?40:0),y+50,'5',{'font-size':38,fill:'#fff',stroke:'none',class:'popin'});
-    later(400,()=>{pill(svg,x0+1.5*u,y-50,'15 公分',C,{fs:42});pill(svg,x0+5*u+40,y-50,'20 公分',O,{fs:42});c.done()})});
- }}
+ build(c){portion(c,{u:'公分',per:5,known:2,ask:[0,1],cols:[{n:'第 1 條',p:3},{n:'第 2 條',p:4},{n:'整條',p:7,pl:'3＋4＝7',v:35,c:'#7048e8',tot:1}]})}},
+/* ---------- 練習 5（課本 P80、81） ---------- */
+{sec:'練習5',bd:'1',sub:'①',p:80,toc:'及格人數比',q:`甲班有 24 位學生，有 ${fq(7,8)} 的學生數學考試及格。「考試及格人數和不及格人數」的最簡單整數比是哪一個？　①7：1　②7：8　③8：1　④8：7`,
+ rows:[{parts:['及格的人數 24×',FR(F(7),F(8)),'＝',S(21),'人']},{parts:['不及格的人數 24－21＝',S(3),'人']},{parts:['21：3＝',S(7),'：',S(1)]},{parts:['答案是',CH(['①','②','③','④'],'①')]}],
+ build(c){const x0=110,u=97,y=150;let st=0;const kids=[];
+  for(let g=0;g<8;g++){mk(svg,'rect',{x:x0+g*u,y,width:u-8,height:170,rx:14,fill:'#f8f9fa',stroke:'#dee2e6','stroke-width':3});
+    for(let k=0;k<3;k++)kids.push(emo(svg,x0+g*u+(u-8)/2,y+32+k*52,'🧑',44))}
+  brace(svg,x0,x0+8*u-8,y+185,'#555','24 人分成 8 份，1 份 3 人',34);
+  c.tool('及格的 7 份',()=>{if(st)return;st=1;for(let g=0;g<8;g++){mk(svg,'rect',{x:x0+g*u,y,width:u-8,height:170,rx:14,fill:g<7?'rgba(43,138,62,.18)':'rgba(250,82,82,.15)',stroke:g<7?AC:'#fa5252','stroke-width':5,class:'popin'})}
+    pill(svg,x0+3.5*u-4,y-40,'及格 21 人',AC,{fs:38});pill(svg,x0+7.5*u-4,y-40,'3 人',C,{fs:38});
+    later(500,()=>{pill(svg,500,505,'21：3 ＝ 7：1',PQ,{fs:46});c.done()})},true)}},
+{sec:'練習5',bd:'1',sub:'②',p:80,toc:'圓周長和半徑',q:'有一個半徑 50 公分的圓，圓周長和半徑的比值是多少？（圓周率＝3.14）　①2　②1.57　③3.14　④6.28',
+ rows:[{parts:['圓周長 50×2×3.14＝',S(314),'公分']},{parts:['比值 314÷50＝',S(6.28)]},{parts:['答案是',CH(['①','②','③','④'],'④')]}],
+ build(c){const cx=300,cy=290,r=170;mk(svg,'circle',{cx,cy,r,fill:'#e7f5ff',stroke:D,'stroke-width':6});mk(svg,'circle',{cx,cy,r:7,fill:'#333'});
+  mk(svg,'line',{x1:cx,y1:cy,x2:cx+r,y2:cy,stroke:HQ,'stroke-width':7,'stroke-linecap':'round'});txt(svg,cx+r/2,cy-18,'50 公分',{'font-size':34,fill:HQ});let st=0;
+  c.tool('圓周長',()=>{if(st)return;st=1;mk(svg,'circle',{cx,cy,r,fill:'none',stroke:PQ,'stroke-width':12,class:'popin'});pill(svg,740,200,'50×2×3.14＝314',PQ,{fs:38})},true);
+  c.tool('÷ 半徑',()=>{if(st!==1)return;st=2;mathPill(svg,740,330,['比值 ＝ 314 ÷ 50'],'#555',{fs:38});pill(svg,740,450,'＝ 6.28',AC,{fs:48});c.done()},true)}},
+{sec:'練習5',bd:'2',sub:'',p:80,toc:'和 48：60 相等',q:'下面哪些比和「48：60」相等？哪一個是最簡單整數比？',
+ rows:[{parts:['48：60 化成最簡單整數比是',S(4),'：',S(5)]},{parts:['ㄅ 70：90',CH(['相等','不相等'],'不相等')]},{parts:['ㄆ 24：30',CH(['相等','不相等'],'相等')]},{parts:['ㄇ 4.8：6',CH(['相等','不相等'],'相等')]},
+   {parts:['ㄈ 30：45',CH(['相等','不相等'],'不相等')]},{parts:['ㄉ 4：5',CH(['相等','不相等'],'相等')]},{parts:['ㄊ 1',FR(F(1),F(7)),'：1',FR(F(6),F(14)),CH(['相等','不相等'],'相等')]},{parts:['最簡單整數比是',CH(['ㄅ','ㄆ','ㄇ','ㄈ','ㄉ','ㄊ'],'ㄉ')]}],
+ build(c){pill(svg,500,62,'48：60 ＝ 4：5（同除以 12）',PQ,{fs:38});
+  const I=[['ㄅ','70：90','÷10 → 7：9',0],['ㄆ','24：30','÷6 → 4：5',1],['ㄇ','4.8：6','×10 ÷12 → 4：5',1],['ㄈ','30：45','÷15 → 2：3',0],['ㄉ','4：5','已經是 4：5',1],['ㄊ','1 1/7：1 6/14','化成 8：10 → 4：5',1]];let n=0;
+  I.forEach(([z,r,h,ok],i)=>{const x=200+(i%3)*300,y=190+Math.floor(i/3)*190;const card=mk(svg,'rect',{x:x-130,y:y-55,width:260,height:110,rx:22,fill:'#fff0f6',stroke:'#f783ac','stroke-width':4});
+    if(i===5){txt(svg,x-95,y+14,z,{'font-size':34,fill:'#c2255c'});mathS(svg,x+20,y+16,['1',[1,7],'：1',[6,14]],{fs:36})}else txt(svg,x,y+14,z+' '+r,{'font-size':40});
+    let seen=false;tap(card,()=>{if(seen)return;seen=true;card.setAttribute('stroke',ok?AC:'#adb5bd');card.setAttribute('stroke-width',ok?8:4);
+      txt(svg,x,y+92,h,{'font-size':28,fill:ok?AC:'#868e96',class:'popin'});if(++n===6)c.done()})});
+  txt(svg,500,540,'點卡片，看化簡結果',{'font-size':28,fill:'#888'})}},
+{sec:'練習5',bd:'3',sub:'',p:80,toc:'正方形',q:'甲是邊長 6 m 的正方形，乙是邊長 4 m 的正方形。填填看。',
+ rows:[{lb:'①',parts:['甲對乙的邊長比是',S(6),'：',S(4)]},{parts:['讀作',CH(['六比四','四比六'],'六比四')]},{parts:['前項是',S(6),'，後項是',S(4)]},
+   {lb:'②',parts:['乙對甲的周長比是',S(16),'：',S(24)]},{parts:['前項是',S(16),'，後項是',S(24)]},{lb:'③',parts:['甲的周長對甲的面積比是',S(24),'：',S(36)]}],
+ build(c){const A={x:150,y:110,s:240},B={x:560,y:190,s:160};
+  mk(svg,'rect',{x:A.x,y:A.y,width:A.s,height:A.s,fill:'#ffdeeb',stroke:'#e64980','stroke-width':5});txt(svg,A.x+A.s/2,A.y+A.s/2+14,'甲',{'font-size':48});
+  mk(svg,'rect',{x:B.x,y:B.y,width:B.s,height:B.s,fill:'#ffdeeb',stroke:'#e64980','stroke-width':5});txt(svg,B.x+B.s/2,B.y+B.s/2+14,'乙',{'font-size':44});
+  txt(svg,A.x+A.s/2,A.y-16,'6 m',{'font-size':32});txt(svg,B.x+B.s/2,B.y-16,'4 m',{'font-size':32});let st=0;
+  c.tool('周長',()=>{if(st)return;st=1;[A,B].forEach(Q=>mk(svg,'rect',{x:Q.x,y:Q.y,width:Q.s,height:Q.s,fill:'none',stroke:PQ,'stroke-width':12,class:'popin'}));
+    pill(svg,A.x+A.s/2,A.y+A.s+60,'6×4＝24 m',PQ,{fs:36});pill(svg,B.x+B.s/2,B.y+B.s+60,'4×4＝16 m',PQ,{fs:36})},true);
+  c.tool('甲的面積',()=>{if(st!==1)return;st=2;pill(svg,A.x+A.s/2,A.y+A.s+125,'6×6＝36 m²',AC,{fs:36});c.done()},true)}},
+{sec:'練習5',bd:'4',sub:'①',p:81,toc:'帶分數的比',q:`把 1${fq(3,7)}：2${fq(5,8)} 化為最簡單整數比。`,
+ rows:[{parts:['＝',FR(S(10),S(7)),'：',FR(S(21),S(8))]},{parts:['＝',FR(S(80),F(56)),'：',FR(S(147),F(56))]},{parts:['＝',S(80),'：',S(147)]}],
+ build(c){const H=[['1',[3,7],'：2',[5,8]],['化成假分數：',[10,7],'：',[21,8]],['通分：',[80,56],'：',[147,56]],['同乘以 56：80：147']];
+  mathS(svg,500,140,H[0],{fs:90});let k=0;c.tool('提示',()=>{if(k>=3)return;k++;mathS(svg,500,190+k*110,H[k],{fs:46,fill:PQ,cls:'popin'});if(k===3)c.done()},true)}},
+{sec:'練習5',bd:'4',sub:'②',p:81,toc:'小數的比',q:'把 9.6：8.4 化為最簡單整數比。',
+ rows:[{parts:['＝',S(96),'：',S(84)]},{parts:['＝',S(8),'：',S(7)]}],
+ build(c){const H=['9.6：8.4','同乘以 10：96：84','96 和 84 的最大公因數是 12','同除以 12：8：7'];mathS(svg,500,170,[H[0]],{fs:110});let k=0;
+  c.tool('提示',()=>{if(k>=3)return;k++;mathS(svg,500,230+k*95,[H[k]],{fs:46,fill:PQ,cls:'popin'});if(k===3)c.done()},true)}},
+{sec:'練習5',bd:'5',sub:'①',p:81,toc:'□：800',q:'算算看，□：800＝5：20，□是多少？',
+ rows:[{parts:['800÷20＝',S(40)]},{parts:['□＝5×',S(40),'＝',S(200)]}],
+ build(c){const X=[150,280,430,560,690,820],T=['□','：','800','＝','5','：'];T.forEach((s,i)=>txt(svg,X[i],330,s,{'font-size':90,fill:i===0||i===4?PQ:i===2?HQ:'#333'}));txt(svg,930,330,'20',{'font-size':90,fill:HQ});
+  const hint=txt(svg,620,70,'點箭頭',{fill:'#888','font-size':32});qArrow(svg,930,240,680,90,430,240,HQ);
+  const h=mk(svg,'circle',{cx:680,cy:160,r:50,fill:'rgba(255,255,255,.01)',stroke:O,'stroke-width':7,class:'pulse'});
+  tap(h,()=>{if(!hint.parentNode)return;hint.remove();h.remove();txt(svg,680,112,'× 40',{'font-size':50,fill:HQ,class:'popin'});
+    later(500,()=>{qArrow(svg,690,368,420,480,150,363,PQ,{cls:'popin'});txt(svg,420,520,'× 40',{'font-size':50,fill:PQ,class:'popin'});pill(svg,770,505,'□ ＝ 5×40 ＝ 200',PQ,{fs:40});c.done()})})}},
+{sec:'練習5',bd:'5',sub:'②',p:81,toc:'4：5＝21：□',q:'算算看，4：5＝21：□，□是多少？',
+ rows:[{parts:['21÷4＝',FR(S(21),S(4))]},{parts:['□＝5×',FR(F(21),F(4)),'＝',FR(S(105),S(4))]},{parts:['＝26',FR(S(1),S(4)),'（或',S(26.25),'）']}],
+ build(c){const X=[130,265,400,535,670,805,920],T=['4','：','5','＝','21','：','□'];T.forEach((s,i)=>txt(svg,X[i],330,s,{'font-size':100,fill:i===0||i===4?PQ:i===2||i===6?HQ:'#333'}));
+  const hint=txt(svg,400,70,'點箭頭',{fill:'#888','font-size':32});qArrow(svg,130,235,400,85,670,240,PQ);
+  const h=mk(svg,'circle',{cx:400,cy:160,r:50,fill:'rgba(255,255,255,.01)',stroke:O,'stroke-width':7,class:'pulse'});
+  tap(h,()=>{if(!hint.parentNode)return;hint.remove();h.remove();mathS(svg,400,108,['× ',[21,4]],{fs:50,fill:PQ,cls:'popin'});
+    later(500,()=>{qArrow(svg,400,368,660,480,920,363,HQ,{cls:'popin'});mathS(svg,660,512,['× ',[21,4]],{fs:50,fill:HQ,cls:'popin'});mathPill(svg,290,505,['□ ＝ 5 × ',[21,4],' ＝ ',[105,4]],PQ,{fs:40});c.done()})})}},
+{sec:'練習5',bd:'6',sub:'①',p:81,toc:'國旗',q:`有一面國旗的寬對長的比是 ${fq(2,3)}：1，國旗的寬是 60 公分，長是幾公分？`,
+ rows:[{parts:['寬：長＝',FR(F(2),F(3)),'：1＝',S(2),'：',S(3)]},{parts:['1 份是 60÷2＝',S(30)]},{parts:['長＝3×',S(30),'＝',S(90),'公分']}],
+ build(c){portion(c,{u:'公分',per:30,known:0,ask:[1],cols:[{n:'寬',p:2,v:60},{n:'長',p:3}],
+   pre:{lab:'⓪ 同乘以 3',draw(g){txt(g,500,80,'比裡面有分數，先化成整數比',{fill:'#888','font-size':32});mathS(g,500,200,['寬：長 ＝ ',[2,3],' ： 1'],{fs:70})},
+     go(g){mathS(g,500,340,['＝ 2 ： 3'],{fs:70,fill:PQ,cls:'popin'});pill(g,500,470,'寬 2 份、長 3 份',PQ,{fs:42})}}})}},
+{sec:'練習5',bd:'6',sub:'②',p:81,toc:'柳丁和蘋果',q:'柳丁和蘋果共有 54 個，全部個數對蘋果個數的比是 9：7，柳丁和蘋果各有幾個？',
+ rows:[{parts:['9：7＝54：□']},{parts:['1 份是 54÷9＝',S(6)]},{parts:['蘋果 □＝7×',S(6),'＝',S(42),'個']},{parts:['柳丁 54－42＝',S(12),'個']}],
+ build(c){portion(c,{u:'個',per:6,known:2,ask:[0,1],cols:[{n:'柳丁 🍊',p:2,pl:'9－7＝2'},{n:'蘋果 🍎',p:7},{n:'全部',p:9,v:54,c:'#7048e8',tot:1}]})}}
+
 ];
 
 /* ================== 狀態與畫面 ================== */
@@ -514,7 +592,7 @@ function inSl(r){return r.parts?r.parts.flatMap(p=>p&&p.fr?p.fr.filter(isIn):(is
 const state=PAGES.map(pg=>({vals:pg.rows.map(r=>inSl(r).map(()=>'')),ok:pg.rows.map(r=>!!(r.fixed||!inSl(r).length)),mode:null}));
 let cur=0,act=null; // act={ri,si}
 const toc=$('#toc');
-const SECT={'5-1':'比','5-2':'比值','5-3':'相等的比','5-4':'比的應用'};
+const SECT={'5-1':'比','5-2':'比值','5-3':'相等的比','5-4':'比的應用','練習5':'比和比值'};
 const BDS={'試試看':'試','動動腦':'腦','GO!':'GO'};
 let openSec=null;
 function buildToc(){toc.innerHTML='';let g=null,last='';
