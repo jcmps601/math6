@@ -1465,7 +1465,8 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
-  if(r.farm&&(!sum.farm||(r.farm.u||0)>(sum.farm.u||0)))sum.farm=r.farm;
+  /* 農場：同一個農場（b 一樣）看誰比較新；不是同一個（新平板先開了一份空的）就留經驗比較多的，免得高等農場被空的蓋掉 */
+  if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.b||0)!==(A.b||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   sum.amr=mx(sum.amr,r.amr);   // 早自修讀到第幾篇
@@ -2908,7 +2909,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v116';let verNew=false,verBusy=false;
+const APP_VER='learn601-v117';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
