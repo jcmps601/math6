@@ -539,7 +539,7 @@ function botTick(now,el){RT.bots.forEach((b,i)=>{if(b.dead)return;if(now>=b.next
 function checkTestEnd(force){if(!RT||RT.over)return;const n=RT.bots.length+1,w=koWin(n);if(!force&&RT.myKO<w&&!RT.bots.some(b=>b.kos>=w))return;RT.over=true;RT.done=true;
   const place=1+RT.bots.filter(b=>b.kos>RT.myKO).length,win=place===1;
   setTimeout(()=>showOver({title:win?'🎉 你贏了！':'再接再厲！',sub:`單機測試・你 KO ${RT.myKO} 次，第 ${place} 名（共 ${n} 人）`,list:'',tk:'',test:true,win}),900)}
-/* ⏱ 40 排競速：一個人玩、一次用 1 張遊戲券（「再玩一次」也要再用 1 張），最快消完 40 排；被頂到就失敗重來。最佳成績記在平台（排行榜比秒數） */
+/* ⏱ 40 排競速：一個人玩、一次用 1 張遊戲券（「再玩一次」也要再用 1 張），最快消完 40 排；方塊堆到最上面就失敗重來。最佳成績記在平台（排行榜比秒數） */
 const SPRINT_N=40;
 function startSprint(){if(!hasTicket()){$('#over').classList.remove('on');show('home');msg('🎟️ 40 排競速一次要用 1 張遊戲券。回平台練習 10 題答對 8 題就能拿到！');return}
   if(!payTicket()){$('#over').classList.remove('on');show('home');msg('🎟️ 遊戲券扣不下來，請回平台看看還有沒有券');return}
@@ -548,7 +548,7 @@ function sprintDone(){if(!RT||RT.done)return;RT.done=true;RT.endAt=tNow();const 
   const r=inPlat()&&P.bkSprint?P.bkSprint(ms):{best:false},sec=(ms/1000).toFixed(2);
   setTimeout(()=>showOver({title:r.best?'🎉 新紀錄！':'⏱ 完成！',sub:`消完 40 排：${sec} 秒`+(r.best&&r.old?`（以前最快 ${(r.old/1000).toFixed(2)} 秒）`:!r.best&&r.old?`（最佳 ${(r.old/1000).toFixed(2)} 秒）`:''),list:'',tk:'',test:true,win:r.best}),700)}
 function sprintFail(){if(!RT||RT.done)return;RT.done=true;RT.endAt=tNow();
-  setTimeout(()=>showOver({title:'被頂到了！',sub:`消了 ${RT.P.lines} 排，再試一次`,list:'',tk:'',test:true}),700)}
+  setTimeout(()=>showOver({title:'方塊堆滿了！',sub:`這次消了 ${RT.P.lines} 排，再挑戰一次吧`,list:'',tk:'',test:true}),700)}
 $('#bSprint').onclick=()=>startSprint();
 function startTest(n){if(MODE==='swipe')showTut();G.mode='test';G.st={g:1,order:''};const seed=(Math.random()*4294967296)>>>0;startLocal(seed,'test');
   RT.myKO=0;RT.bots=[...Array(n)].map((_,i)=>({rows:2+i,h:0,hole:i*3%7,next:tNow()+CD_MS+3000+i*1500,grow:tNow()+CD_MS+3000,dead:false,kos:0}));show('game');layout()}
