@@ -814,6 +814,13 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .qaph{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.5rem}.qaph small{color:#868e96;flex:1;min-width:10rem}.qaph span{display:flex;gap:.3rem}
 .qapb{display:flex;justify-content:center}.qapw{position:relative;overflow:hidden;border:2px solid #dee2e6;border-radius:10px}.qapw iframe{position:absolute;left:0;top:0;border:0}.qapr{margin-top:.5rem;font-weight:700}.qaimg{max-width:100%;max-height:70vh}
 body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
+
+/* 帶回家前準備 */
+.offc{max-width:30rem;text-align:left}
+#offm .rmt,#offlw .rmt{font-size:1.5rem;font-weight:900;color:#2e7554;margin:.3rem 0}#offlw .rmt{color:#c2255c}#offm .rms,#offlw .rms{font-size:1.05rem;color:#555;font-weight:800;line-height:1.6}
+#offlw .pmc{max-width:26rem;text-align:center}#offlw img{width:6rem;height:6rem;object-fit:contain}.offr b{font-size:1.05rem}.offb button{font-size:1.15rem;padding:.5rem 1.4rem}.offc .rmt,.offc .rms{text-align:center}.offr{display:flex;flex-direction:column;padding:.45rem .7rem;border-radius:12px;margin:.35rem 0;background:#ebfbee}.offr.no{background:#fff5f5}
+.offr small{color:#868e96;font-weight:700}#offp{display:flex;align-items:center;gap:.6rem;margin:.5rem 0}#offp[hidden]{display:none}.offb{display:flex;gap:.5rem;justify-content:center;margin-top:.6rem}
+#tab td.syold{color:#c92a2a;font-weight:800}
 </style>
 </head><body>
 
@@ -1465,7 +1472,7 @@ async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true
     /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
     const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
     /* 進度（sum）上傳前先讀雲端合併：別台平板做的（例如週末在家）不會被這台舊的紀錄蓋掉 */
-    if(user&&sum&&it.p===base()+'/sum'){try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum))}catch(e){break}}
+    if(user&&sum&&it.p===base()+'/sum'){try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum));it.v.sy=Date.now()}catch(e){break}}   // sy：這台平板最後一次把進度傳上雲端的時間（老師頁看誰很久沒同步）
     try{await timeout(db.ref(it.p).set(it.v),12000);drop()}
     catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
   flushing=false;paintSync()}
@@ -1554,7 +1561,7 @@ async function verify(seat,pin){await fbReady;if(!db)return {ok:false,why:'off'}
 /* 規則有沒有生效:新規則讓 learn/lb(排行榜)可以讀 */
 async function rulesOK(){await fbReady;if(!db)return null;try{await timeout(db.ref(`${ROOT}/lb`).limitToFirst(1).get(),8000);return true}catch(e){return /permission/i.test(String(e&&(e.code||e.message)))?false:null}}
 tap(document.getElementById('pwBtn'),()=>pwChange());
-tap(document.getElementById('logout'),()=>{if(!confirmLogout())return;presenceOff();unlistenSum();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
+tap(document.getElementById('logout'),()=>{if(Q.length){offLogoutWarn();return}if(!confirmLogout())return;presenceOff();unlistenSum();if(invRef&&invCb)invRef.off('value',invCb);invRef=null;hideInv();LS.del('learn601_user');user=null;show$('login')});
 let logoutT=0;function confirmLogout(){const b=document.getElementById('logout');if(Date.now()-logoutT<2500)return true;logoutT=Date.now();b.textContent='再按一次登出';setTimeout(()=>b.textContent='登出',2500);return false}
 
 /* ===================== 介面:全螢幕、鎖右鍵、音效、彩帶 ===================== */
@@ -1622,6 +1629,50 @@ function resPills(){const p=PET.P(),f=FARM.F();return `<span class="rp" title="�
 function paintRes(){const r=document.getElementById('res');if(r&&user&&sum)r.innerHTML=resPills()}
 /* 「更多」：遊戲、錯題、音效、全螢幕、登出 */
 function closeMore(){const m=document.getElementById('more');if(m)m.remove()}
+/* ===================== 帶回家前準備（iPad 離線使用） =====================
+   ・學生在學校有網路時按「更多 → 帶回家準備」：把題目的圖、英語錄音、成語漫畫、遊戲和寵物的圖、各個網頁先存到 iPad
+     清單＝offline.json（tools/mkoffline.py 產生）＋從題庫、每日成語算出來的圖（新加的題目、漫畫不用改清單）
+   ・圖片、錄音存在「learn601-assets」（改版也不會清掉），網頁存在這一版的櫃子（改版後要再按一次，已經有的圖不會重新下載）
+   ・iPad：要先「加入主畫面」，從主畫面的圖示打開再準備（主畫面的 App 和 Safari 的資料是分開的）
+   ・在家做的題目照常記在 iPad 上（待上傳），回學校連上網路、打開平台就自動上傳；還有沒上傳的就不能登出 */
+const OFF_ASSETS='learn601-assets',OFF_K='learn601_offline';
+const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1;
+const isStandalone=()=>!!(navigator.standalone||window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches));
+const offReady=()=>{const r=LS.get(OFF_K,null);return !!r&&r.v===APP_VER&&!r.fail};
+async function offList(){let L;try{L=(await (await fetch('offline.json',{cache:'no-cache'})).json()).files||[]}catch(e){return null}const S=new Set(L);
+  const add=p=>{if(typeof p==='string'&&/^[\w./-]+\.(webp|png|jpe?g|gif|svg|mp3|m4a|wav|ogg)$/i.test(p))S.add(p)};
+  const srcs=v=>{const t=typeof v==='string'?v:JSON.stringify(v||'');(t.match(/src=["']?[^"'\s>]+/g)||[]).forEach(m=>add(m.replace(/^src=["']?/,'')))};
+  const B=window.BANK||{};for(const k in B)(B[k]||[]).forEach(D=>(D.items||[]).forEach(it=>{if(!it)return;add(it.img);add(it.au);(it.opts||[]).forEach(add);srcs(it.big);srcs(it.q)}));
+  (window.M5||[]).forEach(it=>{add(it.img);srcs(it.html)});
+  if(CY){(CY.img||[]).forEach(n=>add(`img/cy/cy-${String(n).padStart(2,'0')}.webp`));CY.L.forEach(c=>c.p&&add(`img/cy/${c.p}.webp`))}
+  return [...S]}
+async function offRun(onp,stop){if(!('caches' in window))return {err:'這個瀏覽器不能存離線資料'};const L=await offList();if(!L)return {err:'讀不到檔案清單，請確認有網路'};
+  const [ca,cc]=await Promise.all([caches.open(OFF_ASSETS),caches.open(APP_VER)]);let i=0,done=0;const fail=[];
+  const work=async()=>{while(i<L.length&&!stop.v){const p=L[i++],c=/\.(html|js|webmanifest)$/i.test(p)?cc:ca;
+      try{if(!(await c.match(p,{ignoreSearch:true}))){const r=await timeout(fetch(p,{cache:'no-cache'}),20000);if(!r.ok)throw 0;await c.put(p,r)}}catch(e){fail.push(p)}
+      onp(++done,L.length)}};
+  await Promise.all([1,2,3,4].map(work));
+  try{if(navigator.storage&&navigator.storage.persist)await navigator.storage.persist()}catch(e){}   // 請瀏覽器不要自動清掉
+  const r={v:APP_VER,t:Date.now(),n:L.length,ok:done-fail.length,fail:fail.length};if(!stop.v)LS.set(OFF_K,r);return Object.assign(r,{stop:!!stop.v,fl:fail.slice(0,5)})}
+function offPrep(){const m=el('div','pmod','');m.id='offm';const stop={v:false};
+  const paint=()=>{const net=navigator.onLine&&!!db&&online,ios=isIOS(),home=!ios||isStandalone(),r=LS.get(OFF_K,null);
+    const row=(ok,t,s)=>`<div class="offr ${ok?'ok':'no'}"><b>${ok?'✅':'❗'} ${t}</b>${s?`<small>${s}</small>`:''}</div>`;
+    m.innerHTML=`<div class="pmc offc"><div class="rmt">帶回家前準備</div><div class="rms">在學校有網路時先準備好，回家沒有網路也能練習。<br>做的題目會先存在 iPad 裡，回學校連上網路、打開平台就會自動上傳。</div>
+      ${row(home,'從主畫面打開',home?'':'請先在 Safari 按「分享 → 加入主畫面」，再從主畫面的「601學習」打開、登入，然後回來這裡準備')}
+      ${row(net,net?'現在有網路':'現在沒有網路',net?'':'要在學校有網路的地方準備')}
+      ${row(!Q.length,Q.length?`還有 ${Q.length} 筆進度等待上傳`:'進度都上傳了',Q.length?'連上網路會自動上傳':'')}
+      ${row(offReady(),offReady()?`已經準備好（${new Date(r.t).getMonth()+1}/${new Date(r.t).getDate()}）`:r&&r.v!==APP_VER?'平台更新過，要再準備一次（很快）':'還沒準備',offReady()?'可以帶回家了！不要登出喔':'')}
+      <div id="offp" hidden><div class="qabar"><i></i></div><span></span></div>
+      <div class="offb"><button class="go" id="offgo" ${home&&net?'':'disabled'}>${offReady()?'再檢查一次':'開始準備'}</button><button class="gray" id="offx">關閉</button></div></div>`;
+    tap(m.querySelector('#offx'),()=>{stop.v=true;m.remove()});
+    tap(m.querySelector('#offgo'),async()=>{const b=m.querySelector('#offgo');if(b.disabled)return;b.disabled=true;const P=m.querySelector('#offp');P.hidden=false;
+      const r2=await offRun((a,n)=>{P.querySelector('i').style.width=Math.round(a/n*100)+'%';P.querySelector('span').textContent=`下載中 ${a} / ${n}`},stop);
+      if(!document.getElementById('offm'))return;paint();const P2=m.querySelector('#offp');P2.hidden=false;P2.querySelector('i').style.width='100%';
+      P2.querySelector('span').textContent=r2.err?'❗ '+r2.err:r2.fail?`有 ${r2.fail} 個檔案沒下載到，網路順一點時再按一次`:`✅ 準備好了，共 ${r2.n} 個檔案`})};
+  document.body.appendChild(m);paint()}
+function offLogoutWarn(){flush();const m=el('div','pmod','');m.id='offlw';m.innerHTML=`<div class="pmc"><img src="img/ui/mascot-think.webp" alt=""><div class="rmt">先不要登出喔！</div>
+  <div class="rms">還有 ${Q.length} 筆進度還沒上傳到雲端。<br>連上網路、等右上角變成「進度已儲存」再登出，<br>不然這些進度會傳不上去。</div><button class="go">知道了</button></div>`;
+  document.body.appendChild(m);tap(m.querySelector('button'),()=>m.remove())}
 function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fullscreenElement||document.webkitFullscreenElement);
   const m=el('div','pmod','');m.id='more';m.innerHTML=`<div class="pmc moresheet"><div class="pmh">更多</div><div class="mgrid">
     <button data-k="game">${ico('nav-game')}<b>挑戰樂園</b><small>遊戲・排行榜・對戰</small></button>
@@ -1629,6 +1680,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>音效</b><small>${sndOn?'開著':'關著'}</small></button>
     <button data-k="fs">${ico(full?'ic-fullscreen-exit':'nav-fs')}<b>全螢幕</b><small>${full?'離開全螢幕':'畫面變大'}</small></button>
     <button data-k="help">${ico('pr-hint')}<b>獎勵說明</b><small>金幣、水滴、遊戲券</small></button>
+    <button data-k="off">${ico('ic-sync-done')}<b>帶回家準備</b><small>${offReady()?'✅ 可以離線使用':'在家沒網路也能練'}</small></button>
     <button data-k="pw">${ico('ic-lock-closed')}<b>改密碼</b><small>換一組自己的密碼</small></button>
     <button data-k="out">${ico('nav-out')}<b>登出</b><small>換別人用</small></button></div>
     <div class="msync">${(document.getElementById('sync')||{}).textContent||''}</div><button class="pmx">關閉</button></div>`;
@@ -1638,6 +1690,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     if(k==='game'||k==='wb')return goView(k);
     if(k==='help'){closeMore();return rewardHelp()}
     if(k==='pw'){closeMore();return pwChange()}
+    if(k==='off'){closeMore();return offPrep()}
     if(k==='snd'){fire('sndBtn');return openMore()}
     if(k==='fs'){closeMore();return fire('fsBtn')}
     if(k==='out'){closeMore();return fire('logout')}}));
@@ -2769,9 +2822,11 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
   $('#tabmsg').textContent='讀取中…';await fbReady;if(!db){$('#tabmsg').textContent='連不上 Firebase';return}
   const today=dkey(),mon=new Date();mon.setDate(mon.getDate()-((mon.getDay()+6)%7));const wk=[];for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);wk.push(dkey(d))}
   const rows=await Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),10000)).val();return [s,v]}catch(e){return [s,'err']}}));
-  let h='<tr><th>座號</th><th>今天</th><th>本週完成天數</th><th>累計題數</th><th>一次答對率</th><th>最近練習</th></tr>';
-  rows.forEach(([s,v])=>{if(!v||v==='err'){h+=`<tr class="none"><td>${s}</td><td colspan="5">${v==='err'?'讀取失敗':'還沒練習'}</td></tr>`;return}
-    const L=v.last?new Date(v.last):null;h+=`<tr><td>${s}</td><td>${(v.days||{})[today]||0}</td><td>${wk.filter(k=>((v.days||{})[k]||0)>=GOAL).length}</td><td>${v.total||0}</td><td>${v.total?Math.round(v.first/v.total*100):0}%</td><td>${L?`${L.getMonth()+1}/${L.getDate()} ${pad2(L.getHours())}:${pad2(L.getMinutes())}`:''}</td></tr>`});
+  let h='<tr><th>座號</th><th>今天</th><th>本週完成天數</th><th>累計題數</th><th>一次答對率</th><th>最近練習</th><th>最後同步</th></tr>';
+  const tfmt=t=>{const L=new Date(t);return `${L.getMonth()+1}/${L.getDate()} ${pad2(L.getHours())}:${pad2(L.getMinutes())}`};
+  rows.forEach(([s,v])=>{if(!v||v==='err'){h+=`<tr class="none"><td>${s}</td><td colspan="6">${v==='err'?'讀取失敗':'還沒練習'}</td></tr>`;return}
+    const old=v.sy&&Date.now()-v.sy>3*864e5;   // 平板 3 天以上沒把進度傳上來（例如帶回家沒網路）
+    h+=`<tr><td>${s}</td><td>${(v.days||{})[today]||0}</td><td>${wk.filter(k=>((v.days||{})[k]||0)>=GOAL).length}</td><td>${v.total||0}</td><td>${v.total?Math.round(v.first/v.total*100):0}%</td><td>${v.last?tfmt(v.last):''}</td><td class="${old?'syold':''}">${v.sy?tfmt(v.sy)+(old?' ⚠️':''):'—'}</td></tr>`});
   $('#tab').innerHTML=h;$('#tabmsg').textContent=`更新時間 ${new Date().toLocaleTimeString()}`});
 
 /* 老師頁：學生自己設的密碼。要用那個座號的身分才讀得到，所以一個一個座號「綁定」後讀（用 pins.json 裡老師發的密碼證明） */
@@ -2987,7 +3042,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v119';let verNew=false,verBusy=false;
+const APP_VER='learn601-v120';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
