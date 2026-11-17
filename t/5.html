@@ -314,7 +314,7 @@ function portion(c,cfg){const N=cfg.cols.length,x0=200,W=780,cw=W/N,yB=150,hB=74
     later(1500,()=>{P0.remove();L.setAttribute('opacity',1);st=0})},true)}
   const b1=c.tool('① 找對應',()=>{if(st!==0)return;st=1;
     mk(svg,'rect',{x:K.cx-cw/2+6,y:yB-70,width:cw-12,height:yV+hV-yB+84,rx:22,fill:'none',stroke:'#fcc419','stroke-width':6,class:'popin'});
-    qArrow(svg,K.cx,yB+hB+60,K.cx-40,yV-30,K.cx,yV-6,'#f59f00',{cls:'popin',L:26,W:14,sw:5});
+    qArrow(svg,K.cx,yB+hB+56,K.cx,(yB+hB+56+yV-6)/2,K.cx,yV-6,'#f59f00',{cls:'popin',L:24,W:14,sw:6});   // 直直往下：這幾份＝這個實際數量
     pill(svg,500,505,`${K.o.p} 份 ＝ ${K.o.v} ${cfg.u}`,'#e67700',{fs:42});b1.disabled=true},true);
   const b2=c.tool('② 1 份是多少',()=>{if(st!==1)return;st=2;b2.disabled=true;
     cols.forEach(Q=>Q.cells.forEach((r,k)=>later(30*k,()=>{if(Q.u>=40)txt(svg,Q.bx+Q.u*(k+.5),yB+hB/2+13,String(per),{'font-size':Math.min(36,Q.u*.62),fill:Q.col,stroke:'none',class:'popin'})})));
