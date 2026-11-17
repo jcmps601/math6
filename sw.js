@@ -2,7 +2,9 @@
    第一次有網路時打開平台，就把平台、遊戲和雲端程式存在平板上；之後沒網路也能打開練習。
    網頁本身「先抓網路上最新的，抓不到才用存起來的」，所以老師更新後學生一連網就會拿到新版。
    改版時 CACHE 的版本號要跟 learn.html 的 APP_VER 一起改（learn.html 靠這個號碼知道有新版、自動重新載入）。 */
-const CACHE = 'learn601-v119';
+const CACHE = 'learn601-v120';
+/* 圖片、錄音另外放一個「不跟著版本清掉」的櫃子：學生按「帶回家前準備」下載的東西，平台改版後還在 */
+const ASSETS = 'learn601-assets';
 const PAGES = ['./learn.html', './game.html', './chess.html', './xq.js', './aq.js', './tank.js', './tankv.js', './party.html', './coop.html', './sling.html', './ps.js', './ps2.js', './blocks.html', './bk.js', './ico.js', './am.js', './pet.js', './farm.js', ...['m5', 'zh', 'en', 'sci', 'soc', 'am_zh', 'am_cy'].map(k => `./bank/${k}.js`)];
 const SDK = ['app', 'database', 'auth'].map(n => `https://www.gstatic.com/firebasejs/10.12.2/firebase-${n}-compat.js`);
 
@@ -17,7 +19,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k !== CACHE) await caches.delete(k);
+    for (const k of await caches.keys()) if (k !== CACHE && k !== ASSETS) await caches.delete(k);
     await self.clients.claim();
   })());
 });
@@ -35,8 +37,8 @@ self.addEventListener('fetch', e => {
   if (url.origin === self.location.origin && /\.(webp|png|jpe?g|gif|svg|mp3|m4a|ogg|wav)$/i.test(url.pathname)) {
     if (req.headers.has('range')) return;   // 錄音分段讀取：交給瀏覽器自己處理
     e.respondWith((async () => {
-      const c = await caches.open(CACHE);
-      const hit = await c.match(req, { ignoreSearch: true });
+      const c = await caches.open(ASSETS);
+      const hit = await caches.match(req, { ignoreSearch: true });   // 兩個櫃子都找
       const net = fetch(req).then(res => { if (res && res.status === 200) c.put(req, res.clone()).catch(() => {}); return res; });
       if (hit) { e.waitUntil(net.catch(() => {})); return hit; }
       try { return await net; } catch (err) { return Response.error(); }
@@ -55,7 +57,7 @@ self.addEventListener('fetch', e => {
         if (res && res.redirected && req.mode === 'navigate') return Response.redirect(res.url, 302);   // Safari 不接受「轉址過的網頁」直接回給頁面
         return res;
       } catch (err) {
-        const hit = await c.match(req, { ignoreSearch: true });
+        const hit = await c.match(req, { ignoreSearch: true }) || await caches.match(req, { ignoreSearch: true });   // 先找這一版存的，再找其他櫃子
         if (hit) return hit;
         if (req.mode === 'navigate') { const home = await c.match('./learn.html'); if (home) return home; }
         return Response.error();
