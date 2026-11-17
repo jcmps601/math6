@@ -128,6 +128,8 @@ button{font-family:inherit;cursor:pointer}
 main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .8rem .7rem;gap:.55rem}
 #top{display:flex;align-items:center;gap:.6rem}
 #qno{flex:none;background:var(--g);color:#fff;font-weight:900;font-size:1.4rem;border-radius:14px;padding:.25rem .8rem}
+#qno .rvtag{font-size:.7em;font-weight:800;margin-left:.45em;padding:.05em .45em;border-radius:8px;background:rgba(255,255,255,.28);vertical-align:.1em}   /* 延後複習的題目：低調的「複習」標籤 */
+.rvn{display:inline-block;margin-left:.5em;font-size:.85em;color:#868e96;font-weight:700}
 #utag{flex:none;font-weight:900;font-size:1.1rem;border-radius:12px;padding:.2rem .6rem;border:3px solid currentColor}
 #dots{display:flex;gap:.3rem;margin-left:auto}#dots i{width:1.1rem;height:1.1rem;border-radius:50%;background:#e9ecef}
 #dots i.cur{outline:3px solid var(--o);outline-offset:2px}#dots i.ok{background:var(--g)}#dots i.ok2{background:#94d82d}#dots i.no{background:#ffa8a8}
@@ -800,6 +802,18 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .bk{text-decoration:underline wavy;text-decoration-thickness:.05em;text-underline-offset:.22em;text-decoration-skip-ink:none;margin:0 .07em}
 .em{text-decoration:underline double;text-underline-offset:.2em}
 #verbar{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:9999;background:#1c7ed6;color:#fff;font-weight:800;font-size:1rem;padding:.35rem 1rem;border-radius:0 0 .8rem .8rem;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;max-width:96vw;overflow:hidden;text-overflow:ellipsis}
+
+/* 老師頁：題目與素材檢查 */
+#qabox .qactl{display:flex;flex-wrap:wrap;gap:.4rem .9rem;align-items:center;margin:.5rem 0}#qabox .qactl label{font-weight:700;white-space:nowrap}#qabox input[type=number]{width:3.4rem}
+#qabox [hidden]{display:none!important}#qaout{overflow-x:auto}
+#qaprog{display:flex;align-items:center;gap:.6rem;margin:.4rem 0}.qabar{flex:1;height:.6rem;background:#f1f3f5;border-radius:6px;overflow:hidden}.qabar i{display:block;height:100%;width:0;background:#22b573;transition:width .2s}
+#qasum{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}.qac{border-radius:10px;padding:.15rem .55rem;background:#f1f3f5;font-weight:700}.qac.bad{background:#fff5f5;color:#c92a2a}.qac.warn{background:#fff9db;color:#946200}.qac.manual{background:#e7f5ff;color:#1864ab}.qac.ok,.qac.sample{background:#ebfbee;color:#2b8a3e}
+.qanote{flex-basis:100%;color:#868e96;font-size:.85rem;margin-top:.2rem}.qafil{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.4rem 0}
+.qat td.qid{font-size:.8rem;color:#495057;word-break:break-all;max-width:16rem}.qat tr.bad td:first-child{background:#fff5f5}.qat tr.warn td:first-child{background:#fff9db}.qat tr.manual td:first-child{background:#e7f5ff}.qat button{padding:.1rem .5rem;font-size:.85rem}
+#qapm{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center}.qapc{background:#fff;border-radius:14px;padding:.8rem;width:min(96vw,1400px);max-height:96vh;overflow:auto}
+.qaph{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.5rem}.qaph small{color:#868e96;flex:1;min-width:10rem}.qaph span{display:flex;gap:.3rem}
+.qapb{display:flex;justify-content:center}.qapw{position:relative;overflow:hidden;border:2px solid #dee2e6;border-radius:10px}.qapw iframe{position:absolute;left:0;top:0;border:0}.qapr{margin-top:.5rem;font-weight:700}.qaimg{max-width:100%;max-height:70vh}
+body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
 </style>
 </head><body>
 
@@ -884,6 +898,11 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
   <div class="dhead"><b>🌅 早自修分組</b><button id="amload">讀取</button><button id="amsave">儲存</button><label class="amimp">📂 匯入分組檔<input type="file" id="amfile" accept=".json,application/json" hidden></label><span id="ammsg"></span></div>
   <div class="amnote">沒設定的學生是「一般」：每天 1 篇閱讀測驗＋數學計算，共 10 題。「學扶」可以數學、國語分開設，再勾要練的題型（都不勾＝全部題型）。<br>設定存在每位學生自己的雲端資料裡，同學看不到；網站的程式裡不會有任何人的分組。</div>
   <div id="amout"></div>
+ </div>
+ <div class="cd" id="qacard">
+  <div class="dhead"><b>🔎 題目與素材檢查</b><button id="qaopen">打開</button><span id="qaomsg"></span></div>
+  <div class="amnote">檢查圖片、錄音能不能載入，題目有沒有缺答案、選項重複、對不到的題型，隨機題抽樣檢查，再用手機大小排一次看會不會超出畫面。只會列出問題，不會改任何題目或刪檔案。</div>
+  <div id="qabox"></div>
  </div>
  <div class="cd">
   <div>② 全班練習紀錄</div>
@@ -1460,7 +1479,7 @@ let sum=null;
 const base=()=>`${ROOT}/u/${user.seat}/${user.pin}`;
 const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tc:0,tco:0,gb2:{}});
 function loadSum(){sum=Object.assign(blankSum(),LS.get('learn601_sum_'+user.seat,{}))}
-function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();dvPrune();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
+function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();dvPrune();rvPrune();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
@@ -1472,6 +1491,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   sum.amr=mx(sum.amr,r.amr);   // 早自修讀到第幾篇
+  if(r.rv){sum.rv=sum.rv||{};for(const k in r.rv){const a=sum.rv[k],b=r.rv[k];if(b&&(!a||(b.m||0)>(a.m||0)))sum.rv[k]=b}}   // 延後複習：每一筆看比較新的
   if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
@@ -1710,10 +1730,12 @@ function amQs(){let zq=[];AMK=null;
   const cq=cyQs(),n=10-zq.length-cq.length;let mq;
   if(amX('m')&&ukIdx('amx')>=0){const im=ukIdx('amx');mq=listFor(amList('amx',AMP.ms),n).map(t=>genQ(im,t))}
   else{const pool=AM_GEN.filter(([k,t])=>ukIdx(k)>=0&&UN[ukIdx(k)].types.includes(t));let L=[];while(L.length<n)L.push(...shuf(pool));mq=L.slice(0,n).map(([k,t])=>genQ(ukIdx(k),t))}
+  /* 延後複習：到期的換掉後面的數學題位（最多 RV.perDay 題；總數不變，沒有題位就順延） */
+  const P=rvPlan(mq.length);if(P.length){const avoid=new Set([...cq,...zq,...mq.slice(0,mq.length-P.length)].map(qKey)),R=P.map(([k,e])=>{const q=rvQ(k,e,avoid);avoid.add(qKey(q));return q});mq=mq.slice(0,mq.length-R.length).concat(R)}
   return [...cq,...zq,...mq]}
 function amCard(){const n=uqN('am'),done=n>=10,c=el('div','cd');c.id='amc';
   const zt=amX('z')?'國語 4 題':(window.AMZ&&AMZ.READ.length?`閱讀測驗〈${AMZ.READ[(sum.amr||0)%AMZ.READ.length].t}〉`:'國語');
-  const cn=cyTodayName();c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修${cn?`・今日成語「${cn}」`:''}</div><div class="b">${done?'今天的早自修完成了！':`${cn?'成語＋':''}${zt}＋數學`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,10)} / 10 題`}</div></div>`;
+  const cn=cyTodayName(),rn=done?0:rvTodayN();c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修${cn?`・今日成語「${cn}」`:''}</div><div class="b">${done?'今天的早自修完成了！':`${cn?'成語＋':''}${zt}＋數學`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,10)} / 10 題`}${rn?`<span class="rvn">今天有 ${rn} 題複習</span>`:''}</div></div>`;
   const g=el('button','go'+(done?' gray':''),done?'再練一次':n?'繼續 ▶':'開始 ▶');tap(g,()=>startPractice('am'));c.appendChild(g);return c}
 /* 首頁：接下來練什麼——目前科目裡還沒完成的第一個單元；都完成了就挑星星最少的；都 3 顆星就練綜合 */
 function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj&&live(u)),SM=mixOf(subj);if(!L.length)return SM||null;
@@ -1849,9 +1871,9 @@ const wbKey=()=>'learn601_wb_'+user.seat;
 function wbLoad(){return user?LS.get(wbKey(),[]):[]}
 function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,uk:x.q.uk||'',t:x.q.t,n:x.n,d:x.d})),true)}
 function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
-  if(res==='ok'){if(i>=0){W.splice(i,1);wbSave(W);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！繼續練習，鞏固這個方法。')}return}
+  if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];wbSave(W);if(!q.rv)rvAdd(x.q,x.k);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
   if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();W.push(x)}
-  else{const c=JSON.parse(JSON.stringify(q));W.push({k,q:c,n:1,d:dkey()})}
+  else{const c=JSON.parse(JSON.stringify(q));delete c.rv;delete c.rvs;W.push({k,q:c,n:1,d:dkey()})}   // 複習題答錯：照原本的方式存進錯題本（rvk 留著，之後過關會接回同一筆複習）
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
 function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題再練`);h.style.setProperty('--c',WB.c);P.appendChild(h);
   const W=wbLoad();const c=el('div','cd');c.id='practice';c.style.setProperty('--c',WB.c);
@@ -1860,6 +1882,57 @@ function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題�
   else{c.classList.add('wbempty');const g=el('button','go','去練習 ▶');tap(g,()=>startPractice((mixOf(subj)||MIX).key));c.appendChild(g)}P.appendChild(c);
   if(!W.length)return;P.appendChild(el('div','sec','錯過的題目'));const L=el('div','cd');L.id='wblist';
   W.slice().reverse().forEach(x=>{const U=UN[fixU(x.q,'wb')]||UN[x.q.u]||UN[0];L.appendChild(el('div','wbi',`<span class="wu" style="--c:${U.c}">${uLab(U)}</span><span class="wq">${x.q.text}</span><span class="wn">錯 ${x.n} 次</span>`))});P.appendChild(L)}
+
+/* ===================== 錯題延後複習 =====================
+   錯題本一次答對（過關）後，不留在錯題本，另外排進「延後複習」：隔幾天在早自修用同單元、同題型的「不同題目」確認會不會自己做。
+   ・三次確認：過關後 RV.gap[0] 天第一次 → 第一次自己答對後 RV.gap[1] 天第二次 → 第二次答對後 RV.gap[2] 天第三次 → 第三次答對＝已鞏固
+     天數都從上一次成功作答那天算（台灣日期 dkey）
+   ・只看第一次作答：看提示、看例題、看解答、第二次才對，都不算自己過；沒過就回到第一次，RV.gap[0] 天後再來（答錯照原本的方式進錯題本）
+   ・早自修每天最多 RV.perDay 題，只換掉數學的題位（成語、閱讀測驗不動），總數還是 10 題；沒有合適的題位就順延，不扣分、不扣獎勵
+   ・只排老師目前設定的分組、題型範圍內的題目；範圍外的先放著，等範圍改了再排
+   ・資料在 sum.rv（跟著進度同步）：{原題指紋: {u 單元代號, t 題型, s 第幾次確認(1～3), d 哪天到期, a 上次作答時間, r 上次結果 p 過/f 沒過/w 錯題過關, z 已鞏固, m 最後修改時間, c 成語編號, p 閱讀篇名}}
+     兩台平板合併時，每一筆看 m 比較新的；答題時檢查「這題排的是第幾次、今天到期了沒」，別台已經做過就不再算一次 */
+const RV={gap:[2,5,10],perDay:2,keep:120,max:300};
+const dAdd=(d,n)=>{const t=new Date(d+'T12:00:00');t.setDate(t.getDate()+n);return dkey(t)};
+const rvAll=()=>sum?(sum.rv=sum.rv||{}):{};
+/* 錯題過關 → 排第一次複習（同一題已經在排的，從頭排） */
+function rvAdd(q,k0){if(!user||!sum||!q)return;const uk=q.uk||(UN[q.u]&&UN[q.u].key),t=q.t;if(!uk||!t||uk==='wb')return;
+  const k=q.rvk||k0||qKey(q),R=rvAll(),now=Date.now(),e={u:uk,t,s:1,d:dAdd(dkey(),RV.gap[0]),a:now,r:'w',z:0,m:now};
+  if(q.cy!=null)e.c=q.cy;if(uk==='amr'){const m=/^〈(.+?)〉/.exec(q.text||'');if(m)e.p=m[1]}
+  R[k]=e;saveSum(true)}
+/* 老師目前設定的早自修範圍裡，有沒有這一題的題型 */
+function rvScope(e){const U=UN[ukIdx(e.u)];if(!U)return false;
+  if(e.u==='amc')return !!CY&&e.c!=null&&!!CY.L[e.c];
+  if(e.u==='amr')return !amX('z')&&!!window.AMZ&&AMZ.READ.some(p=>p.t===e.p);
+  if(!U.g||!U.g[e.t])return false;
+  if(e.u==='amz')return amX('z')&&amList('amz',AMP.zs).includes(e.t);
+  if(amX('m'))return e.u==='amx'&&amList('amx',AMP.ms).includes(e.t);
+  return AM_GEN.some(([k,t])=>k===e.u&&t===e.t)}
+/* 今天到期、範圍內的複習（最早到期的先排；同單元同題型一天只排一題） */
+function rvPlan(n){const td=dkey(),R=rvAll(),seen=new Set(),L=[];
+  Object.keys(R).map(k=>[k,R[k]]).filter(([,e])=>e&&!e.z&&e.d&&e.d<=td&&rvScope(e)).sort((a,b)=>a[1].d<b[1].d?-1:a[1].d>b[1].d?1:(a[1].m||0)-(b[1].m||0))
+    .forEach(([k,e])=>{const g=[e.u,e.t,e.c,e.p].join('|');if(L.length<Math.min(n,RV.perDay)&&!seen.has(g)){seen.add(g);L.push([k,e])}});return L}
+/* 出一題複習：同單元、同題型，盡量和原題、這一輪的其他題都不一樣 */
+function rvQ(k,e,avoid){const u=ukIdx(e.u);let q=null;
+  for(let i=0;i<20;i++){let c;
+    if(e.u==='amc'){const D=cyDay(dkey()),N=CY.L.length,learned=[...Array(D?Math.min(D.n,N):N).keys()];if(!learned.includes(e.c))learned.push(e.c);c=cyRevQ(e.c,learned,Math.random()<.5?1:0)}
+    else if(e.u==='amr'){const P=AMZ.READ.find(p=>p.t===e.p);c=amReadQ(P,pick(P.qs))}
+    else c=mkQ(u,e.t);
+    q=c;const ck=qKey(c);if(ck!==k&&!avoid.has(ck))break}
+  q.u=u;q.uk=e.u;q.t=q.t||e.t;q.rv=1;q.rvk=k;q.rvs=e.s;return q}
+/* 作答：只有「第一次就答對，沒看提示、例題」才算自己過 */
+function rvAnswer(q,res,det){const e=rvAll()[q.rvk];if(!e||e.z||e.s!==q.rvs||!e.d||e.d>dkey())return null;   // 別台已經做過（或今天還沒到期）就不再算
+  const td=dkey(),now=Date.now(),own=res==='ok'&&!(det&&(det.h||det.ex));
+  if(own){if(e.s>=RV.gap.length){e.z=1;e.d=''}else{e.s++;e.d=dAdd(td,RV.gap[e.s-1])}e.r='p'}
+  else{e.s=1;e.d=dAdd(td,RV.gap[0]);e.r='f'}
+  e.a=now;e.m=now;saveSum(true);return own}
+/* 首頁、早自修：今天會排幾題複習（和出題用同一套規則） */
+function amSlots(){const cN=CY&&cyDay(dkey())?cyQs().length:0;
+  const zN=amX('z')&&ukIdx('amz')>=0?4:window.AMZ&&AMZ.READ.length?Math.min(5,AMZ.READ[(sum.amr||0)%AMZ.READ.length].qs.length):0;return Math.max(0,10-cN-zN)}
+const rvTodayN=()=>sum?rvPlan(amSlots()).length:0;
+/* 已鞏固的舊紀錄、太多筆時清掉最舊的 */
+function rvPrune(){const R=sum&&sum.rv;if(!R)return;const old=Date.now()-RV.keep*864e5;for(const k in R){const e=R[k];if(!e||e.z&&(e.a||0)<old)delete R[k]}
+  const K=Object.keys(R);if(K.length>RV.max)K.sort((a,b)=>((R[a].z?0:1)-(R[b].z?0:1))||((R[a].m||0)-(R[b].m||0))).slice(0,K.length-RV.max).forEach(k=>delete R[k])}
 
 /* ===================== 遊戲＋排行榜 ===================== */
 let bg='tower';
@@ -2337,7 +2410,7 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
 const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
 function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';scrReset();const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
-  $('#prac').classList.toggle('en',isEn);$('#qno').textContent=`第 ${cur+1} 題`;const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
+  $('#prac').classList.toggle('en',isEn);$('#qno').innerHTML=`第 ${cur+1} 題`+(q.rv?'<small class="rvtag">複習</small>':'');const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
   const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none';$('#bigc').innerHTML=''}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
   stopAu();if(q.say||q.au)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
@@ -2473,7 +2546,7 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   const bh=rew?bossHit(round.res[cur]):0,pc=rew?PET.gain(round.res[cur]):0,fw=rew?FARM.gain(round.res[cur]):0;
   if(!rew){round.capped=1;if(!round.capNote){round.capNote=1;$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">今天這個單元的獎勵拿滿了</span>')}}
   else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
-  saveSum(round.got>0||rushed);if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
+  saveSum(round.got>0||rushed);if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.type==='grp'?'綠色的是正確答案，看一下再下一題':q.id&&q.type==='mc'?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
@@ -2504,6 +2577,7 @@ function endRound(){try{STATC=null;statPush()}catch(e){}const r=round.res,first=
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
   mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
   else mb('再練一回 ▶',()=>capOf(pu)?capModal(pu,()=>newRound()):newRound(),'go');
+  if(round.rvd&&round.rvd.length){const ok=round.rvd.filter(Boolean).length;$('#endsub').innerHTML+=`<div class="tkget rvdone">🔁 今天的複習做完了${ok===round.rvd.length?'，記得很牢！':'，過幾天再複習一次會更熟'}</div>`}
   if(round.capped)$('#endsub').innerHTML+=`<div class="tkget capn">今天「${unitName(pu)}」的獎勵拿滿了，換個單元繼續拿獎勵！</div>`;
   $('#end').classList.add('on');if(first>=8){sfx.win();confetti(70)}else sfx.done()}
 
@@ -2737,7 +2811,9 @@ async function amSave(){const pins=LS.get('learn601_pins',null),M=$('#ammsg');if
   for(const [s,r] of L){const P=r.p,plain=P.m!=='x'&&P.z!=='x';const v=plain?null:{m:P.m==='x'?'x':'g',ms:P.m==='x'?P.ms.slice():[],z:P.z==='x'?'x':'g',zs:P.z==='x'?P.zs.slice():[],t:Date.now()};
     try{await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/am`).set(v),10000);r.ch=false;ok++}catch(e){}}
   M.textContent=ok===L.length?`✅ 存好了（${ok} 人）`:`存好 ${ok} 人，${L.length-ok} 人失敗，再按一次`;amPaint()}
-tap($('#amload'),()=>amTeacher());tap($('#amsave'),()=>amSave());
+tap($('#amload'),()=>amTeacher());
+tap($('#qaopen'),async()=>{const M=$('#qaomsg');if(!LS.get('learn601_pins',null)){M.textContent='請先在 ① 選擇 pins.json（只有老師的電腦能用）';return}
+  M.textContent='載入中…';try{if(!window.QA)await loadJS('qa.js?v='+APP_VER);QA.mount();M.textContent='';$('#qaopen').hidden=true}catch(e){M.textContent='載入失敗，請檢查網路'}});tap($('#amsave'),()=>amSave());
 $('#amfile').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const M=$('#ammsg');
   if(!AMT){await amTeacher();if(!AMT)return}
   let o;try{o=JSON.parse(await f.text())}catch(x){M.textContent='這個檔案讀不懂';return}
@@ -2911,7 +2987,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v118';let verNew=false,verBusy=false;
+const APP_VER='learn601-v119';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
@@ -2922,10 +2998,13 @@ function verApply(){if(!verNew)return;
   if(Date.now()-last<120000)return;   // 2 分鐘內剛更新過就不再重來（網路上的檔案還沒全部換好時，避免一直重新載入）
   if(verSafe()){try{sessionStorage.setItem('learn601_vr',String(Date.now()))}catch(e){}location.reload();return}
   if(!document.getElementById('verbar')){const b=document.createElement('div');b.id='verbar';b.textContent='🔄 平台有新版本，回到首頁就會自動更新';document.body.appendChild(b)}}
-setTimeout(verCheck,2500);setInterval(()=>{if(document.visibilityState==='visible')verCheck()},300000);setInterval(verApply,15000);
+if(!/[?&]qa=1/.test(location.search))setTimeout(verCheck,2500);setInterval(()=>{if(document.visibilityState==='visible')verCheck()},300000);setInterval(verApply,15000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')verCheck()});addEventListener('pageshow',e=>{if(e.persisted)verCheck()});
 addEventListener('hashchange',()=>{if(location.hash==='#setup')openSetup()});
-if(location.hash==='#setup')openSetup();
+/* 老師頁「題目與素材檢查」的預覽畫面（learn.html?qa=1）：只有存過 pins.json 的老師電腦才會進入；只顯示題目，不登入、不作答、不記錄 */
+const QA_PV=/[?&]qa=1/.test(location.search)&&!!LS.get('learn601_pins',null);
+if(QA_PV){user=null;show$('prac');loadJS('qa.js?v='+APP_VER).then(()=>QA.pvInit())}
+else if(location.hash==='#setup')openSetup();
 else if(user){loadSum();enterHome()}
 else show$('login');
 </script>
