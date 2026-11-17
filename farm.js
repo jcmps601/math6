@@ -110,7 +110,7 @@
   const tst = () => { try { return !!(user && isTest(user.seat)); } catch (e) { return false; } };
   function F() {
     if (!sum) return null;
-    if (!sum.farm || !Array.isArray(sum.farm.p)) sum.farm = { xp: 0, water: START_WATER, fert: 1, p: Array(MAXP).fill(0), store: {}, log: [], u: Date.now() };
+    if (!sum.farm || !Array.isArray(sum.farm.p)) sum.farm = { xp: 0, water: START_WATER, fert: 1, p: Array(MAXP).fill(0), store: {}, log: [], u: 0, b: Date.now() };   // 新開的空農場：u 0、b 記開農場的時間（跟雲端合併時，雲端原本的農場不會被這份空的蓋掉）
     const f = sum.farm; f.store = f.store || {}; f.log = f.log || []; while (f.p.length < MAXP) f.p.push(0);
     if (tst()) {   // 測試帳號（98、99）：水、肥料用不完，農場直接升到最高解鎖等級（12 塊田、所有種子）
       if ((f.water || 0) < 999) f.water = 999; if ((f.fert || 0) < 99) f.fert = 99;
