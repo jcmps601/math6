@@ -122,7 +122,7 @@ button{font-family:inherit;cursor:pointer}
 .sw-random{background:conic-gradient(#6cd35c,#f2c46d,#e9f2fb,#ff8e5e,#5fbaff,#353b74,#d9774a,#6cd35c)}
 .sw-grass{background:linear-gradient(#5fb6ff 50%,#6cd35c 50%)}.sw-desert{background:linear-gradient(#6fb9ef 50%,#f2c46d 50%)}.sw-snow{background:linear-gradient(#8fbdea 50%,#fff 50%)}
 .sw-volcano{background:linear-gradient(#ff8e5e 50%,#ff5a1f 50%)}.sw-islands{background:linear-gradient(#5fbaff 50%,#3aa0e0 50%)}.sw-moon{background:linear-gradient(#1d2a5c 50%,#cfd0de 50%)}.sw-canyon{background:linear-gradient(#ffb98a 50%,#d9774a 50%)}
-.slot img.sk{width:3.4rem;height:auto;flex:none}
+.slot img.sk{width:3.8rem;height:auto;flex:none}
 .btn.gar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}.btn.gar small{font-size:.75em;color:#9a7a52}
 #ovSt:empty{display:none}
 @media (max-width:560px){.sites button{font-size:.85rem;flex-direction:column;gap:.1rem}}
@@ -390,7 +390,7 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
   document.querySelectorAll('#modes button').forEach(b=>{b.classList.toggle('on',b.dataset.m===mode);b.disabled=!host});
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
-    const ci=mode==='team'?i:i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?'📴 離線':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">✅ 準備好了</span>':'⏳ 還沒準備'}</small></div></div>`}).join('');
+    const ci=mode==='team'?i:i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?'📴 離線':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">✅ 準備好了</span>':'⏳ 還沒準備'}</small></div></div>`}).join('');
   const ready=SLOTS.filter(isRdy).length,why=startBlock(),mr=isRdy(G.slot);
   $('#bStart').hidden=!host;$('#bStart').disabled=!!why;
   const rb=$('#bReady');rb.textContent=mr?'取消準備':'✋ 我準備好了';rb.disabled=!mr&&(!hasTicket()||st.phase==='play');
