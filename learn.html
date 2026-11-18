@@ -818,6 +818,7 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
 
 /* 帶回家前準備 */
 .offc{max-width:30rem;text-align:left}
+#offpill{position:fixed;right:1rem;bottom:1rem;z-index:60;border:3px solid #ffc078;background:#fff4e6;color:#e8590c;font-weight:900;font-size:1rem;border-radius:999px;padding:.55rem 1rem;box-shadow:0 4px 14px rgba(0,0,0,.15)}#offpill.ok{border-color:#8ce99a;background:#ebfbee;color:#2b8a3e}#offpill.bad{border-color:#ffa8a8;background:#fff5f5;color:#c92a2a}#offpill[hidden]{display:none}
 #offm .rmt,#offlw .rmt{font-size:1.5rem;font-weight:900;color:#2e7554;margin:.3rem 0}#offlw .rmt{color:#c2255c}#offm .rms,#offlw .rms{font-size:1.05rem;color:#555;font-weight:800;line-height:1.6}
 #offlw .pmc{max-width:26rem;text-align:center}#offlw img{width:6rem;height:6rem;object-fit:contain}.offr b{font-size:1.05rem}.offb button{font-size:1.15rem;padding:.5rem 1.4rem}.offc .rmt,.offc .rms{text-align:center}.offr{display:flex;flex-direction:column;padding:.45rem .7rem;border-radius:12px;margin:.35rem 0;background:#ebfbee}.offr.no{background:#fff5f5}
 .offr small{color:#868e96;font-weight:700}#offp{display:flex;align-items:center;gap:.6rem;margin:.5rem 0}#offp[hidden]{display:none}.offb{display:flex;gap:.5rem;justify-content:center;margin-top:.6rem}
@@ -1657,22 +1658,37 @@ async function offRun(onp,stop){if(!('caches' in window))return {err:'這個瀏�
   await Promise.all([1,2,3,4].map(work));
   try{if(navigator.storage&&navigator.storage.persist)await navigator.storage.persist()}catch(e){}   // 請瀏覽器不要自動清掉
   const r={v:APP_VER,t:Date.now(),n:L.length,ok:done-fail.length,fail:fail.length};if(!stop.v)LS.set(OFF_K,r);return Object.assign(r,{stop:!!stop.v,fl:fail.slice(0,5)})}
-function offPrep(){const m=el('div','pmod','');m.id='offm';const stop={v:false};
-  const paint=()=>{const net=navigator.onLine&&!!db&&online,ios=isIOS(),home=!ios||isStandalone(),r=LS.get(OFF_K,null);
+/* 下載工作放在外面：關掉視窗（縮小）也會繼續下載，右下角小標籤顯示進度，點它可以再打開 */
+let OFFJ=null;
+function offPill(){let p=document.getElementById('offpill');const j=OFFJ;
+  if(!j){p&&p.remove();return}
+  if(!p){p=el('button','','');p.id='offpill';document.body.appendChild(p);tap(p,()=>{if(!document.getElementById('offm'))offPrep()})}
+  p.className=j.res?(j.res.err||j.res.fail?'bad':'ok'):'';
+  p.textContent=j.res?(j.res.err||j.res.fail?'🎒 有檔案沒下載到，點這裡再試':'🎒 帶回家準備好了 ✅'):`🎒 背景下載中 ${j.a} / ${j.n||'…'}`;
+  p.hidden=!!document.getElementById('offm')}
+function offStart(){if(OFFJ&&!OFFJ.res)return;const j=OFFJ={a:0,n:0,res:null,stop:{v:false}};offPill();
+  offRun((a,n)=>{j.a=a;j.n=n;offPaintP();offPill()},j.stop).then(r=>{j.res=r;offPill();
+    const m=document.getElementById('offm');if(m&&m._paint)m._paint();
+    else toast(r.err?'❗ '+r.err:r.fail?`有 ${r.fail} 個檔案沒下載到，網路順一點時再按一次`:'🎒 帶回家準備好了！');
+    if(!r.err&&!r.fail)setTimeout(()=>{if(OFFJ===j){OFFJ=null;offPill()}},6000)})}
+function offPaintP(){const m=document.getElementById('offm'),j=OFFJ;if(!m||!j)return;const P=m.querySelector('#offp');if(!P)return;P.hidden=false;
+  const pc=j.res?100:j.n?Math.round(j.a/j.n*100):0;P.querySelector('i').style.width=pc+'%';const r=j.res;
+  P.querySelector('span').textContent=!r?`下載中 ${j.a} / ${j.n||'…'}`:r.err?'❗ '+r.err:r.fail?`有 ${r.fail} 個檔案沒下載到，網路順一點時再按一次`:`✅ 準備好了，共 ${r.n} 個檔案`}
+function offPrep(){const m=el('div','pmod','');m.id='offm';
+  const paint=()=>{const net=navigator.onLine&&!!db&&online,ios=isIOS(),home=!ios||isStandalone(),r=LS.get(OFF_K,null),busy=!!OFFJ&&!OFFJ.res;
     const row=(ok,t,s)=>`<div class="offr ${ok?'ok':'no'}"><b>${ok?'✅':'❗'} ${t}</b>${s?`<small>${s}</small>`:''}</div>`;
+    const d=r&&new Date(r.t);
     m.innerHTML=`<div class="pmc offc"><div class="rmt">帶回家前準備</div><div class="rms">在學校有網路時先準備好，回家沒有網路也能練習。<br>做的題目會先存在 iPad 裡，回學校連上網路、打開平台就會自動上傳。</div>
       ${row(home,'從主畫面打開',home?'':'請先在 Safari 按「分享 → 加入主畫面」，再從主畫面的「601學習」打開、登入，然後回來這裡準備')}
       ${row(net,net?'現在有網路':'現在沒有網路',net?'':'要在學校有網路的地方準備')}
       ${row(!Q.length,Q.length?`還有 ${Q.length} 筆進度等待上傳`:'進度都上傳了',Q.length?'連上網路會自動上傳':'')}
-      ${row(offReady(),offReady()?`已經準備好（${new Date(r.t).getMonth()+1}/${new Date(r.t).getDate()}）`:r&&r.v!==APP_VER?'平台更新過，要再準備一次（很快）':'還沒準備',offReady()?'可以帶回家了！不要登出喔':'')}
+      ${busy?row(false,'正在下載…','可以按「縮小」先去練習，下載會繼續；但不要離開平台或鎖螢幕'):row(offReady(),offReady()?`已經準備好了（${d.getMonth()+1}月${d.getDate()}日完成）`:r&&r.v!==APP_VER?'平台更新過，要再準備一次（很快）':'還沒準備',offReady()?'可以帶回家了！不要登出喔':'')}
       <div id="offp" hidden><div class="qabar"><i></i></div><span></span></div>
-      <div class="offb"><button class="go" id="offgo" ${home&&net?'':'disabled'}>${offReady()?'再檢查一次':'開始準備'}</button><button class="gray" id="offx">關閉</button></div></div>`;
-    tap(m.querySelector('#offx'),()=>{stop.v=true;m.remove()});
-    tap(m.querySelector('#offgo'),async()=>{const b=m.querySelector('#offgo');if(b.disabled)return;b.disabled=true;const P=m.querySelector('#offp');P.hidden=false;
-      const r2=await offRun((a,n)=>{P.querySelector('i').style.width=Math.round(a/n*100)+'%';P.querySelector('span').textContent=`下載中 ${a} / ${n}`},stop);
-      if(!document.getElementById('offm'))return;paint();const P2=m.querySelector('#offp');P2.hidden=false;P2.querySelector('i').style.width='100%';
-      P2.querySelector('span').textContent=r2.err?'❗ '+r2.err:r2.fail?`有 ${r2.fail} 個檔案沒下載到，網路順一點時再按一次`:`✅ 準備好了，共 ${r2.n} 個檔案`})};
-  document.body.appendChild(m);paint()}
+      <div class="offb"><button class="go" id="offgo" ${home&&net&&!busy?'':'disabled'}>${busy?'下載中…':offReady()?'再檢查一次':'開始準備'}</button><button class="gray" id="offx">${busy?'縮小':'關閉'}</button></div></div>`;
+    tap(m.querySelector('#offx'),()=>{m.remove();offPill()});
+    tap(m.querySelector('#offgo'),()=>{if(m.querySelector('#offgo').disabled)return;offStart();paint()});
+    if(OFFJ)offPaintP()};
+  m._paint=paint;document.body.appendChild(m);paint();offPill()}
 function offLogoutWarn(){flush();const m=el('div','pmod','');m.id='offlw';m.innerHTML=`<div class="pmc"><img src="img/ui/mascot-think.webp" alt=""><div class="rmt">先不要登出喔！</div>
   <div class="rms">還有 ${Q.length} 筆進度還沒上傳到雲端。<br>連上網路、等右上角變成「進度已儲存」再登出，<br>不然這些進度會傳不上去。</div><button class="go">知道了</button></div>`;
   document.body.appendChild(m);tap(m.querySelector('button'),()=>m.remove())}
@@ -3045,7 +3061,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v121';let verNew=false,verBusy=false;
+const APP_VER='learn601-v122';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
