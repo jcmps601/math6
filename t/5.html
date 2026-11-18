@@ -297,32 +297,39 @@ const F=v=>({fx:String(v)});                       // 已填好
    ① 找對應：已知的實際數量對到它的份數　② 1 份是多少　③ 用份數乘回去
    比的數字是「幾份」（藍、橘），實際數量帶單位（綠），不會混在一起 */
 const AC='#2b8a3e';
-function portion(c,cfg){const N=cfg.cols.length,x0=200,W=780,cw=W/N,yB=150,hB=74,yV=330,hV=86;let st=cfg.pre?-1:0;const per=cfg.per;
+function portion(c,cfg){const N=cfg.cols.length,X0=165,X1=975,G=30,MINW=230,yB=150,hB=74,yV=330,hV=86;let st=cfg.pre?-1:0;const per=cfg.per;
+  /* 每一份一樣寬：找出最大的 u，讓所有欄放得下 */
+  const need=u=>cfg.cols.reduce((a,o)=>a+Math.max(o.p*u,MINW),0)+G*(N-1);
+  let u=64;while(u>4&&need(u)>X1-X0)u-=.25;
+  const ws=cfg.cols.map(o=>Math.max(o.p*u,MINW));let x=X0+(X1-X0-need(u))/2;
   const L=mk(svg,'g',cfg.pre?{opacity:0}:{});
-  txt(L,95,yB+hB/2+12,'比',{'font-size':40,fill:'#555'});txt(L,95,yB+hB/2+48,'（幾份）',{'font-size':24,fill:'#888'});
-  txt(L,95,yV+hV/2+2,'實際',{'font-size':40,fill:AC});txt(L,95,yV+hV/2+36,'數量',{'font-size':30,fill:AC});
+  txt(L,85,yB+hB/2+12,'比',{'font-size':40,fill:'#555'});txt(L,85,yB+hB/2+48,'（幾份）',{'font-size':24,fill:'#888'});
+  txt(L,85,yV+hV/2+2,'實際',{'font-size':40,fill:AC});txt(L,85,yV+hV/2+36,'數量',{'font-size':30,fill:AC});
   mk(L,'line',{x1:40,y1:yV-38,x2:980,y2:yV-38,stroke:'#eee','stroke-width':3,'stroke-dasharray':'8 8'});
-  const cols=cfg.cols.map((o,i)=>{const cx=x0+cw*(i+.5),bw=Math.min(cw-36,o.p*64),bx=cx-bw/2,u=bw/o.p,col=o.c||(i===0?PQ:HQ);
-    txt(L,cx,yB-28,o.n,{'font-size':38,fill:'#333'});
+  const fitFs=(s,w,max)=>{const un=[...String(s)].reduce((a,ch)=>a+(/[⺀-￿]/.test(ch)?1:.6),0);return Math.min(max,w/un)};
+  const cols=cfg.cols.map((o,i)=>{const cw=ws[i],cx=x+cw/2;x+=cw+G;const bw=o.p*u,bx=cx-bw/2,col=o.c||(i===0?PQ:HQ);
+    txt(L,cx,yB-28,o.n,{'font-size':fitFs(o.n,cw,38),fill:'#333'});
     const cells=[];for(let k=0;k<o.p;k++)cells.push(mk(L,'rect',{x:bx+k*u,y:yB,width:u,height:hB,fill:o.tot?'#f3f0ff':(i===0?'#e7f5ff':'#fff4e6'),stroke:col,'stroke-width':u<20?2:4,rx:u<20?2:6}));
-    txt(L,cx,yB+hB+44,(o.pl||o.p)+' 份',{'font-size':36,fill:col});
-    const box=mk(L,'rect',{x:cx-cw/2+18,y:yV,width:cw-36,height:hV,rx:18,fill:'#fff',stroke:o.v!=null?AC:'#ced4da','stroke-width':4,'stroke-dasharray':o.v!=null?'':'10 8'});
-    const vt=txt(L,cx,yV+hV/2+14,o.v!=null?o.v+' '+cfg.u:'？',{'font-size':o.v!=null?40:46,fill:o.v!=null?AC:'#adb5bd'});
-    return {o,cx,bx,u,cells,col,box,vt}});
+    const pl=(o.pl||o.p)+' 份';txt(L,cx,yB+hB+44,pl,{'font-size':fitFs(pl,cw+G-6,36),fill:col});
+    const box=mk(L,'rect',{x:cx-cw/2,y:yV,width:cw,height:hV,rx:18,fill:'#fff',stroke:o.v!=null?AC:'#ced4da','stroke-width':4,'stroke-dasharray':o.v!=null?'':'10 8'});
+    const vs=o.v!=null?o.v+' '+cfg.u:'？';const vt=txt(L,cx,yV+hV/2+14,vs,{'font-size':o.v!=null?fitFs(vs,cw-24,40):46,fill:o.v!=null?AC:'#adb5bd'});
+    return {o,cx,cw,bx,u,cells,col,box,vt}});
   const K=cols[cfg.known];
   if(cfg.pre){const P0=mk(svg,'g');cfg.pre.draw(P0);const b0=c.tool(cfg.pre.lab,()=>{if(st!==-1)return;st=-2;b0.disabled=true;cfg.pre.go(P0);
     later(1500,()=>{P0.remove();L.setAttribute('opacity',1);st=0})},true)}
   const b1=c.tool('① 找對應',()=>{if(st!==0)return;st=1;
-    mk(svg,'rect',{x:K.cx-cw/2+6,y:yB-70,width:cw-12,height:yV+hV-yB+84,rx:22,fill:'none',stroke:'#fcc419','stroke-width':6,class:'popin'});
+    mk(svg,'rect',{x:K.cx-K.cw/2-12,y:yB-70,width:K.cw+24,height:yV+hV-yB+84,rx:22,fill:'none',stroke:'#fcc419','stroke-width':6,class:'popin'});
     qArrow(svg,K.cx,yB+hB+56,K.cx,(yB+hB+56+yV-6)/2,K.cx,yV-6,'#f59f00',{cls:'popin',L:24,W:14,sw:6});   // 直直往下：這幾份＝這個實際數量
     pill(svg,500,505,`${K.o.p} 份 ＝ ${K.o.v} ${cfg.u}`,'#e67700',{fs:42});b1.disabled=true},true);
   const b2=c.tool('② 1 份是多少',()=>{if(st!==1)return;st=2;b2.disabled=true;
-    cols.forEach(Q=>Q.cells.forEach((r,k)=>later(30*k,()=>{if(Q.u>=40)txt(svg,Q.bx+Q.u*(k+.5),yB+hB/2+13,String(per),{'font-size':Math.min(36,Q.u*.62),fill:Q.col,stroke:'none',class:'popin'})})));
-    cols.filter(Q=>Q.u<40).forEach(Q=>txt(svg,Q.cx,yB+hB/2+12,`每份 ${per}`,{'font-size':32,fill:Q.col,class:'popin'}));
+    if(u>=40)cols.forEach(Q=>Q.cells.forEach((r,k)=>later(30*k,()=>txt(svg,Q.bx+u*(k+.5),yB+hB/2+13,String(per),{'font-size':Math.min(36,u*.62),fill:Q.col,stroke:'none',class:'popin'}))));
+    else cols.forEach(Q=>{const s=`每份 ${per}`;const w=fitFs(s,Q.cw,32)*([...s].reduce((a,ch)=>a+(/[⺀-￿]/.test(ch)?1:.6),0))+20;
+      mk(svg,'rect',{x:Q.cx-w/2,y:yB+hB/2-22,width:w,height:44,rx:12,fill:'#fff',stroke:Q.col,'stroke-width':3,class:'popin'});
+      txt(svg,Q.cx,yB+hB/2+11,s,{'font-size':fitFs(s,Q.cw,32),fill:Q.col,class:'popin'})});
     pill(svg,500,505,`1 份 ＝ ${K.o.v} ÷ ${K.o.p} ＝ ${per} ${cfg.u}`,'#e67700',{fs:42})},true);
   const b3=c.tool('③ 算出答案',()=>{if(st!==2)return;st=3;b3.disabled=true;
     cfg.ask.forEach((i,j)=>later(350*j,()=>{const Q=cols[i];Q.box.setAttribute('stroke',AC);Q.box.setAttribute('stroke-dasharray','');Q.box.setAttribute('fill','#ebfbee');
-      const t=`${Q.o.p}×${per}＝${(Q.o.p*per)} ${cfg.u}`;Q.vt.textContent=t;Q.vt.setAttribute('fill',AC);const un=[...t].reduce((a,ch)=>a+(/[\u2e80-\uffff]/.test(ch)?1:.6),0);Q.vt.setAttribute('font-size',Math.min(40,(cw-60)/un));}));
+      const t=`${Q.o.p}×${per}＝${(Q.o.p*per)} ${cfg.u}`;Q.vt.textContent=t;Q.vt.setAttribute('fill',AC);Q.vt.setAttribute('font-size',fitFs(t,Q.cw-24,40));}));
     later(350*cfg.ask.length,()=>c.done())},true);
   return cols}
 const PAGES=[
