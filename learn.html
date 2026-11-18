@@ -118,6 +118,14 @@ button{font-family:inherit;cursor:pointer}
 #vback{border:0;border-radius:14px;background:var(--o);color:#fff;font-size:1.3rem;font-weight:900;padding:.35rem 1rem;box-shadow:0 3px 0 #e8590c}
 #vtitle{font-size:1.3rem;font-weight:900;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #vframe{flex:1;border:0;width:100%}
+body.vw #bnav{display:none!important}   /* 開遊戲、教具時不顯示下方選單（上面有「回平台」），不然手機會擋住畫面 */
+@media (orientation:landscape) and (max-height:560px){   /* 手機橫拿：上方標題列、下方選單變矮，留更多畫面 */
+ #vbar{padding:.2rem .5rem;border-bottom-width:2px}#vback{font-size:1.05rem;padding:.2rem .8rem;box-shadow:0 2px 0 #e8590c}#vtitle{font-size:1.05rem}
+ #bnav{padding:.15rem .3rem calc(.15rem + env(safe-area-inset-bottom))!important}
+ #bnav button{flex-direction:row!important;justify-content:center;gap:.35rem!important;min-height:2.4rem!important;font-size:.95rem!important;padding:.1rem 0!important}
+ #bnav button img.ico{width:1.5rem!important;height:1.5rem!important}#bnav .bmore{font-size:1.3rem!important;line-height:1.5rem!important;height:1.5rem!important}
+ #pane{padding-bottom:calc(3.4rem + env(safe-area-inset-bottom))!important}
+}
 /* ===== 練習 ===== */
 #prac{display:none}#prac.on{display:grid;grid-template-columns:11rem 1fr;width:100%}
 #pnav{background:#fff;border-right:3px solid var(--line);display:flex;flex-direction:column;gap:.7rem;padding:.8rem .6rem}
@@ -2355,10 +2363,10 @@ let vt=null,vtStart=0,vtFrom='home';
 /* 每次換一個新的 iframe:這樣 iframe 裡換頁不會多出「上一頁」的紀錄(上一頁一定是回到平台) */
 function frameGo(u){const old=document.getElementById('vframe'),fr=document.createElement('iframe');fr.id='vframe';fr.title='教具';if(u&&u!=='about:blank')fr.src=u;old.replaceWith(fr)}
 function openTool(t,from){vt=t;vtStart=Date.now();vtFrom=from||'home';document.getElementById('vtitle').textContent=t.n;frameGo(t.f);
-  document.getElementById('viewer').classList.add('on');history.pushState({v:1},'')}
+  document.getElementById('viewer').classList.add('on');document.body.classList.add('vw');history.pushState({v:1},'')}
 function closeTool(){if(!vt)return;const sec=Math.round((Date.now()-vtStart)/1000);
   sum.tv[vt.id]=(sum.tv[vt.id]||0)+1;saveSum(true);logPush({k:'v',tool:vt.id,sec});vt=null;
-  document.getElementById('viewer').classList.remove('on');frameGo('about:blank');if(vtFrom==='home')render();setTimeout(resolveXqPending,2500)}
+  document.getElementById('viewer').classList.remove('on');document.body.classList.remove('vw');frameGo('about:blank');if(vtFrom==='home')render();setTimeout(resolveXqPending,2500)}
 tap(document.getElementById('vback'),()=>history.back());
 addEventListener('popstate',()=>{if(vt){
     /* 下棋下到一半按上一頁/回平台:先問,確定就算輸 */
@@ -3099,7 +3107,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v124';let verNew=false,verBusy=false;
+const APP_VER='learn601-v125';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
