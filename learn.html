@@ -1500,6 +1500,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.b||0)!==(A.b||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
+  if(r.qd&&r.qd.d===dkey()){if(!sum.qd||sum.qd.d!==r.qd.d)sum.qd={d:r.qd.d,k:(r.qd.k||[]).slice()};else sum.qd.k=[...new Set([...(sum.qd.k||[]),...(r.qd.k||[])])]}   // 今天做過的題目
   sum.amr=mx(sum.amr,r.amr);   // 早自修讀到第幾篇
   if(r.rv){sum.rv=sum.rv||{};for(const k in r.rv){const a=sum.rv[k],b=r.rv[k];if(b&&(!a||(b.m||0)>(a.m||0)))sum.rv[k]=b}}   // 延後複習：每一筆看比較新的
   if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
@@ -2420,6 +2421,17 @@ const ukeyOf=k=>k==='wb'||k==null?null:typeof k==='string'?k:(UN[k]&&UN[k].key);
 function uqDay(){const d=dkey();if(!sum.uq||sum.uq.d!==d)sum.uq={d,u:{}};sum.uq.u=sum.uq.u||{};return sum.uq}
 const uqN=key=>key?(uqDay().u[key]||0):0;
 const capOf=k=>{const key=ukeyOf(k);return !!key&&uqN(key)>=UNIT_CAP};
+/* 防刷題（同一題）：同一題今天已經做過（拿過獎勵），再做一次只算練習，不加今日任務、題數、遊戲券、金幣……
+   ・用題目指紋 qKey 記在 sum.qd = {d:今天, k:[指紋]}（跟著摘要同步，兩台平板合起來算）
+   ・錯題本另外算（前面加 w:）：今天在單元做錯、再到錯題本做對，錯題本那次照樣有獎勵 */
+function qdDay(){const d=dkey();if(!sum.qd||sum.qd.d!==d)sum.qd={d,k:[]};sum.qd.k=sum.qd.k||[];return sum.qd}
+const qdKey=q=>(pu==='wb'?'w:':'')+qKey(q);
+const qdHas=q=>qdDay().k.includes(qdKey(q));
+const qdAdd=q=>{const D=qdDay(),k=qdKey(q);if(!D.k.includes(k))D.k.push(k)};
+/* 早自修中途離開：記住今天這 10 題和做到哪裡，下次「繼續」從下一題開始，不會回到第一題 */
+const amRunK=()=>'learn601_amrun_'+(user?user.seat:0);
+function amRunSave(){if(pu!=='am'||!round)return;LS.set(amRunK(),{d:dkey(),qs:round.qs,res:round.res,det:round.det,amr:round.amr,lgd:round.lgd||[]})}
+function amRunLoad(){const R=LS.get(amRunK(),null);if(!R||R.d!==dkey()||!Array.isArray(R.qs)||!R.qs.length||!R.res.some(x=>!x))return null;return R}
 const unitName=k=>{if(k==='am')return '早自修';const key=ukeyOf(k),U=key&&(UN.find(u=>u.key===key)||mixByKey(key));return U?U.name:''};
 /* 今天還能拿獎勵的單元：同一科優先、還沒練過的優先 */
 function capAlt(k){const key=ukeyOf(k),cur=UN.find(u=>u.key===key)||mixByKey(key),sj=cur?cur.s:subj;
@@ -2447,22 +2459,23 @@ function newRound(){let qs;
     us.forEach((u,j)=>{const ts=shuf([...new Set(UN[u].types)]);for(let c=0;c<cnt[j];c++)items.push([u,ts[c%ts.length]])});
     items=shuf(items);for(let i=1;i<items.length;i++)if(items[i][0]===items[i-1][0]){const j=items.findIndex((x,k)=>k>i&&x[0]!==items[i-1][0]);if(j>0)[items[i],items[j]]=[items[j],items[i]]}
     qs=items.map(([u,t])=>genQ(u,t))}
-  else if(pu==='am')qs=amQs();
+  else if(pu==='am'){const R=amRunLoad();if(R){N=R.qs.length;round={qs:R.qs,res:R.res,det:R.det,t0:Date.now(),logged:false,lgd:R.lgd||[],amr:R.amr};AMK=R.amr;cur=R.res.findIndex(x=>!x);showQ();paintDots();paintP();return}
+    qs=amQs()}
   else if(pu==='wb'){const W=wbLoad();qs=W.slice(0,10).map(x=>{const q=JSON.parse(JSON.stringify(x.q)),j=fixU(q,'wb');if(j!=null)q.u=j;return q})}
   else qs=listFor(UN[pu].types,10).map(t=>genQ(pu,t));
   N=qs.length;
   qs.forEach(q=>{if(q.u!=null&&UN[q.u])q.uk=UN[q.u].key});
-  round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,uk:q.uk,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false,amr:pu==='am'?AMK:null};cur=0;showQ()}
+  round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,uk:q.uk,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false,lgd:[],amr:pu==='am'?AMK:null};cur=0;amRunSave();showQ()}
 function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
   const t=document.getElementById('ptk');if(t)t.innerHTML=`${ico('rw-ticket','ii')}× ${tkN()}<small>這輪 ${sum.tc||0}/10・得 ${sum.tco||0} 分</small>`}
 const tkLeft=()=>TK_EVERY-(sum.tc||0);
 const tkInfo=()=>`這輪做了 ${sum.tc||0}/10 題，得 ${sum.tco||0} 分`;
 function toast(t){if(/🎟️ 答對/.test(t)){sfx.ticket();confetti(40)}const e=document.getElementById('toast');e.textContent=t;e.classList.remove('on');void e.offsetWidth;e.classList.add('on')}
 function paintDots(){const D=document.getElementById('dots');D.innerHTML='';round.res.forEach((r,i)=>{const e=el('i',r||'');if(i===cur)e.classList.add('cur');D.appendChild(e)})}
-function logRound(partial){if(!round||round.logged)return;const n=round.res.filter(x=>x).length;if(!n)return;round.logged=true;
-  const first=round.res.filter(x=>x==='ok').length,all=round.res.filter(x=>x==='ok'||x==='ok2').length;
-  logPush({k:'p',unit:typeof pu==='string'?pu:UN[pu].key,n,first,all,sec:Math.round((Date.now()-round.t0)/1000),part:partial?1:0,q:round.det.filter((d,i)=>round.res[i]).map((d,i)=>Object.assign({r:round.res[i]},d))});
-  saveSum(true)}
+function logRound(partial){if(!round)return;const L=round.lgd=round.lgd||[],ix=round.res.map((x,i)=>x&&!L[i]?i:-1).filter(i=>i>=0);if(!ix.length)return;ix.forEach(i=>L[i]=1);round.logged=true;
+  const R=ix.map(i=>round.res[i]),first=R.filter(x=>x==='ok').length,all=R.filter(x=>x==='ok'||x==='ok2').length;
+  logPush({k:'p',unit:typeof pu==='string'?pu:UN[pu].key,n:ix.length,first,all,sec:Math.round((Date.now()-round.t0)/1000),part:partial?1:0,q:ix.map(i=>Object.assign({r:round.res[i]},round.det[i]))});
+  amRunSave();saveSum(true)}
 function leavePractice(){stopAu();$('#teach').classList.remove('on');logRound(true);if(!user)return show$('login');document.getElementById('end').classList.remove('on');enterHome()}
 tap(document.getElementById('pback'),()=>history.back());
 
@@ -2606,7 +2619,7 @@ function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div 
 const dis=(b,v)=>{b.disabled=v;b.classList.toggle('off',v)};
 function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),true);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
-  const uk=ukeyOf(pu),rew=!uk||uqN(uk)<UNIT_CAP;if(uk){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵
+  const uk=ukeyOf(pu),dup=qdHas(q),rew=!dup&&(!uk||uqN(uk)<UNIT_CAP);if(uk&&!dup){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}if(!dup)qdAdd(q);   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵；同一題今天做過就不再加
   const k=dkey();if(rew){dvAdd(k);sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
   const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):q.type==='grp'?0.5:1;   // 這題的遊戲券分數
   let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
@@ -2616,9 +2629,11 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
     if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 得 ${n} 分，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
     else{round.miss=(round.miss||0)+1;toast(`這 10 題得 ${n} 分，要 ${TK_NEED} 分才有券`)}}
   const bh=rew?bossHit(round.res[cur]):0,pc=rew?PET.gain(round.res[cur]):0,fw=rew?FARM.gain(round.res[cur]):0;
-  if(!rew){round.capped=1;if(!round.capNote){round.capNote=1;$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">今天這個單元的獎勵拿滿了</span>')}}
+  if(dup){$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">這題今天做過了，這次只算練習</span>')}
+  else if(!rew){round.capped=1;if(!round.capNote){round.capNote=1;$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">今天這個單元的獎勵拿滿了</span>')}}
   else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
-  saveSum(round.got>0||rushed);if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
+  if(pu==='am'&&round.amr!=null&&round.res.every(x=>x))sum.amr=Math.max(sum.amr||0,round.amr+1);   // 10 題都做完（還沒按看結果就離開也算）：閱讀測驗下次換下一篇
+  saveSum(round.got>0||rushed);amRunSave();if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.type==='grp'?'綠色的是正確答案，看一下再下一題':q.id&&q.type==='mc'?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
@@ -2639,6 +2654,7 @@ function bankReveal(q){const c=$('#bigc');let filled=false;
 function nextQ(){if(!solved)return;if(cur<N-1){cur++;showQ()}else endRound()}
 function endRound(){try{STATC=null;statPush()}catch(e){}const r=round.res,first=r.filter(x=>x==='ok').length,all=r.filter(x=>x==='ok'||x==='ok2').length,bk=typeof pu==='string'?pu:UN[pu].key;
   if(pu!=='wb'&&first>(sum.best[bk]||0))sum.best[bk]=first;
+  if(pu==='am')LS.del(amRunK());
   if(pu==='am'&&round.amr!=null){sum.amr=Math.max(sum.amr||0,round.amr+1);saveSum(true)}   // 閱讀測驗下一次換下一篇
   const got=round.got||0;
   logRound(false);
@@ -3061,7 +3077,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v122';let verNew=false,verBusy=false;
+const APP_VER='learn601-v123';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
