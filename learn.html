@@ -906,7 +906,7 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
  </div>
  <div class="cd" id="amt">
   <div class="dhead"><b>🌅 早自修分組</b><button id="amload">讀取</button><button id="amsave">儲存</button><label class="amimp">📂 匯入分組檔<input type="file" id="amfile" accept=".json,application/json" hidden></label><span id="ammsg"></span></div>
-  <div class="amnote">沒設定的學生是「一般」：每天 1 篇閱讀測驗＋數學計算，共 10 題。「學扶」可以數學、國語分開設，再勾要練的題型（都不勾＝全部題型）。<br>設定存在每位學生自己的雲端資料裡，同學看不到；網站的程式裡不會有任何人的分組。</div>
+  <div class="amnote">每天 15 題，先做 2 題成語。沒設定的學生是「一般」：1 篇閱讀測驗，剩下的國語、數學各一半，從學習頁目前的範圍出（國語第 7 課起、數學期末範圍的單元；新增單元會自動加入）。「學扶」可以數學、國語分開設，再勾要練的題型（都不勾＝全部題型），成語以外國語、數學各一半。<br>設定存在每位學生自己的雲端資料裡，同學看不到；網站的程式裡不會有任何人的分組。</div>
   <div id="amout"></div>
  </div>
  <div class="cd" id="qacard">
@@ -1332,12 +1332,18 @@ function bankQ(it,s){if(it.grp)return grpQ(it,s);if(s==='en'){const o={};for(con
     say:it.say||'',au:it.au||'',rv:it.reveal||'',hd:it.au&&it.exp?it.exp:'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
     subj:s,kind,hints:it.hint?[].concat(it.hint):KIND_HINT[kind].slice(),
     sol:it.au?[]:[].concat(it.exp||[])}}   // 聽力題答完把聽到的內容放在播音鍵下面(bankReveal)
+/* 國語：期末範圍從第 L_FROM.zh 課開始；同一個項目裡更早的課（題目的 l 比較小）自動放到「複習」區，跟數學的舊單元一樣 */
+const L_FROM={zh:7};
 (()=>{const B=window.BANK||{};SUBJ.forEach(S=>(B[S.k]||[]).forEach((d,i)=>{
-  const items=(d.items||[]).filter(it=>it&&it.q&&(Array.isArray(it.grp)&&it.grp.length||Array.isArray(it.opts)&&it.opts.includes(it.a)));
-  const by={};items.forEach(it=>{const t=it.t||'題目';(by[t]=by[t]||[]).push(it)});
-  const g={};for(const t in by)g[t]=()=>bankQ(pick(by[t]),S.k);
+  const all=(d.items||[]).filter(it=>it&&it.q&&(Array.isArray(it.grp)&&it.grp.length||Array.isArray(it.opts)&&it.opts.includes(it.a)));
   const [c,cb]=d.c?[d.c,d.cb||'#f8f9fa']:UCOL[i%UCOL.length],no=String(d.no||i+1),name=d.name||'單元 '+no;
-  UN.push({key:S.k+no,s:S.k,term:d.term==='fin'?'fin':'mid',no,ic:d.ic||S.ic,name,nav:d.nav||name,c,cb,g:items.length?g:null,types:Object.keys(by),tools:[]})}))})();
+  const mk=(items,key,term,nm,nv)=>{const by={};items.forEach(it=>{const t=it.t||'題目';(by[t]=by[t]||[]).push(it)});
+    const g={};for(const t in by)g[t]=()=>bankQ(pick(by[t]),S.k);
+    UN.push({key,s:S.k,term,no,ic:d.ic||S.ic,name:nm,nav:nv,c,cb,g:items.length?g:null,types:Object.keys(by),tools:[]})};
+  const LF=L_FROM[S.k],fin=d.term==='fin';
+  if(LF&&fin){const old=all.filter(it=>it.l!=null&&+it.l<LF),cur=all.filter(it=>!(it.l!=null&&+it.l<LF));
+    mk(cur,S.k+no,'fin',name,d.nav||name);if(old.length)mk(old,S.k+no+'r','mid',`${name}（第 ${LF-1} 課以前）`,`${d.nav||name}（舊課）`)}
+  else mk(all,S.k+no,fin?'fin':'mid',name,d.nav||name)}))})();
 /* 題組（原本卷子上的勾選題、○╳ 活用題）：一題好幾句，每句都要選，全部選完按「送出」才一起看對錯 */
 const GCIRC='①②③④⑤⑥⑦⑧⑨⑩';
 function grpQ(it,s){return {type:'grp',gk:it.gk==='chk'?'chk':'ox',id:`${s}|g|${it.q}|${it.grp.map(r=>r[0]).join('|')}`,text:it.q,grp:it.grp.map(r=>r[0]),ans:it.grp.map(r=>r[1]).join(''),
@@ -1785,9 +1791,10 @@ function listenSum(){if(!db||!user)return;const p=base()+'/sum';if(sumRef&&sumRe
 function unlistenSum(){if(sumRef&&sumCb)try{sumRef.off('value',sumCb)}catch(e){}sumRef=null;sumCb=null}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user){listenSum();flush()}});
 /* ===================== 早自修 =====================
-   每天 10 題，依老師在老師頁設定的分組出題（存在 learn/u/座號/密碼/am：m 數學、z 國語，'x' 學扶、其他＝一般；ms、zs 是勾選的題型，空的＝全部）
-   ・國語：一般＝1 篇閱讀測驗（最多 5 題，一天換一篇）；學扶＝4 題字詞、句段、篇章的基礎題
-   ・數學：補滿 10 題。一般＝六上的計算題＋全班較弱的題型；學扶＝勾選的題型
+   每天 amN() 題（11/19 起 15 題），依老師在老師頁設定的分組出題（存在 learn/u/座號/密碼/am：m 數學、z 國語，'x' 學扶、其他＝一般；ms、zs 是勾選的題型，空的＝全部）
+   ・先 2 題每日成語（週末沒有）
+   ・一般：1 篇閱讀測驗（最多 5 題，做完一輪換下一篇）；剩下的國語、數學各一半（單數多的給數學），從學習頁目前範圍的單元出（amLive）
+   ・學扶：成語以外國語、數學各一半（單數多的給國語）；國語＝字詞、句段、篇章的基礎題，數學＝勾選的題型
    ・做的題目跟一般練習一樣算進今日任務、遊戲券、金幣；今天做了幾題看 sum.uq（單元代號 am） */
 let AMP=null,AMK=null;
 async function amLoad(){if(!user)return;const k='learn601_amp_'+user.seat,s0=user.seat;AMP=LS.get(k,null);
@@ -1797,18 +1804,34 @@ const amX=(k)=>!!AMP&&AMP[k]==='x';
 const amList=(key,sel)=>{const U=UN[ukIdx(key)];if(!U)return [];const L=(sel||[]).filter(t=>U.types.includes(t));return L.length?L:U.types.slice()};
 const AM_GEN=[['u1','gcd'],['u1','lcm'],['u1','pf'],['u2','same'],['u2','diff'],['u2','diff'],['u3','intdec'],['u3','decdec'],['u3','round'],['u5','最簡單整數比'],['u5','求□'],['u5','比值'],
   ['amx','ddv'],['amx','par'],['amx','sec'],['amx','mix4'],['amx','adf'],['amx','fxf']];   // 一般組的數學：六上計算＋學扶評量裡全班多數沒過的（除法商為小數、平行四邊形、扇形）
-function amQs(){let zq=[];AMK=null;
-  if(amX('z')&&ukIdx('amz')>=0){const iz=ukIdx('amz');zq=listFor(amList('amz',AMP.zs),4).map(t=>genQ(iz,t))}
-  else if(window.AMZ&&AMZ.READ.length){const R=AMZ.READ;AMK=(sum.amr||0)%R.length;const p=R[AMK];zq=p.qs.slice(0,5).map((x,j)=>amReadQ(p,x,j>0))}
-  const cq=cyQs(),n=10-zq.length-cq.length;let mq;
-  if(amX('m')&&ukIdx('amx')>=0){const im=ukIdx('amx');mq=listFor(amList('amx',AMP.ms),n).map(t=>genQ(im,t))}
-  else{const pool=AM_GEN.filter(([k,t])=>ukIdx(k)>=0&&UN[ukIdx(k)].types.includes(t));let L=[];while(L.length<n)L.push(...shuf(pool));mq=L.slice(0,n).map(([k,t])=>genQ(ukIdx(k),t))}
+/* 早自修每天的題數：2026-11-19 起 15 題（之前 10 題，老師頁看舊的日子照舊算） */
+const AM15='2026-11-19',amN=d=>(d||dkey())>=AM15?15:10;
+/* 一般組的國語、數學：從學習頁「目前範圍」的單元出（數學＝期末範圍的單元；國語＝第 L_FROM.zh 課起），以後新增的單元自動加入 */
+const amLive=sj=>UN.map((u,i)=>i).filter(i=>{const u=UN[i];return u.s===sj&&u.g&&live(u)});
+/* 從幾個單元平均挑 n 題：單元輪流、單元裡的題型輪流，前後不連續同一種 */
+function amPick(us,n){if(!us.length||n<=0)return [];const o=shuf(us.slice()),T=o.map(u=>shuf(UN[u].types.slice())),P=[];
+  for(let i=0;i<n;i++){const j=i%o.length,t=T[j][Math.floor(i/o.length)%T[j].length];P.push([o[j],t])}
+  const L=shuf(P);for(let i=1;i<L.length;i++)if(L[i][1]===L[i-1][1]){const j=L.findIndex((x,k)=>k>i&&x[1]!==L[i-1][1]);if(j>0)[L[i],L[j]]=[L[j],L[i]]}
+  return L.map(([u,t])=>genQ(u,t))}
+/* 今天每一部分幾題：成語 c、閱讀測驗 r、學扶國語 zx、一般國語 z、數學 m（扣掉成語、閱讀後，國語、數學各一半；單數多的給數學，因為閱讀測驗也是國語） */
+function amCounts(cN){const N=amN(),zX=amX('z')&&ukIdx('amz')>=0,mX=amX('m')&&ukIdx('amx')>=0;
+  const r=!zX&&window.AMZ&&AMZ.READ.length?Math.min(5,AMZ.READ[(sum.amr||0)%AMZ.READ.length].qs.length):0,rem=Math.max(0,N-cN-r);
+  let zx=0,z=0;if(zX)zx=Math.ceil(rem/2);else if(amLive('zh').length)z=Math.floor(rem/2);
+  if(!mX&&!amLive('math').length){if(zX)zx=rem;else if(amLive('zh').length)z=rem}
+  return {r,zx,z,m:rem-zx-z,zX,mX}}
+function amQs(){let zq=[];AMK=null;const cq=cyQs(),C=amCounts(cq.length);
+  if(C.zX){const iz=ukIdx('amz');zq=listFor(amList('amz',AMP.zs),C.zx).map(t=>genQ(iz,t))}
+  else if(C.r){const R=AMZ.READ;AMK=(sum.amr||0)%R.length;const p=R[AMK];zq=p.qs.slice(0,C.r).map((x,j)=>amReadQ(p,x,j>0))}
+  zq=zq.concat(amPick(amLive('zh'),C.z));
+  let mq;const n=C.m;
+  if(C.mX){const im=ukIdx('amx');mq=listFor(amList('amx',AMP.ms),n).map(t=>genQ(im,t))}
+  else mq=amPick(amLive('math'),n);
   /* 延後複習：到期的換掉後面的數學題位（最多 RV.perDay 題；總數不變，沒有題位就順延） */
   const P=rvPlan(mq.length);if(P.length){const avoid=new Set([...cq,...zq,...mq.slice(0,mq.length-P.length)].map(qKey)),R=P.map(([k,e])=>{const q=rvQ(k,e,avoid);avoid.add(qKey(q));return q});mq=mq.slice(0,mq.length-R.length).concat(R)}
   return [...cq,...zq,...mq]}
-function amCard(){const n=uqN('am'),done=n>=10,c=el('div','cd');c.id='amc';
+function amCard(){const n=uqN('am'),AN=amN(),done=n>=AN,c=el('div','cd');c.id='amc';
   const zt=amX('z')?'國語 4 題':(window.AMZ&&AMZ.READ.length?`閱讀測驗〈${AMZ.READ[(sum.amr||0)%AMZ.READ.length].t}〉`:'國語');
-  const cn=cyTodayName(),rn=done?0:rvTodayN();c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修${cn?`・今日成語「${cn}」`:''}</div><div class="b">${done?'今天的早自修完成了！':`${cn?'成語＋':''}${zt}＋數學`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,10)} / 10 題`}${rn?`<span class="rvn">今天有 ${rn} 題複習</span>`:''}</div></div>`;
+  const cn=cyTodayName(),rn=done?0:rvTodayN();c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修${cn?`・今日成語「${cn}」`:''}</div><div class="b">${done?'今天的早自修完成了！':`${cn?'成語＋':''}${zt}＋數學`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,AN)} / ${AN} 題`}${rn?`<span class="rvn">今天有 ${rn} 題複習</span>`:''}</div></div>`;
   const g=el('button','go'+(done?' gray':''),done?'再練一次':n?'繼續 ▶':'開始 ▶');tap(g,()=>startPractice('am'));c.appendChild(g);return c}
 /* 首頁：接下來練什麼——目前科目裡還沒完成的第一個單元；都完成了就挑星星最少的；都 3 顆星就練綜合 */
 function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj&&live(u)),SM=mixOf(subj);if(!L.length)return SM||null;
@@ -1961,7 +1984,7 @@ function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題�
    ・三次確認：過關後 RV.gap[0] 天第一次 → 第一次自己答對後 RV.gap[1] 天第二次 → 第二次答對後 RV.gap[2] 天第三次 → 第三次答對＝已鞏固
      天數都從上一次成功作答那天算（台灣日期 dkey）
    ・只看第一次作答：看提示、看例題、看解答、第二次才對，都不算自己過；沒過就回到第一次，RV.gap[0] 天後再來（答錯照原本的方式進錯題本）
-   ・早自修每天最多 RV.perDay 題，只換掉數學的題位（成語、閱讀測驗不動），總數還是 10 題；沒有合適的題位就順延，不扣分、不扣獎勵
+   ・早自修每天最多 RV.perDay 題，只換掉數學的題位（成語、國語不動），總數不變；沒有合適的題位就順延，不扣分、不扣獎勵
    ・只排老師目前設定的分組、題型範圍內的題目；範圍外的先放著，等範圍改了再排
    ・資料在 sum.rv（跟著進度同步）：{原題指紋: {u 單元代號, t 題型, s 第幾次確認(1～3), d 哪天到期, a 上次作答時間, r 上次結果 p 過/f 沒過/w 錯題過關, z 已鞏固, m 最後修改時間, c 成語編號, p 閱讀篇名}}
      兩台平板合併時，每一筆看 m 比較新的；答題時檢查「這題排的是第幾次、今天到期了沒」，別台已經做過就不再算一次 */
@@ -2000,8 +2023,7 @@ function rvAnswer(q,res,det){const e=rvAll()[q.rvk];if(!e||e.z||e.s!==q.rvs||!e.
   else{e.s=1;e.d=dAdd(td,RV.gap[0]);e.r='f'}
   e.a=now;e.m=now;saveSum(true);return own}
 /* 首頁、早自修：今天會排幾題複習（和出題用同一套規則） */
-function amSlots(){const cN=CY&&cyDay(dkey())?cyQs().length:0;
-  const zN=amX('z')&&ukIdx('amz')>=0?4:window.AMZ&&AMZ.READ.length?Math.min(5,AMZ.READ[(sum.amr||0)%AMZ.READ.length].qs.length):0;return Math.max(0,10-cN-zN)}
+function amSlots(){const cN=CY&&cyDay(dkey())?cyQs().length:0;return amCounts(cN).m}
 const rvTodayN=()=>sum?rvPlan(amSlots()).length:0;
 /* 已鞏固的舊紀錄、太多筆時清掉最舊的 */
 function rvPrune(){const R=sum&&sum.rv;if(!R)return;const old=Date.now()-RV.keep*864e5;for(const k in R){const e=R[k];if(!e||e.z&&(e.a||0)<old)delete R[k]}
@@ -2399,7 +2421,7 @@ document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.c
 /* ===================== 練習 ===================== */
 let pu=0,round=null,cur=0,tries=0,solved=false,hintK=0,qStart=0;
 let val='',fv={w:'',n:'',d:''},act='n';
-const AMU={key:'am',s:'math',no:'🌅',name:'今天的 10 題',nav:'早自修',c:AM_C,cb:AM_CB};
+const AMU={key:'am',s:'math',no:'🌅',get name(){return `今天的 ${amN()} 題`},nav:'早自修',c:AM_C,cb:AM_CB};
 const unitOf=k=>mixByKey(k)||(k==='wb'?WB:k==='am'?AMU:UN[k]);
 function mkQ(u,t){const q=UN[u].g[t]();q.u=u;q.t=t;if(!q.type)q.type='num';if(q.type==='cmp'){q.type='mc';q.opts=['＞','＜','＝'];q.row=true}
   if(q.pre==null)q.pre=q.fig?'約':'';if(q.unit==null)q.unit='';return q}
@@ -2889,7 +2911,7 @@ function amPaint(){const O=$('#amout');if(!AMT){O.innerHTML='';return}O.innerHTM
   const MX=UN[ukIdx('amx')],ZX=UN[ukIdx('amz')],grp={};(window.XF?XF.LIST:[]).forEach(([k,n,g])=>(grp[g]=grp[g]||[]).push([k,n]));
   Object.keys(AMT).sort((a,b)=>a-b).forEach(s=>{const R=AMT[s],P=R.p,row=el('div','amr'+(R.ch?' ch':''));
     const sw=(k,lab)=>`<span class="amsw" data-k="${k}"><b>${lab}</b><button data-v="g" class="${P[k]!=='x'?'on':''}">一般</button><button data-v="x" class="${P[k]==='x'?'on x':''}">學扶</button></span>`;
-    row.innerHTML=`<div class="amh"><b class="ams">${s}</b>${sw('m','數學')}${sw('z','國語')}<span class="amn ${R.n>=10?'ok':''}">今天 ${R.n>=10?'✅ ':''}${Math.min(R.n,99)} / 10</span></div>`;
+    row.innerHTML=`<div class="amh"><b class="ams">${s}</b>${sw('m','數學')}${sw('z','國語')}<span class="amn ${R.n>=amN()?'ok':''}">今天 ${R.n>=amN()?'✅ ':''}${Math.min(R.n,99)} / ${amN()}</span></div>`;
     if(P.m==='x'&&MX)row.insertAdjacentHTML('beforeend',`<div class="amk"><small>數學題型（不勾＝全部）</small>${Object.entries(grp).map(([g,L])=>`<div class="amg"><i>${g}</i>${L.map(([k,n])=>`<button data-t="ms" data-x="${k}" class="${P.ms.includes(k)?'on':''}">${n}</button>`).join('')}</div>`).join('')}</div>`);
     if(P.z==='x'&&ZX)row.insertAdjacentHTML('beforeend',`<div class="amk"><small>國語題型（不勾＝全部）</small><div class="amg">${ZX.types.map(k=>`<button data-t="zs" data-x="${k}" class="${P.zs.includes(k)?'on':''}">${k}</button>`).join('')}</div></div>`);
     row.querySelectorAll('.amsw button').forEach(b=>b.onclick=()=>{P[b.closest('.amsw').dataset.k]=b.dataset.v;R.ch=true;amPaint()});
@@ -2924,7 +2946,7 @@ async function amrLoad(){const pins=LS.get('learn601_pins',null),M=$('#amrmsg');
     M.textContent=`讀取中… ${++done} / ${seats.length}`;return {s:+s,am,uq,lg,ok}}));
   AMR={rows};const n=new Date();M.textContent=`更新時間 ${pad2(n.getHours())}:${pad2(n.getMinutes())}`+(rows.some(r=>!r.ok)?'（有人讀取失敗，再按一次重新整理）':'');amrRender()}
 function amrDayOf(r,d){const L=(r.lg||[]).filter(l=>l.d===d).sort((a,b)=>(a.ts||0)-(b.ts||0)),q=[];let fin=null;
-  L.forEach(l=>(l.q||[]).forEach(x=>{q.push(x);if(q.length===10)fin=l.ts}));
+  L.forEach(l=>(l.q||[]).forEach(x=>{q.push(x);if(q.length===amN(d))fin=l.ts}));
   let n=q.length;if(r.uq&&r.uq.d===d&&r.uq.u)n=Math.max(n,r.uq.u.am||0);
   return {n,q,fin,sec:L.reduce((a,l)=>a+(l.sec||0),0),ok1:q.filter(x=>x.r==='ok').length,rev:q.filter(x=>x.r==='no').length}}
 const amrX=r=>!!r.am&&(r.am.m==='x'||r.am.z==='x');
@@ -2933,17 +2955,17 @@ function amrRender(){if(!AMR)return;const O=$('#amrout'),today=dkey(),wk=weekKey
   const S=AMR.rows.map(r=>({r,s:r.s,x:amrX(r),st:amrDayOf(r,D),wk:wk.map(d=>amrDayOf(r,d).n)})),N=S.length;
   const fin=S.filter(x=>x.st.n>=10),part=S.filter(x=>x.st.n>0&&x.st.n<10),none=S.filter(x=>!x.st.n);
   const md=d=>`${+d.slice(5,7)}/${+d.slice(8)}`,chip=(s,t)=>`<span class="chip" data-s="${s}">${s}${t?`<small>${t}</small>`:''}</span>`;
-  let h=`<div class="amday">${wk.map((d,i)=>{const c=S.filter(x=>x.wk[i]>=10).length;return `<button data-d="${d}" class="${d===D?'on':''}"${d>today?' disabled':''}>週${WD[i]} ${md(d)}${d>today?'':`<small class="${c<N?'p':''}">${c} / ${N} 人完成</small>`}</button>`}).join('')}</div>`;
-  h+=`<div class="amcare"><div class="kpi ${fin.length===N?'g':fin.length>=N*.8?'y':'r'}"><span class="kl">${md(D)} 做完 10 題</span><span class="kv">${fin.length}<small>/ ${N} 人</small></span></div>
+  let h=`<div class="amday">${wk.map((d,i)=>{const c=S.filter(x=>x.wk[i]>=amN(d)).length;return `<button data-d="${d}" class="${d===D?'on':''}"${d>today?' disabled':''}>週${WD[i]} ${md(d)}${d>today?'':`<small class="${c<N?'p':''}">${c} / ${N} 人完成</small>`}</button>`}).join('')}</div>`;
+  h+=`<div class="amcare"><div class="kpi ${fin.length===N?'g':fin.length>=N*.8?'y':'r'}"><span class="kl">${md(D)} 做完 ${amN(D)} 題</span><span class="kv">${fin.length}<small>/ ${N} 人</small></span></div>
     <div class="cbox b"><div class="ct">做一半<b>${part.length}</b> 人</div><div class="chips">${part.sort((a,b)=>a.s-b.s).map(x=>chip(x.s,x.st.n+'/10')).join('')||'<span class="ok">👍 沒有</span>'}</div></div>
     <div class="cbox a"><div class="ct">還沒開始<b>${none.length}</b> 人</div><div class="chips">${none.sort((a,b)=>a.s-b.s).map(x=>chip(x.s)).join('')||'<span class="ok">👍 全班都做了</span>'}</div></div></div>`;
   const tm=t=>{if(!t)return '';const x=new Date(t);return `${pad2(x.getHours())}:${pad2(x.getMinutes())}`};
   const subj=x=>{const U=UN[fixU(x,'am')];return U&&U.s==='zh'?'國語':'數學'};
   const tbl=(L,title)=>{if(!L.length)return '';let t=`<div class="dsec">${title}<small>${L.length} 人・點一位看他每一題</small></div><div class="amgrp"><table class="at"><tr><th>座號</th><th>${md(D)} 題數</th><th>一次答對</th><th>看解答</th><th>做完時間</th><th>用時</th><th>這週（一～五）</th></tr>`;
     L.sort((a,b)=>a.s-b.s).forEach(x=>{const st=x.st,p=pc(st.ok1,st.q.length),tg=x.x?`<br>${x.r.am.m==='x'?'<span class="amtag">數學學扶</span>':''}${x.r.am.z==='x'?'<span class="amtag">國語學扶</span>':''}`:'';
-      t+=`<tr class="st${amrSel===x.s?' sel':''}" data-s="${x.s}"><td><b>${x.s}</b>${tg}</td><td class="c ${st.n>=10?'g':st.n?'y':'r'}"><b>${st.n>=10?'✅ ':''}${Math.min(st.n,99)}</b><small>/ 10</small></td>
+      t+=`<tr class="st${amrSel===x.s?' sel':''}" data-s="${x.s}"><td><b>${x.s}</b>${tg}</td><td class="c ${st.n>=amN(D)?'g':st.n?'y':'r'}"><b>${st.n>=amN(D)?'✅ ':''}${Math.min(st.n,99)}</b><small>/ ${amN(D)}</small></td>
         <td class="c ${st.q.length?cls(p):'n'}">${st.q.length?`<b>${p}%</b>`:'—'}</td><td>${st.q.length?st.rev:''}</td><td>${tm(st.fin)}</td><td>${st.sec?Math.max(1,Math.round(st.sec/60))+' 分':''}</td>
-        <td class="amwk">${x.wk.map((n,i)=>`<i class="${wk[i]>today?'f':n>=10?'ok':n?'':'p'}${wk[i]===D?' sel':''}">${wk[i]>today?'':n>=10?'✓':n||'✗'}</i>`).join('')}</td></tr>`;
+        <td class="amwk">${x.wk.map((n,i)=>`<i class="${wk[i]>today?'f':n>=amN(wk[i])?'ok':n?'':'p'}${wk[i]===D?' sel':''}">${wk[i]>today?'':n>=amN(wk[i])?'✓':n||'✗'}</i>`).join('')}</td></tr>`;
       if(amrSel===x.s)t+=`<tr><td colspan="7"><div class="amql">${st.q.map((q,i)=>`<span class="${q.r==='no'?'no':q.r==='ok2'?'ok2':''}">${i+1}. ${subj(q)}・${tName(fixU(q,'am'),q.t)}　${q.r==='ok'?'✅ 一次答對':q.r==='ok2'?'🟡 第二次才對':'❌ 看解答'}</span>`).join('')||(st.n?'正在做，做完這一輪才會出現每一題的紀錄':'這天沒有做早自修')}</div></td></tr>`});
     return t+'</table></div>'};
   h+=tbl(S.filter(x=>x.x),'🧡 學扶組')+tbl(S.filter(x=>!x.x),'💙 一般組');
@@ -3077,7 +3099,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v123';let verNew=false,verBusy=false;
+const APP_VER='learn601-v124';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
