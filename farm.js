@@ -70,10 +70,31 @@
   const icon = (n, cls) => `<img class="${cls || 'fic'}" src="${IMG}ic-${n}.webp" alt="" draggable="false">`;
   function produce(id) { return `<image href="${IMG}pr-${id}.webp" x="-16" y="-16" width="32" height="32"/>`; }
 
-  /* 整個農場：F＝農場資料；o.mini 縮圖、o.zoom 只看田、o.pet 寵物 SVG */
+  /* ───────── 農場裝飾：用金幣買，擺在田旁邊的 6 個位置 ─────────
+     sum.fdc = {own:{代號:1}, s:[每個位置放的代號], u 最後擺的時間}；公開給同學看：learn/farm/座號 的 d
+     圖：img/farm/代號.webp（透明背景、裁掉空白，底部中間＝放在地上的那一點） */
+  const FD_SZ = { L: ['大', 600, 230, 230], M: ['中', 350, 165, 160], S: ['小', 150, 125, 118] };   // 名稱、價錢、畫出來最寬、最高（背景座標）
+  const FD = {
+    'fd-windmill': ['荷蘭風車', 'L'], 'fd-coop': ['小雞舍', 'L'], 'fd-well': ['石頭水井', 'L'], 'fd-fountain': ['噴水池', 'L'], 'fd-treehouse': ['小樹屋', 'L'],
+    'fd-pumpkinman': ['南瓜稻草人', 'M'], 'fd-robotman': ['機器人稻草人', 'M'], 'fd-swing': ['鞦韆', 'M'], 'fd-picnic': ['野餐墊', 'M'], 'fd-mailbox': ['紅色郵筒', 'M'], 'fd-beehive': ['蜂箱', 'M'],
+    'fd-tulip': ['鬱金香花圃', 'S'], 'fd-sunbed': ['向日葵花圃', 'S'], 'fd-mushlamp': ['蘑菇小燈', 'S'], 'fd-whitefence': ['白色籬笆', 'S'], 'fd-lantern': ['石燈籠', 'S']
+  };
+  /* 6 個位置：x、y（放在地上的點）、最大放得下多大、1＝在田的後面（先畫） */
+  const FD_SLOT = [[960, 330, 'L', 1], [560, 320, 'M', 1], [300, 540, 'L', 0], [1195, 450, 'M', 1], [530, 715, 'M', 0], [1105, 712, 'M', 0]];
+  const fdFits = (id, k) => 'SML'.indexOf(FD[id][1]) <= 'SML'.indexOf(FD_SLOT[k][2]);
+  const fdNorm = d => Array.from({ length: FD_SLOT.length }, (_, k) => { const id = d && d[k]; return FD[id] ? id : ''; });   // 雲端讀回來可能是陣列或物件
+  function fdDraw(d, back) {
+    return fdNorm(d).map((id, k) => { if (!id || !!FD_SLOT[k][3] !== back) return ''; const [x, y] = FD_SLOT[k], Z = FD_SZ[FD[id][1]];
+      return `<image href="${IMG}${id}.webp" x="${x - Z[2] / 2}" y="${y - Z[3]}" width="${Z[2]}" height="${Z[3]}" preserveAspectRatio="xMidYMax meet" class="fdeco" pointer-events="none"/>`; }).join('');
+  }
+
+  /* 整個農場：F＝農場資料；o.mini 縮圖、o.zoom 只看田、o.pet 寵物 SVG、o.d 裝飾（沒給就用 F.d）、o.slots 標出裝飾位置（數字＝選中的位置） */
   function farmSVG(F, o = {}) {
-    const lv = lvOf(F.xp).lv, open = plotsFor(lv), out = [];
+    const lv = lvOf(F.xp).lv, open = plotsFor(lv), out = [], D = o.d !== undefined ? o.d : F.d;
     out.push(`<image href="${IMG}bg.webp" x="0" y="0" width="${BGW}" height="${BGH}" preserveAspectRatio="none"/>`);
+    if (o.slots !== undefined) out.push(FD_SLOT.map(([x, y], k) => { const on = k === o.slots;   // 裝飾位置：地上的圈圈（選中的是黃色）
+      return `<ellipse data-fs="${k}" class="fdslot" cx="${x}" cy="${y}" rx="${on ? 92 : 70}" ry="${on ? 34 : 26}" fill="${on ? '#ffd43b' : '#fff'}" fill-opacity="${on ? .6 : .35}" stroke="${on ? '#f08c00' : '#fff'}" stroke-width="${on ? 8 : 5}" stroke-dasharray="${on ? '0' : '14 9'}"/>`; }).join(''));
+    out.push(fdDraw(D, true));   // 田後面的裝飾
     if (!o.mini) out.push(`<rect x="1040" y="40" width="350" height="275" fill="transparent" id="fbarn" class="fbarn"><title>倉庫</title></rect>`);   // 點倉庫
     /* 田：從後面畫到前面 */
     const order = [...Array(MAXP).keys()].sort((a, b) => (plotC(a)[1] - plotC(b)[1]) || (plotC(a)[0] - plotC(b)[0]));
@@ -99,10 +120,13 @@
       }
       out.push(`<g data-k="${k}" class="fplot">${g}</g>`);
     }
+    out.push(fdDraw(D, false));   // 田前面的裝飾
+    if (o.slots !== undefined) out.push(FD_SLOT.map(([x, y], k) => { const on = k === o.slots;   // 號碼牌畫在地上那一點的前面，才不會蓋住裝飾
+      return `<g data-fs="${k}" class="fdslot" transform="translate(${x} ${y + 40})"><circle r="${on ? 34 : 28}" fill="${on ? '#f08c00' : '#5c940d'}" stroke="#fff" stroke-width="6"/><text y="${on ? 12 : 10}" text-anchor="middle" font-size="${on ? 38 : 32}" font-weight="900" fill="#fff">${k + 1}</text></g>`; }).join(''));
     out.push(tops.join(''));   // 頭上的小泡泡最後畫，才不會被後面的作物擋住
     if (night() && !o.mini) out.push(`<rect width="${BGW}" height="${BGH}" fill="#1b1f4b" opacity=".38" pointer-events="none"/><g fill="#fff8d6" pointer-events="none">${[[140, 70], [420, 40], [760, 90], [1180, 60], [1450, 120], [60, 300], [1490, 420]].map(([a, b], i) => `<circle cx="${a}" cy="${b}" r="${i % 2 ? 3 : 4.5}"/>`).join('')}</g>`);
     if (!o.mini) out.push('<g id="ffx" pointer-events="none"></g>');
-    const vb = (o.mini ? VB_MINI : o.zoom ? VB_ZOOM : VB_FULL).join(' ');
+    const vb = (o.mini ? VB_MINI : o.zoom ? VB_ZOOM : o.slots !== undefined ? [170, 90, 1200, 740] : VB_FULL).join(' ');
     return `<svg class="farm${o.mini ? ' mini' : ''}" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">${out.join('')}</svg>`;
   }
 
@@ -123,7 +147,7 @@
   let pubT = 0;
   function save() {
     const f = F(); f.u = Date.now(); saveSum(true);
-    clearTimeout(pubT); pubT = setTimeout(() => { if (!user) return; const f = F(); enqueue(`${ROOT}/farm/${user.seat}`, { xp: f.xp | 0, sm: f.sm ? 1 : 0, p: f.p.map(x => x || 0), t: Date.now() }, true); }, 1000);
+    clearTimeout(pubT); pubT = setTimeout(() => { if (!user) return; const f = F(); enqueue(`${ROOT}/farm/${user.seat}`, { xp: f.xp | 0, sm: f.sm ? 1 : 0, p: f.p.map(x => x || 0), d: fdS(), t: Date.now() }, true); }, 1000);
   }
   function addXp(n) {
     const f = F(), b = lvOf(f.xp).lv; f.xp = (f.xp || 0) + n; const a = lvOf(f.xp).lv;
@@ -131,6 +155,38 @@
       const un = CK.filter(k => CROPS[k].lv > b && CROPS[k].lv <= a).map(k => CROPS[k].n), more = plotsFor(a) - plotsFor(b);
       toast(`🎉 農場升到 Lv.${a}！` + (un.length ? `可以種：${un.join('、')}` : '') + (more ? `　多了 ${more} 塊田！` : '')); try { sfx.ticket(); confetti(60); } catch (e) { }
     }, 600);
+  }
+  /* 自己的裝飾 */
+  function fdMe() { if (!sum) return { own: {}, s: fdNorm() }; const d = sum.fdc = sum.fdc || {}; d.own = d.own || {}; if (!Array.isArray(d.s) || d.s.length !== FD_SLOT.length) d.s = Array.from({ length: FD_SLOT.length }, (_, k) => (d.s && d.s[k]) || ''); return d; }
+  const fdHas = id => !!FD[id] && (tst() || !!fdMe().own[id]);
+  const fdS = () => fdMe().s.map(id => fdHas(id) ? id : '');
+  let fdK = 0;
+  function decoModal() {
+    const m = modal('<div id="fdm"></div>');   // 每次都重新拿 fdMe()：同步時 sum.fdc 可能被換成合併後的新物件
+    const set = () => { fdMe().u = Date.now(); save(); paint(); try { if (window.paintNavs) paintNavs(); } catch (e) { } draw(); };
+    function draw() {
+      const D = fdMe(), c = coins(), T = tst(), sl = FD_SLOT[fdK], cur = fdS()[fdK];
+      const card = id => { const [n, z] = FD[id], Z = FD_SZ[z], has = fdHas(id), here = cur === id, at = D.s.indexOf(id), fit = fdFits(id, fdK);
+        const btn = here ? `<button class="fdb off" data-off="${id}">收起來</button>` : !fit ? `<button class="fdb no" disabled>位置 ${fdK + 1} 放不下</button>`
+          : has ? `<button class="fdb put" data-put="${id}">${at >= 0 ? `從位置 ${at + 1} 搬過來` : `放在位置 ${fdK + 1}`}</button>`
+          : `<button class="fdb buy" data-buy="${id}" ${!T && c < Z[1] ? 'disabled' : ''}>🪙 ${Z[1]}${!T && c < Z[1] ? '<small>金幣不夠</small>' : ''}</button>`;
+        return `<div class="fdc${here ? ' on' : ''}${has ? '' : ' lock'}${fit ? '' : ' nofit'}"><i class="fdz ${z}">${Z[0]}</i><img src="${IMG}${id}.webp" alt="" draggable="false"><b>${n}</b>${at >= 0 && !here ? `<small>在位置 ${at + 1}</small>` : ''}${btn}</div>`; };
+      m.querySelector('#fdm').innerHTML = `<div class="pmh">🏡 農場裝飾　<small>🪙 ${T ? '∞' : c}</small></div>
+        <div class="fdpv">${farmSVG(F(), { d: fdS(), slots: fdK })}</div>
+        <div class="fdsl">${FD_SLOT.map((s, k) => `<button data-k="${k}" class="${k === fdK ? 'on' : ''}"><b>${k + 1}</b>${FD_SZ[s[2]][0]}位置<small>${fdS()[k] ? FD[fdS()[k]][0] : '空的'}</small></button>`).join('')}</div>
+        <div class="fdtip">先點上面的數字選位置，再選要放的裝飾。位置 ${fdK + 1} 放得下${sl[2] === 'L' ? '大、中、小' : '中、小'}的裝飾。</div>
+        <div class="fdg">${Object.keys(FD).sort((a, b) => (fdFits(b, fdK) - fdFits(a, fdK))).map(card).join('')}</div>
+        <button class="pmx">好了</button>`;
+      m.querySelectorAll('.fdsl [data-k]').forEach(b => tap(b, () => { fdK = +b.dataset.k; draw(); }));
+      tap(m.querySelector('.fdpv'), e => { const g = e.target.closest('[data-fs]'); if (g) { fdK = +g.dataset.fs; draw(); } });
+      m.querySelectorAll('[data-put]').forEach(b => tap(b, () => { const D = fdMe(), id = b.dataset.put, at = D.s.indexOf(id); if (at >= 0) D.s[at] = ''; D.s[fdK] = id; snd(660); set(); }));
+      m.querySelectorAll('[data-off]').forEach(b => tap(b, () => { fdMe().s[fdK] = ''; snd(400); set(); }));
+      m.querySelectorAll('[data-buy]').forEach(b => tap(b, () => { const id = b.dataset.buy, [n, z] = FD[id], pr = FD_SZ[z][1];
+        if (!T && coins() < pr) return; if (!confirm(`用 🪙${pr} 買「${n}」，放在位置 ${fdK + 1} 嗎？`)) return;
+        if (!T) addCoin(-pr); const D = fdMe(); D.own[id] = 1; D.s[fdK] = id; logAdd(`🏡 買了「${n}」裝飾農場`); try { sfx.ticket(); confetti(30); toast(`🎉 買到「${n}」了！`); } catch (e) { } set(); }));
+      tap(m.querySelector('.pmx'), () => m.remove());
+    }
+    draw();
   }
   const logAdd = t => { const f = F(); f.log.unshift({ t: Date.now(), m: t }); f.log = f.log.slice(0, 20); };
 
@@ -175,7 +231,7 @@
   function paint() {
     const box = document.getElementById('fsvg'); if (!box) return;
     const old = document.getElementById('ffx'), kids = old ? [...old.childNodes] : [];   // 還在飛的小特效留下來（不然一重畫就不見）
-    box.innerHTML = farmSVG(F(), { zoom: zoomOn() });
+    box.innerHTML = farmSVG(F(), { zoom: zoomOn(), d: fdS() });
     const nf = document.getElementById('ffx'); if (nf) kids.forEach(k => nf.appendChild(k));
     if (WK) WK.redraw();
     markSel();
@@ -184,7 +240,7 @@
   }
   function paintBar() {
     const B = document.getElementById('fbar'); if (!B) return; B.innerHTML = '';
-    [['all', '🧺', '全部收成'], ['water', '💧', '全部澆水'], ['store', '📦', '倉庫'], ['seed', '🌱', '種子一覽']].forEach(([k, i, n]) => { const b = el('button', 'fbtn big', `<span class="fbi">${i}</span>${n}`); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : seedModal(-1)); B.appendChild(b); });
+    [['all', '🧺', '全部收成'], ['water', '💧', '全部澆水'], ['store', '📦', '倉庫'], ['seed', '🌱', '種子一覽'], ['deco', '🏡', '農場裝飾']].forEach(([k, i, n]) => { const b = el('button', 'fbtn big', `<span class="fbi">${i}</span>${n}`); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'deco' ? decoModal() : seedModal(-1)); B.appendChild(b); });
   }
   function paintZoom() { const b = document.getElementById('fzoom'); if (b) b.innerHTML = zoomOn() ? '🔎 看全景' : '🔍 放大田地'; }
   /* 選中的田：場景上加綠框，旁邊顯示作物、狀態和能做的事 */
@@ -438,7 +494,7 @@
     if (db && online) { try { const [a, b] = await Promise.all([db.ref(`${ROOT}/farm`).get(), db.ref(`${ROOT}/pet`).get()].map(x => timeout(x, 8000))); v = a.val() || {}; pets = b.val() || {}; } catch (e) { } }
     VC = { at: Date.now(), ok: !!v, v: v || {}, pets: pets || {} }; return VC;
   }
-  const normFarm = x => ({ xp: (x && x.xp) | 0, sm: !!(x && x.sm), p: Array.from({ length: MAXP }, (_, k) => (x && x.p && x.p[k]) || 0) });
+  const normFarm = x => ({ xp: (x && x.xp) | 0, sm: !!(x && x.sm), p: Array.from({ length: MAXP }, (_, k) => (x && x.p && x.p[k]) || 0), d: fdNorm(x && x.d) });
   async function visitList(C) {
     C.innerHTML = '<div class="ld">讀取中…</div>';
     const R = await loadFarms(); if (!C.isConnected) return;
@@ -507,7 +563,7 @@
   function homeCard() {
     const f = F(), c = el('button', 'cd', ''); c.id = 'farmmini'; let ripe = 0, thirsty = 0, grow = 0;
     f.p.slice(0, plotsFor(lvOf(f.xp).lv)).forEach(P => { const S = stat(P); if (S.empty) return; if (S.ripe) ripe++; else if (S.thirsty) thirsty++; else grow++; });
-    c.innerHTML = `<div class="fmv">${farmSVG(f, { mini: 1 })}</div><div class="fmi"><div class="fmt">🌾 我的農場 <small>Lv.${lvOf(f.xp).lv}</small></div><div class="fms">${ripe ? `✨ ${ripe} 塊田可以收成！` : thirsty ? `💧 ${thirsty} 塊田口渴了` : grow ? `🌱 ${grow} 塊田長大中` : '🌱 快去種菜吧！'}　💧 ${f.water || 0}</div></div><span class="pgo">▶</span>`;
+    c.innerHTML = `<div class="fmv">${farmSVG(f, { mini: 1, d: fdS() })}</div><div class="fmi"><div class="fmt">🌾 我的農場 <small>Lv.${lvOf(f.xp).lv}</small></div><div class="fms">${ripe ? `✨ ${ripe} 塊田可以收成！` : thirsty ? `💧 ${thirsty} 塊田口渴了` : grow ? `🌱 ${grow} 塊田長大中` : '🌱 快去種菜吧！'}　💧 ${f.water || 0}</div></div><span class="pgo">▶</span>`;
     tap(c, () => { view = 'farm'; tabK = 'mine'; paintNavs(); render(); });
     return c;
   }
@@ -583,10 +639,23 @@
   .fact{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem}.fact button{flex:1 1 8rem;min-height:3rem;border:0;border-radius:14px;font-size:1.15rem;font-weight:900;font-family:inherit}
   .fgo{background:#2e7554;color:#fff;box-shadow:0 4px 0 #1f5139}.fgo2{background:#fff;color:#2e7554;border:3px solid #cfe5c4!important}
   .farm [data-k].fsel{filter:drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 6px #9be37a)}
-  .fbar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem}
+  .fbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:.6rem}
   .fbtn.big{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:3.4rem;font-size:1.2rem;border:3px solid #eaf4de}
   .fbtn .fbi{font-size:1.4rem}
-  @media (max-width:900px),(orientation:portrait){.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:900px),(orientation:portrait){.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}.fbar .fbtn:last-child{grid-column:1/-1}}
+  .fdpv{border-radius:16px;overflow:hidden;margin-bottom:.5rem;background:#a5d8ff}.fdpv svg{display:block;width:100%;height:auto}.fdslot{cursor:pointer}
+  .fdsl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.35rem;margin-bottom:.35rem}
+  .fdsl button{border:3px solid #d8f5a2;background:#fff;border-radius:14px;padding:.25rem .1rem;font:800 .85rem/1.2 inherit;font-family:inherit;color:#5c940d;display:flex;flex-direction:column;align-items:center;min-width:0}
+  .fdsl button b{font-size:1.25rem}.fdsl button small{font-size:.72rem;color:#888;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fdsl button.on{border-color:#f08c00;background:#fff4e6;color:#d9480f}
+  .fdtip{font-size:.92rem;font-weight:800;color:#666;margin:.2rem 0 .55rem}
+  .fdg{display:grid;grid-template-columns:repeat(auto-fill,minmax(8rem,1fr));gap:.55rem;margin-bottom:.7rem}
+  .fdc{position:relative;background:linear-gradient(180deg,#fff,#f4fce3);border:3px solid #d8f5a2;border-radius:18px;padding:.45rem .35rem;display:flex;flex-direction:column;align-items:center;gap:.15rem}
+  .fdc.on{border-color:#f08c00;background:linear-gradient(180deg,#fff,#fff4e6)}.fdc.nofit{opacity:.55}
+  .fdc img{width:5.4rem;height:5.4rem;object-fit:contain;object-position:50% 100%}.fdc b{font-size:1rem;color:#444;text-align:center}.fdc>small{font-size:.75rem;color:#e67700;font-weight:800}
+  .fdz{position:absolute;left:.35rem;top:.3rem;font-style:normal;font-size:.75rem;font-weight:900;color:#fff;border-radius:8px;padding:0 .35rem;background:#74c0fc}.fdz.M{background:#b197fc}.fdz.L{background:#f783ac}
+  .fdb{border:0;border-radius:12px;padding:.35rem .5rem;font:900 .92rem inherit;font-family:inherit;width:100%;display:flex;flex-direction:column;align-items:center}
+  .fdb.buy{background:#ffd43b;color:#7a4f00}.fdb.buy:disabled{background:#f1f3f5;color:#aaa}.fdb.buy small{font-size:.7rem}.fdb.put{background:#69db7c;color:#fff}.fdb.off{background:#f1f3f5;color:#666}.fdb.no{background:none;color:#aaa;font-size:.8rem}
+  @media (max-width:560px){.fdsl{grid-template-columns:repeat(3,minmax(0,1fr))}.fdg{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (max-width:700px){.frow2{grid-template-columns:1fr}.fseeds{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr))}.fvg{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
