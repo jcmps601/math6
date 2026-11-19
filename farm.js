@@ -448,7 +448,7 @@
       .sort((a, b) => (b.help + b.ripe) - (a.help + a.ripe) || a.s - b.s);
     const f = F(), today = dkey(), hc = f.hd === today ? f.hc || 0 : 0;
     C.innerHTML = `<div class="fvhead">👫 去同學的農場幫忙：澆水、除草、捉蟲，每次 🪙+1（今天還能拿 ${Math.max(0, HELP_COIN_MAX - hc)} 枚）。${f.sm ? '🥷 你開了偷菜模式：名字旁邊有 🥷 的同學，成熟超過 1 小時的菜可以偷摘 1 個（每天最多 ' + TAKE_MAX + ' 個）' : '想玩偷菜的話，到「我的農場」打開 🥷 偷菜模式（打開以後別人也能偷你的）'}</div>
-      ${cards.length ? `<div class="fvg">${cards.map(c => `<button data-s="${c.s}"><div class="fvm">${farmSVG(c.Fm, { mini: 1 })}</div><b>${seatName(c.s)}${c.Fm.sm ? ' 🥷' : ''}　<small>Lv.${c.lv}</small></b><span>${c.help ? `<i class="h">🙋 可以幫忙 ${c.help}</i>` : ''}${c.ripe ? `<i class="r">🥷 可以偷 ${c.ripe}</i>` : ''}${!c.help && !c.ripe ? '<i>一切都好</i>' : ''}</span></button>`).join('')}</div>` : '<div class="ld">同學們還沒開始種菜，邀請大家一起來吧！</div>'}`;
+      ${cards.length ? `<div class="fvg">${cards.map(c => `<button data-s="${c.s}"><div class="fvm">${farmSVG(c.Fm, { mini: 1 })}</div><b>${window.lkName ? lkName(c.s, seatName(c.s), R.pets[c.s]) : seatName(c.s)}${c.Fm.sm ? ' 🥷' : ''}　<small>Lv.${c.lv}</small></b><span>${c.help ? `<i class="h">🙋 可以幫忙 ${c.help}</i>` : ''}${c.ripe ? `<i class="r">🥷 可以偷 ${c.ripe}</i>` : ''}${!c.help && !c.ripe ? '<i>一切都好</i>' : ''}</span></button>`).join('')}</div>` : '<div class="ld">同學們還沒開始種菜，邀請大家一起來吧！</div>'}`;
     C.querySelectorAll('[data-s]').forEach(b => tap(b, () => visit(+b.dataset.s)));
   }
   async function visit(s) {
@@ -457,7 +457,7 @@
     /* 已經有人幫過（主人還沒打開）也先算進去，畫面才會對 */
     const mine = new Set();
     for (const [id, a] of Object.entries(inbox)) { const P = Fm.p[a.k]; if (!P || P.t !== a.pt) continue; if (a.a === 'w') P.w = (P.w || 0) + 1; if (a.a === 'g') P.g = 2; if (a.a === 'b') P.b = 2; if (a.a === 's') P.s = (P.s || 0) + 1; if (a.f === user.seat) mine.add(a.k + a.a); }
-    const m = modal(`<div class="pmh">🌾 ${seatName(s)}的農場　<small>Lv.${lvOf(Fm.xp).lv}</small></div><div class="fbox vis" id="fvbox"><div id="fvsvg"></div></div><div class="finfo" id="fvinfo">👆 點有 💧🌿🐛 的田幫忙${F().sm && Fm.sm ? '，點 ✨ 的田可以偷摘 1 個 🥷' : ''}</div><div class="fres c"><span>💧 <b id="fvw">${F().water || 0}</b></span><span>🪙 <b id="fvc">${coins()}</b></span></div><button class="pmx">回去</button>`);
+    const m = modal(`<div class="pmh">🌾 ${window.lkName ? lkName(s, seatName(s), pv) : seatName(s)}的農場　<small>Lv.${lvOf(Fm.xp).lv}</small></div><div class="fbox vis" id="fvbox"><div id="fvsvg"></div></div><div class="finfo" id="fvinfo">👆 點有 💧🌿🐛 的田幫忙${F().sm && Fm.sm ? '，點 ✨ 的田可以偷摘 1 個 🥷' : ''}</div><div class="fres c"><span>💧 <b id="fvw">${F().water || 0}</b></span><span>🪙 <b id="fvc">${coins()}</b></span></div><button class="pmx">回去</button>`);
     const paintV = () => { m.querySelector('#fvsvg').innerHTML = farmSVG(Fm, {}); m.querySelector('#fvw').textContent = F().water || 0; m.querySelector('#fvc').textContent = coins(); };
     paintV();
     const VW = pv && PET.SPECIES[pv.sp] ? walker(m.querySelector('#fvbox'), () => Object.assign({}, pv, { mood: 'happy' }), { zoom: () => false, F: () => Fm }) : null;
