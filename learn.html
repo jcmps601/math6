@@ -467,6 +467,7 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 @media (max-width:760px){#xqcard{flex-wrap:wrap}#xqcard .xbtns{width:100%;margin-left:0}#xqcard .xbtns .go{flex:1 1 40%;font-size:1.15rem}}#xqcard .go.gray{background:#868e96;box-shadow:0 4px 0 #495057}
 #xqcard .s span{display:inline-block;margin-right:.6em}#xqcard .xi{min-width:14rem}#xqcard .xbtns{display:grid;grid-template-columns:repeat(2,minmax(9.5rem,1fr));flex:0 1 auto}#xqcard .xbtns .go{white-space:nowrap;justify-content:center}
 .sec small{font-size:.8em;color:#aaa;font-weight:800;white-space:nowrap}
+@media (max-width:600px){.sec small{white-space:normal;display:block;line-height:1.35;margin-top:.15rem}}   /* 手機直拿：說明太長就換行，不要超出螢幕 */
 @media (max-width:760px){#xqcard .xbtns{grid-template-columns:repeat(2,minmax(0,1fr));width:100%}#xqcard .xbtns .go{font-size:1.15rem}}
 #xqhist .xht{font-size:1.2rem;font-weight:900;color:#7a5a32;margin-bottom:.3rem}
 #xqhist .xhr{display:flex;align-items:center;gap:.6rem;font-size:1.1rem;font-weight:800;padding:.25rem 0;border-bottom:2px solid #f8f1e4}
@@ -831,6 +832,19 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
 #offlw .pmc{max-width:26rem;text-align:center}#offlw img{width:6rem;height:6rem;object-fit:contain}.offr b{font-size:1.05rem}.offb button{font-size:1.15rem;padding:.5rem 1.4rem}.offc .rmt,.offc .rms{text-align:center}.offr{display:flex;flex-direction:column;padding:.45rem .7rem;border-radius:12px;margin:.35rem 0;background:#ebfbee}.offr.no{background:#fff5f5}
 .offr small{color:#868e96;font-weight:700}#offp{display:flex;align-items:center;gap:.6rem;margin:.5rem 0}#offp[hidden]{display:none}.offb{display:flex;gap:.5rem;justify-content:center;margin-top:.6rem}
 #tab td.syold{color:#c92a2a;font-weight:800}
+@media (orientation:landscape) and (max-height:560px) and (min-width:600px){   /* 手機橫拿做題：左邊題目圖和計算紙、右邊作答，不用往下滑才看到選項 */
+ #body{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto}
+ #fig{height:min(60vh,14rem)}#figc{min-height:0}#bigc{min-height:4rem;padding:.3rem 0}
+ #pad{min-height:0}#opts{min-height:0}#opts button{font-size:1.15rem}#opts.row button{font-size:1.8rem;min-height:3rem}
+ #q{font-size:1.05rem;padding:.25rem .7rem;line-height:1.4}
+ #pnav{padding:.2rem .4rem!important}#pback{padding:.2rem .5rem!important;font-size:.95rem!important}#ptk{padding:.1rem .4rem!important}#ptk small{display:none}#ptk .ii{width:1.3rem;height:1.3rem}
+ main{padding:.3rem .5rem .4rem!important;gap:.3rem!important}#qno{font-size:.95rem!important;padding:.1rem .6rem}#utag{display:none}
+ #figc{padding-top:2.9rem!important}#pens{padding:.15rem}#pens button{width:2.1rem;height:2.1rem}#pens button img{width:1.4rem;height:1.4rem}
+ #ansc{padding:.45rem;gap:.35rem}#ansline{font-size:1.2rem}.ib{font-size:1.5rem;border-width:3px}#fbx .ib{font-size:1.1rem}#fbx .stk hr{margin:.15rem 0}#fb:empty{display:none}
+ #pad{gap:.3rem}#pad button{font-size:1.3rem;min-height:2.2rem;box-shadow:0 3px 0 #dee2e6;border-radius:11px;white-space:nowrap;overflow:hidden;letter-spacing:-.05em}
+ #opts{gap:.35rem}#opts button{border-width:3px;padding:.2rem .4rem;min-height:2.4rem}
+}
+@media (orientation:landscape) and (max-height:380px) and (min-width:600px){#pad{gap:.22rem}#pad button{min-height:1.85rem;font-size:1.1rem}#q{font-size:.95rem}#top{display:none}}   /* 更矮的手機（SE）再縮一點；題號點點藏起來 */
 </style>
 </head><body>
 
@@ -1838,8 +1852,9 @@ function amQs(){let zq=[];AMK=null;const cq=cyQs(),C=amCounts(cq.length);
   const P=rvPlan(mq.length);if(P.length){const avoid=new Set([...cq,...zq,...mq.slice(0,mq.length-P.length)].map(qKey)),R=P.map(([k,e])=>{const q=rvQ(k,e,avoid);avoid.add(qKey(q));return q});mq=mq.slice(0,mq.length-R.length).concat(R)}
   return [...cq,...zq,...mq]}
 function amCard(){const n=uqN('am'),AN=amN(),done=n>=AN,c=el('div','cd');c.id='amc';
-  const zt=amX('z')?'國語 4 題':(window.AMZ&&AMZ.READ.length?`閱讀測驗〈${AMZ.READ[(sum.amr||0)%AMZ.READ.length].t}〉`:'國語');
-  const cn=cyTodayName(),rn=done?0:rvTodayN();c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修${cn?`・今日成語「${cn}」`:''}</div><div class="b">${done?'今天的早自修完成了！':`${cn?'成語＋':''}${zt}＋數學`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,AN)} / ${AN} 題`}${rn?`<span class="rvn">今天有 ${rn} 題複習</span>`:''}</div></div>`;
+  const C=amCounts(CY&&cyDay(dkey())?cyQs().length:0);   // 卡片上的說明跟著今天真正的出題安排（學扶國語幾題、一般組有沒有國語題）
+  const zt=C.zX?`國語 ${C.zx} 題`:[C.r&&window.AMZ&&AMZ.READ.length?`閱讀測驗〈${AMZ.READ[(sum.amr||0)%AMZ.READ.length].t}〉`:'',C.z?'國語':''].filter(Boolean).join('＋')||'國語';
+  const cn=cyTodayName(),rn=done?0:rvTodayN();c.innerHTML=`<span class="ami">🌅</span><div class="amt"><div class="a">早自修${cn?`・今日成語「${cn}」`:''}</div><div class="b">${done?'今天的早自修完成了！':`${cn?'成語＋':''}${zt}${C.m?'＋數學':''}`}</div><div class="s">${done?`今天做了 ${n} 題`:`今天 ${Math.min(n,AN)} / ${AN} 題`}${rn?`<span class="rvn">今天有 ${rn} 題複習</span>`:''}</div></div>`;
   const g=el('button','go'+(done?' gray':''),done?'再練一次':n?'繼續 ▶':'開始 ▶');tap(g,()=>startPractice('am'));c.appendChild(g);return c}
 /* 首頁：接下來練什麼——目前科目裡還沒完成的第一個單元；都完成了就挑星星最少的；都 3 顆星就練綜合 */
 function nextUnit(){const L=UN.filter(u=>u.g&&u.s===subj&&live(u)),SM=mixOf(subj);if(!L.length)return SM||null;
@@ -3107,7 +3122,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v125';let verNew=false,verBusy=false;
+const APP_VER='learn601-v126';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
