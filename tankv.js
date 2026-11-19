@@ -31,7 +31,19 @@
   const IMGC = {};
   const img = n => { let i = IMGC[n]; if (!i) { i = IMGC[n] = new Image(); i.src = 'img/game/' + n + '.webp'; } return i; };
   const ok = i => i && i.complete && i.naturalWidth > 0;
-  SKINS.forEach(s => { img(bodyName(s)); img(barName(s)); });
+  const prevName = sk => `tank-${sk}-preview-${ART(sk)}`;   // 整台（含砲管）的展示圖：抽籤卡、上方名牌用
+  SKINS.forEach(s => { img(bodyName(s)); img(barName(s)); img(prevName(s)); });
+  /* 展示圖四周有透明邊：量一次實際畫到的範圍，畫的時候只取那一塊，小圖才不會縮得太小 */
+  const TRIM = {};
+  function trimOf(i) { const k = i.src; if (TRIM[k]) return TRIM[k]; let b = [0, 0, i.naturalWidth, i.naturalHeight];
+    try { const w = i.naturalWidth, h = i.naturalHeight, cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d'); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, w, h).data;
+      let x0 = w, y0 = h, x1 = -1, y1 = -1; for (let y = 0; y < h; y++) for (let xx = 0; xx < w; xx++) if (d[(y * w + xx) * 4 + 3] > 12) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      if (x1 >= x0) b = [x0, y0, x1 - x0 + 1, y1 - y0 + 1]; } catch (e) { }
+    return (TRIM[k] = b); }
+  /* 在 (x,y,w,h) 的框裡畫整台坦克（有砲管）；展示圖還沒載好就先畫車身。align：0 置中、-1 靠左 */
+  function drawTankPic(c, sk, x, y, w, h, align = 0) { let i = img(prevName(sk)); if (!ok(i)) i = img(bodyName(sk)); if (!ok(i)) return;
+    const [sx, sy, sw, sh] = trimOf(i), k = Math.min(w / sw, h / sh), dw = sw * k, dh = sh * k;
+    c.drawImage(i, sx, sy, sw, sh, align < 0 ? x : x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); }
   /* 進階、史詩、傳說九款：基本彈換成跟坦克同造型的砲彈（圖檔彈頭朝右，飛的時候跟著方向轉）。其他武器、初階坦克照舊 */
   const SHELL_SK = SKINS.slice(6), shellName = sk => `tank-${sk}-shell-v1`, SHELL_L = 40;   // 場上長 40（基本彈圓球直徑 14、坦克 66 寬；縮小的手機畫面也看得出造型）
   SHELL_SK.forEach(s => img(shellName(s)));
@@ -222,7 +234,7 @@
       c.globalAlpha = fade * (done && !on ? .45 : 1);
       c.fillStyle = on ? '#fff8e1' : '#fff'; rr(c, 0, 0, cw, ch, 26); c.fill();
       c.lineWidth = on ? 10 : 4; c.strokeStyle = on ? COL(i).main : '#e9d5ae'; rr(c, 0, 0, cw, ch, 26); c.stroke();
-      const bi = img(bodyName(skinOf(i))); if (ok(bi)) { const w = Math.min(cw - 40, 190), h = w * bi.naturalHeight / bi.naturalWidth; c.drawImage(bi, cw / 2 - w / 2, 22 + Math.max(0, 120 - h) / 2, w, Math.min(h, 120)); }
+      { const w = Math.min(cw - 40, 190); drawTankPic(c, skinOf(i), cw / 2 - w / 2, 22, w, 120); }   // 抽籤卡：整台坦克（含砲管）
       c.font = `900 ${Math.min(38, cw / 6)}px ${FONT}`; c.fillStyle = COL(i).main; c.fillText(nm(i), cw / 2, ch - 34);
       c.restore();
     }
@@ -576,8 +588,7 @@
       c.fillStyle = dead ? '#9ca3af' : C.main; rr(c, x, y, 10, CH, 5); c.fill();   // 隊伍色條
       if (act) { c.strokeStyle = C.main; c.lineWidth = 5; rr(c, x, y, cw, CH, 18); c.stroke(); }
       if (me === i) { c.fillStyle = C.main; rr(c, x + cw - 50, y - 6, 46, 20, 10); c.fill(); c.fillStyle = '#fff'; c.font = `900 14px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('我', x + cw - 27, y + 4); }
-      const sk = img(bodyName(skinOf(i)));
-      if (ok(sk)) { c.save(); if (dead) c.globalAlpha = .5; const s = 48 / sk.naturalWidth; c.drawImage(sk, x + 14, y + CH / 2 - sk.naturalHeight * s / 2, 48, sk.naturalHeight * s); c.restore(); }
+      c.save(); if (dead) c.globalAlpha = .5; drawTankPic(c, skinOf(i), x + 14, y + 6, 50, CH - 12); c.restore();   // 上方名牌：整台坦克（含砲管）
       c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillStyle = dead ? '#6b7280' : '#1f2937'; c.font = `900 21px ${FONT}`;
       let name = nm(i); if (name.length > 7) name = name.slice(0, 7) + '…'; c.fillText(name, x + 68, y + 20);
       const hb = cw - 84 - 18, hx = x + 68 + 18;
