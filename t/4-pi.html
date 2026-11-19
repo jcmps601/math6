@@ -206,6 +206,12 @@ header{display:flex;align-items:center;gap:.6rem}
 .hnav{display:flex;gap:.8rem;margin-top:auto}
 .grow{animation:grow .35s both;transform-box:fill-box;transform-origin:left center}
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (max-width:600px){   /* 手機直拿：六張古人卡改成三張一排（兩排），header 可以換行，不用左右滑 */
+ .tl{grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem}
+ .hc{padding:.4rem .2rem}.hc .ic{font-size:2rem}.hc .who{font-size:1rem}.hc .when{font-size:.7rem;white-space:normal}.hc{min-width:0}.hc .val{font-size:.85rem;min-width:0;max-width:100%;overflow:hidden}.hc .how{font-size:.75rem;white-space:normal}
+ .zunm{flex-direction:column;gap:.2rem;min-width:0}.zunm .who{font-size:1rem}.zupi{flex-wrap:wrap;min-width:0}.zupi .pv{font-size:1.4rem;word-break:break-all;min-width:0}.zupi .lab{font-size:1.1rem}
+ header{flex-wrap:wrap;row-gap:.4rem;justify-content:flex-end}.banner{flex:1 1 100%}.banner b{font-size:1.25rem}.banner span{font-size:1.05rem}
+}
 </style>
 </head>
 <body>
