@@ -665,6 +665,48 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #xqcard .xbtns .go.xparty small{font-size:.8em;margin-left:.4em;opacity:.9}
 
 /* 坦克車庫 */
+/* 名片：名牌、稱號、頭像框 */
+.lkn{display:inline-block;border-radius:999px;padding:0 .4em;line-height:1.35}
+.np-mint{background:#c3fae8;color:#087f5b}.np-peach{background:#ffe8cc;color:#d9480f}
+.np-sky{background:linear-gradient(90deg,#a5d8ff,#d0bfff);color:#1c3d7a}.np-sunset{background:linear-gradient(90deg,#ffc078,#f783ac);color:#5c1a33}
+.np-candy{background:linear-gradient(90deg,#ff8787,#ffd43b,#69db7c,#4dabf7,#b197fc);color:#fff;text-shadow:0 1px 2px #0007}
+.np-gold{background:linear-gradient(110deg,#f59f00 0%,#ffe066 40%,#fffbe6 50%,#ffe066 60%,#f59f00 100%);background-size:250% 100%;animation:lkshine 2.4s linear infinite;color:#5c3d00}
+@keyframes lkshine{from{background-position:100% 0}to{background-position:-150% 0}}
+.lkt{font-style:normal;display:inline-block;font-size:.72em;font-weight:900;color:#e8590c;background:#fff4e6;border:2px solid #ffd8a8;border-radius:8px;padding:0 .35em;margin-left:.3em;white-space:nowrap;vertical-align:middle;line-height:1.4}
+.lkav{position:relative;display:inline-grid;place-items:center;flex:none;width:2.4rem;height:2.4rem;vertical-align:middle}
+.lkav>i{font-style:normal;width:100%;height:100%;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#51cf66,#22b573);color:#fff;font:900 1.1rem 'Avenir Next',Arial,sans-serif}
+.lkav.mini{width:1.6rem;height:1.6rem;margin:0 .55rem 0 .35rem}.lkav.mini>i{font-size:.75rem}
+.lkav.big{width:4.2rem;height:4.2rem}.lkav.big>i{font-size:1.8rem}
+.lkfr{position:absolute;left:-35.5%;top:-35.5%;width:171%;height:171%;pointer-events:none;max-width:none}
+.lkav.nf::before,.av.lkme.nf::before{content:'';position:absolute;inset:-14%;border-radius:50%;border:.22rem solid var(--fc);box-shadow:0 0 0 .12rem #fff inset}
+.lkav.g2 .lkfr,.lkav.g3 .lkfr,.av.lkme.g2 .lkfr,.av.lkme.g3 .lkfr{animation:lkglow 2.2s ease-in-out infinite}
+.lkav.g3.nf::before,.av.lkme.g3.nf::before{animation:lkglow 2.2s ease-in-out infinite}
+@keyframes lkglow{0%,100%{filter:drop-shadow(0 0 1px var(--fc))}50%{filter:drop-shadow(0 0 9px var(--fc))}}
+#meav.lkme{position:relative;overflow:visible;margin:.55rem .55rem .55rem .7rem}
+#menm .lkt{display:block;width:fit-content;margin:.15rem 0 0;font-size:.62em}#menm .lkn{white-space:nowrap}
+/* 首頁名片卡 */
+#lkcard{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap}#lkcard .lkav{margin:.5rem}#lkcard .lkci{flex:1;min-width:10rem}
+#lkcard .a{font-size:.95rem;font-weight:900;color:#7048e8}#lkcard .b{font-size:1.5rem;font-weight:900}#lkcard .s{font-size:.95rem;color:#868e96;font-weight:700}
+@media (max-width:560px){#lkcard .go{width:100%}}
+/* 名片商店 */
+#lkshop{position:fixed;inset:0;z-index:60;background:rgba(40,30,15,.45);display:flex;align-items:center;justify-content:center;padding:1rem}
+#lkshop .lkbox{background:#fffaf0;border-radius:26px;width:min(48rem,100%);max-height:100%;overflow:auto;padding:1rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+#lkshop .lktop{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}#lkshop .lkme2{display:flex;align-items:center;gap:1.1rem;flex:1;min-width:14rem}#lkshop .lkme2 .lkav{margin:.6rem}
+#lkshop .lkt1{font-size:1.5rem;font-weight:900}#lkshop .lks{font-size:.95rem;color:#868e96;font-weight:700}
+#lkshop .lkcoin{font-size:1.4rem;font-weight:900;color:#e67700;background:#fff9db;border-radius:999px;padding:.2rem .9rem}
+#lkshop .lktabs{display:flex;gap:.4rem;margin:.8rem 0 .6rem}#lkshop .lktabs button{flex:1;border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1.15rem;font-weight:900;color:#868e96;padding:.4rem;min-height:48px}
+#lkshop .lktabs button.on{border-color:#7048e8;background:#f3f0ff;color:#5f3dc4}
+#lkshop .lkg{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:.6rem}
+#lkshop .lkc{position:relative;background:#fff;border:3px solid #f1f3f5;border-radius:18px;padding:1rem .5rem .6rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;text-align:center}
+#lkshop .lkc.on{border-color:#7048e8;background:#f8f0fc}
+#lkshop .lkp{min-height:5.6rem;display:grid;place-items:center;font-size:1.3rem;font-weight:900}#lkshop .lkg.tt .lkp{min-height:3rem}#lkshop .lkg.tt .lkt{font-size:1.1rem}
+#lkshop .lkcn{font-weight:900;color:#495057}
+#lkshop .lkq{position:absolute;top:.35rem;left:.45rem;font-style:normal;font-size:.75rem;font-weight:900;color:#fff;background:var(--qc,#adb5bd);border-radius:8px;padding:0 .4rem}#lkshop .lkq.e{background:#e8590c}
+#lkshop .lkb{width:100%;border:0;border-radius:12px;font-size:1rem;font-weight:900;padding:.4rem .3rem;min-height:44px}
+#lkshop .lkb.buy{background:#ffd43b;color:#5c3d00}#lkshop .lkb.buy:disabled{background:#f1f3f5;color:#adb5bd}#lkshop .lkb.buy small{display:block;font-size:.75rem}
+#lkshop .lkb.use{background:#22b573;color:#fff}#lkshop .lkb.eq{background:#f3f0ff;color:#7048e8;border:2px solid #b197fc}
+#lkshop .lkhow{font-size:.9rem;font-weight:800;color:#868e96}#lkshop .lkhow small{display:block;color:#e8590c}
+#lkshop .lkfoot{text-align:right;margin-top:.8rem}#lkshop .lkx{border:0;border-radius:14px;background:#7048e8;color:#fff;font-size:1.15rem;font-weight:900;padding:.5rem 1.6rem;min-height:48px}
 #garage{position:fixed;inset:0;z-index:60;background:rgba(40,30,15,.45);display:flex;align-items:center;justify-content:center;padding:1rem}
 #garage .gbox{background:#fffaf0;border-radius:26px;width:min(46rem,100%);max-height:100%;overflow:auto;padding:1rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 #garage .gtop{display:flex;align-items:center;gap:.7rem}#garage .gtop>.gi{width:3.4rem;height:3.4rem}
@@ -1533,6 +1575,8 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   /* 農場：同一個農場（b 一樣）看誰比較新；不是同一個（新平板先開了一份空的）就留經驗比較多的，免得高等農場被空的蓋掉 */
+  /* 名片：買過的兩邊合起來；穿戴看哪一邊最後換的 */
+  if(r.look){const a=sum.look||{own:{}},b=r.look;const nw=(b.u||0)>(a.u||0)?b:a;sum.look={own:Object.assign({},a.own||{},b.own||{}),fr:nw.fr||'',np:nw.np||'',tt:nw.tt||'',u:Math.max(a.u||0,b.u||0)}}
   if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.b||0)!==(A.b||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
@@ -1645,8 +1689,8 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
-function enterHome(){show$('home');presence();listenInv();listenSum();amLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();render();paintSync();
-  verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
+function enterHome(){show$('home');presence();listenInv();listenSum();amLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
+  verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);paintMeLook();render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
    ・窄版（手機、直拿平板）：上方只留頭像和資源（金幣、水、遊戲券），底部固定 5 個：首頁、學習、寵物、農場、更多
@@ -1803,7 +1847,7 @@ function renderHome(P){const n=todayN(),done=n>=GOAL;
   const W=el('div');W.id='week';const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
   '一二三四五六日'.split('').forEach((c,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dkey(d),v=sum.days[k]||0;
     W.appendChild(el('div',k===dkey()?'td':'',`<i class="${v>=GOAL?'y':v>0?'p':''}">${v>=GOAL?'✔':v>0?v:''}</i>${c}`))});
-  f.appendChild(W);t.appendChild(f);P.appendChild(amCard());P.appendChild(t);P.appendChild(PET.wishCard());
+  f.appendChild(W);t.appendChild(f);P.appendChild(amCard());P.appendChild(t);P.appendChild(PET.wishCard());P.appendChild(lookCard());
   const G2=el('div','hgrid');G2.appendChild(nextCard());G2.appendChild(progCard());P.appendChild(G2);
   if(!LS.get('learn601_rwseen',0))setTimeout(()=>{if(view==='home'&&!document.getElementById('rwhelp'))rewardHelp()},600);
   statPush();P.appendChild(el('div','sec',`${ico('pr-pen','hi2')}學習排行榜`));P.appendChild(statCardHome());
@@ -1960,18 +2004,18 @@ function statRank(B,rows){const on=rows.filter(B.on).map(r=>({seat:r.seat,v:B.v(
   on.forEach(x=>x.rank=1+on.filter(y=>y.v>x.v).length);return on}
 const statFmt=(B,x)=>B.k==='acc'?`${x.v}%<small>${x.n} 題</small>`:`${x.v} ${B.u}`;
 /* 學習頁：四個榜 */
-async function loadStatBoard(L){let S;try{S=await statAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
+async function loadStatBoard(L){let S;try{await lkLoad();S=await statAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(!S){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   if(S.denied){L.innerHTML='<div class="ld">⏳ 學習排行榜還沒開通（請告訴老師）</div>';return}
   L.innerHTML=STAT_BOARDS.map(B=>{const on=statRank(B,S.rows),mi=user&&on.findIndex(x=>x.seat===user.seat);let rows='';
-    on.forEach((x,i)=>{const m=user&&x.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${x.rank<=3?['🥇','🥈','🥉'][x.rank-1]:x.rank}</b><span>${x.seat} 號${m?'<small>我</small>':''}</span><i>${statFmt(B,x)}</i></div>`});
+    on.forEach((x,i)=>{const m=user&&x.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${x.rank<=3?['🥇','🥈','🥉'][x.rank-1]:x.rank}</b><span>${lkRow(x.seat,x.seat+' 號')}${m?'<small>我</small>':''}</span><i>${statFmt(B,x)}</i></div>`});
     const tip=B.k==='acc'&&user&&!isTest(user.seat)&&(sum.total||0)<STAT_MIN?`<div class="wrme">我做了 ${sum.total||0} 題，再 ${STAT_MIN-(sum.total||0)} 題就上榜</div>`:'';
     return `<div class="bcol" style="--dc:${B.c}"><div class="bh">${ico(B.img,'hi2')}${B.n}<small>${B.sub}${mi>=0?`・我第 ${on[mi].rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去練習！</div>'}${tip}</div>`}).join('')}
 /* 首頁：本週練習王、一次就答對的前 3 名＋我的名次 */
 function statCardHome(){const c=el('div','cd');c.id='shome';c.innerHTML='<div class="ld">讀取中…</div>';
-  statAll().then(S=>{if(!c.isConnected)return;if(!S||S.denied){c.innerHTML=`<div class="ld">${S&&S.denied?'⏳ 學習排行榜還沒開通':'📴 連上網路才看得到排行榜'}</div>`;return}
+  lkLoad().then(()=>statAll()).then(S=>{if(!c.isConnected)return;if(!S||S.denied){c.innerHTML=`<div class="ld">${S&&S.denied?'⏳ 學習排行榜還沒開通':'📴 連上網路才看得到排行榜'}</div>`;return}
     c.innerHTML=[STAT_BOARDS[0],STAT_BOARDS[2]].map(B=>{const on=statRank(B,S.rows),me=user&&on.find(x=>x.seat===user.seat);
-      return `<div class="shc" style="--dc:${B.c}"><div class="sht">${ico(B.img,'shi')}${B.n}<small>${B.sub}</small></div>${on.slice(0,3).map(x=>`<div class="shr${user&&x.seat===user.seat?' me':''}"><b>${['🥇','🥈','🥉'][x.rank-1]||x.rank}</b><span>${x.seat} 號</span><i>${statFmt(B,x)}</i></div>`).join('')||'<div class="shn">還沒有人上榜，快去練習！</div>'}
+      return `<div class="shc" style="--dc:${B.c}"><div class="sht">${ico(B.img,'shi')}${B.n}<small>${B.sub}</small></div>${on.slice(0,3).map(x=>`<div class="shr${user&&x.seat===user.seat?' me':''}"><b>${['🥇','🥈','🥉'][x.rank-1]||x.rank}</b><span>${lkName(x.seat,x.seat+' 號')}</span><i>${statFmt(B,x)}</i></div>`).join('')||'<div class="shn">還沒有人上榜，快去練習！</div>'}
         <div class="shm">${me?`我第 <b>${me.rank}</b> 名・${statFmt(B,me).replace(/<small>.*<\/small>/,'')}`:isTest(user.seat)?'測試帳號不上榜':B.k==='acc'?`做滿 ${STAT_MIN} 題就上榜（我做了 ${sum.total||0} 題）`:'練習 1 題就上榜！'}</div></div>`}).join('');
     const more=el('button','hmore','完整排行榜 ▶');tap(more,()=>{goView('learn');setTimeout(()=>{const e=document.getElementById('sboard');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},300)});c.appendChild(more)}).catch(()=>{c.innerHTML='<div class="ld">讀取失敗，等一下再試</div>'});
   return c}
@@ -2182,12 +2226,12 @@ async function lbAll(){if(!(await fbOnline()))return null;const v=(await timeout
     arr.forEach(r=>{r.rank=1+arr.filter(x=>sBetter(g,x.s,r.s)).length;r.k=starred(g,r)});return arr})});
   return out}
 function boardRows(g,arr,max){let h='';arr.forEach((r,i)=>{const me=user&&r.seat===user.seat;if(i>=max&&!me)return;
-    h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${me?'<small>我</small>':''}</span><i>${gFmt(g,r.s)}${r.k?'<sup>★</sup>':''}</i></div>`});
+    h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${lkRow(r.seat,r.seat+' 號')}${me?'<small>我</small>':''}</span><i>${gFmt(g,r.s)}${r.k?'<sup>★</sup>':''}</i></div>`});
   return h||'<div class="ld">還沒有人，搶第一！</div>'}
 /* 排行榜讀一次記 30 秒，切換遊戲馬上換、不用等 */
 let LBC=null;
 async function loadBoard(L,fresh){const g=bg;let all;
-  try{if(!fresh&&LBC&&Date.now()-LBC.t<30000)all=LBC.v;else{all=await lbAll();if(all)LBC={t:Date.now(),v:all}}}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
+  try{await lkLoad();if(!fresh&&LBC&&Date.now()-LBC.t<30000)all=LBC.v;else{all=await lbAll();if(all)LBC={t:Date.now(),v:all}}}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(g!==bg)return;L.style.minHeight=Math.max(parseFloat(L.style.minHeight)||0,L.offsetHeight)+'px';   // 高度只會變高不會變矮，畫面不會被往上拉if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   L.innerHTML=GDIFF.map(([k,ic,nm],d)=>{const arr=all[g][d]||[],me=arr.find(r=>r.seat===user.seat);
     return `<div class="bcol" style="--dc:${DCOL[d]}"><div class="bh">${ico('diff-'+k,'hi2')}${nm}<small>${arr.length} 人${me?`・我第 ${me.rank} 名`:''}</small></div>${boardRows(g,arr,5)}</div>`}).join('')}
@@ -2326,6 +2370,74 @@ function tkRefund(){if(!user||!sum||!sum.tks||!sum.tks.own)return;const T=sum.tk
   document.body.appendChild(m);tap(m.querySelector('.rwok'),()=>{m.remove();render()})}
 const tkOwn=k=>!!user&&(TANK_SKINS[k].p===0||(isTest(user.seat)&&!window.__tkShopTest)||!!(sum&&sum.tks&&sum.tks.own&&sum.tks.own[k]));
 function tankSkin(){const u=sum&&sum.tks&&sum.tks.use;return TANK_SKINS[u]&&tkOwn(u)?u:'forest'}
+/* ===================== 名片：頭像框、名牌、稱號（用金幣買） =====================
+   sum.look = {own:{代號:1}, fr 頭像框, np 名牌, tt 稱號, u 最後換裝的時間}
+   公開給同學看的：跟寵物一起發布在 learn/pet/座號（fr、np、tt），排行榜、同學的農場都讀這裡
+   頭像框圖：img/look/代號.webp（512×512，中間透明圓洞）；還沒有圖時用顏色圈代替 */
+const LK_TIER=[['普通',200,'#74c0fc'],['稀有',500,'#b197fc'],['史詩',900,'#f783ac'],['傳說',1500,'#f59f00']];
+const LK_FR=[['fr-leaf','葉子',0],['fr-star','小星星',0],['fr-cloud','雲朵',0],['fr-candy','糖果',0],['fr-flower','花冠',1],['fr-ocean','海洋',1],['fr-sakura','櫻花',1],['fr-science','科學',1],
+  ['fr-galaxy','星河',2],['fr-flame','魔法火焰',2],['fr-dragon','金龍',3],['fr-crown','皇家金冠',3]];
+const LK_NP=[['np-mint','薄荷',200],['np-peach','蜜桃',200],['np-sky','天空',400],['np-sunset','夕陽',400],['np-candy','彩虹糖',600],['np-gold','閃亮金',800]];
+const lkFarmLv=()=>{try{return FARM.lvOf(FARM.F().xp).lv}catch(e){return 1}},lkPetLv=()=>{try{const p=PET.P();return p&&p.st==='pet'?PET.lvOf(p.xp||0).lv:0}catch(e){return 0}},
+  lkWb=()=>{try{return (PET.P().ach||{}).wb||0}catch(e){return 0}};
+/* 稱號：前面 8 個用金幣買；後面 4 個只能靠成就拿到（買不到） */
+const LK_TT=[['t-practice','練習小達人',100],['t-math','數學小博士',200],['t-zh','國語小書蟲',200],['t-farm','農場小主人',150],['t-pet','寵物好朋友',150],['t-battle','對戰小勇士',200],['t-morning','早自修模範生',150],['t-star','閃亮之星',300],
+  ['t-30d','全勤小學霸',0,'練習做滿 30 天',()=>doneDays()>=30,()=>`${doneDays()} / 30 天`],
+  ['t-land','農場大地主',0,'農場升到 Lv.10',()=>lkFarmLv()>=10,()=>`Lv.${lkFarmLv()} / 10`],
+  ['t-maxpet','寵物滿級冠軍',0,'寵物養到 Lv.30',()=>lkPetLv()>=30,()=>`Lv.${lkPetLv()} / 30`],
+  ['t-wb','錯題剋星',0,'錯題本練會 50 題',()=>lkWb()>=50,()=>`${lkWb()} / 50 題`]];
+const LK={};LK_FR.forEach(([id,n,t])=>LK[id]={k:'fr',n,t,p:LK_TIER[t][1]});LK_NP.forEach(([id,n,p],i)=>LK[id]={k:'np',n,p,t:p>=800?3:p>=600?2:p>=400?1:0});
+LK_TT.forEach(([id,n,p,how,ok,prog])=>LK[id]={k:'tt',n,p,how,ok,prog,t:how?2:0});
+function lkMe(){if(!sum)return {own:{}};sum.look=sum.look||{own:{}};sum.look.own=sum.look.own||{};return sum.look}
+const lkHas=id=>{const I=LK[id];if(!I||!user)return false;if(isTest(user.seat))return true;if(I.ok)return !!I.ok();return !!lkMe().own[id]};
+/* 同學的名片：讀 learn/pet（記 30 秒） */
+let LKC=null;
+async function lkLoad(){if(LKC&&Date.now()-LKC.t<30000)return LKC.v;try{await fbReady;if(!db)return {};const v=(await timeout(db.ref(`${ROOT}/pet`).get(),8000)).val()||{};LKC={t:Date.now(),v};return v}catch(e){return LKC?LKC.v:{}}}
+function lkOf(seat,pv){if(user&&+seat===user.seat){const L=lkMe();return {fr:lkHas(L.fr)?L.fr:'',np:lkHas(L.np)?L.np:'',tt:lkHas(L.tt)?L.tt:''}}
+  const x=pv||(LKC&&LKC.v[seat])||{};const ok=(id,k)=>LK[id]&&LK[id].k===k?id:'';return {fr:ok(x.fr,'fr'),np:ok(x.np,'np'),tt:ok(x.tt,'tt')}}
+/* 名字（名牌底色＋稱號）、頭像（頭像框） */
+function lkName(seat,text,pv){const L=lkOf(seat,pv);return `<span class="lkn${L.np?' '+L.np:''}">${text}</span>${L.tt?`<em class="lkt">${LK[L.tt].n}</em>`:''}`}
+function lkAv(seat,inner,cls,pv,fr){const f=fr!==undefined?fr:lkOf(seat,pv).fr,I=LK[f];
+  return `<span class="lkav${cls?' '+cls:''}${I?' g'+I.t:''}" style="--fc:${I?LK_TIER[I.t][2]:'transparent'}"><i>${inner}</i>${I?`<img class="lkfr" src="img/look/${f}.webp" alt="" draggable="false" onerror="this.parentNode.classList.add('nf');this.remove()">`:''}</span>`}
+/* 排行榜一列的名字：有頭像框才多一個小頭像 */
+const lkRow=(seat,text)=>(lkOf(seat).fr?lkAv(seat,seat,'mini'):'')+lkName(seat,text);
+function lkPub(){try{const p=PET.P();if(p)PET.pub(p)}catch(e){}}
+function paintMeLook(){if(!user)return;const a=document.getElementById('meav'),n=document.getElementById('menm');if(!a||isTest(user.seat)&&!lkMe().fr)return;
+  const L=lkOf(user.seat),I=LK[L.fr];a.classList.toggle('lkme',!!I);a.style.setProperty('--fc',I?LK_TIER[I.t][2]:'transparent');a.className='av'+(I?' lkme g'+I.t:'');
+  a.innerHTML=`${isTest(user.seat)?'🧪':user.seat}${I?`<img class="lkfr" src="img/look/${L.fr}.webp" alt="" draggable="false" onerror="this.parentNode.classList.add('nf');this.remove()">`:''}`;
+  if(!isTest(user.seat))n.innerHTML=`${lkName(user.seat,user.seat+' 號')}<small>601</small>`}
+/* 名片商店 */
+let lkTab='fr';
+function lkShop(){if(!user||!sum)return;const old=document.getElementById('lkshop');if(old)old.remove();
+  const box=el('div');box.id='lkshop';document.body.appendChild(box);const close=()=>{box.remove();paintMeLook();if(view==='home')render()};
+  const coins=()=>{try{const p=PET.P();return p?PET.coinOf(p):0}catch(e){return 0}};
+  function paint(){const L=lkMe(),c=coins(),T=isTest(user.seat);
+    const ids=Object.keys(LK).filter(id=>LK[id].k===lkTab);
+    const card=id=>{const I=LK[id],has=lkHas(id),on=L[I.k]===id&&has;let pv='';
+      if(I.k==='fr')pv=lkAv(user.seat,user.seat,'big',null,id);
+      else if(I.k==='np')pv=`<span class="lkn ${id}">${user.seat} 號</span>`;
+      else pv=`<em class="lkt">${I.n}</em>`;
+      const tag=I.k==='tt'?(I.how?'<i class="lkq e">成就</i>':''):`<i class="lkq" style="--qc:${LK_TIER[I.t][2]}">${LK_TIER[I.t][0]}</i>`;
+      const btn=on?`<button class="lkb eq" data-off="${id}">使用中（按一下卸下）</button>`:has?`<button class="lkb use" data-use="${id}">換上</button>`:
+        I.how?`<div class="lkhow">${I.how}<small>${I.prog()}</small></div>`:`<button class="lkb buy" data-buy="${id}" ${c<I.p?'disabled':''}>🪙 ${I.p}${c<I.p?'<small>金幣不夠</small>':''}</button>`;
+      return `<div class="lkc${on?' on':''}${has?'':' lock'}">${tag}<div class="lkp">${pv}</div>${I.k!=='tt'?`<div class="lkcn">${I.n}</div>`:''}${btn}</div>`};
+    box.innerHTML=`<div class="lkbox"><div class="lktop"><div class="lkme2">${lkAv(user.seat,user.seat,'big')}<div><div class="lkt1">${lkName(user.seat,user.seat+' 號')}</div><div class="lks">同學在排行榜、農場、寵物看得到你的名片</div></div></div><div class="lkcoin">🪙 <b>${T?'∞':c}</b></div></div>
+      <div class="lktabs">${[['fr','頭像框'],['np','名牌'],['tt','稱號']].map(([k,n])=>`<button data-t="${k}" class="${lkTab===k?'on':''}">${n}</button>`).join('')}</div>
+      <div class="lkg ${lkTab}">${ids.map(card).join('')}</div>
+      <div class="lkfoot"><button class="lkx">好了</button></div></div>`;
+    box.querySelectorAll('.lktabs button').forEach(b=>tap(b,()=>{lkTab=b.dataset.t;paint()}));tap(box.querySelector('.lkx'),close);
+    const set=(k,id)=>{const L=lkMe();L[k]=id;L.u=Date.now();saveSum(true);lkPub();paintMeLook();try{sfx.ok()}catch(e){}paint()};
+    box.querySelectorAll('[data-use]').forEach(b=>tap(b,()=>{const id=b.dataset.use;set(LK[id].k,id)}));
+    box.querySelectorAll('[data-off]').forEach(b=>tap(b,()=>set(LK[b.dataset.off].k,'')));
+    box.querySelectorAll('[data-buy]').forEach(b=>tap(b,()=>{const id=b.dataset.buy,I=LK[id],p=PET.P();if(!p||PET.coinOf(p)<I.p)return;
+      if(!confirm(`用 🪙${I.p} 買「${I.n}」${I.k==='fr'?'頭像框':I.k==='np'?'名牌':'稱號'}嗎？`))return;
+      PET.coinAdd(p,-I.p);const L=lkMe();L.own[id]=1;try{toast(`🎉 買到「${I.n}」了！`)}catch(e){}set(I.k,id);paintNavs&&paintNavs()}))}
+  box.addEventListener('pointerdown',e=>{if(e.target===box)close()});paint()}
+/* 首頁的名片卡 */
+function lookCard(){const c=el('div','cd');c.id='lkcard';const L=lkOf(user.seat);
+  c.innerHTML=`${lkAv(user.seat,isTest(user.seat)?'🧪':user.seat,'big')}<div class="lkci"><div class="a">我的名片</div><div class="b">${lkName(user.seat,isTest(user.seat)?'測試帳號':user.seat+' 號')}</div><div class="s">${L.fr||L.np||L.tt?'同學在排行榜、農場看得到':'用金幣買頭像框、名牌、稱號'}</div></div>`;
+  const g=el('button','go','裝扮名片 ▶');tap(g,lkShop);c.appendChild(g);return c}
+tap(document.getElementById('me'),()=>{if(user&&sum)lkShop()});   // 點左上角自己的頭像也能打開名片商店
 const gIco=n=>`<img class="gi" src="img/game/tank-ui-${n}-v2.webp" alt="" draggable="false">`;
 function garage(){return new Promise(done=>{if(!user||!sum){done();return}
   const old=document.getElementById('garage');if(old)old.remove();
@@ -3151,7 +3263,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v128';let verNew=false,verBusy=false;
+const APP_VER='learn601-v129';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
