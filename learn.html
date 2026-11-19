@@ -287,6 +287,9 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 .tkget{margin-top:.6rem;font-size:1.5rem;color:#e8590c;font-weight:900}
 #tkcard{display:flex;align-items:center;gap:1.2rem;border-left:.6rem solid #e8590c;flex-wrap:wrap}
 #tkcard .tkn{font-size:3rem;display:flex;align-items:center;gap:.3rem}#tkcard .tkn b{font-size:3.4rem;color:#e8590c}
+#tkcard .tksell{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;border-top:3px dotted #ffd8a8;padding-top:.6rem;font-size:1.1rem;font-weight:800;color:#868e96}
+#tkcard .tksell span{flex:1 1 14rem}#tkcard .tksell button{border:3px solid #ffd43b;background:#fff9db;color:#e67700;border-radius:14px;font-size:1.1rem;font-weight:900;padding:.35rem .9rem;min-height:48px}
+#tkcard .tksell .ii{width:1.2em;height:1.2em;vertical-align:-.2em}
 #tkcard .t{font-size:1.6rem;font-weight:900}#tkcard .s{font-size:1.15rem;color:#999;font-weight:800;margin-top:.2rem}#tkcard .go{margin:0 0 0 auto}
 #bgames,#bdiffs{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.6rem}
 .bgb,.bdb{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1.1rem;font-weight:900;color:#555;padding:.3rem .7rem}
@@ -925,6 +928,11 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
   <div>🔑 學生自己設的密碼（學生忘記時來這裡看，或按「重設」讓他用老師發的密碼重新設）</div>
   <button id="pwload">查看</button><span id="pwmsg2"></span>
   <div id="pwout" class="chips"></div>
+ </div>
+ <div class="cd" id="gift">
+  <div class="dhead"><b>🪙 補發金幣</b></div>
+  <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="gseat" style="font-size:1.1rem"></select> 金幣 <input id="gamt" type="number" value="500" min="1" max="3000" style="width:6rem;font-size:1.1rem"><button id="gbtn">發給他</button><span id="gmsg"></span></div>
+  <div class="amnote">直接加進這位同學的金幣帳本（換平板、同步都不會不見）。要先在 ① 選過 pins.json，按下去前會再問一次。</div>
  </div>
  <div class="cd" id="amt">
   <div class="dhead"><b>🌅 早自修分組</b><button id="amload">讀取</button><button id="amsave">儲存</button><label class="amimp">📂 匯入分組檔<input type="file" id="amfile" accept=".json,application/json" hidden></label><span id="ammsg"></span></div>
@@ -2072,10 +2080,20 @@ const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 /* 雙人合作過關：2026-11-16 老師覺得關卡 bug 太多，從平台拿掉（coop.html 還在，排行榜也不顯示） */
 const BK_OPEN=true;      // 方塊對戰開放了沒（2026-11-15 開放）
 /* 寵物彈射對戰：2026-11-15 老師覺得不好玩，從平台拿掉（sling.html 還在，以前的戰績照樣保留） */
+const TK_SELL=10;
+function sellTk(n){const p=PET.P();n=Math.min(n,sum.tk||0);if(!p||n<=0)return;
+  if(!confirm(`要把 ${n} 張遊戲券賣掉，換 🪙${n*TK_SELL} 嗎？\n\n賣掉以後不能再用金幣買回來喔！`))return;
+  sum.tk=(sum.tk||0)-n;PET.coinAdd(p,n*TK_SELL);saveSum(true);logPush({k:'sell',n,c:n*TK_SELL});try{sfx.ticket()}catch(e){}
+  toast(`🪙 賣掉 ${n} 張遊戲券，拿到 ${n*TK_SELL} 枚金幣！`);paintNavs();render()}
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
   const left=playLeft();c.innerHTML=`<div class="tkn">${ico('rw-ticket','tki')}<b>${tkN()}</b></div><div><div class="t">遊戲券（一張玩 5 分鐘）</div><div class="s">${left>0?`⏱ 現在還可以玩 ${mmss(left)}`:`每 10 題答對 8 題拿 1 張　${tkInfo()}`}</div></div>`;
-  const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);P.appendChild(c);
+  const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);
+  /* 不想玩遊戲的同學：遊戲券可以賣掉換金幣，1 張 🪙10，不限張數（只能賣，不能用金幣買回券） */
+  const tn=sum.tk||0;if(!isTest(user.seat)&&tn>0){const sr=el('div','tksell',`<span>不想玩遊戲？遊戲券可以換金幣：1 張 ${ico('rw-coin','ii')}${TK_SELL}</span>`);
+    const s1=el('button','',`賣 1 張　${ico('rw-coin','ii')}+${TK_SELL}`);tap(s1,()=>sellTk(1));sr.appendChild(s1);
+    if(tn>1){const sa=el('button','',`全部賣掉（${tn} 張）　${ico('rw-coin','ii')}+${tn*TK_SELL}`);tap(sa,()=>sellTk(tn));sr.appendChild(sa)}c.appendChild(sr)}
+  P.appendChild(c);
   const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s"><span>跟同學連線對戰</span><span>輸的人用 1 張遊戲券</span><span>中途離開算輸</span></div><div class="xr" id="xqrec"></div></div>';
   const xw=el('div');xw.className='xbtns';const xv=el('button','go',ico('vs-inv','bi')+'邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
   const xb=el('button','go gray',ico('vs-xq','bi')+'軍棋');tap(xb,()=>openTool({...XQ_TOOL,f:'chess.html?g=xq'}));
@@ -2997,6 +3015,17 @@ function amrRender(){if(!AMR)return;const O=$('#amrout'),today=dkey(),wk=weekKey
   O.querySelectorAll('[data-s]').forEach(e=>e.onclick=()=>{const s=+e.dataset.s;amrSel=amrSel===s?null:s;amrRender();const r=O.querySelector(`tr.st[data-s="${s}"]`);if(amrSel&&r)r.scrollIntoView({block:'nearest',behavior:'smooth'})})}
 tap($('#amrload'),()=>amrLoad());
 document.querySelectorAll('#amwk button').forEach(b=>b.addEventListener('click',()=>{amrW=+b.dataset.w;amrDay=null;amrSel=null;document.querySelectorAll('#amwk button').forEach(x=>x.classList.toggle('on',x===b));amrRender()}));
+/* 老師頁：補發金幣。寫在雲端 u/座號/密碼/sum/pet/cl/e/gift_時間（金幣帳本的一筆收入）；
+   學生的平板同步時，帳本是兩邊合起來（每筆取大的），所以不會被學生那台舊的資料蓋掉 */
+$('#gseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');
+tap($('#gbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#gmsg'),s=$('#gseat').value,n=Math.round(+$('#gamt').value);
+  if(!pins||!pins[s]){M.textContent='請先在 ① 選擇 pins.json';return}if(!(n>0&&n<=3000)){M.textContent='金幣請填 1～3000';return}
+  if(!confirm(`要發 🪙${n} 給 ${s} 號嗎？`))return;M.textContent='處理中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
+  const b=`${ROOT}/u/${s}/${pins[s]}/sum/pet`;
+  try{const p=(await timeout(db.ref(b).get(),10000)).val();if(!p||!p.cl){M.textContent=`${s} 號還沒有寵物資料（要先登入過一次），沒有發`;return}
+    await timeout(db.ref(`${b}/cl/e/gift_${Date.now().toString(36)}`).set(n),10000);
+    const q=(await timeout(db.ref(b).get(),10000)).val();M.textContent=`✅ 發好了：${s} 號 🪙+${n}，現在共 🪙${PET.coinOf(q)}（他下次打開平台就會看到）`}
+  catch(e){M.textContent='發送失敗，再按一次'}});
 /* ===================== 老師頁：班級儀表板 =====================
    打開老師頁就自動讀全班的「摘要」和「作答紀錄」，一眼看到：
    ・今天、這段時間的練習狀況（四個大數字）
@@ -3122,7 +3151,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v127';let verNew=false,verBusy=false;
+const APP_VER='learn601-v128';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
