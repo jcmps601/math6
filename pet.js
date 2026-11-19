@@ -533,7 +533,9 @@
   /* 公開給同學看的樣子：有變才上傳 */
   function pub(p) {
     if (!user || !p || p.st !== 'pet') return;
-    const v = { sp: p.sp, nm: p.nm | 0, lv: lvOf(p.xp || 0).lv, c: p.x | 0, x: p.x | 0, h: p.h || '', g: p.g || '', k: p.k || '', b: p.b || '', dx: dexN() }, key = JSON.stringify(v);
+    const v = { sp: p.sp, nm: p.nm | 0, lv: lvOf(p.xp || 0).lv, c: p.x | 0, x: p.x | 0, h: p.h || '', g: p.g || '', k: p.k || '', b: p.b || '', dx: dexN() }, key0 = 0;   // 名片（頭像框、名牌、稱號）也一起發布，同學才看得到
+    try { const L = window.lkOf ? lkOf(user.seat) : {}; if (L.fr) v.fr = L.fr; if (L.np) v.np = L.np; if (L.tt) v.tt = L.tt; } catch (e) { }
+    const key = JSON.stringify(v);
     if (LS.get('learn601_petpub_' + user.seat, '') === key) return;
     LS.set('learn601_petpub_' + user.seat, key); enqueue(`${ROOT}/pet/${user.seat}`, Object.assign({ t: Date.now() }, v), true);
   }
