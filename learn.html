@@ -240,6 +240,7 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 /* 結算 */
 #end{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-start;justify-content:center;z-index:20;padding:1rem;overflow-y:auto;overscroll-behavior:contain}   /* z-index 要比手機的底部按鈕列（6）高；內容比螢幕高時可以捲動 */
 #end .box{margin:auto}
+#bkout .bkr{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;border-bottom:1px dashed #eee;padding:.4rem 0;font-size:.95rem}#bkout .bkr b{min-width:3.5rem}#bkout .bkr.now{background:#fff9db;border-radius:8px;padding:.4rem}#bkout .bkr button{margin-left:auto}
 @media (max-width:560px){#end .box{padding:1rem .9rem}#end h2{font-size:1.7rem}#end .big{font-size:3rem}#end .st{font-size:2rem}#end .sub{font-size:1.1rem;margin-bottom:.6rem}#end button{font-size:1.2rem;padding:.45rem .9rem}}
 #end.on{display:flex}
 #end .box{background:#fff;border-radius:28px;padding:1.4rem 2rem;text-align:center;min-width:min(26rem,100%);animation:fade .3s}
@@ -988,6 +989,12 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
   <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="gseat" style="font-size:1.1rem"></select> 金幣 <input id="gamt" type="number" value="500" min="1" max="3000" style="width:6rem;font-size:1.1rem"><button id="gbtn">發給他</button><span id="gmsg"></span></div>
   <div class="amnote">直接加進這位同學的金幣帳本（換平板、同步都不會不見）。要先在 ① 選過 pins.json，按下去前會再問一次。</div>
  </div>
+ <div class="cd" id="bkc">
+  <div class="dhead"><b>還原寵物、農場</b></div>
+  <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="bkseat" style="font-size:1.1rem"></select><button id="bkload">看備份</button><span id="bkmsg"></span></div>
+  <div id="bkout"></div>
+  <div class="amnote">每位同學每天第一次上傳進度時，會自動備份一次（留 14 天）。學生說寵物、農場不見了，先按「看備份」比對，再選要還原的那一天。只還原寵物和農場，金幣、題數不會動。要先在 ① 選過 pins.json。</div>
+ </div>
  <div class="cd" id="amt">
   <div class="dhead"><b>🌅 早自修分組</b><button id="amload">讀取</button><button id="amsave">儲存</button><label class="amimp">📂 匯入分組檔<input type="file" id="amfile" accept=".json,application/json" hidden></label><span id="ammsg"></span></div>
   <div class="amnote">每天 15 題，先做 2 題成語。沒設定的學生是「一般」：1 篇閱讀測驗，剩下的國語、數學各一半，從學習頁目前的範圍出（國語第 7 課起、數學期末範圍的單元；新增單元會自動加入）。「學扶」可以數學、國語分開設，再勾要練的題型（都不勾＝全部題型），成語以外國語、數學各一半。<br>設定存在每位學生自己的雲端資料裡，同學看不到；網站的程式裡不會有任何人的分組。</div>
@@ -1567,9 +1574,14 @@ async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true
     /* 進度（sum）上傳前先讀雲端合併：別台平板做的（例如週末在家）不會被這台舊的紀錄蓋掉 */
     if(user&&sum&&it.p===base()+'/sum'){try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum));it.v.sy=Date.now()}catch(e){break}}   // sy：這台平板最後一次把進度傳上雲端的時間（老師頁看誰很久沒同步）
     if(user&&it.p===base()+'/wbq'){try{const cm=(await timeout(db.ref(it.p).get(),10000)).val();if(cm)wbMerge(cm);it.v=wbMap(wbLoad(),wbTomb())}catch(e){break}}   // 錯題本：先合併別台的再上傳
-    try{await timeout(db.ref(it.p).set(it.v),12000);drop()}
+    try{await timeout(db.ref(it.p).set(it.v),12000);drop();if(it.p===base()+'/sum')bkDaily(it.v)}
     catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
   flushing=false;paintSync()}
+/* 每天自動備份一次（那天第一次上傳時）：u/座號/密碼/bk/日期，留 14 天；萬一進度被蓋掉，老師頁可以還原 */
+let bkDay='';async function bkDaily(v){if(!user||!db)return;const d=dkey(),k=user.seat+d;if(bkDay===k)return;bkDay=k;
+  try{const ref=db.ref(`${base()}/bk/${d}`);if((await timeout(ref.get(),10000)).val())return;
+    await timeout(ref.set({t:Date.now(),total:v.total||0,first:v.first||0,tk:v.tk||0,pet:v.pet||null,farm:v.farm||null,fdc:v.fdc||null,look:v.look||null,tks:v.tks||null}),12000);
+    const all=(await timeout(db.ref(`${base()}/bk`).get(),10000)).val()||{},old=dkey(new Date(Date.now()-14*864e5));for(const x in all)if(x<old)db.ref(`${base()}/bk/${x}`).remove()}catch(e){bkDay=''}}
 addEventListener('online',()=>flush());
 setInterval(()=>{if(Q.length&&db&&online&&!flushing&&document.visibilityState==='visible')flush()},20000);   // 上傳失敗（網路慢、逾時）時每 20 秒自動再試，不用等下一次作答才重傳
 function paintSync(){const s=document.getElementById('sync');if(!s)return;   // 只有上傳佇列清空（真的寫進雲端）才說已儲存
@@ -1593,8 +1605,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.look){const a=sum.look||{own:{}},b=r.look;const nw=(b.u||0)>(a.u||0)?b:a;sum.look={own:Object.assign({},a.own||{},b.own||{}),fr:nw.fr||'',np:nw.np||'',tt:nw.tt||'',u:Math.max(a.u||0,b.u||0),vw:Math.max(a.vw||0,b.vw||0),vg:[...new Set([...(a.vg||[]),...(b.vg||[])])]};if(a.ach||b.ach)sum.look.ach=Object.assign({},a.ach||{},b.ach||{})}
   if(r.amd)sum.amd=Object.assign({},sum.amd||{},r.amd);   // 早自修完成的日子
   if(r.fdc){const a=sum.fdc||{},b=r.fdc,nw=(b.u||0)>(a.u||0)?b:a;sum.fdc={own:Object.assign({},a.own||{},b.own||{}),s:Array.from({length:6},(_,k)=>(nw.s&&nw.s[k])||''),u:Math.max(a.u||0,b.u||0)}}   // 農場裝飾：買過的兩邊合起來，擺法以最後擺的那台為準
-  if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if(!(A.xp||0)!==!(r.farm.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}   /* 一邊是空的農場（經驗 0）：一定留有進度的那邊（舊版平板開的空農場沒有 b，不能只比新舊） */
-    else if((r.farm.b||0)!==(A.b||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}
+  if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.xp||0)!==(A.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}   /* 農場經驗只會增加：留經驗比較多的那份（另一台的舊資料、空農場都蓋不過來）；一樣多才看誰比較新 */
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   if(r.qd&&r.qd.d===dkey()){if(!sum.qd||sum.qd.d!==r.qd.d)sum.qd={d:r.qd.d,k:(r.qd.k||[]).slice()};else sum.qd.k=[...new Set([...(sum.qd.k||[]),...(r.qd.k||[])])]}   // 今天做過的題目
@@ -3224,6 +3235,19 @@ document.querySelectorAll('#amwk button').forEach(b=>b.addEventListener('click',
 /* 老師頁：補發金幣。寫在雲端 u/座號/密碼/sum/pet/cl/e/gift_時間（金幣帳本的一筆收入）；
    學生的平板同步時，帳本是兩邊合起來（每筆取大的），所以不會被學生那台舊的資料蓋掉 */
 $('#gseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');
+$('#bkseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');
+tap($('#bkload'),()=>bkLoad());
+async function bkLoad(){const pins=LS.get('learn601_pins',null),M=$('#bkmsg'),O=$('#bkout'),s=$('#bkseat').value;O.innerHTML='';
+  if(!pins||!pins[s]){M.textContent='請先在 ① 選擇 pins.json';return}M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
+  const B=`${ROOT}/u/${s}/${pins[s]}`;let cur,bk;try{[cur,bk]=await Promise.all([timeout(db.ref(B+'/sum').get(),10000).then(x=>x.val()||{}),timeout(db.ref(B+'/bk').get(),10000).then(x=>x.val()||{})])}catch(e){M.textContent='讀取失敗，再按一次';return}
+  const desc=v=>{const p=v.pet||{},f=v.farm||{},pets=[p.st==='pet'?`${(PET.SPECIES[p.sp]||{}).n||p.sp} Lv.${PET.lvOf(p.xp||0).lv}`:'🥚 蛋'].concat(Object.entries(p.box||{}).filter(([,x])=>x&&(x.xp||0)>0).map(([k,x])=>`${(PET.SPECIES[k]||{}).n||k} Lv.${PET.lvOf(x.xp||0).lv}`));return `寵物：${pets.join('、')}　農場 Lv.${FARM.lvOf(f.xp||0).lv}（${(f.p||[]).filter(Boolean).length} 塊田有種）`};
+  const ds=Object.keys(bk).sort().reverse();M.textContent=ds.length?'':'還沒有備份（明天開始會有）';
+  O.innerHTML=`<div class="bkr now"><b>現在</b>${desc(cur)}</div>`+ds.map(d=>`<div class="bkr"><b>${d.slice(5).replace('-','/')}</b>${desc(bk[d])}<button data-d="${d}">還原成這天</button></div>`).join('');
+  O.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{const d=b.dataset.d,v=bk[d];if(!confirm(`要把 ${s} 號的寵物、農場還原成 ${d} 的樣子嗎？\n（金幣、題數不會動；那天之後新種的田、新的經驗會回到那天）`))return;
+    try{const now=Date.now(),c=(await timeout(db.ref(B+'/sum').get(),10000)).val()||{},cp=c.pet||{},np=JSON.parse(JSON.stringify(v.pet||{}));
+      np.cl=cp.cl||np.cl;np.coin=cp.coin;np.own=Object.assign({},np.own||{},cp.own||{});np.rooms=Object.assign({},np.rooms||{},cp.rooms||{});np.dex=Object.assign({},np.dex||{},cp.dex||{});np.pb=now;np.u=now;np.lu=now;   // 金幣帳本、買過的東西、圖鑑用現在的
+      const nf=Object.assign({},v.farm||{},{water:(c.farm&&c.farm.water)||((v.farm||{}).water)||0,b:now,u:now});nf.log=[{t:now,m:`✨ 老師幫你把農場恢復到 ${d.slice(5).replace('-','/')} 的樣子了`}].concat(nf.log||[]);
+      await timeout(db.ref(B+'/sum/pet').set(np),10000);await timeout(db.ref(B+'/sum/farm').set(nf),10000);await bkLoad();M.textContent=`✅ 已還原 ${s} 號（${d}）：請他重新整理平台`}catch(e){M.textContent='還原失敗：'+(e.message||e)}})}
 tap($('#gbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#gmsg'),s=$('#gseat').value,n=Math.round(+$('#gamt').value);
   if(!pins||!pins[s]){M.textContent='請先在 ① 選擇 pins.json';return}if(!(n>0&&n<=3000)){M.textContent='金幣請填 1～3000';return}
   if(!confirm(`要發 🪙${n} 給 ${s} 號嗎？`))return;M.textContent='處理中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
@@ -3357,7 +3381,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v146';let verNew=false,verBusy=false;
+const APP_VER='learn601-v147';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
