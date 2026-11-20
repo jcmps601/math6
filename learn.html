@@ -360,7 +360,12 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 @media (max-width:900px),(orientation:portrait){#tq{font-size:1.3rem}#tsol>div{font-size:1.25rem}#tbig .bx{font-size:2.2rem}#tbtn{font-size:1.3rem}.ttag{font-size:1.1rem}}
 .br em.nk{color:#bbb}.br em small{font-size:.75rem}
 .br em{font-style:normal;font-size:1.05rem;color:#888;width:5.5rem;text-align:center}
-.br em.lkt{width:auto;font-size:.72em;color:#e8590c;text-align:left}   /* 稱號：不要套到上面排名欄的固定寬度（會跟「我」疊在一起） */
+.br em.lkt{width:auto;font-size:.72em;color:#e8590c;text-align:left}
+.br>span.lkrow{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0}.br .lkid{display:flex;align-items:center;gap:.2rem;white-space:nowrap}.br .lkid small{margin-left:.1rem}
+.br>span.lkrow .lkt{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:.56em;padding:0 .3em;margin:.1rem 0 0;position:relative;z-index:2}.br>i{flex:none}
+.br .lkav.mini{width:1.9rem;height:1.9rem;margin:.6rem .4rem .45rem .55rem}.br .lkav.mini>i{font-size:.82rem}.br .lkid:has(.lkav)+.lkt{margin-top:-.3rem}
+@media (max-width:560px){.bcol .br{font-size:.98rem;gap:.2rem;padding:.2rem .25rem;margin:0 .1rem}.bcol .br>b{width:1.35rem;flex:none}.bcol .br>b .ico{width:1.2em;height:1.2em}.bcol .br>i{font-size:.9em}.bcol .br sup{font-size:.7em}.br .lkav.mini{margin:.55rem .3rem .4rem .45rem}}   /* 手機兩欄：字縮小，分數不會被擠出去 */
+/* .br em.lkt（稱號）：不要套到上面排名欄的固定寬度（會跟「我」疊在一起） */
 
 /* ===================== 可愛主題 ===================== */
 html{touch-action:manipulation;-webkit-touch-callout:none}
@@ -2064,7 +2069,7 @@ async function loadStatBoard(L){let S;try{await lkLoad();S=await statAll()}catch
   if(!S){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   if(S.denied){L.innerHTML='<div class="ld">⏳ 學習排行榜還沒開通（請告訴老師）</div>';return}
   L.innerHTML=STAT_BOARDS.map(B=>{const on=statRank(B,S.rows),mi=user&&on.findIndex(x=>x.seat===user.seat);let rows='';
-    on.forEach((x,i)=>{const m=user&&x.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${x.rank<=3?['🥇','🥈','🥉'][x.rank-1]:x.rank}</b><span>${lkRow(x.seat,x.seat+' 號')}${m?'<small>我</small>':''}</span><i>${statFmt(B,x)}</i></div>`});
+    on.forEach((x,i)=>{const m=user&&x.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${x.rank<=3?['🥇','🥈','🥉'][x.rank-1]:x.rank}</b><span class="lkrow">${lkRow(x.seat,x.seat+' 號',m?'<small>我</small>':'')}</span><i>${statFmt(B,x)}</i></div>`});
     const tip=B.k==='acc'&&user&&!isTest(user.seat)&&(sum.total||0)<STAT_MIN?`<div class="wrme">我做了 ${sum.total||0} 題，再 ${STAT_MIN-(sum.total||0)} 題就上榜</div>`:'';
     return `<div class="bcol" style="--dc:${B.c}"><div class="bh">${ico(B.img,'hi2')}${B.n}<small>${B.sub}${mi>=0?`・我第 ${on[mi].rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去練習！</div>'}${tip}</div>`}).join('')}
 /* 首頁：本週練習王、一次就答對的前 3 名＋我的名次 */
@@ -2305,7 +2310,7 @@ async function lbAll(){if(!(await fbOnline()))return null;const v=(await timeout
     arr.forEach(r=>{r.rank=1+arr.filter(x=>sBetter(g,x.s,r.s)).length;r.k=starred(g,r)});return arr})});
   return out}
 function boardRows(g,arr,max){let h='';arr.forEach((r,i)=>{const me=user&&r.seat===user.seat;if(i>=max&&!me)return;
-    h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${lkRow(r.seat,r.seat+' 號')}${me?'<small>我</small>':''}</span><i>${gFmt(g,r.s)}${r.k?'<sup>★</sup>':''}</i></div>`});
+    h+=`<div class="br${me?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span class="lkrow">${lkRow(r.seat,r.seat+' 號',me?'<small>我</small>':'')}</span><i>${gFmt(g,r.s)}${r.k?'<sup>★</sup>':''}</i></div>`});
   return h||'<div class="ld">還沒有人，搶第一！</div>'}
 /* 排行榜讀一次記 30 秒，切換遊戲馬上換、不用等 */
 let LBC=null;
@@ -2520,8 +2525,8 @@ function lkOf(seat,pv){if(user&&+seat===user.seat){const L=lkMe();return {fr:lkH
 function lkName(seat,text,pv){const L=lkOf(seat,pv);return `<span class="lkn${L.np?' '+L.np:''}">${text}</span>${L.tt?`<em class="lkt">${LK[L.tt].n}</em>`:''}`}
 function lkAv(seat,inner,cls,pv,fr){const f=fr!==undefined?fr:lkOf(seat,pv).fr,I=LK[f];
   return `<span class="lkav${cls?' '+cls:''}${I?' g'+I.t+' f-'+f:''}" style="--fc:${I?LK_TIER[I.t][2]:'transparent'}"><i>${inner}</i>${I?`<img class="lkfr" src="img/look/${f}.webp" alt="" draggable="false" onerror="this.parentNode.classList.add('nf');this.remove()">`:''}</span>`}
-/* 排行榜一列的名字：有頭像框才多一個小頭像 */
-const lkRow=(seat,text)=>(lkOf(seat).fr?lkAv(seat,seat,'mini'):'')+lkName(seat,text);
+/* 排行榜一列的名字：有頭像框就只放頭像（框裡有座號），沒有就寫「幾號」（名牌底色）；稱號接在後面，太長就截斷，整列不換行 */
+const lkRow=(seat,text,after='')=>{const L=lkOf(seat);return `<span class="lkid">${L.fr?lkAv(seat,seat,'mini'):`<span class="lkn${L.np?' '+L.np:''}">${text}</span>`}${after}</span>${L.tt?`<em class="lkt">${LK[L.tt].n}</em>`:''}`};
 function lkPub(){try{const p=PET.P();if(p)PET.pub(p)}catch(e){}}
 function paintMeLook(){if(!user)return;const a=document.getElementById('meav'),n=document.getElementById('menm');if(!a||isTest(user.seat)&&!lkMe().fr)return;
   const L=lkOf(user.seat),I=LK[L.fr];a.classList.toggle('lkme',!!I);a.style.setProperty('--fc',I?LK_TIER[I.t][2]:'transparent');a.className='av'+(I?' lkme g'+I.t+' f-'+L.fr:'');
@@ -3419,7 +3424,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v153';let verNew=false,verBusy=false;
+const APP_VER='learn601-v154';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
