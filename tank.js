@@ -131,8 +131,9 @@
     const { pos, h } = genTerrain(n, site, rnd);
     const idx = [...pos.keys()].sort((a, b) => pos[a] - pos[b]);
     if (mode !== 'team') for (let i = n - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
-    const xs = idx.map(p => pos[p]);   // 玩家 i 站在 xs[i]（2 對 2：左到右 紅 藍 紅 藍）
-    if (mode === 'team') xs.sort((a, b) => a - b);
+    let xs = idx.map(p => pos[p]);   // 玩家 i 站在 xs[i]
+    /* 2 對 2：同一隊站同一邊（紅隊＝玩家 0、2，藍隊＝玩家 1、3）；哪一隊在左邊隨機 */
+    if (mode === 'team') { const s = xs.slice().sort((a, b) => a - b), L = rnd() < .5; xs = L ? [s[0], s[2], s[1], s[3]] : [s[2], s[0], s[3], s[1]]; }
     const map = [opt.mv === 'v2' ? 'v2' : 'v3', site, first, per, xs.join(','), h.map(v => v.toString(36).padStart(2, '0')).join('')].join('|');
     return { map, seed: Math.floor(rnd() * 1e9), mode, n, site };
   }
