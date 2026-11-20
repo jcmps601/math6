@@ -240,6 +240,8 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 /* 結算 */
 #end{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-start;justify-content:center;z-index:20;padding:1rem;overflow-y:auto;overscroll-behavior:contain}   /* z-index 要比手機的底部按鈕列（6）高；內容比螢幕高時可以捲動 */
 #end .box{margin:auto}
+/* 省電模式（比較舊的平板自動開、也可以在「更多」切換）：一直重複的裝飾動畫只跑一次就停 */
+body.lite *,body.lite *::before,body.lite *::after{animation-iteration-count:1!important}body.lite .farm .fcl,body.lite .farm .fduck,body.lite .farm .fbfly,body.lite .farm .fsmk circle{animation:none!important}
 #bkout .bkr{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;border-bottom:1px dashed #eee;padding:.4rem 0;font-size:.95rem}#bkout .bkr b{min-width:3.5rem}#bkout .bkr.now{background:#fff9db;border-radius:8px;padding:.4rem}#bkout .bkr button{margin-left:auto}
 @media (max-width:560px){#end .box{padding:1rem .9rem}#end h2{font-size:1.7rem}#end .big{font-size:3rem}#end .st{font-size:2rem}#end .sub{font-size:1.1rem;margin-bottom:.6rem}#end button{font-size:1.2rem;padding:.45rem .9rem}}
 #end.on{display:flex}
@@ -682,7 +684,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .np-mint{background:#c3fae8;color:#087f5b}.np-peach{background:#ffe8cc;color:#d9480f}
 .np-sky{background:linear-gradient(90deg,#a5d8ff,#d0bfff);color:#1c3d7a}.np-sunset{background:linear-gradient(90deg,#ffc078,#f783ac);color:#5c1a33}
 .np-candy{background:linear-gradient(90deg,#ff8787,#ffd43b,#69db7c,#4dabf7,#b197fc);color:#fff;text-shadow:0 1px 2px #0007}
-.np-gold{background:linear-gradient(110deg,#f59f00 0%,#ffe066 40%,#fffbe6 50%,#ffe066 60%,#f59f00 100%);background-size:250% 100%;animation:lkshine 2.4s linear infinite;color:#5c3d00}
+.np-gold{background:linear-gradient(110deg,#f59f00 0%,#ffe066 40%,#fffbe6 50%,#ffe066 60%,#f59f00 100%);background-size:250% 100%;background-position:50% 0;color:#5c3d00}#lkshop .np-gold,#lkcard .np-gold,#menm .np-gold{animation:lkshine 2.4s linear infinite}   /* 閃亮名牌只在名片、商店、自己的名字閃（排行榜一整排一起閃會變慢） */
 @keyframes lkshine{from{background-position:100% 0}to{background-position:-150% 0}}
 .lkt{font-style:normal;display:inline-block;font-size:.72em;font-weight:900;color:#e8590c;background:#fff4e6;border:2px solid #ffd8a8;border-radius:8px;padding:0 .35em;margin-left:.3em;white-space:nowrap;vertical-align:middle;line-height:1.4}
 .lkav{position:relative;display:inline-grid;place-items:center;flex:none;width:2.4rem;height:2.4rem;vertical-align:middle}
@@ -691,8 +693,10 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .lkav.big{width:4.2rem;height:4.2rem}.lkav.big>i{font-size:1.8rem}
 .lkfr{position:absolute;left:-35.5%;top:-35.5%;width:171%;height:171%;pointer-events:none;max-width:none}
 .lkav.nf::before,.av.lkme.nf::before{content:'';position:absolute;inset:-14%;border-radius:50%;border:.22rem solid var(--fc);box-shadow:0 0 0 .12rem #fff inset}
-.lkav.g2 .lkfr,.lkav.g3 .lkfr,.av.lkme.g2 .lkfr,.av.lkme.g3 .lkfr{animation:lkglow 2.2s ease-in-out infinite}
-.lkav.g3.nf::before,.av.lkme.g3.nf::before{animation:lkglow 2.2s ease-in-out infinite}
+/* 史詩、傳說頭像框的光暈：固定的光（以前是一直變化的 filter 動畫，排行榜一多平板就變慢）；大頭像才用便宜的「透明度」動畫 */
+.lkav.g2 .lkfr,.lkav.g3 .lkfr,.av.lkme.g2 .lkfr,.av.lkme.g3 .lkfr{filter:drop-shadow(0 0 4px var(--fc))}
+.lkav.big.g2::after,.lkav.big.g3::after{content:'';position:absolute;inset:-42%;border-radius:50%;background:radial-gradient(circle,var(--fc) 35%,transparent 70%);opacity:.18;z-index:-1;pointer-events:none;animation:lkhalo 2.2s ease-in-out infinite}
+@keyframes lkhalo{50%{opacity:.42}}
 @keyframes lkglow{0%,100%{filter:drop-shadow(0 0 1px var(--fc))}50%{filter:drop-shadow(0 0 9px var(--fc))}}
 #meav.lkme{position:relative;overflow:visible;margin:.55rem .55rem .55rem .7rem}
 /* 有頭像框時：中間的圓配合框的顏色，稍微放大塞滿框的洞（不會露出白邊） */
@@ -1589,6 +1593,9 @@ let bkDay='';async function bkDaily(v){if(!user||!db)return;const d=dkey(),k=use
   try{const ref=db.ref(`${base()}/bk/${d}`);if((await timeout(ref.get(),10000)).val())return;
     await timeout(ref.set({t:Date.now(),total:v.total||0,first:v.first||0,tk:v.tk||0,pet:v.pet||null,farm:v.farm||null,fdc:v.fdc||null,look:v.look||null,tks:v.tks||null}),12000);
     const all=(await timeout(db.ref(`${base()}/bk`).get(),10000)).val()||{},old=dkey(new Date(Date.now()-14*864e5));for(const x in all)if(x<old)db.ref(`${base()}/bk/${x}`).remove()}catch(e){bkDay=''}}
+/* 省電模式：沒設定過時，比較舊的裝置（CPU 4 核以下或記憶體 4GB 以下）、或系統設了「減少動態效果」就自動開 */
+function liteOn(){const v=LS.get('learn601_lite',null);if(v!=null)return !!v;try{return (navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4||matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
+function liteApply(){document.body.classList.toggle('lite',liteOn())}liteApply();
 addEventListener('online',()=>flush());
 setInterval(()=>{if(Q.length&&db&&online&&!flushing&&document.visibilityState==='visible')flush()},20000);   // 上傳失敗（網路慢、逾時）時每 20 秒自動再試，不用等下一次作答才重傳
 function paintSync(){const s=document.getElementById('sync');if(!s)return;   // 只有上傳佇列清空（真的寫進雲端）才說已儲存
@@ -1823,6 +1830,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     <button data-k="help">${ico('pr-hint')}<b>獎勵說明</b><small>金幣、水滴、遊戲券</small></button>
     <button data-k="off">${ico('ic-sync-done')}<b>帶回家準備</b><small>${offReady()?'✅ 可以離線使用':'在家沒網路也能練'}</small></button>
     <button data-k="pw">${ico('ic-lock-closed')}<b>改密碼</b><small>換一組自己的密碼</small></button>
+    <button data-k="lite">${ico('ic-energy-bolt')}<b>省電模式</b><small>${liteOn()?'開著（動畫比較少）':'關著'}</small></button>
     <button data-k="out">${ico('nav-out')}<b>登出</b><small>換別人用</small></button></div>
     <div class="msync">${(document.getElementById('sync')||{}).textContent||''}</div><button class="pmx">關閉</button></div>`;
   document.body.appendChild(m);
@@ -1831,6 +1839,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     if(k==='game'||k==='wb')return goView(k);
     if(k==='help'){closeMore();return rewardHelp()}
     if(k==='pw'){closeMore();return pwChange()}
+    if(k==='lite'){LS.set('learn601_lite',liteOn()?0:1);liteApply();closeMore();return toast(liteOn()?'⚡ 省電模式開了：動畫變少，比較順':'省電模式關了')}
     if(k==='off'){closeMore();return offPrep()}
     if(k==='snd'){fire('sndBtn');return openMore()}
     if(k==='fs'){closeMore();return fire('fsBtn')}
@@ -3388,7 +3397,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v150';let verNew=false,verBusy=false;
+const APP_VER='learn601-v151';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
