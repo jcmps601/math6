@@ -588,11 +588,12 @@
   .fnight{background:#e7e9ff;color:#5f3dc4;border-radius:14px;padding:.5rem .8rem;font-weight:900;margin-bottom:.5rem}
   .fbox{border-radius:22px;overflow:hidden;touch-action:manipulation;cursor:pointer;box-shadow:0 0 0 3px #d3f9d8;background:#bfe7ff}
   .farm{display:block;width:100%;height:auto}
-  .farm .fplot{cursor:pointer}.farm image{pointer-events:none}.farm polygon{pointer-events:all}.farm .fripe{animation:fripe 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+  .farm .fplot{cursor:pointer}.farm image{pointer-events:none}.farm polygon{pointer-events:all}.farm.mini *{animation:none!important}   /* 首頁、同學列表的小農場不跑動畫（整張大圖一直重畫很耗電） */
+  .farm .fripe{transform-box:fill-box;transform-origin:50% 100%}
   @keyframes fripe{50%{transform:scale(1.06)}}
-  .farm .fbub{animation:fbub 1.6s ease-in-out infinite}@keyframes fbub{50%{transform:translateY(-3px)}}.farm .fbub{transform-box:fill-box}
-  .farm .fspark{animation:fspark 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes fspark{50%{opacity:.3}}
-  .farm .fbug{animation:fbug .5s ease-in-out infinite alternate}@keyframes fbug{to{transform:translateX(2px) rotate(8deg)}}
+  .farm .fbub{}   /* 2026-11：田上的泡泡、成熟搖擺、閃光、蟲都改成不動（每塊田一直動，整張農場圖一直重畫，平板會卡） */@keyframes fbub{50%{transform:translateY(-3px)}}.farm .fbub{transform-box:fill-box}
+  .farm .fspark{transform-box:fill-box;transform-origin:center}@keyframes fspark{50%{opacity:.3}}
+  .farm .fbug{}@keyframes fbug{to{transform:translateX(2px) rotate(8deg)}}
   .farm .fsmk circle{animation:fsmk 3s ease-out infinite;opacity:0}.farm .fsmk circle:nth-child(2){animation-delay:1s}.farm .fsmk circle:nth-child(3){animation-delay:2s}
   @keyframes fsmk{0%{opacity:0;transform:translateY(6px)}30%{opacity:.8}100%{opacity:0;transform:translateY(-14px)}}
   .farm .fcl{animation:fcl 50s linear infinite}@keyframes fcl{50%{transform:translateX(50px)}}
