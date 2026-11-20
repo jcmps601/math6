@@ -112,6 +112,13 @@ button{font-family:inherit;cursor:pointer}
  #home .logo{grid-column:1;grid-row:1}#home .note{grid-column:1;grid-row:2}#me{grid-column:1;grid-row:3}#rec{grid-column:1;grid-row:4}#mode{grid-column:1;grid-row:5}
  #home .menu{grid-column:2;grid-row:1/span 4;align-self:center}#msg{grid-column:2;grid-row:5}}
 
+/* 一起打王：選魔王 */
+.bosses{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+.bosses button{display:flex;align-items:center;gap:.4rem;border:3px solid #e9d5ae;background:#fff;border-radius:16px;padding:.25rem .7rem .25rem .3rem;font-weight:900;font-size:1.05rem;color:#7a5a32}
+.bosses button img{width:3.6rem;height:3.6rem;object-fit:contain}.bosses button small{display:block;font-size:.8rem;color:#9a7a52}
+.bosses button.on{border-color:#7c3aed;background:#f3f0ff;color:#5b21b6}.bosses button:disabled{cursor:default}.bosses button:disabled:not(.on){opacity:.55}
+#bossTip{font-size:.95rem;font-weight:800;color:#7a5a32;max-width:34rem}
+#ovCoin{font-size:1.15rem;font-weight:900;color:#2b8a3e}#ovCoin:empty{display:none}
 /* 場地、車庫、結算 */
 .sitebox{width:min(40rem,100%);background:#fffaf0;border-radius:18px;padding:.5rem .6rem;box-shadow:0 4px 0 #d9b97f}
 .sitet{font-weight:900;color:#7a5a32;font-size:1.1rem;margin-bottom:.35rem}.sitet small{font-size:.9rem;color:#9a7a52}
@@ -152,7 +159,8 @@ button{font-family:inherit;cursor:pointer}
 <section class="scr" id="lobby">
   <div class="logo" style="font-size:clamp(1.6rem,min(6vw,6vh),2.6rem)"><img src="img/ui/vs-pd.webp" alt="">大砲混戰房間</div>
   <div class="pinrow">房號<div id="pinBig">----</div></div>
-  <div class="modes" id="modes"><button data-m="ffa">💥 各自為戰</button><button data-m="team">🤝 2 對 2</button></div>
+  <div class="modes" id="modes"><button data-m="ffa">💥 各自為戰</button><button data-m="team">🤝 2 對 2</button><button data-m="boss" id="mBoss" hidden>⚔️ 一起打王</button></div>
+  <div id="bossBox" hidden><div class="bosses" id="bosses"></div><div id="bossTip"></div></div>
   <div class="sitebox"><div class="sitet">場地<small id="siteTip"></small></div><div class="sites" id="sites"></div></div>
   <div id="slots"></div>
   <div id="lwait"></div>
@@ -171,7 +179,7 @@ button{font-family:inherit;cursor:pointer}
   <div id="offMsg"></div>
 </section>
 
-<div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div id="ovSt"></div><div class="s" id="ovN"></div>
+<div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div id="ovSt"></div><div id="ovCoin"></div><div class="s" id="ovN"></div>
   <div class="row"><button class="btn" id="bBack">🔁 回房間</button><button class="btn" id="bAgain" hidden>🔁 再玩一次</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
 <div class="ov" id="pick"><div class="box"><div class="t"><img class="ti" src="img/ui/vs-inv.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.35em">邀請同學來玩大砲混戰</div>
@@ -200,7 +208,10 @@ button{font-family:inherit;cursor:pointer}
    ・輪到誰，誰的平板算好砲彈結果寫進棋譜，其他人照著播。
    ・有人離線：20 秒沒回來就出局（state.out）。按「離開」也是出局，算輸。
    ・在平台裡：輸的人用掉 1 張遊戲券（贏的、平手不用），戰績記在 learn/xq（g:'pm'）。
-   ・同一台平板輪流打：一局用 1 張券，不記戰績。 */
+   ・同一台平板輪流打：一局用 1 張券，不記戰績。
+   ・一起打王（state.mode＝'boss'，2026-11）：1～4 人一起打魔王（state.boss：rock 普通、thunder 困難）。魔王是最後一台（不在 order 裡）。
+     輪到魔王時，房間裡第一個在線上、還活著的人用 TK.bossMove 算好魔王這一發、寫進棋譜（大家算出來都一樣）。
+     每個人都用 1 張遊戲券（贏輸都扣）；打贏有金幣（P.bossReward，每天前 3 場）。戰績記成 pb 開頭。 */
 const $=s=>document.querySelector(s);
 const FIREBASE_CONFIG={ apiKey:"AIzaSyD-frW7ISsXAHsv1DSZpGzvn_ok9t1NJ4U", authDomain:"quiz601.firebaseapp.com", databaseURL:"https://quiz601-default-rtdb.asia-southeast1.firebasedatabase.app", projectId:"quiz601", storageBucket:"quiz601.firebasestorage.app", messagingSenderId:"994429474121", appId:"1:994429474121:web:dc20be249385db6a60b698" };
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -266,14 +277,16 @@ const G={mode:'',pin:'',slot:'',st:null,players:{},created:0,un:[],arm:'',offSin
 const order=()=>(G.st&&G.st.order?String(G.st.order).split(','):[]);
 const myIdx=()=>G.mode==='solo'?-1:order().indexOf(G.slot);
 const R=()=>{const st=G.st;if(!st||!st.map)return null;return TK.replay(st.map,st.seed,st.moves||'',st.out,st.mode)};
-const gameKey=()=>`pm${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;
+const isBossSt=()=>!!G.st&&G.st.mode==='boss';
+const gameKey=()=>`${isBossSt()?'pb':'pm'}${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;   // 一起打王的戰績用 pb 開頭（平台分得出是合作）
+const BOSS_ON=()=>!inPlat()||isTestMe()||!!(P.bossOpen&&P.bossOpen());   // 一起打王還在測試：平台裡只有測試帳號看得到
 const tokCount=()=>((G.st&&G.st.moves)||'').split(',').filter(Boolean).length;
 const plName=p=>p?(p.seat&&inPlat()&&P.seatName?P.seatName(p.seat):p.name||'同學'):'同學';
 /* 名字：開局時存在 state.names（有人中途離開也看得到他的名字） */
 const names=()=>{if(G.mode==='solo'){const sk=String((G.st&&G.st.skins)||'').split('|');return order().map((_,i)=>G.solo&&G.solo.opt&&sk[i]?`${i+1}・${TKV.SKIN_N[sk[i]]||''}`:'玩家 '+(i+1))}const nm=String((G.st&&G.st.names)||'').split('|');return order().map((k,i)=>nm[i]||plName(G.players[k]))};
 const hostSlot=()=>{const ks=SLOTS.filter(k=>G.players[k]&&!G.players[k].off);return ks[0]||SLOTS.find(k=>G.players[k])||''};
 const isHost=()=>G.mode==='net'&&hostSlot()===G.slot;
-const PALETTE=m=>m==='team'?['#ef4444','#3b82f6','#ef4444','#3b82f6']:['#ef4444','#3b82f6','#22c55e','#f59e0b'];
+const PALETTE=m=>m==='boss'?['#ef4444','#3b82f6','#22c55e','#f59e0b','#7c3aed']:m==='team'?['#ef4444','#3b82f6','#ef4444','#3b82f6']:['#ef4444','#3b82f6','#22c55e','#f59e0b'];
 
 const pmHost={
   state:()=>G.st&&G.st.map?{map:G.st.map,seed:G.st.seed,moves:G.st.moves||'',out:G.st.out||null,mode:G.st.mode}:null,
@@ -309,10 +322,10 @@ function onState(){
   if(G.mode==='net')record();
   if(TKV.busy()){$('#over').classList.remove('on');return}   // 等砲彈、爆炸播完
   paintOver()}
-function paintLeave(){$('#bLeave').textContent=G.mode==='net'&&myIdx()>=0&&G.st&&G.st.phase==='play'?'離開（算輸）':'離開'}
+function paintLeave(){$('#bLeave').textContent=G.mode==='net'&&myIdx()>=0&&G.st&&G.st.phase==='play'&&!isBossSt()?'離開（算輸）':'離開'}
 
 /* 結果畫面 */
-function paintOver(){const st=G.st,r=R();if(!r)return;const me=myIdx(),res=me>=0?TK.result(st.winner,me):null,nm=names(),col=PALETTE(r.mode);
+function paintOver(){const st=G.st,r=R();if(!r)return;if(r.boss)return paintOverBoss(r);const me=myIdx(),res=me>=0?TK.result(st.winner,me):null,nm=names(),col=PALETTE(r.mode);
   const t=$('#ovT');
   if(G.mode==='solo'||me<0){const W=(r.win||[]).map(i=>nm[i]).join('、');t.textContent=r.draw?'🤝 平手！':r.mode==='team'?((r.win||[])[0]%2?'🔵 藍隊勝利！':'🔴 紅隊勝利！'):`🏆 ${W} 贏了！`;t.style.color=r.draw?'#7a5a32':'#c2410c'}
   else{t.textContent=res===1?'🎉 你贏了！':res===2?'🤝 平手！':'再接再厲！';t.style.color=res===1?'#c2410c':'#7a5a32'}
@@ -326,8 +339,19 @@ function paintOver(){const st=G.st,r=R();if(!r)return;const me=myIdx(),res=me>=0
   $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=G.mode!=='solo';
   if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(res===1||(G.mode==='solo'))sfx.win()}}
 
+function paintOverBoss(r){const st=G.st,me=myIdx(),nm=names(),B=TK.BOSS[r.boss],win=TK.result(st.winner,0)===1,col=PALETTE('boss');
+  const t=$('#ovT');t.innerHTML=win?`<img src="img/ui/boss-crown.webp" alt="" style="width:1.6em;height:1.6em;vertical-align:-.45em"> 打倒${B.n}了！`:`魔王贏了！再挑戰一次`;t.style.color=win?'#7c3aed':'#7a5a32';
+  $('#ovS').textContent=win?`第 ${Math.min(r.per,r.bt+1)} 輪就打倒了，大家合作得很好！`:st.reason||'';
+  $('#ovList').innerHTML=nm.map((n,i)=>`<div class="rk${i===me?' me':''}"><em></em><i style="background:${col[i]}"></i><span>${n}${i===me?'（我）':''}</span><small>${r.T[i].out?'離開了':r.T[i].hp>0?'剩 '+r.T[i].hp+' 血':'被打倒'}</small></div>`).join('');
+  $('#ovSt').innerHTML=TKV.statsHTML(r,nm);
+  const c=G.coin;$('#ovCoin').innerHTML=me>=0&&win&&inPlat()?(c&&c.c?`🪙 每人 +${c.c} 金幣（今天第 ${c.n} 場）`:c&&c.full?'今天打王的金幣已經拿滿 3 場了（明天再來）':isTestMe()?'🪙 測試帳號不發金幣':''):'';
+  $('#ovN').textContent=G.mode==='net'&&me>=0&&inPlat()&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':'';
+  $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=true;
+  if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(win)sfx.win()}}
+
 /* 戰績、遊戲券：這局有我、結束了，就記一次 */
 function record(force){const st=G.st,me=myIdx();if(!inPlat()||me<0||!st)return;const k=gameKey();if(G.rec===k)return;
+  if(isBossSt())return recordBoss(force);
   let w=force!=null?force:TK.result(st.winner,me);if(w==null)return;G.rec=k;
   const r=R(),nm=names(),ord=order(),seats=String(st.seats||'').split(',').map(Number);
   const winIdx=((r&&r.win)||[]).filter(i=>i!==me),o=(w===0&&winIdx.length?seats[winIdx[0]]:seats.find((s,i)=>i!==me&&s))||0;
@@ -335,6 +359,20 @@ function record(force){const st=G.st,me=myIdx();if(!inPlat()||me<0||!st)return;c
   P.xqResult({k,o,w,r:reason.slice(0,20),n:tokCount(),g:'pm'});
   if(w===0&&!isTestMe())payTicket();
   if(P.xqPending)P.xqPending(null);sendTk();paintRec()}
+
+/* 一起打王：每個人都用 1 張券；打贏有金幣（每天前 3 場） */
+function recordBoss(force){const st=G.st,me=myIdx(),k=gameKey();let w=force!=null?force:TK.result(st.winner,me);if(w==null)return;G.rec=k;
+  const r=R(),B=r&&r.boss?TK.BOSS[r.boss]:TK.BOSS.rock,seats=String(st.seats||'').split(',').map(Number),o=seats.find((s,i)=>i!==me&&s)||0;
+  P.xqResult({k,o,w:w===1?1:0,r:(force===0?'中途離開':w===1?`打倒${B.n}`:`輸給${B.n}`).slice(0,20),n:r?r.bt:0,g:'pb'});
+  if(!isTestMe())payTicket();
+  G.coin=null;if(w===1&&force==null&&P.bossReward){try{G.coin=P.bossReward(r.boss)}catch(e){}}
+  if(P.xqPending)P.xqPending(null);sendTk();paintRec()}
+/* 輪到魔王：第一個在線上、還活著的人幫魔王打（等動畫播完 1.2 秒；那個人斷線的話，其他人 8 秒後接手） */
+setInterval(()=>{const st=G.st;if(G.mode!=='net'||!st||st.phase!=='play'||st.mode!=='boss')return;const me=myIdx();if(me<0)return;
+  const r=TKV.shown();if(!r||r.over||!r.boss||r.turn!==r.bi||TKV.busy())return;const n=tokCount(),age=TKV.turnAge();if(G.bossFor===n||age<1200)return;
+  const ord=order(),first=ord.findIndex((k,i)=>G.players[k]&&!G.players[k].off&&TK.alive(r,i));if(first!==me&&age<8000)return;
+  G.bossFor=n;const full=R();if(!full||full.turn!==full.bi||tokCount()!==n){G.bossFor=-1;return}
+  try{sendMove(TK.bossMove(full))}catch(e){G.bossFor=-1}},400);
 
 /* ═════════════ 斷線、離開 ═════════════ */
 function armLobby(){if(G.mode!=='net'||G.arm==='lobby'||!G.slot)return;G.arm='lobby';const p=`rooms/${G.pin}/players/${G.slot}`;Net.cancelDisc(p);Net.onDiscRm(p);
@@ -379,25 +417,32 @@ async function leave(){$('#over').classList.remove('on');closePick();
     try{await Net.remove(p);const pl=await Net.get(`rooms/${G.pin}/players`);if(!pl||!Object.values(pl).some(x=>x&&!x.off))await Net.remove(`rooms/${G.pin}`)}catch(e){}}
   Object.assign(G,{mode:'',pin:'',slot:'',st:null,players:{},arm:'',rec:'',leaving:false,offSince:{}});G.inv=new Set();
   $('#offMsg').innerHTML='';show('home');paintMe();paintRec()}
-$('#bLeave').onclick=()=>{if(window.__xqBusy()&&!confirm(PM&&R()&&R().mode==='team'?'現在離開算你輸（就算隊友最後贏了也一樣），確定嗎？':'現在離開算你輸，確定嗎？'))return;leave()};
+$('#bLeave').onclick=()=>{if(window.__xqBusy()&&!confirm(isBossSt()?'現在離開會用掉 1 張遊戲券、拿不到金幣，確定嗎？':R()&&R().mode==='team'?'現在離開算你輸（就算隊友最後贏了也一樣），確定嗎？':'現在離開算你輸，確定嗎？'))return;leave()};
 $('#bOut').onclick=leave;$('#bLLeave').onclick=leave;
 $('#bBack').onclick=()=>{G.ovHide=gameKey();$('#over').classList.remove('on');onState()};   // 只有自己回房間，別人還可以看結果
 $('#bAgain').onclick=()=>{$('#over').classList.remove('on');soloStart(G.solo.n,G.solo.m,G.solo.opt)};
 
 /* ═════════════ 房間（等人） ═════════════ */
-function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode==='team'?'team':'ffa',col=PALETTE(mode);
+function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode==='team'?'team':st.mode==='boss'&&BOSS_ON()?'boss':'ffa',col=PALETTE(mode);
   $('#pinBig').textContent=G.pin;
+  $('#mBoss').hidden=!BOSS_ON();
   document.querySelectorAll('#modes button').forEach(b=>{b.classList.toggle('on',b.dataset.m===mode);b.disabled=!host});
+  /* 一起打王：選魔王 */
+  $('#bossBox').hidden=mode!=='boss';
+  if(mode==='boss'){const bk=TK.BOSS[st.boss]?st.boss:'rock';
+    $('#bosses').innerHTML=Object.entries(TK.BOSS).map(([k,B])=>`<button data-b="${k}" class="${k===bk?'on':''}" ${host?'':'disabled'}><img src="img/game/boss-${k}.webp" alt=""><span>${B.n}<small>${k==='rock'?'普通':'困難'}・贏了每人 +${B.coin} 金幣</small></span></button>`).join('');
+    $('#bosses').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!isHost())return;Net.update(`rooms/${G.pin}/state`,{boss:b.dataset.b,t:Date.now()}).catch(()=>{})});
+    $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。`}
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
-    const ci=mode==='team'?i:i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?'📴 離線':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">✅ 準備好了</span>':'⏳ 還沒準備'}</small></div></div>`}).join('');
+    const ci=i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?'📴 離線':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">✅ 準備好了</span>':'⏳ 還沒準備'}</small></div></div>`}).join('');
   const ready=SLOTS.filter(isRdy).length,why=startBlock(),mr=isRdy(G.slot);
   $('#bStart').hidden=!host;$('#bStart').disabled=!!why;
   const rb=$('#bReady');rb.textContent=mr?'取消準備':'✋ 我準備好了';rb.disabled=!mr&&(!hasTicket()||st.phase==='play');
   $('#lwait').textContent=st.phase==='play'?'這一局已經開始了，等他們打完，下一局再一起玩':host?(why||`${ready} 個人都準備好了，按「開始！」`):mr?`等房主（${plName(pl[hs])}）按開始…`:'按「我準備好了」，等房主按開始';
   $('#bInv2').hidden=!(inPlat()&&P.invite)||n>=4;
-  const site=st.site&&TK.SITES[st.site]?st.site:'random';
-  $('#sites').innerHTML=['random',...TK.SITE_KEYS].map(k=>`<button data-s="${k}" class="${k===site?'on':''}" ${host?'':'disabled'}><i class="sw sw-${k}"></i>${k==='random'?'隨機':TK.SITES[k].n}</button>`).join('');
+  const siteList=mode==='boss'?TK.BOSS_SITES:TK.SITE_KEYS,site=st.site&&siteList.includes(st.site)?st.site:'random';
+  $('#sites').innerHTML=['random',...siteList].map(k=>`<button data-s="${k}" class="${k===site?'on':''}" ${host?'':'disabled'}><i class="sw sw-${k}"></i>${k==='random'?'隨機':TK.SITES[k].n}</button>`).join('');
   $('#siteTip').textContent=site==='random'?'　每一局隨機換場地':'　'+TK.SITES[site].tip;
   $('#sites').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!isHost())return;LS.set('pm_site',b.dataset.s);Net.update(`rooms/${G.pin}/state`,{site:b.dataset.s,t:Date.now()}).catch(()=>{})});
   if(!hasTicket())$('#lmsg').textContent='🎟️ 你的遊戲券用完了，不能按準備。回平台練習 10 題答對 8 題就能拿到！';}
@@ -405,9 +450,10 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
    沒有遊戲券不能按準備；輸的人用 1 張券，贏的不用。準備記在 players/我/rdy＝下一局是第幾局，開新局就自動失效。 */
 const nextG=()=>((G.st&&G.st.g)||0)+1;
 const isRdy=k=>{const p=G.players[k];return !!p&&!p.off&&p.tk!==false&&p.rdy===nextG()};
-function startBlock(){const pl=G.players,mode=G.st&&G.st.mode==='team'?'team':'ffa';if(G.st&&G.st.phase==='play')return '這一局還在打';
+function startBlock(){const pl=G.players,mode=G.st&&G.st.mode==='team'?'team':G.st&&G.st.mode==='boss'?'boss':'ffa';if(G.st&&G.st.phase==='play')return '這一局還在打';
   const on=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false),rd=on.filter(isRdy);
-  if(on.length<2)return '至少要 2 個人（有遊戲券、在線上）才能開始';
+  if(mode==='boss'&&BOSS_ON()){if(on.length<1)return '至少要 1 個人';if(on.length<2&&!isTestMe())return '至少要 2 個人（有遊戲券、在線上）才能一起打王'}
+  else if(on.length<2)return '至少要 2 個人（有遊戲券、在線上）才能開始';
   if(rd.length<on.length){const w=on.filter(k=>!isRdy(k)).map(k=>plName(pl[k]));return `等 ${w.join('、')} 按「我準備好了」…`}
   if(mode==='team'&&rd.length!==4)return '2 對 2 要剛好 4 個人（有遊戲券、在線上）';return ''}
 $('#bReady').onclick=async()=>{if(G.mode!=='net'||!G.players[G.slot])return;const on=!isRdy(G.slot);if(on&&!hasTicket())return lmsg('🎟️ '+NO_TK);
@@ -416,8 +462,8 @@ document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(!isHost(
 $('#bStart').onclick=async()=>{if(!isHost())return;let pl;try{pl=await Net.get(`rooms/${G.pin}/players`)||{}}catch(e){return lmsg('連線失敗，請再按一次')}
   try{const st=await Net.get(`rooms/${G.pin}/state`);if(st)G.st=st}catch(e){}
   G.players=pl;if(startBlock())return paintLobby();const ks=SLOTS.filter(isRdy);
-  let mode=G.st&&G.st.mode==='team'&&ks.length===4?'team':'ffa';
-  const site=G.st&&TK.SITES[G.st.site]?G.st.site:undefined,ng=TK.newGame(ks.length,mode,{site,mv:G.ver===2?'v2':''});
+  let mode=G.st&&G.st.mode==='team'&&ks.length===4?'team':G.st&&G.st.mode==='boss'&&BOSS_ON()?'boss':'ffa';
+  const site=G.st&&TK.SITES[G.st.site]?G.st.site:undefined,ng=TK.newGame(ks.length,mode,{site,mv:G.ver===2?'v2':'',boss:G.st&&G.st.boss});
   const upd={phase:'play',order:ks.join(','),names:ks.map(k=>plName(pl[k]).replace(/[|,]/g,'')).join('|'),seats:ks.map(k=>+pl[k].seat||0).join(','),skins:ks.map(k=>pl[k].skin||'forest').join('|'),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',out:null,g:((G.st&&G.st.g)||0)+1,winner:null,reason:null,t:Date.now()};
   try{await Net.update(`rooms/${G.pin}/state`,upd);Net.remove(`rooms/${G.pin}/live`).catch(()=>{})}catch(e){lmsg('連線失敗，請再按一次')}};
 const lmsg=t=>{$('#lmsg').textContent=t||''};
@@ -446,7 +492,7 @@ async function create(){const name=await needName();if(!name)return false;msg('�
   try{let pin='';for(let i=0;i<30&&!pin;i++){const p=String(1000+Math.random()*9000|0);if(!(await Net.get(`rooms/${p}/meta`)))pin=p}
     if(!pin){msg('房間滿了，等一下再試');return false}
     const created=Date.now();
-    await Net.set(`rooms/${pin}`,{meta:{game:'pm',created,ver:TK.VER},state:{phase:'wait',mode:'ffa',site:LS.get('pm_site','random'),g:0,t:created},players:{p0:{id:myId,name,seat:mySeat(),tk:hasTicket(),skin:mySkin()}}});
+    await Net.set(`rooms/${pin}`,{meta:{game:'pm',created,ver:TK.VER},state:{phase:'wait',mode:Q.has('boss')&&BOSS_ON()?'boss':'ffa',boss:'rock',site:LS.get('pm_site','random'),g:0,t:created},players:{p0:{id:myId,name,seat:mySeat(),tk:hasTicket(),skin:mySkin()}}});
     Object.assign(G,{mode:'net',pin,slot:'p0',st:null,players:{},created,ver:TK.VER,arm:'',rec:'',ovHide:''});msg('');listen();armLobby();return true
   }catch(e){msg('連不上網路，請檢查網路後再試一次');return false}}
 async function join(pin){if(!/^\d{4}$/.test(pin))return msg('房號是 4 個數字');const name=await needName();if(!name)return;

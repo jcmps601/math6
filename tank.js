@@ -14,9 +14,12 @@
                築牆彈的「爆炸」＝土丘的位置（扣血全 0）；傳送彈的「爆炸」＝傳送後坦克的新位置 x
        v1：「坦克位置:角度:力道:砲彈:第幾顆_x_y_紅扣血_藍扣血_直擊|…」（玩家＝輪到的人）
    ・重播時才算、不寫進棋譜的（兩台一定算得一樣）：掉落傷害、掉進浮島空隙、雪地滑動、岩漿燙傷、補給箱出現和撿到
-   ・state.out＝{i玩家: 第幾步的時候離開}，重播到那一步就讓他出局 */
+   ・state.out＝{i玩家: 第幾步的時候離開}，重播到那一步就讓他出局
+   ・一起打王（mode 'boss'，2026-11）：地圖「b3|場地|0|輪數|玩家x…,魔王x|地面高度|魔王代號」，最後一台是魔王（S.bi）。
+     玩家輪流打一發、再換魔王打一發，算一輪；輪數用完還沒打倒＝輸。隊友不會互相傷害，補血彈打到隊友是補血（扣血記成負的）。
+     魔王怎麼打由 bossMove(S) 決定（亂數用 rng(seed)，誰的平板算都一樣），算好寫成一步棋，跟玩家一樣存進棋譜。 */
 (function (root) {
-  const VER = 3;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）。3＝拿掉鑽地彈、築牆彈
+  const VER = 4;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）。3＝拿掉鑽地彈、築牆彈；4＝加了一起打王
   const HP = 100, FUEL = 180, SUB = 3, STEP = 4, VOID = 900;
   const GRAV = 0.18, WK = 0.0035, VK = 0.17;
   /* 場地：重力倍數、風倍數、坑的倍數、岩漿高度、浮島空隙、雪地會滑 */
@@ -39,8 +42,23 @@
     d: { name: '鑽地彈', D: 20, R: 50, cr: 54, n: 1, lim: 2, drill: 72 },
     w: { name: '築牆彈', D: 0, R: 0, cr: 0, n: 1, lim: 2, wall: 1 },
     p: { name: '傳送彈', D: 0, R: 0, cr: 0, n: 1, lim: 1, tele: 1 },
-    s: { name: '超級彈', D: 48, R: 85, cr: 60, n: 1, lim: 1 }
+    s: { name: '超級彈', D: 48, R: 85, cr: 60, n: 1, lim: 1 },
+    /* 一起打王：補血彈（玩家用，打到隊友補血、打到魔王一點點傷害）；下面幾種是魔王的招式（玩家不能用） */
+    h: { name: '補血彈', D: 6, R: 80, cr: 0, n: 1, lim: 3, heal: 26 },
+    R: { name: '岩石彈', D: 24, R: 62, cr: 40, n: 1, lim: 0 },
+    Q: { name: '岩石三連', D: 17, R: 52, cr: 32, n: 3, lim: 0, spread: 6 },
+    Z: { name: '雷電球', D: 28, R: 56, cr: 34, n: 1, lim: 0 },
+    X: { name: '雷電三連', D: 21, R: 52, cr: 30, n: 3, lim: 0, spread: 5 },
+    Y: { name: '砲彈雨', D: 16, R: 50, cr: 28, n: 1, lim: 0, rain: 1 },
+    G: { name: '護盾', D: 0, R: 0, cr: 0, n: 0, lim: 0, guard: 1 }
   };
+  /* 魔王：hp＝每個玩家給幾滴血；w、h＝身體大小（被打中的範圍是橢圓）；seq＝招式順序（A 瞄準打、Y 砲彈雨、G 護盾），血剩一半以下「狂暴」：瞄準打變三連發
+     err＝瞄準時故意偏多少度（越小越準） */
+  const BOSS = {
+    rock: { n: '岩甲巨獸', hp: 120, w: 250, h: 170, err: 7, shot: 'R', shot3: 'Q', seq: ['A', 'A', 'Y', 'A', 'G'], rounds: 10, coin: 20 },
+    thunder: { n: '雷霆機甲龍', hp: 160, w: 220, h: 190, err: 4, shot: 'Z', shot3: 'X', seq: ['A', 'Y', 'A', 'G', 'A', 'Y'], rounds: 10, coin: 40 }
+  };
+  const BOSS_SITES = ['grass', 'desert', 'snow', 'moon'], BOSS_FLAT = 150, BOSS_W = ['n', 't', 'b', 'c', 'h', 's'];
   const WK_ = Object.keys(WEAP);
   /* 現在（v3）用的砲彈、補給箱裡會開到的砲彈。鑽地彈、築牆彈老師試玩後拿掉了；
      v2 地圖（2026-11-06 那一天開的房間）照當時的規則：8 種砲彈、補給箱是散花／鑽地／築牆／傳送 */
@@ -48,7 +66,7 @@
   const WALL_W = 50, WALL_H = 60;            // 土丘：半寬 50、頂上平的（大約 70 寬）、高 60
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const windRaw = (seed, n) => { const r = rng((seed | 0) * 31 + n * 7919 + 17); r(); return Math.floor((r() + r()) / 2 * 17) - 8; };
-  const teamOf = (S, i) => S.mode === 'team' ? i % 2 : i;
+  const teamOf = (S, i) => S.mode === 'boss' ? (i === S.bi ? 1 : 0) : S.mode === 'team' ? i % 2 : i;
   const enemy = (S, i, j) => i !== j && teamOf(S, i) !== teamOf(S, j);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -125,6 +143,7 @@
   /* 開新的一局：site 可以是場地代號或 'random'；first＝誰先打（不給就用亂數）；per＝每人幾發；
      mv:'v2'＝在 11-06 開的舊房間裡再來一局（照當時的規則，房間裡還沒更新的平板才算得一樣） */
   function newGame(n, mode, opt = {}, rnd = Math.random) {
+    if (mode === 'boss') return newBoss(n, opt, rnd);
     n = clamp(n | 0, 2, 4); mode = mode === 'team' && n === 4 ? 'team' : 'ffa';
     const site = SITES[opt.site] ? opt.site : SITE_KEYS[Math.floor(rnd() * SITE_KEYS.length)];
     const per = opt.per || (n === 2 ? 15 : 8), first = opt.first != null ? ((opt.first | 0) % n + n) % n : Math.floor(rnd() * n);
@@ -137,10 +156,23 @@
     const map = [opt.mv === 'v2' ? 'v2' : 'v3', site, first, per, xs.join(','), h.map(v => v.toString(36).padStart(2, '0')).join('')].join('|');
     return { map, seed: Math.floor(rnd() * 1e9), mode, n, site };
   }
+  /* 一起打王：n 個玩家站左邊、魔王站最右邊（腳下弄平一大塊） */
+  function newBoss(n, opt, rnd) {
+    n = clamp(n | 0, 1, 4); const kind = BOSS[opt.boss] ? opt.boss : 'rock', site = BOSS_SITES.includes(opt.site) ? opt.site : BOSS_SITES[Math.floor(rnd() * BOSS_SITES.length)];
+    const { pos, h } = genTerrain(n + 1, site, rnd), s = [...pos].sort((a, b) => a - b), bx = clamp(s[n], 1370, 1400);   // 魔王的圖很大：站在 1370～1400，尾巴才不會超出畫面
+    let xs = s.slice(0, n).map(x => Math.min(x, bx - 330));
+    for (let i = n - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; }
+    const gi = Math.round(bx / STEP), lvl = h[gi];
+    for (let i = 0; i < h.length; i++) { const d = Math.abs(i * STEP - bx); if (d <= BOSS_FLAT) h[i] = lvl; else if (d < BOSS_FLAT + 60) { const k = (d - BOSS_FLAT) / 60; h[i] = Math.round(lvl * (1 - k) + h[i] * k); } }
+    const per = opt.per || BOSS[kind].rounds;
+    const map = ['b3', site, 0, per, [...xs, bx].join(','), h.map(v => v.toString(36).padStart(2, '0')).join(''), kind].join('|');
+    return { map, seed: Math.floor(rnd() * 1e9), mode: 'boss', n, site };
+  }
   function decode(map) {
     const f = String(map || '').split('|');
     let W = 1600, H = 700, xs, hs, site = 'grass', first = null, per = 8, legacy = '', mv = f[0];
-    if (f[0] === 'v3' || f[0] === 'v2') { site = SITES[f[1]] ? f[1] : 'grass'; first = +f[2] || 0; per = +f[3] || 8; xs = f[4]; hs = f[5]; }
+    let boss = '';
+    if (f[0] === 'v3' || f[0] === 'v2' || f[0] === 'b3') { site = SITES[f[1]] ? f[1] : 'grass'; first = +f[2] || 0; per = +f[3] || 8; xs = f[4]; hs = f[5]; if (f[0] === 'b3') boss = BOSS[f[6]] ? f[6] : 'rock'; }
     else if (f[0] === 'm1') { legacy = 'm1'; xs = f[1]; hs = f[2]; }
     else { legacy = 'v1'; W = 1200; H = 600; per = 15; first = 0; xs = (f[1] || '160') + ',' + (f[2] || '1040'); hs = f[3]; }
     const pts = []; for (let i = 0; i + 1 < (hs || '').length; i += 2) pts.push(parseInt(hs.slice(i, i + 2), 36));
@@ -150,7 +182,7 @@
       g[x] = (a >= VOID) !== (b >= VOID) ? (fr < .5 ? a : b) : a + (b - a) * fr;   // 島的邊是直的
     }
     const X = String(xs || '').split(',').map(Number).filter(isFinite);
-    return { W, H, FLOOR: H - 44, g, xs: X.length >= 2 ? X : [200, W - 200], site, first, per, legacy, mv };
+    return { W, H, FLOOR: H - 44, g, xs: X.length >= 2 ? X : [200, W - 200], site, first, per, legacy, mv, boss };
   }
   const gAt = (g, x) => g[clamp(Math.round(x), 0, g.length - 1)];
   const center = (g, x) => [x, gAt(g, x) - 16];
@@ -158,6 +190,7 @@
   function crater(S, g, cx, cy, r) {
     for (let x = Math.max(0, Math.ceil(cx - r)); x <= Math.min(S.W - 1, Math.floor(cx + r)); x++) {
       if (g[x] >= VOID - 1) continue;
+      if (S.boss && Math.abs(x - S.bossX) <= BOSS_FLAT) continue;   // 魔王腳下的地炸不掉
       const dy = Math.sqrt(r * r - (x - cx) * (x - cx));
       if (cy - dy <= g[x] && g[x] < cy + dy) g[x] = Math.min(S.FLOOR, cy + dy);
     }
@@ -174,6 +207,15 @@
   function dmgAt(g, tx, ex, ey, P) {
     if (!P.D) return 0;
     const [cx, cy] = center(g, tx), d = Math.max(0, Math.hypot(cx - ex, cy - ey) - 10);
+    return d >= P.R ? 0 : Math.round(P.D * (1 - .75 * d / P.R));
+  }
+  /* 魔王的身體：橢圓（中心、半徑），嘴巴＝魔王的砲口 */
+  const bossBody = S => { const B = BOSS[S.boss]; return { cx: S.bossX, cy: S.bossY - B.h * .48, rx: B.w * .46, ry: B.h * .46 }; };
+  const bossMouth = S => { const B = BOSS[S.boss]; return [S.bossX - B.w * .44, S.bossY - B.h * .62]; };
+  const inBoss = (S, x, y, pad = 0) => { const b = bossBody(S); return ((x - b.cx) / (b.rx + pad)) ** 2 + ((y - b.cy) / (b.ry + pad)) ** 2 < 1; };
+  /* 爆炸離魔王身體邊緣多遠 */
+  function bossDmg(S, ex, ey, P) {
+    if (!P.D) return 0; const b = bossBody(S), k = Math.hypot((ex - b.cx) / b.rx, (ey - b.cy) / b.ry), d = Math.max(0, (k - 1) * Math.min(b.rx, b.ry));
     return d >= P.R ? 0 : Math.round(P.D * (1 - .75 * d / P.R));
   }
 
@@ -196,8 +238,8 @@
   const alive = (S, i) => !!S.T[i] && !S.T[i].out && S.T[i].hp > 0;
   function nextAlive(S, from) { for (let d = 1; d <= S.n; d++) { const j = (from + d) % S.n; if (alive(S, j)) return j; } return from; }
   /* 這一局可以用哪些砲彈（舊地圖只有當時有的） */
-  const weapons = S => S.legacy === 'v1' ? ['n', 't', 's'] : S.legacy === 'm1' ? ['n', 't', 'b', 's'] : S.mv === 'v2' ? WK_ : W3;
-  const left = (S, i, w) => w === 'n' ? Infinity : !weapons(S).includes(w) ? 0 : WEAP[w].lim - S.T[i].used[w] + (S.T[i].bonus[w] || 0);
+  const weapons = S => S.legacy === 'v1' ? ['n', 't', 's'] : S.legacy === 'm1' ? ['n', 't', 'b', 's'] : S.mv === 'v2' ? WK_ : S.boss ? BOSS_W : W3;
+  const left = (S, i, w) => S.boss && i === S.bi ? (WEAP[w] ? Infinity : 0) : w === 'n' ? Infinity : !weapons(S).includes(w) ? 0 : WEAP[w].lim - (S.T[i].used[w] || 0) + (S.T[i].bonus[w] || 0);
   /* 補給箱：每 4 回合從天上掉一個（位置、裡面裝什麼都用 rng(seed) 決定） */
   function dropCrate(S) {
     if (S.crates.length >= 2) return;
@@ -205,7 +247,7 @@
     for (let t = 0; t < 14; t++) {
       const CW = S.mv === 'v2' ? CRATE_V2 : CRATE_W, x = Math.round(80 + r() * (S.W - 160)), w = CW[Math.floor(r() * CW.length)];
       if (isVoid(S.g, x) || (S.sp.lava && gAt(S.g, x) > S.sp.lava - 4)) continue;
-      if (S.T.some(t => !t.out && Math.abs(t.x - x) < 60) || S.crates.some(c => Math.abs(c.x - x) < 90)) continue;
+      if (S.T.some((t, q) => !t.out && Math.abs(t.x - x) < (S.boss && q === S.bi ? BOSS_FLAT + 40 : 60)) || S.crates.some(c => Math.abs(c.x - x) < 90)) continue;
       S.crates.push({ id: ++S.cid, x, w }); S.ev.push({ k: 'drop', x, id: S.cid }); return;
     }
   }
@@ -224,12 +266,13 @@
   }
   /* 從頭照著棋譜重播一遍 */
   function replay(map, seed, moves, out, mode) {
-    const M = decode(map), n = M.xs.length, sp = SITES[M.site];
+    const M = decode(map), n = M.xs.length, sp = SITES[M.site], bi = M.boss ? n - 1 : -1;
     const S = {
-      W: M.W, H: M.H, FLOOR: M.FLOOR, site: M.site, sp, legacy: M.legacy, mv: M.mv, g: M.g, n, mode: mode === 'team' && n === 4 ? 'team' : 'ffa',
-      T: M.xs.map(x => ({ x, hp: HP, used: { t: 0, b: 0, c: 0, d: 0, w: 0, p: 0, s: 0 }, bonus: {}, out: false, ko: -1, st: { shots: 0, hits: 0, far: 0, best: 0 } })),
+      W: M.W, H: M.H, FLOOR: M.FLOOR, site: M.site, sp, legacy: M.legacy, mv: M.mv, g: M.g, n, mode: M.boss ? 'boss' : mode === 'team' && n === 4 ? 'team' : 'ffa',
+      T: M.xs.map(x => ({ x, hp: HP, max: HP, used: { t: 0, b: 0, c: 0, d: 0, w: 0, p: 0, s: 0, h: 0 }, bonus: {}, out: false, ko: -1, st: { shots: 0, hits: 0, far: 0, best: 0, dmg: 0, heal: 0 } })),
       turn: M.first != null ? M.first % n : (seed >>> 0) % n, k: 0, a: 0, seed: seed | 0, last: null, over: false, maxT: n * M.per, per: M.per, crates: [], cid: 0, ev: []
     };
+    if (M.boss) { const B = BOSS[M.boss]; Object.assign(S, { boss: M.boss, bi, bossX: M.xs[bi], bossY: gAt(M.g, M.xs[bi]), shield: false, bt: 0 }); S.T[bi].hp = S.T[bi].max = Math.round(B.hp * (n - 1) * [1, 1, 1.05, 1.15][n - 2]); }   // 人多的時候魔王血再多一點（4 個人一起打太輕鬆）
     S.first = S.turn;
     const list = moves ? String(moves).split(',').filter(Boolean) : [];
     const outs = Object.entries(out || {}).map(([k, v]) => [+String(k).replace(/\D/g, ''), +v]).filter(([i, v]) => i >= 0 && i < n && isFinite(v)).sort((a, b) => a[1] - b[1]);
@@ -250,13 +293,14 @@
     return S;
   }
   function applyMove(S, m) {
-    const i = m.i, me = S.T[i], g = S.g, before = S.T.map((_, j) => alive(S, j)), L = S.legacy;
+    const i = m.i, me = S.T[i], g = S.g, before = S.T.map((_, j) => alive(S, j)), L = S.legacy, isB = !!S.boss && i === S.bi;
     const xPrev = me.x;
+    if (isB) { S.shield = false; S.bt++; m.x = S.bossX; if (!m.pass && m.w === 'G') { S.shield = true; S.ev.push({ k: 'guard' }); } }
     if (isFinite(m.x)) me.x = clamp(m.x, 20, S.W - 20);
     const yb = S.T.map(t => gAt(g, t.x)), x0 = me.x;
     let tele = false;
     if (!m.pass) {
-      if (m.w !== 'n') me.used[m.w]++;
+      if (m.w !== 'n' && !isB) me.used[m.w] = (me.used[m.w] || 0) + 1;
       me.st.shots++;
       let dealt = 0;
       for (const e of m.imp) {
@@ -265,27 +309,31 @@
         else if (Wp.tele) { me.x = clamp(e.x, 24, S.W - 24); tele = true; S.ev.push({ k: 'tele', i, x: me.x }); }
         else {
           crater(S, g, e.x, e.y, crR(S, m.w, m.w === 'c'));
-          for (let j = 0; j < S.n; j++) if (!S.T[j].out && S.T[j].hp > 0) { const d = e.d[j] || 0; S.T[j].hp -= d; if (enemy(S, i, j)) dealt += d; }
+          for (let j = 0; j < S.n; j++) if (!S.T[j].out && S.T[j].hp > 0) {
+            const d = e.d[j] || 0;
+            if (d < 0) { const add = Math.min(-d, S.T[j].max - S.T[j].hp); S.T[j].hp += add; me.st.heal += add; continue; }   // 補血
+            S.T[j].hp -= d; if (enemy(S, i, j)) dealt += d;
+          }
         }
         if (!Wp.tele) me.st.far = Math.max(me.st.far, Math.round(Math.abs(e.x - x0)));
-        if (!L) for (const c of [...S.crates]) if (crateNear(S, g, c, e.x, e.y)) takeCrate(S, i, c);
+        if (!L) for (const c of [...S.crates]) if (crateNear(S, g, c, e.x, e.y)) { if (isB) S.crates = S.crates.filter(z => z !== c); else takeCrate(S, i, c); }
       }
       if (dealt > 0) me.st.hits++;
-      me.st.best = Math.max(me.st.best, dealt);
+      me.st.best = Math.max(me.st.best, dealt); me.st.dmg += dealt;
     }
     if (!L) {
       /* 坦克腳下的地被炸掉：掉下去超過 30 px，每多 10 px 扣 2 滴血（最多 20）；掉進浮島空隙就出局 */
       S.T.forEach((t, j) => {
-        if (t.out || t.hp <= 0 || (j === i && tele)) return;
+        if (t.out || t.hp <= 0 || (j === i && tele) || (S.boss && j === S.bi)) return;
         if (isVoid(g, t.x)) { t.hp = 0; S.ev.push({ k: 'void', i: j }); return; }
         const drop = gAt(g, t.x) - yb[j];
         if (drop > 30) { const d = Math.min(20, Math.floor((drop - 30) / 10) * 2); if (d > 0) { t.hp -= d; S.ev.push({ k: 'fall', i: j, d }); } }
       });
       for (const c of [...S.crates]) if (isVoid(g, c.x)) S.crates = S.crates.filter(z => z !== c);
       /* 開車經過補給箱、或砲彈炸到補給箱 → 拿到 1 發特殊砲彈（下一回合起可以用） */
-      if (me.hp > 0 && !me.out) for (const c of [...S.crates]) if (c.x >= Math.min(xPrev, x0) - 28 && c.x <= Math.max(xPrev, x0) + 28) takeCrate(S, i, c);
-      if (S.sp.slide) S.T.forEach((t, j) => { if (!t.out && t.hp > 0) slide(S, j); });
-      if (S.sp.lava && me.hp > 0 && !me.out && gAt(g, me.x) > S.sp.lava) { me.hp -= 10; S.ev.push({ k: 'lava', i, d: 10 }); }
+      if (me.hp > 0 && !me.out && !isB) for (const c of [...S.crates]) if (c.x >= Math.min(xPrev, x0) - 28 && c.x <= Math.max(xPrev, x0) + 28) takeCrate(S, i, c);
+      if (S.sp.slide) S.T.forEach((t, j) => { if (!t.out && t.hp > 0 && !(S.boss && j === S.bi)) slide(S, j); });
+      if (S.sp.lava && me.hp > 0 && !me.out && !isB && gAt(g, me.x) > S.sp.lava) { me.hp -= 10; S.ev.push({ k: 'lava', i, d: 10 }); }
     }
     for (let j = 0; j < S.n; j++) if (S.T[j].hp <= 0 && S.T[j].ko < 0) { S.T[j].hp = 0; S.T[j].ko = S.k; }
     S.a++; S.last = m; S.turn = nextAlive(S, i);
@@ -295,6 +343,13 @@
   /* 結束了沒：只剩一隊（或一個人）、全部倒下、回合用完 */
   function check(S, before, byOut) {
     if (S.over) return;
+    if (S.boss) {
+      const pl = [...Array(S.n).keys()].filter(i => i !== S.bi), team = pl.filter(i => !S.T[i].out);
+      if (!alive(S, S.bi)) { S.over = true; S.win = team; S.winner = team.join(',') || 'none'; S.reason = `打倒了${BOSS[S.boss].n}！`; }
+      else if (!pl.some(i => alive(S, i))) { S.over = true; S.win = [S.bi]; S.winner = String(S.bi); S.reason = byOut && !pl.some(i => !S.T[i].out) ? '大家都離開了' : '全隊都被打倒了'; }
+      else if (S.bt >= S.per) { S.over = true; S.win = [S.bi]; S.winner = String(S.bi); S.reason = `${S.per} 輪用完了，魔王還沒倒下`; }   // 魔王打完第 per 次＝一輪結束
+      return;
+    }
     const groups = new Set(); for (let i = 0; i < S.n; i++) if (alive(S, i)) groups.add(teamOf(S, i));
     const mem = gs => { const a = []; for (let i = 0; i < S.n; i++) if (gs.has(teamOf(S, i)) && !S.T[i].out) a.push(i); return a; };
     if (groups.size === 1) { S.over = true; S.win = mem(groups); S.winner = S.win.join(','); S.reason = byOut ? '其他人都離開了' : S.mode === 'team' ? '把對方整隊打倒了' : '打倒了所有對手'; }
@@ -325,7 +380,12 @@
   /* ═════════════ 砲彈飛行（發射的平板算結果、畫面播動畫，用同一份） ═════════════ */
   const tanksOf = (S, i, x) => S.T.map((t, j) => ({ x: j === i ? x : t.x, on: alive(S, j) }));
   function launch(S, g, i, x, a, p, w) {
-    const W0 = WEAP[w], [cx, cy] = center(g, x), sh = [];
+    const W0 = WEAP[w], isB = !!S.boss && i === S.bi, [cx, cy] = isB ? bossMouth(S) : center(g, x), sh = [];
+    if (W0.rain) {   // 砲彈雨：每個還活著的玩家頭上掉一顆（位置用亂數偏一點）
+      const r = rng(((S.seed ^ 0x2545f491) >>> 0) + S.a * 131);
+      S.T.forEach((t, j) => { if (j === i || !alive(S, j)) return; sh.push({ k: sh.length, x: clamp(t.x + (r() - .5) * 200, 10, S.W - 10), y: -30 - r() * 120, vx: (r() - .5) * .6, vy: 1.5, live: true, away: true, t: 0, bn: 0, bounced: 0, sub: 0, drill: 0 }); });
+      return { S, g, i, w, sh, T: tanksOf(S, i, x), crates: S.legacy ? [] : S.crates.slice(), wind: S.wind, grav: GRAV * S.sp.grav, ev: [] };
+    }
     for (let k = 0; k < W0.n; k++) {
       const ang = (a + (W0.n > 1 ? (k - 1) * W0.spread : 0)) * Math.PI / 180, v = p * VK;
       sh.push({ k, x: cx + 26 * Math.cos(ang), y: cy - 26 * Math.sin(ang), vx: v * Math.cos(ang), vy: -v * Math.sin(ang), live: true, away: false, t: 0, bn: W0.bn || 0, bounced: 0, sub: 0, drill: 0 });
@@ -353,6 +413,7 @@
       let hit = -1;
       for (let q = 0; q < F.T.length; q++) {
         const T = F.T[q]; if (!T.on) continue;
+        if (S.boss && q === S.bi) { if (q !== F.i && inBoss(S, s.x, s.y)) { hit = q; break; } continue; }   // 魔王：身體是一個大橢圓；自己的砲彈不會打到自己
         const [cx, cy] = center(g, T.x), d = Math.hypot(s.x - cx, s.y - cy);
         if (q === F.i && !s.away) { if (d > 34) s.away = true; continue; }
         if (d < 24) { hit = q; break; }
@@ -382,8 +443,17 @@
       F.T[F.i].x = tx; return { k: r.s.k, x: tx, y: Math.round(gAt(g, tx)), hit: 0, d: new Array(n).fill(0) };
     }
     const P = r.s.sub ? WEAP.c : W0;
-    const d = F.T.map(t => t.on ? dmgAt(g, t.x, ex, ey, P) : 0);
+    const d = F.T.map((t, j) => !t.on ? 0 : S.boss && j === S.bi ? bossDmg(S, ex, ey, P) : dmgAt(g, t.x, ex, ey, P));
     if (r.hit >= 0) d[r.hit] = Math.max(d[r.hit], P.D);
+    if (S.boss) {   // 一起打王：隊友不互相傷害、補血彈補隊友、魔王的護盾擋一半
+      const fromB = F.i === S.bi;
+      for (let j = 0; j < n; j++) {
+        if (j === S.bi) { d[j] = fromB ? 0 : S.shield ? Math.round(d[j] / 2) : d[j]; continue; }
+        if (fromB) continue;
+        if (W0.heal) { const t = F.T[j]; if (!t.on) { d[j] = 0; continue; } const [cx, cy] = center(g, t.x), dd = Math.max(0, Math.hypot(cx - ex, cy - ey) - 10); d[j] = r.hit === j ? -(W0.heal + 6) : dd >= W0.R ? 0 : -Math.round(W0.heal * (1 - .5 * dd / W0.R)); }
+        else d[j] = 0;
+      }
+    }
     crater(S, g, ex, ey, crR(S, w, r.s.sub));
     return { k: r.s.k, x: ex, y: ey, hit: r.hit >= 0 ? r.hit + 1 : 0, d };
   }
@@ -405,6 +475,23 @@
     return { tok, imp };
   }
   const pass = (S, i, x) => S.legacy === 'v1' ? Math.round(x) + ':-' : (i | 0) + ':' + Math.round(x) + ':-';
+  /* 魔王這一回合要怎麼打：照招式順序；瞄準打＝挑一台坦克（常常挑血最少的），試很多角度、力道找最接近的，再故意偏一點 */
+  function bossMove(S) {
+    const B = BOSS[S.boss], bi = S.bi, r = rng(((S.seed ^ 0x9e3779b9) >>> 0) + S.a * 977), rage = S.T[bi].hp <= S.T[bi].max / 2;
+    let act = B.seq[S.bt % B.seq.length];
+    const pl = [...Array(S.n).keys()].filter(j => j !== bi && alive(S, j));
+    if (!pl.length) return pass(S, bi, S.bossX);
+    if (act === 'G') return fire(S, S.bossX, 150, 50, 'G').tok;
+    if (act === 'Y') return fire(S, S.bossX, 150, 50, 'Y').tok;
+    const low = pl.slice().sort((a, b) => S.T[a].hp - S.T[b].hp)[0], tgt = r() < .45 ? low : pl[Math.floor(r() * pl.length)];
+    const tx = S.T[tgt].x, g = S.g;
+    let best = null;
+    const sim = (a, p) => { const F = launch(S, Float64Array.from(g), bi, S.bossX, a, p, 'n'), s = F.sh[0]; F.T = F.T.map(t => ({ ...t, on: false })); for (let k = 0; k < SUB * 900 && s.live; k++) { const h = stepFlight(F); if (h.length) return h[0].x; } return s.x; };
+    for (let a = 100; a <= 170; a += 5) for (let p = 30; p <= 100; p += 5) { const x = sim(a, p), e = Math.abs(x - tx); if (!best || e < best.e) best = { a, p, e }; }
+    for (let a = best.a - 4; a <= best.a + 4; a++) for (let p = best.p - 4; p <= best.p + 4; p++) { if (p < 10 || p > 100) continue; const x = sim(a, p), e = Math.abs(x - tx); if (e < best.e) best = { a, p, e }; }
+    const err = B.err * (rage ? .7 : 1), a = clamp(Math.round(best.a + (r() - .5) * 2 * err), 91, 179), p = clamp(Math.round(best.p + (r() - .5) * err * .8), 10, 100);
+    return fire(S, S.bossX, a, p, rage ? B.shot3 : B.shot).tok;
+  }
   /* 預覽：只畫前面一小段 */
   function preview(S, i, x, a, p, ticks = 22) {
     const g = S.g, F = launch(S, g, i, x, a, p, 'n'), s = F.sh[0], pts = [];
@@ -414,7 +501,7 @@
   /* 開車：不能爬太陡、不能撞到別台、不能開進浮島空隙。耗油：上坡比較多、下坡比較少（最少 0.6） */
   function canDrive(S, i, from, to) {
     if (to < 24 || to > S.W - 24 || isVoid(S.g, to)) return false;
-    for (let j = 0; j < S.n; j++) if (j !== i && !S.T[j].out && Math.abs(to - S.T[j].x) < 70) return false;
+    for (let j = 0; j < S.n; j++) if (j !== i && !S.T[j].out && Math.abs(to - S.T[j].x) < (S.boss && j === S.bi ? BOSS_FLAT + 20 : 70)) return false;
     return gAt(S.g, from) - gAt(S.g, to) < 6;
   }
   function driveCost(S, from, to) {
@@ -422,5 +509,5 @@
     return dx * Math.max(.6, 1 + up * 2.4);
   }
   /* 補給箱、各種砲彈的中文名字（畫面用） */
-  root.TK = { VER, W: 1600, H: 700, HP, FUEL, SUB, GRAV, WK, VK, VOID, WEAP, WK_, SITES, SITE_KEYS, CRATE_W, rng, windRaw, newGame, decode, replay, parse, fire, pass, preview, launch, stepFlight, resolveHit, crater, mound, center, gAt, isVoid, left, weapons, canDrive, driveCost, alive, nextAlive, teamOf, enemy, result, places, tanksOf, crateNear, crR };
+  root.TK = { VER, W: 1600, H: 700, HP, FUEL, SUB, GRAV, WK, VK, VOID, WEAP, WK_, SITES, SITE_KEYS, CRATE_W, rng, windRaw, newGame, decode, replay, parse, fire, pass, preview, launch, stepFlight, resolveHit, crater, mound, center, gAt, isVoid, left, weapons, canDrive, driveCost, alive, nextAlive, teamOf, enemy, result, places, tanksOf, crateNear, crR, BOSS, BOSS_SITES, bossMove, bossBody, bossMouth };
 })(typeof window !== 'undefined' ? window : globalThis);

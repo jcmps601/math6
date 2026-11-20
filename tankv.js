@@ -72,7 +72,7 @@
 
   /* 砲彈圖示：普通、三連發、超級用 V3 的圖；彈跳、散花、傳送用 GPT 第二版畫的圖；
      鑽地、築牆已經拿掉（只剩 11-06 開的舊房間用得到），用程式畫的 */
-  const WIMG = { n: 'img/game/ammo-normal.webp', t: 'img/game/ammo-triple.webp', s: 'img/game/ammo-super.webp', b: 'img/game/ammo-bounce.webp', c: 'img/game/ammo-cluster.webp', p: 'img/game/ammo-teleport.webp' };
+  const WIMG = { n: 'img/game/ammo-normal.webp', t: 'img/game/ammo-triple.webp', s: 'img/game/ammo-super.webp', b: 'img/game/ammo-bounce.webp', c: 'img/game/ammo-cluster.webp', p: 'img/game/ammo-teleport.webp', h: 'img/game/ammo-heal.webp' };
   function drawnIcon(w) {
     const c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d');
     const ball = (x, y, r, a, b) => { const gr = g.createRadialGradient(x - r * .35, y - r * .4, r * .1, x, y, r); gr.addColorStop(0, a); gr.addColorStop(1, b); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = '#fff3dc'; g.lineWidth = 4; g.stroke(); };
@@ -85,7 +85,7 @@
     return c.toDataURL('image/png');
   }
   const ICON = {}; const wIcon = w => ICON[w] || (ICON[w] = WIMG[w] || drawnIcon(w));
-  const WSHOW = { n: '普通', t: '三連發', b: '彈跳', c: '散花', d: '鑽地', w: '築牆', p: '傳送', s: '超級' };
+  const WSHOW = { n: '普通', t: '三連發', b: '彈跳', c: '散花', d: '鑽地', w: '築牆', p: '傳送', s: '超級', h: '補血' };
 
   /* 場地的顏色、裝飾 */
   const LOOK = {
@@ -131,8 +131,13 @@
   let aim = [], drive = { i: -1, x: 0, fuel: TK.FUEL }, live = null, lastShot = [], turnAt = 0, turnKey = '';
   let lot = null;   // 開局抽籤動畫 {t 已過影格, n 人數, first 先打的人, last 上一次亮的人}
   let parts = [], texts = [], shells = [], shake = 0, banner = null, deco = null, clouds = [], tPrev = 0, hold = null, liveT = 0, timeoutSent = '', big = null;
-  const COL = i => (TEAMC[shown && shown.mode === 'team' ? 'team' : 'ffa'])[i] || TEAMC.ffa[0];
-  const nm = i => (host.names()[i] || COL(i).name + '色坦克');
+  /* 一起打王：最後一台是魔王（紫色、名字是魔王的名字） */
+  const isBoss = i => !!shown && !!shown.boss && i === shown.bi;
+  const BOSSC = { main: '#7c3aed', dark: '#5b21b6', name: '魔王' };
+  const COL = i => isBoss(i) ? BOSSC : (TEAMC[shown && shown.mode === 'team' ? 'team' : 'ffa'])[i] || TEAMC.ffa[0];
+  const nm = i => isBoss(i) ? TK.BOSS[shown.boss].n : (host.names()[i] || COL(i).name + '色坦克');
+  const BOSS_D = 340, BOSS_ANC = { rock: .812, thunder: .83 };   // 魔王圖畫在場上的大小、腳底在圖的哪裡（美術給的錨點）
+  Object.keys(TK.BOSS).forEach(k => { img('boss-' + k); img('boss-' + k + '-shot'); }); img('ammo-heal');
   const BLEND = 12;   // 畫面上的砲口差，飛幾步之內接回真正的彈道
   const skinOf = i => { const s = host.skins && host.skins()[i]; return SKINS.includes(s) ? s : SKINS[i % 2 ? 2 : 0]; };
   const L = () => LOOK[shown && shown.site] || LOOK.grass;
@@ -165,9 +170,10 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
   const groundY = x => { const v = TK.gAt(V.g, x); return v >= TK.VOID - 1 ? H + 60 : v; };
-  const tankCenter = i => [V.T[i].x, V.T[i].y - 16];
+  const tankCenter = i => { if (isBoss(i)) { const b = TK.bossBody(shown); return [b.cx, b.cy]; } return [V.T[i].x, V.T[i].y - 16]; };
   /* 某一台坦克在 x、角度 a 時，畫面上的砲管轉軸和砲口（跟 drawTank 同一套算法） */
   function barrelAt(i, x, a) {
+    if (isBoss(i)) { const [mx, my] = TK.bossMouth(shown); return { px: mx, py: my, mx, my }; }
     const sk = skinOf(i), g = V4[sk], s = TANK_WW / BODY_W, P = g ? g.p : PORT[sk], bot = g ? g.bot : BODY_BOTTOM, rad = a * Math.PI / 180, face = Math.cos(rad) >= 0 ? 1 : -1, tilt = slope(x) * .8;
     const lx = (P[0] - BODY_W / 2) * s * face, ly = (P[1] - bot) * s, y0 = groundY(x) + 1;
     const px = x + lx * Math.cos(tilt) - ly * Math.sin(tilt), py = y0 + lx * Math.sin(tilt) + ly * Math.cos(tilt);
@@ -214,7 +220,7 @@
     lot = null;
     makeDeco(st.seed); snapView(true); startTurn(); paintCtl(); buildWeapons();
     /* 新的一局（還沒有人打過）：先播抽籤，決定誰先開始；抽籤時不能操作、倒數也先不跑 */
-    if (!toks.length && !shown.over && shown.n >= 2) { lot = { t: 0, n: shown.n, first: shown.turn, last: -1 }; banner = null; turnAt = performance.now() + LOT_MS; paintCtl(); }
+    if (!toks.length && !shown.over && shown.n >= 2 && !shown.boss) { lot = { t: 0, n: shown.n, first: shown.turn, last: -1 }; banner = null; turnAt = performance.now() + LOT_MS; paintCtl(); }
   }
   const LOT_F = 150, LOT_MS = LOT_F * 1000 / 60;   // 抽籤 2.5 秒：前 1.7 秒輪流亮、慢慢停下，後面顯示結果
   function drawLot(c, dt) {
@@ -242,7 +248,7 @@
   }
   function snapView(hard) {
     V.g = Float64Array.from(shown.g); V.gv++; V.wind = shown.wind; V.turn = shown.turn; V.crates = shown.crates.map(c => ({ ...c }));
-    shown.T.forEach((s, i) => { const t = V.T[i] || (V.T[i] = { flash: 0 }); t.tx = s.x; if (hard || Math.abs(t.x - s.x) > 200) t.x = s.x; t.hp = s.hp; if (hard) t.y = groundY(t.x); t.dead = s.hp <= 0 ? 1 : 0; t.out = s.out; t.a = aim[i] ? aim[i].a : 45; });
+    shown.T.forEach((s, i) => { const t = V.T[i] || (V.T[i] = { flash: 0 }); t.tx = s.x; if (hard || Math.abs(t.x - s.x) > 200) t.x = s.x; t.hp = s.hp; t.max = s.max || TK.HP; if (hard) t.y = groundY(t.x); t.dead = s.hp <= 0 ? 1 : 0; t.out = s.out; t.a = aim[i] ? aim[i].a : 45; });
   }
   function startTurn(quiet) {
     const tk = key + '|' + shownN + '|' + shown.turn; if (turnKey === tk) return; turnKey = tk; turnAt = performance.now(); timeoutSent = '';
@@ -250,7 +256,7 @@
     if (aim[s] && aim[s].w !== 'n' && TK.left(shown, s, aim[s].w) <= 0) aim[s].w = 'n';
     if (shown.over) return;
     const mine = host.canAct();
-    banner = { t: host.solo() ? `輪到 ${nm(s)}` : mine ? '🎯 輪到你了！' : `${nm(s)} 瞄準中…`, c: COL(s).main, life: shownN || quiet ? 90 : 110 };
+    banner = { t: isBoss(s) ? `${nm(s)}要攻擊了！` : host.solo() ? `輪到 ${nm(s)}` : mine ? '🎯 輪到你了！' : `${nm(s)} 瞄準中…`, c: COL(s).main, life: shownN || quiet ? 90 : 110 };
     if (mine) snd.turn();
   }
   function setLive(v) { if (!v || anim || !shown || v.n !== shownN || v.s !== shown.turn || host.canAct()) return; live = v; }
@@ -298,7 +304,9 @@
       T.a = tA; aim[A.side].a = tA; aim[A.side].p = A.m.p; aim[A.side].w = A.m.w; aim[A.side].f = tA < 90 ? 1 : tA > 90 ? -1 : aim[A.side].f;
       A.ph = 'fly'; A.t = 0;
       A.F = TK.launch(A.pre, V.g, A.side, T.x, A.m.a, A.m.p, A.m.w); A.F.crates = V.crates.map(c => ({ ...c }));
-      shells = A.F.sh; { const B = barrelAt(A.side, T.x, A.m.a), r = A.m.a * Math.PI / 180, dx = B.mx - (T.x + 26 * Math.cos(r)), dy = B.my - (groundY(T.x) - 16 - 26 * Math.sin(r)); shells.forEach(s => { s.trail = []; s.mzx = dx; s.mzy = dy; }); }
+      shells = A.F.sh; { const B = barrelAt(A.side, T.x, A.m.a), r = A.m.a * Math.PI / 180, dx = B.mx - (T.x + 26 * Math.cos(r)), dy = B.my - (groundY(T.x) - 16 - 26 * Math.sin(r)); const bs = isBoss(A.side); shells.forEach(s => { s.trail = []; s.mzx = bs ? 0 : dx; s.mzy = bs ? 0 : dy; });
+      if (A.m.w === 'G') { snd.tele(); texts.push({ x: TK.bossBody(shown).cx, y: TK.bossBody(shown).cy - 140, t: '護盾！這一輪傷害減半', c: '#1c7ed6', life: 110, s: 36 }); }
+      if (A.m.w === 'Y') texts.push({ x: W / 2 - 200, y: 200, t: '砲彈雨！', c: '#7c3aed', life: 90, s: 46 }); }
       lastShot[A.side] = { x: T.x, a: A.m.a, p: A.m.p };
       snd.fire(); const Bf = barrelAt(A.side, T.x, A.m.a), ang = A.m.a * Math.PI / 180;
       fxAdd(A.sk, 'muzzle', Bf.mx, Bf.my, -ang, .6, 9);   // 三連發也只有一次（發射只走這裡一次）
@@ -334,6 +342,10 @@
       const spark = (x, y) => { for (let k = 0; k < 26; k++) { const a = Math.random() * 6.3, v = 1 + Math.random() * 4; parts.push({ x, y: y - 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 45, max: 45, r: 3 + Math.random() * 3, c: 'star' }); } };
       spark(t.x, t.y); t.x = t.tx = e.x; t.y = groundY(e.x) - 2; spark(t.x, t.y); texts.push({ x: e.x, y: t.y - 110, t: '傳送！', c: '#7048e8', life: 70, s: 32 }); return;
     }
+    if (W0.heal) {   // 補血彈：不炸地，冒綠色星星
+      snd.gift(); for (let k = 0; k < 22; k++) { const a = Math.random() * 6.3, v = 1 + Math.random() * 3; parts.push({ x: e.x, y: e.y - 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, life: 45, max: 45, r: 3 + Math.random() * 4, c: 'star' }); }
+      parts.push({ x: e.x, y: e.y, r: 50, life: 12, max: 12, c: 'flash' });
+    } else {
     const P = sub ? TK.WEAP.c : W0, bg = w === 's', R = P.R * .9;
     TK.crater(shown, V.g, e.x, e.y, TK.crR(shown, w, sub)); V.gv++;
     snd.boom(bg); shake = Math.max(shake, bg ? 22 : (w === 't' || sub) ? 8 : w === 'd' ? 16 : 14);
@@ -343,11 +355,14 @@
     for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = Math.random() * (bg ? 7 : 5) + 1; parts.push({ x: e.x, y: e.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 26 + Math.random() * 18, max: 44, r: 3 + Math.random() * (bg ? 9 : 6), c: 'fire' }); }
     dust(e.x, e.y, Math.round(n * .8));
     for (let i = 0; i < (bg ? 10 : 4); i++)parts.push({ x: e.x + (Math.random() - .5) * 30, y: e.y - Math.random() * 20, vx: (Math.random() - .5) * .8 + V.wind * .05, vy: -.4 - Math.random() * .6, life: 80 + Math.random() * 40, max: 120, r: 12 + Math.random() * 14, c: 'smoke' });
+    }
     V.T.forEach((t, j) => {
       const d = e.d[j]; if (!d || t.dead || t.out) return;
+      const bb = isBoss(j), tyy = bb ? TK.bossBody(shown).cy - TK.bossBody(shown).ry - 30 : t.y - 116;
+      if (d < 0) { const add = Math.min(-d, (t.max || TK.HP) - t.hp); t.hp += add; texts.push({ x: t.x, y: tyy, t: '+' + add + ' 補血', c: '#2f9e44', life: 90, s: 40, vy: -.6 }); return; }
       t.hp = Math.max(0, t.hp - d); t.flash = 14; t.shakeT = 12;
-      texts.push({ x: t.x, y: t.y - 116, t: '-' + d, c: '#dc2626', life: 80, s: d >= 25 ? 50 : 40, vy: -.6 });
-      if (e.hit === j + 1) { texts.push({ x: t.x, y: t.y - 72, t: '直擊！', c: '#f59f00', life: 80, s: 32, vy: -.6 }); snd.clang(); }
+      texts.push({ x: bb ? TK.bossBody(shown).cx : t.x, y: tyy, t: '-' + d + (bb && shown.shield ? ' 護盾' : ''), c: '#dc2626', life: 80, s: d >= 25 || bb ? 50 : 40, vy: -.6 });
+      if (e.hit === j + 1) { texts.push({ x: bb ? TK.bossBody(shown).cx : t.x, y: tyy + 44, t: '直擊！', c: '#f59f00', life: 80, s: 32, vy: -.6 }); snd.clang(); }
       if (t.hp <= 0 && !t.dead) { t.dead = 1; setTimeout(() => bigBoom(j), 250); }
     });
   }
@@ -356,6 +371,7 @@
     parts.push({ x, y, r: 90, life: 20, max: 20, c: 'flash' });
     for (let k = 0; k < 50; k++) { const a = Math.random() * Math.PI * 2, v = Math.random() * 8 + 2; parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, life: 40 + Math.random() * 20, max: 60, r: 4 + Math.random() * 9, c: 'fire' }); }
     for (let k = 0; k < 14; k++)parts.push({ x: x + (Math.random() - .5) * 40, y, vx: (Math.random() - .5), vy: -.6 - Math.random(), life: 140, max: 140, r: 16 + Math.random() * 18, c: 'smoke' });
+    if (isBoss(i)) { shake = 34; for (let k = 0; k < 60; k++) { const a = Math.random() * 6.3, v = 2 + Math.random() * 6; parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, g: .08, life: 90, max: 90, r: 4 + Math.random() * 6, c: 'star' }); } texts.push({ x, y: y - 160, t: `打倒${nm(i)}了！`, c: '#7c3aed', life: 160, s: 62, vy: -.3 }); return; }
     texts.push({ x, y: Math.min(y, H - 60) - 130, t: '💥 KO!', c: '#7c2d12', life: 110, s: 60, vy: -.4 });
   }
 
@@ -472,7 +488,24 @@
   }
 
   /* ───────── 坦克 ───────── */
+  /* 魔王：大大的圖（腳底對齊地面）、狂暴時身後發紅光、開護盾時一層藍色泡泡 */
+  function drawBoss(c, i, now) {
+    const t = V.T[i], k = shown.boss, im = img('boss-' + k), by = shown.bossY, D = BOSS_D, b = TK.bossBody(shown), rage = t.hp > 0 && t.hp <= (t.max || 1) / 2;
+    c.save();
+    if (t.dead) { t.dy = Math.min(60, (t.dy || 0) + .6); c.globalAlpha = Math.max(.25, 1 - t.dy / 70); c.translate(0, t.dy); }
+    let jx = 0; if (t.shakeT > 0) { jx = (Math.random() - .5) * 10; t.shakeT--; }
+    if (rage) { const p = .55 + .25 * Math.sin(now / 160), gr = c.createRadialGradient(b.cx, b.cy, 10, b.cx, b.cy, b.rx * 1.5); gr.addColorStop(0, `rgba(239,68,68,${p * .55})`); gr.addColorStop(1, 'rgba(239,68,68,0)'); c.fillStyle = gr; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx * 1.5, b.ry * 1.5, 0, 0, 7); c.fill(); }
+    c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(shown.bossX, by + 2, b.rx * 1.05, 10, 0, 0, 7); c.fill();
+    const breathe = 1 + .012 * Math.sin(now / 420), x0 = shown.bossX - D / 2 + jx, y0 = by - (BOSS_ANC[k] || .82) * D * breathe;
+    if (ok(im)) { c.drawImage(im, x0, y0, D, D * breathe); if (t.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = t.flash / 14 * .55; c.drawImage(im, x0, y0, D, D * breathe); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; t.flash--; } }
+    else { c.fillStyle = '#6d28d9'; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx, b.ry, 0, 0, 7); c.fill(); }
+    if (shown.shield && !t.dead) { const p = .5 + .15 * Math.sin(now / 200); c.fillStyle = `rgba(116,192,252,${p * .35})`; c.strokeStyle = `rgba(28,126,214,${p})`; c.lineWidth = 5; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx * 1.25, b.ry * 1.35, 0, 0, 7); c.fill(); c.stroke(); }
+    c.restore();
+    if (rage && !t.dead) { c.font = `900 26px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; const ty = b.cy - b.ry - 70 + 4 * Math.sin(now / 150); c.strokeText('狂暴！', b.cx, ty); c.fillStyle = '#dc2626'; c.fillText('狂暴！', b.cx, ty); }
+    if (!anim && !shown.over && V.turn === i && !t.dead) { const ax = b.cx, ay = b.cy - b.ry - 40 + 5 * Math.sin(now / 180); c.fillStyle = BOSSC.main; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(ax - 15, ay); c.lineTo(ax + 15, ay); c.lineTo(ax, ay + 17); c.closePath(); c.stroke(); c.fill(); }
+  }
   function drawTank(c, i, now) {
+    if (isBoss(i)) return drawBoss(c, i, now);
     const t = V.T[i]; if (t.out || t.y > H + 40) return;
     const C = COL(i), sk = skinOf(i), tilt = slope(t.x) * .8, face = Math.cos(t.a * Math.PI / 180) >= 0 ? 1 : -1;
     let jx = 0; if (t.shakeT > 0) { jx = (Math.random() - .5) * 6; t.shakeT--; }
@@ -503,8 +536,8 @@
     c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(label, t.x, y0 - 20); c.textBaseline = 'alphabetic';
     c.fillStyle = 'rgba(255,255,255,.9)'; rr(c, x0 - 3, y0 - 3, bw + 6, 15, 7); c.fill();
     c.fillStyle = '#e5e7eb'; rr(c, x0, y0, bw, 9, 4.5); c.fill();
-    c.fillStyle = '#fca5a5'; rr(c, x0, y0, bw * t.hpShow / 100, 9, 4.5); c.fill();
-    c.fillStyle = hp > 50 ? '#22c55e' : hp > 25 ? '#f59e0b' : '#ef4444'; if (hp > 0) { rr(c, x0, y0, Math.max(6, bw * hp / 100), 9, 4.5); c.fill(); }
+    c.fillStyle = '#fca5a5'; rr(c, x0, y0, bw * Math.min(1, t.hpShow / 100), 9, 4.5); c.fill();
+    c.fillStyle = hp > 50 ? '#22c55e' : hp > 25 ? '#f59e0b' : '#ef4444'; if (hp > 0) { rr(c, x0, y0, Math.max(6, bw * Math.min(1, hp / 100)), 9, 4.5); c.fill(); }
     if (!anim && !shown.over && V.turn === i && !dead) { const by = y0 - 58 + 5 * Math.sin(now / 180); c.fillStyle = C.main; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(t.x - 13, by); c.lineTo(t.x + 13, by); c.lineTo(t.x, by + 15); c.closePath(); c.stroke(); c.fill(); }
   }
   /* 圖還沒載入好時的簡單坦克 */
@@ -539,6 +572,8 @@
       const [X, Y] = shellXY(s);
       const w = anim && anim.m.w, bg = w === 's', r = bg ? 9 : (w === 't' || s.sub) ? 5 : 7;
       if (bg) { const gl = c.createRadialGradient(X, Y, 0, X, Y, 26); gl.addColorStop(0, 'rgba(255,200,80,.9)'); gl.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 26, 0, 7); c.fill(); }
+      const bossW = anim && isBoss(anim.side), oi = bossW ? img('boss-' + shown.boss + '-shot') : w === 'h' ? img('ammo-heal') : null;
+      if (oi && ok(oi)) { const L2 = bossW ? (w === 'Q' || w === 'X' || w === 'Y' ? 30 : 38) : 30; c.save(); c.translate(X, Y); if (bossW) c.rotate(s.t / 12); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 5; c.drawImage(oi, -L2 / 2, -L2 / 2, L2, L2); c.restore(); continue; }
       const ask = anim && anim.sk, sk = (!w || w === 'n') && !s.sub && anim ? ask : null, si = sk && SHELL_SK.includes(sk) ? img(shellName(sk)) : null;
       /* 傳說三款：每顆砲彈後面接一條主題拖尾（亮尖接彈尾，往後淡出）；多顆時縮小、變淡 */
       const ti = fxImg(ask, 'trail');
@@ -579,9 +614,11 @@
 
   /* ───────── 上方的資訊列：每個人一張小卡（左邊一半、右邊一半），中間是風和倒數 ───────── */
   const CW = 262, CH = 64;
-  function cardXY(i, n) { const Lh = Math.ceil(n / 2), cw = Math.min(CW, (W - 260) / n - 10); return { x: i < Lh ? 12 + i * (cw + 10) : W - 12 - cw - (n - 1 - i) * (cw + 10), w: cw }; }
+  function cardXY(i, n) { if (shown && shown.boss) { const cw = Math.min(CW, (W / 2 - 130) / n - 10); return { x: 12 + i * (cw + 10), w: cw }; }   // 一起打王：玩家的卡都在左邊，右邊是魔王的血條
+    const Lh = Math.ceil(n / 2), cw = Math.min(CW, (W - 260) / n - 10); return { x: i < Lh ? 12 + i * (cw + 10) : W - 12 - cw - (n - 1 - i) * (cw + 10), w: cw }; }
   function drawHUD(c, dt) {
-    const me = host.me(), n = V.T.length, heart = img('tank-ui-health-v2');
+    const me = host.me(), n = V.T.length - (shown.boss ? 1 : 0), heart = img('tank-ui-health-v2');
+    if (shown.boss) drawBossBar(c);
     for (let i = 0; i < n; i++) {
       const t = V.T[i], C = COL(i), { x, w: cw } = cardXY(i, n), y = 10, act = !shown.over && !anim && V.turn === i, gone = t.out, dead = t.dead || gone;
       c.save(); c.shadowColor = 'rgba(0,0,0,.18)'; c.shadowBlur = 8; c.fillStyle = dead ? 'rgba(235,235,235,.92)' : 'rgba(255,253,246,.95)'; rr(c, x, y, cw, CH, 18); c.fill(); c.restore();
@@ -597,7 +634,7 @@
         if (ok(heart)) c.drawImage(heart, x + 66, y + 37, 18, 18);
         c.fillStyle = '#e5e7eb'; rr(c, hx, y + 38, hb, 16, 8); c.fill();
         const v = Math.max(0, t.hp); c.fillStyle = v > 50 ? '#22c55e' : v > 25 ? '#f59e0b' : '#ef4444'; if (v > 0) { rr(c, hx, y + 38, Math.max(10, hb * v / 100), 16, 8); c.fill(); }
-        c.fillStyle = '#111'; c.font = `900 14px ${FONT}`; c.textAlign = 'center'; c.fillText(v > 0 ? v + ' / 100' : 'KO', hx + hb / 2, y + 47);
+        c.fillStyle = '#111'; c.font = `900 14px ${FONT}`; c.textAlign = 'center'; c.fillText(v > 0 ? v + ' / ' + (t.max || 100) : 'KO', hx + hb / 2, y + 47);
       }
       c.textBaseline = 'alphabetic';
     }
@@ -605,7 +642,7 @@
     const wd = V.wind, cx = W / 2, cy = 10; c.save(); c.shadowColor = 'rgba(0,0,0,.18)'; c.shadowBlur = 8; c.fillStyle = 'rgba(255,253,246,.95)'; rr(c, cx - 110, cy, 220, CH, 18); c.fill(); c.restore();
     c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillStyle = '#475569'; c.font = `900 18px ${FONT}`; c.fillText('風', cx - 84, cy + 20);
-    c.font = `900 13px ${FONT}`; c.fillStyle = '#64748b'; c.fillText(`剩 ${Math.max(0, shown.maxT - shown.a)} 發`, cx - 84, cy + 47);
+    c.font = `900 13px ${FONT}`; c.fillStyle = '#64748b'; c.fillText(shown.boss ? `${Math.min(shown.bt + 1, shown.per)}/${shown.per} 輪` : `剩 ${Math.max(0, shown.maxT - shown.a)} 發`, cx - 84, cy + 47);
     c.fillStyle = '#e2e8f0'; c.fillRect(cx - 58, cy + 10, 2, 44);
     const n2 = Math.abs(wd), wi = img(wd < 0 ? 'tank-ui-wind-left-v2' : 'tank-ui-wind-right-v2');
     if (!n2) { c.fillStyle = '#64748b'; c.font = `900 26px ${FONT}`; c.fillText('無風', cx + 22, cy + 34); }
@@ -640,6 +677,21 @@
     }
   }
   const turnMs = () => host.solo() ? 60000 : TURN_MS;
+  /* 魔王的血條：右上角一大條 */
+  function drawBossBar(c) {
+    const i = shown.bi, t = V.T[i], x = W / 2 + 122, w = W - 12 - x, y = 10, im = img('boss-' + shown.boss), mx = t.max || 1, v = Math.max(0, t.hp);
+    t.hpShow = t.hpShow == null ? v : lerp(t.hpShow, v, .08);
+    c.save(); c.shadowColor = 'rgba(0,0,0,.2)'; c.shadowBlur = 8; c.fillStyle = 'rgba(43,22,72,.92)'; rr(c, x, y, w, CH, 18); c.fill(); c.restore();
+    if (V.turn === i && !shown.over && !anim) { c.strokeStyle = '#c4b5fd'; c.lineWidth = 4; rr(c, x, y, w, CH, 18); c.stroke(); }
+    if (ok(im)) c.drawImage(im, x + 4, y - 8, 76, 76);
+    c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillStyle = '#fff'; c.font = `900 21px ${FONT}`; c.fillText(nm(i) + (shown.shield ? '（護盾中）' : v <= mx / 2 && v > 0 ? '（狂暴）' : ''), x + 84, y + 19);
+    const hx = x + 84, hb = w - 84 - 14, hy = y + 36;
+    c.fillStyle = 'rgba(255,255,255,.18)'; rr(c, hx, hy, hb, 18, 9); c.fill();
+    c.fillStyle = '#fca5a5'; rr(c, hx, hy, Math.max(0, hb * t.hpShow / mx), 18, 9); c.fill();
+    if (v > 0) { const gr = c.createLinearGradient(hx, 0, hx + hb, 0); gr.addColorStop(0, '#a855f7'); gr.addColorStop(1, '#ec4899'); c.fillStyle = gr; rr(c, hx, hy, Math.max(12, hb * v / mx), 18, 9); c.fill(); }
+    c.fillStyle = '#fff'; c.font = `900 14px ${FONT}`; c.textAlign = 'center'; c.fillText(v > 0 ? `${v} / ${mx}` : '打倒了！', hx + hb / 2, hy + 10);
+    c.textBaseline = 'alphabetic';
+  }
 
   /* ───────── 主迴圈 ───────── */
   function loop(now) { if (!running) return; raf = requestAnimationFrame(loop); frame(now); }
@@ -757,12 +809,17 @@
     ctl.querySelectorAll('[data-k],#pdFire').forEach(b => b.disabled = !on);
     const w = ctl.querySelector('#pdWait');
     w.textContent = shown.over ? '' : anim || queue.length ? '💥 砲彈飛行中…' : pendingFire ? '發射！' : on ? '' : host.solo() ? '' :
-      me < 0 ? `👀 觀戰中：${nm(s)} 瞄準中…` : !TK.alive(shown, me) ? `💀 你被打倒了，看看誰會贏！（${nm(s)} 瞄準中）` : `⏳ ${nm(s)} 瞄準中…`;
+      isBoss(s) ? `${nm(s)}準備攻擊…` : me < 0 ? `👀 觀戰中：${nm(s)} 瞄準中…` : !TK.alive(shown, me) ? `💀 你被打倒了，看看誰會贏！（${nm(s)} 瞄準中）` : `⏳ ${nm(s)} 瞄準中…`;
   }
   function unlock() { pendingFire = false; timeoutSent = ''; paintCtl(); }
   /* 結算用：每個人的命中率、最遠的一砲、最痛的一擊 */
   function statsHTML(S, names) {
     if (!S || !S.T) return '';
+    if (S.boss) {   // 一起打王：打了魔王多少、補了隊友多少血；傷害王、補血王
+      const n = names || [], pl = S.T.map((t, i) => i).filter(i => i !== S.bi), dm = Math.max(0, ...pl.map(i => S.T[i].st.dmg)), hl = Math.max(0, ...pl.map(i => S.T[i].st.heal));
+      const row = i => { const st = S.T[i].st; return `<tr><td><i style="background:${TEAMC.ffa[i].main}"></i>${n[i] || '玩家' + (i + 1)}</td><td>${st.dmg}${dm && st.dmg === dm ? '<small>傷害王</small>' : ''}</td><td>${st.heal ? '+' + st.heal : '—'}${hl && st.heal === hl ? '<small>補血王</small>' : ''}</td><td>${st.shots ? Math.round(st.hits / st.shots * 100) + '%' : '—'}<small>${st.hits}/${st.shots}</small></td></tr>`; };
+      return `<table class="tkst"><tr><th></th><th>打魔王</th><th>補血</th><th>命中率</th></tr>${pl.map(row).join('')}</table>`;
+    }
     const n = names || [], row = (t, i) => { const st = t.st; return `<tr><td><i style="background:${(TEAMC[S.mode === 'team' ? 'team' : 'ffa'][i] || TEAMC.ffa[0]).main}"></i>${n[i] || '玩家' + (i + 1)}</td><td>${st.shots ? Math.round(st.hits / st.shots * 100) + '%' : '—'}<small>${st.hits}/${st.shots}</small></td><td>${st.far ? Math.round(st.far / 10) + ' 公尺' : '—'}</td><td>${st.best ? '-' + st.best : '—'}</td></tr>`; };
     return `<table class="tkst"><tr><th></th><th>命中率</th><th>最遠一砲</th><th>最痛一擊</th></tr>${S.T.map(row).join('')}</table>`;
   }
