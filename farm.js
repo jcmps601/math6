@@ -3,7 +3,7 @@
    ・澆水的 💧 要靠練習：每答對 1 題 +1 💧；作物沒水就停在那裡不長。10 題答對 8 題送 1 包 🧴 肥料（剩下的時間減半）
    ・長大途中可能長雜草 🌿、來蟲 🐛：沒處理的話，收成少 1 個
    ・拜訪同學：幫忙澆水、除草、捉蟲（自己拿經驗和金幣）；成熟的菜可以偷摘 1 個（每塊田最多被摘 2 個，主人看得到是誰）
-   ・晚上 9 點到早上 6 點農場休息：作物照樣長，但不能操作（不要半夜爬起來偷菜）
+   ・晚上 10 點到早上 6 點農場休息：作物照樣長，但不能操作（不要半夜爬起來偷菜）
    資料：自己的農場 sum.farm（跟著摘要同步）；公開給同學看 learn/farm/座號；同學做的事 learn/farmact/主人/編號（主人下次打開時算進去） */
 (function () {
   /* ───────── 作物 ───────── p 種子價錢、m 幾分鐘長大、w 要澆幾次水、y 收成幾個、s 一個賣多少、xp 經驗、lv 農場幾級才能種 */
@@ -211,7 +211,7 @@
     const f = F(), L = lvOf(f.xp);
     C.innerHTML = `<div class="fhead"><div class="flv"><b>🌾 我的農場 Lv.${L.lv}</b><div class="pbar s"><i style="width:${L.cur / L.need * 100}%;background:linear-gradient(90deg,#a9e34b,#74b816)"></i></div><small>經驗 ${L.cur} / ${L.need}</small></div>
         <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧴 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div><button class="fsm${f.sm ? ' on' : ''}" id="fsm">🥷 偷菜模式：${f.sm ? '開' : '關'}</button></div>
-      ${night() ? '<div class="fnight">🌙 晚上 9 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
+      ${night() ? '<div class="fnight">🌙 晚上 10 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
       <div class="fmain"><div class="fbox" id="fbox"><div id="fsvg"></div><button class="fzoom" id="fzoom"></button></div>
         <div class="fside"><div class="finfo" id="finfo"></div><div class="fpinfo" id="fpinfo"></div></div></div>
       <div class="fbar" id="fbar"></div>
