@@ -1566,6 +1566,7 @@ async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true
     const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
     /* 進度（sum）上傳前先讀雲端合併：別台平板做的（例如週末在家）不會被這台舊的紀錄蓋掉 */
     if(user&&sum&&it.p===base()+'/sum'){try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum));it.v.sy=Date.now()}catch(e){break}}   // sy：這台平板最後一次把進度傳上雲端的時間（老師頁看誰很久沒同步）
+    if(user&&it.p===base()+'/wbq'){try{const cm=(await timeout(db.ref(it.p).get(),10000)).val();if(cm)wbMerge(cm);it.v=wbMap(wbLoad(),wbTomb())}catch(e){break}}   // 錯題本：先合併別台的再上傳
     try{await timeout(db.ref(it.p).set(it.v),12000);drop()}
     catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
   flushing=false;paintSync()}
@@ -1604,7 +1605,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
 function resetIfCleared(remote){if(remote!=null||!user||!sum)return false;
   const local=(sum.total||0)+(sum.tk||0)+(sum.tc||0)+Object.keys(sum.gb2||{}).length+wbLoad().length;
   if(!local||Q.some(x=>x.p.startsWith(base())))return false;
-  sum=blankSum();LS.set('learn601_sum_'+user.seat,sum);LS.del('learn601_wb_'+user.seat);return true}
+  sum=blankSum();LS.set('learn601_sum_'+user.seat,sum);LS.del('learn601_wb_'+user.seat);LS.del('learn601_wbx_'+user.seat);return true}
 function logPush(v){if(!user)return;enqueue(`${base()}/log/${uid()}`,Object.assign({d:dkey(),ts:Date.now()},v))}
 
 /* ===================== 登入 ===================== */
@@ -1628,7 +1629,7 @@ async function pinKey(k){if(pinBusy)return;
   if(k==='⌫'){pinVal=pinVal.slice(0,-1);paintPin();return}
   if(pinVal.length>=4)return;pinVal+=k;paintPin();if(pinVal.length<4)return;
   pinBusy=true;pinMsg('檢查中…');const r=await login4(pinSeat,pinVal);pinBusy=false;
-  if(r.ok){user={seat:pinSeat,pin:r.pin};boundKey='';LS.set('learn601_user',user);loadSum();resetIfCleared(r.val);mergeSum(r.val);saveSum(false);document.getElementById('pinbox').classList.remove('on');enterHome();return}
+  if(r.ok){user={seat:pinSeat,pin:r.pin};boundKey='';LS.set('learn601_user',user);loadSum();resetIfCleared(r.val);mergeSum(r.val);saveSum(false);wbPull();document.getElementById('pinbox').classList.remove('on');enterHome();return}
   const D=document.getElementById('pindots');D.classList.remove('no');void D.offsetWidth;D.classList.add('no');
   pinMsg(r.why==='bad'?'密碼不對，再試一次':r.why==='rules'?'平台還沒開通，請告訴老師':'連不上網路，第一次登入要有網路',true);pinVal='';setTimeout(paintPin,350)}
 /* ===== 自己設的密碼 =====
@@ -1710,7 +1711,7 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
 function enterHome(){show$('home');presence();listenInv();listenSum();amLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
-  verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);paintMeLook();render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
+  verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);wbPull();paintMeLook();render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
    ・窄版（手機、直拿平板）：上方只留頭像和資源（金幣、水、遊戲券），底部固定 5 個：首頁、學習、寵物、農場、更多
@@ -1884,7 +1885,7 @@ function listenSum(){if(!db||!user)return;const p=base()+'/sum';if(sumRef&&sumRe
     mergeSum(v);LS.set('learn601_sum_'+user.seat,sum);
     if(JSON.stringify(sum.days)+(sum.amr||0)!==before&&view==='home'&&$('#home').classList.contains('on'))render()},()=>{})}
 function unlistenSum(){if(sumRef&&sumCb)try{sumRef.off('value',sumCb)}catch(e){}sumRef=null;sumCb=null}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user){listenSum();flush()}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user){listenSum();flush();wbPull()}});
 /* ===================== 早自修 =====================
    每天 amN() 題（11/19 起 15 題），依老師在老師頁設定的分組出題（存在 learn/u/座號/密碼/am：m 數學、z 國語，'x' 學扶、其他＝一般；ms、zs 是勾選的題型，空的＝全部）
    ・先 2 題每日成語（週末沒有）
@@ -2061,11 +2062,29 @@ const TX={};function toolExists(f){if(location.protocol==='file:')return Promise
    答錯(看解答)或第二次才答對的題目會存起來;在「錯題再練」一次就答對,才會從錯題本拿掉。 */
 const wbKey=()=>'learn601_wb_'+user.seat;
 function wbLoad(){return user?LS.get(wbKey(),[]):[]}
-function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,uk:x.q.uk||'',t:x.q.t,n:x.n,d:x.d})),true)}
+/* 錯題本跨裝置同步（2026-11）：完整題目放在雲端 wbq/題目指紋 = {q 題目(JSON 字串), n 錯幾次, d 日期, m 最後修改時間}；
+   練會、移出錯題本的題目記成 {x: 移出的時間}，別台平板合併時才會一起移掉（不會被舊的那台加回來）
+   wb（只有摘要）照舊給老師頁看 */
+const wbxKey=()=>'learn601_wbx_'+user.seat;
+function wbTomb(){const T=LS.get(wbxKey(),{}),old=Date.now()-60*864e5;for(const k in T)if(T[k]<old)delete T[k];return T}
+function wbMap(W,T){const o={};W.forEach(x=>{o[x.k]={q:JSON.stringify(x.q),n:x.n||1,d:x.d||'',m:x.m||0}});for(const k in T)if(!o[k])o[k]={x:T[k]};return o}
+function wbMerge(cm){if(!user||!cm)return false;let W=wbLoad();const T=wbTomb(),before=JSON.stringify(W.map(x=>x.k+x.n));
+  for(const k in cm){const c=cm[k];if(!c)continue;
+    if(c.x){T[k]=Math.max(T[k]||0,c.x);const i=W.findIndex(x=>x.k===k);if(i>=0&&(W[i].m||0)<=c.x)W.splice(i,1);continue}
+    if((T[k]||0)>=(c.m||0))continue;const i=W.findIndex(x=>x.k===k);
+    if(i<0){try{W.push({k,q:JSON.parse(c.q),n:c.n||1,d:c.d||'',m:c.m||0})}catch(e){}}
+    else if((W[i].m||0)<(c.m||0)){W[i].n=Math.max(W[i].n||1,c.n||1);W[i].d=c.d||W[i].d;W[i].m=c.m}}
+  W.sort((a,b)=>(a.m||0)-(b.m||0));if(W.length>WB_MAX)W=W.slice(-WB_MAX);LS.set(wbxKey(),T);LS.set(wbKey(),W);
+  return JSON.stringify(W.map(x=>x.k+x.n))!==before}
+function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x.q.u,uk:x.q.uk||'',t:x.q.t,n:x.n,d:x.d})),true);enqueue(`${base()}/wbq`,wbMap(W,wbTomb()),true)}
+/* 登入、切回畫面時把雲端的錯題本合併進來；這台有、雲端沒有的也補上去 */
+async function wbPull(){if(!db||!user)return;try{const cm=(await timeout(db.ref(`${base()}/wbq`).get(),10000)).val()||{};const ch=wbMerge(cm),W=wbLoad();
+  if(W.some(x=>!cm[x.k]||(cm[x.k].m||0)<(x.m||0)))enqueue(`${base()}/wbq`,wbMap(W,wbTomb()),true);
+  if(ch){paintNavs();if(view==='wb'||view==='home')render()}}catch(e){}}
 function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
-  if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];wbSave(W);if(!q.rv)rvAdd(x.q,x.k);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
-  if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();W.push(x)}
-  else{const c=JSON.parse(JSON.stringify(q));delete c.rv;delete c.rvs;W.push({k,q:c,n:1,d:dkey()})}   // 複習題答錯：照原本的方式存進錯題本（rvk 留著，之後過關會接回同一筆複習）
+  if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];const T=wbTomb();T[k]=Date.now();LS.set(wbxKey(),T);wbSave(W);if(!q.rv)rvAdd(x.q,x.k);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
+  if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();x.m=Date.now();W.push(x)}
+  else{const c=JSON.parse(JSON.stringify(q));delete c.rv;delete c.rvs;W.push({k,q:c,n:1,d:dkey(),m:Date.now()});const T=wbTomb();if(T[k]){delete T[k];LS.set(wbxKey(),T)}}   // 複習題答錯：照原本的方式存進錯題本（rvk 留著，之後過關會接回同一筆複習）
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
 function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題再練`);h.style.setProperty('--c',WB.c);P.appendChild(h);
   const W=wbLoad();const c=el('div','cd');c.id='practice';c.style.setProperty('--c',WB.c);
@@ -3336,7 +3355,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v142';let verNew=false,verBusy=false;
+const APP_VER='learn601-v143';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
