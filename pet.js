@@ -972,7 +972,7 @@
     let h = `<div class="psec">🛋️ ${R.n}的擺設 <small>每個位置放一件・換房間在「👒 衣櫃」</small></div>
       <div class="pfuz">${zs.map(z => `<button data-z="${z}" class="${z === fuZ ? 'on' : ''}">${Z[z][0]}<small>${put[z] && FU[put[z]] && has(put[z]) ? FU[put[z]][0] : '空的'}</small></button>`).join('')}</div><div class="pgrid pfug">`;
     ids.forEach(id => { const on = put[fuZ] === id && has(id), pr = fuPrice(id);
-      h += `<button class="pfuc${on ? ' on' : ''}${has(id) ? '' : ' lock'}" data-f="${id}"><img src="${IMG}${id}.webp" alt="" draggable="false"><b>${FU[id][0]}</b><em>${on ? '✅ 擺著（再點收起來）' : has(id) ? '擺上去' : `🪙 ${pr}`}</em></button>`; });
+      h += `<button class="pfuc${on ? ' on' : ''}${has(id) ? '' : ' lock'}" data-f="${id}"><img src="${IMG}${id}.webp" alt="" draggable="false"><b>${FU[id][0]}</b><em>${on ? '✅ 擺著' : has(id) ? '擺上去' : `🪙 ${pr}`}</em></button>`; });
     C.innerHTML = h + '</div>';
     C.querySelectorAll('[data-z]').forEach(b => tap(b, () => { fuZ = b.dataset.z; paintTab(); }));
     C.querySelectorAll('[data-f]').forEach(b => tap(b, () => furPut(b.dataset.f)));
