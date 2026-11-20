@@ -695,6 +695,10 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .lkav.g3.nf::before,.av.lkme.g3.nf::before{animation:lkglow 2.2s ease-in-out infinite}
 @keyframes lkglow{0%,100%{filter:drop-shadow(0 0 1px var(--fc))}50%{filter:drop-shadow(0 0 9px var(--fc))}}
 #meav.lkme{position:relative;overflow:visible;margin:.55rem .55rem .55rem .7rem}
+/* 有頭像框時：中間的圓配合框的顏色，稍微放大塞滿框的洞（不會露出白邊） */
+.f-fr-leaf{--a1:#a9e34b;--a2:#2f9e44}.f-fr-star{--a1:#ffe066;--a2:#f08c00}.f-fr-cloud{--a1:#a5d8ff;--a2:#339af0}.f-fr-candy{--a1:#ffa8c5;--a2:#e64980}.f-fr-flower{--a1:#96f2d7;--a2:#12b886}.f-fr-ocean{--a1:#74c0fc;--a2:#1864ab}.f-fr-sakura{--a1:#ffc9de;--a2:#e64980}.f-fr-science{--a1:#99e9f2;--a2:#0c8599}.f-fr-galaxy{--a1:#b197fc;--a2:#5f3dc4}.f-fr-flame{--a1:#ffc078;--a2:#e8590c}.f-fr-dragon{--a1:#ffe066;--a2:#e67700}.f-fr-crown{--a1:#ffd43b;--a2:#d9480f}
+.lkav[class*=" f-"]>i{background:linear-gradient(135deg,var(--a1),var(--a2));transform:scale(1.07);text-shadow:0 1px 2px rgba(0,0,0,.35)}.lkav.nf>i{transform:none}#seats .lkav[class*=" f-"]>i{background:none;transform:none;text-shadow:none}
+#me .av.lkme[class*=" f-"]{background:linear-gradient(135deg,var(--a1),var(--a2));box-shadow:0 0 0 .12rem var(--a2);text-shadow:0 1px 2px rgba(0,0,0,.35)}
 #menm .lkt{display:block;width:fit-content;margin:.15rem 0 0;font-size:.62em}#menm .lkn{white-space:nowrap}
 /* 首頁名片卡 */
 #lkcard{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap}#lkcard .lkav{margin:.5rem}#lkcard .lkci{flex:1;min-width:10rem}
@@ -2499,12 +2503,12 @@ function lkOf(seat,pv){if(user&&+seat===user.seat){const L=lkMe();return {fr:lkH
 /* 名字（名牌底色＋稱號）、頭像（頭像框） */
 function lkName(seat,text,pv){const L=lkOf(seat,pv);return `<span class="lkn${L.np?' '+L.np:''}">${text}</span>${L.tt?`<em class="lkt">${LK[L.tt].n}</em>`:''}`}
 function lkAv(seat,inner,cls,pv,fr){const f=fr!==undefined?fr:lkOf(seat,pv).fr,I=LK[f];
-  return `<span class="lkav${cls?' '+cls:''}${I?' g'+I.t:''}" style="--fc:${I?LK_TIER[I.t][2]:'transparent'}"><i>${inner}</i>${I?`<img class="lkfr" src="img/look/${f}.webp" alt="" draggable="false" onerror="this.parentNode.classList.add('nf');this.remove()">`:''}</span>`}
+  return `<span class="lkav${cls?' '+cls:''}${I?' g'+I.t+' f-'+f:''}" style="--fc:${I?LK_TIER[I.t][2]:'transparent'}"><i>${inner}</i>${I?`<img class="lkfr" src="img/look/${f}.webp" alt="" draggable="false" onerror="this.parentNode.classList.add('nf');this.remove()">`:''}</span>`}
 /* 排行榜一列的名字：有頭像框才多一個小頭像 */
 const lkRow=(seat,text)=>(lkOf(seat).fr?lkAv(seat,seat,'mini'):'')+lkName(seat,text);
 function lkPub(){try{const p=PET.P();if(p)PET.pub(p)}catch(e){}}
 function paintMeLook(){if(!user)return;const a=document.getElementById('meav'),n=document.getElementById('menm');if(!a||isTest(user.seat)&&!lkMe().fr)return;
-  const L=lkOf(user.seat),I=LK[L.fr];a.classList.toggle('lkme',!!I);a.style.setProperty('--fc',I?LK_TIER[I.t][2]:'transparent');a.className='av'+(I?' lkme g'+I.t:'');
+  const L=lkOf(user.seat),I=LK[L.fr];a.classList.toggle('lkme',!!I);a.style.setProperty('--fc',I?LK_TIER[I.t][2]:'transparent');a.className='av'+(I?' lkme g'+I.t+' f-'+L.fr:'');
   a.innerHTML=`${isTest(user.seat)?'🧪':user.seat}${I?`<img class="lkfr" src="img/look/${L.fr}.webp" alt="" draggable="false" onerror="this.parentNode.classList.add('nf');this.remove()">`:''}`;
   if(!isTest(user.seat))n.innerHTML=`${lkName(user.seat,user.seat+' 號')}<small>601</small>`}
 /* 名片商店 */
@@ -3384,7 +3388,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v148';let verNew=false,verBusy=false;
+const APP_VER='learn601-v149';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
