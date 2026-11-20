@@ -506,10 +506,12 @@
     if (!a) return b; if (!b) return a;
     /* 兩份不是同一隻（pb 建立時間不同）：通常是新平板、清過資料，雲端還沒讀回來就先開了一份空的。
        這時不能看誰比較新，要留進度比較多的那一份（不然高等的寵物會被空的蛋蓋掉） */
-    const sc = p => (p.st === 'pet' ? 1e9 : 0) + (Object.keys(p.dex || {}).length + Object.keys(p.box || {}).length) * 1e7 + (p.xp || 0);
+    /* 進度分數：孵出來 > 圖鑑、寵物屋的隻數 > 所有寵物的經驗加起來（這些都只會增加，不會減少） */
+    const sc = p => (p.st === 'pet' ? 1e9 : 0) + (Object.keys(p.dex || {}).length + Object.keys(p.box || {}).length) * 1e7 + (p.xp || 0) + Object.values(p.box || {}).reduce((t, x) => t + ((x && x.xp) || 0), 0);
     /* 已經孵出來的寵物一定贏過還沒孵的蛋（2026-11：舊版平板開了一份沒有 pb 的空蛋，兩邊都沒有 pb 時會被當成同一隻、比新舊就把寵物蓋掉了） */
     const pk = (a.st === 'pet') !== (b.st === 'pet') ? (a.st === 'pet' ? a : b) : null;
-    const pick = pk || ((a.pb || 0) !== (b.pb || 0) ? (sc(b) > sc(a) ? b : a) : ((b.u || 0) > (a.u || 0) ? b : a)), other = pick === a ? b : a;
+    /* 2026-11：不管是不是同一份，都留「進度比較多」的那份（另一台比較新、但進度比較少＝那台是舊資料或空的，不能蓋過來）；進度一樣才看誰比較新 */
+    const sa = sc(a), sb = sc(b), pick = pk || (sa !== sb ? (sb > sa ? b : a) : ((b.u || 0) > (a.u || 0) ? b : a)), other = pick === a ? b : a;
     const la = pick.cl || { b: pick.coin || 0 }, lb = other.cl || { b: other.coin || 0 }, mx = (x, y) => { const o = Object.assign({}, x); for (const k in y || {}) o[k] = Math.max(o[k] || 0, y[k] || 0); return o; };
     pick.cl = { b: Math.max(la.b || 0, lb.b || 0), e: mx(la.e, lb.e), s: mx(la.s, lb.s) }; pick.coin = coinOf(pick);
     /* 兩台裝置都有動過：買過的東西兩邊合起來；造型（帽子、眼鏡、房間、顏色）看哪一邊最後換的，
