@@ -14,7 +14,7 @@
     '🔍': 'ic-zoom-in', '🔎': 'ic-zoom-out', '📬': 'ic-mailbox', '🌙': 'ic-moon-sleep', '🎉': 'ic-party-popper', '👍': 'ic-thumbs-up',
     '🔊': 'nav-snd', '🔇': 'ic-sound-off', '☁': 'ic-sync-done', '📴': 'st-offline', '🌱': 'ic-seed-sprout', '🧺': 'ic-harvest-basket',
     '🐛': 'ic-bug', '🌿': 'ic-weed', '✨': 'ic-sparkle', '👫': 'ic-classmates', '📖': 'ic-pet-dex', '⚔': 'vs-vs', '📨': 'vs-inv',
-    '🐾': 'nav-pet', '🌾': 'nav-farm', '🎮': 'nav-game', '📕': 'nav-wb', '💡': 'pr-hint', '🏠': 'nav-home', '🏡': 'nav-home', '📦': 'ic-warehouse'
+    '🐾': 'nav-pet', '🌾': 'nav-farm', '🎮': 'nav-game', '📕': 'nav-wb', '💡': 'pr-hint', '🏠': 'nav-home', '🏡': 'nav-home', '📦': 'ic-warehouse', '🛋': 'nav-home'
   };
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const RE = new RegExp('(' + Object.keys(MAP).sort((a, b) => b.length - a.length).map(esc).join('|') + ')\\uFE0F?', 'gu');

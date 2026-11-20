@@ -710,7 +710,11 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #lkshop .lkb{width:100%;border:0;border-radius:12px;font-size:1rem;font-weight:900;padding:.4rem .3rem;min-height:44px}
 #lkshop .lkb.buy{background:#ffd43b;color:#5c3d00}#lkshop .lkb.buy:disabled{background:#f1f3f5;color:#adb5bd}#lkshop .lkb.buy small{display:block;font-size:.75rem}
 #lkshop .lkb.use{background:#22b573;color:#fff}#lkshop .lkb.eq{background:#f3f0ff;color:#7048e8;border:2px solid #b197fc}
-#lkshop .lkhow{font-size:.9rem;font-weight:800;color:#868e96}#lkshop .lkhow small{display:block;color:#e8590c}
+#lkshop .lkhow{font-size:.9rem;font-weight:800;color:#868e96}
+#lkshop .lktt{font-size:1rem;font-weight:800;color:#868e96;margin:.1rem 0 .2rem}#lkshop .lktt b{color:#7048e8}
+#lkshop .lkcat{display:flex;align-items:center;gap:.35rem;font-size:1.15rem;font-weight:900;color:#495057;margin:.8rem 0 .4rem}#lkshop .lkcat .ico{width:1.6em;height:1.6em}
+#lkshop .lkg.tt .lkp{display:flex;flex-direction:column;align-items:center;gap:.3rem}.lkbg{width:4.6rem;height:4.6rem;object-fit:contain}.lkbg.fb{width:3.4rem;height:3.4rem;margin:.6rem 0}
+#lkshop .lkc.lock .lkbg{filter:grayscale(1) opacity(.45)}#lkshop .lkc.lock .lkt{filter:grayscale(1);opacity:.6}#lkshop .lkhow small{display:block;color:#e8590c}
 #lkshop .lkfoot{text-align:right;margin-top:.8rem}#lkshop .lkx{border:0;border-radius:14px;background:#7048e8;color:#fff;font-size:1.15rem;font-weight:900;padding:.5rem 1.6rem;min-height:48px}
 #garage{position:fixed;inset:0;z-index:60;background:rgba(40,30,15,.45);display:flex;align-items:center;justify-content:center;padding:1rem}
 #garage .gbox{background:#fffaf0;border-radius:26px;width:min(46rem,100%);max-height:100%;overflow:auto;padding:1rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
@@ -1581,7 +1585,8 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   /* 農場：同一個農場（b 一樣）看誰比較新；不是同一個（新平板先開了一份空的）就留經驗比較多的，免得高等農場被空的蓋掉 */
   /* 名片：買過的兩邊合起來；穿戴看哪一邊最後換的 */
-  if(r.look){const a=sum.look||{own:{}},b=r.look;const nw=(b.u||0)>(a.u||0)?b:a;sum.look={own:Object.assign({},a.own||{},b.own||{}),fr:nw.fr||'',np:nw.np||'',tt:nw.tt||'',u:Math.max(a.u||0,b.u||0)}}
+  if(r.look){const a=sum.look||{own:{}},b=r.look;const nw=(b.u||0)>(a.u||0)?b:a;sum.look={own:Object.assign({},a.own||{},b.own||{}),fr:nw.fr||'',np:nw.np||'',tt:nw.tt||'',u:Math.max(a.u||0,b.u||0),vw:Math.max(a.vw||0,b.vw||0),vg:[...new Set([...(a.vg||[]),...(b.vg||[])])]};if(a.ach||b.ach)sum.look.ach=Object.assign({},a.ach||{},b.ach||{})}
+  if(r.amd)sum.amd=Object.assign({},sum.amd||{},r.amd);   // 早自修完成的日子
   if(r.fdc){const a=sum.fdc||{},b=r.fdc,nw=(b.u||0)>(a.u||0)?b:a;sum.fdc={own:Object.assign({},a.own||{},b.own||{}),s:Array.from({length:6},(_,k)=>(nw.s&&nw.s[k])||''),u:Math.max(a.u||0,b.u||0)}}   // 農場裝飾：買過的兩邊合起來，擺法以最後擺的那台為準
   if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.b||0)!==(A.b||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
@@ -1828,7 +1833,7 @@ function subjBar(){const B=el('div');B.id='subj';
     tap(b,()=>{if(subj===S.k)return;subj=S.k;LS.set('learn601_subj',subj);const u=UN.find(x=>x.key===view)||mixByKey(view);if(u&&u.s!==subj)view='learn';paintNavs();render()});B.appendChild(b)});
   return B}
 /* 同一頁重畫時，保留捲動的位置（不會跳回最上面） */
-function render(){try{tkRefund()}catch(e){}const P=document.getElementById('pane'),k=view+'|'+subj,same=render.k===k,st=same?P.scrollTop:0,ws=same?scrollY:0;
+function render(){try{tkRefund()}catch(e){}try{lkAch();lkWinLoad()}catch(e){}const P=document.getElementById('pane'),k=view+'|'+subj,same=render.k===k,st=same?P.scrollTop:0,ws=same?scrollY:0;
   const h0=same?P.scrollHeight:0,d0=same?document.documentElement.scrollHeight:0;
   render0();render.k=view+'|'+subj;
   if(same&&(st||ws)){
@@ -2393,14 +2398,56 @@ const LK_FR=[['fr-leaf','葉子',0],['fr-star','小星星',0],['fr-cloud','雲�
 const LK_NP=[['np-mint','薄荷',200],['np-peach','蜜桃',200],['np-sky','天空',400],['np-sunset','夕陽',400],['np-candy','彩虹糖',600],['np-gold','閃亮金',800]];
 const lkFarmLv=()=>{try{return FARM.lvOf(FARM.F().xp).lv}catch(e){return 1}},lkPetLv=()=>{try{const p=PET.P();return p&&p.st==='pet'?PET.lvOf(p.xp||0).lv:0}catch(e){return 0}},
   lkWb=()=>{try{return (PET.P().ach||{}).wb||0}catch(e){return 0}};
-/* 稱號：前面 8 個用金幣買；後面 4 個只能靠成就拿到（買不到） */
-const LK_TT=[['t-practice','練習小達人',100],['t-math','數學小博士',200],['t-zh','國語小書蟲',200],['t-farm','農場小主人',150],['t-pet','寵物好朋友',150],['t-battle','對戰小勇士',200],['t-morning','早自修模範生',150],['t-star','閃亮之星',300],
-  ['t-30d','全勤小學霸',0,'練習做滿 30 天',()=>doneDays()>=30,()=>`${doneDays()} / 30 天`],
-  ['t-land','農場大地主',0,'農場升到 Lv.10',()=>lkFarmLv()>=10,()=>`Lv.${lkFarmLv()} / 10`],
-  ['t-maxpet','寵物滿級冠軍',0,'寵物養到 Lv.30',()=>lkPetLv()>=30,()=>`Lv.${lkPetLv()} / 30`],
-  ['t-wb','錯題剋星',0,'錯題本練會 50 題',()=>lkWb()>=50,()=>`${lkWb()} / 50 題`]];
+/* 稱號：全部都是成就（做到就自動解鎖，不能買）。[代號, 名稱, 難度 0～3, 分類, 條件, 達成了沒, 進度, 徽章圖]
+   徽章圖：img/look/ach-代號.webp（還沒有圖時用分類的平台圖示） */
+const lkU3=s=>{try{return UN.filter(u=>u.g&&!u.hid&&u.s===s&&((sum.best||{})[u.key]||0)>=9).length}catch(e){return 0}},
+  lkA=k=>{try{return (PET.P().ach||{})[k]||0}catch(e){return 0}},
+  lkDex=()=>{try{return Object.keys(PET.P().dex||{}).length}catch(e){return 0}},
+  lkLim=()=>{try{const o=PET.P().own||{};return Object.keys(o).filter(id=>PET.ITEMS[id]&&PET.ITEMS[id].lim).length}catch(e){return 0}},
+  lkTot=()=>(sum&&sum.total)||0,lkFirst=()=>(sum&&sum.first)||0,lkRate=()=>lkTot()?Math.round(lkFirst()/lkTot()*100):0,
+  lkAm=()=>Object.keys((sum&&sum.amd)||{}).length,lkWin=()=>(sum&&sum.look&&sum.look.vw)||0,
+  lkGames=()=>{if(!sum)return 0;const g=new Set(Object.keys(sum.gb2||{}));Object.keys(sum.gb3||{}).forEach(k=>g.add(k.slice(0,k.lastIndexOf('_'))));((sum.look&&sum.look.vg)||[]).forEach(x=>g.add('vs-'+x));return g.size};
+const LK_CAT=[['study','學習','pr-pen'],['pet','寵物','nav-pet'],['farm','農場','nav-farm'],['game','遊戲','nav-game'],['all','總成就','rw-star']];
+const lkP=(a,n,u)=>()=>`${Math.min(a(),n).toLocaleString()} / ${n.toLocaleString()} ${u}`;
+const LK_TT=[
+  ['t-practice','練習小達人',0,'study','累計練習 300 題',()=>lkTot()>=300,lkP(lkTot,300,'題'),'practice'],
+  ['t-math','數學小博士',1,'study','數學 5 個單元拿到 3 顆星',()=>lkU3('math')>=5,lkP(()=>lkU3('math'),5,'個單元'),'math'],
+  ['t-zh','國語小書蟲',1,'study','國語 5 個單元拿到 3 顆星',()=>lkU3('zh')>=5,lkP(()=>lkU3('zh'),5,'個單元'),'zh'],
+  ['t-morning','早自修模範生',1,'study','早自修完成 20 天（11/20 起算）',()=>lkAm()>=20,lkP(lkAm,20,'天'),'morning'],
+  ['t-sharp','神準射手',2,'study','答滿 500 題，一次就答對 90% 以上',()=>lkTot()>=500&&lkRate()>=90,()=>`${Math.min(lkTot(),500)} / 500 題・一次答對 ${lkRate()}%`,'sharp'],
+  ['t-wb','錯題剋星',2,'study','錯題本練會 50 題',()=>lkA('wb')>=50,lkP(()=>lkA('wb'),50,'題'),'wb'],
+  ['t-30d','全勤小學霸',2,'study','練習做滿 30 天',()=>doneDays()>=30,lkP(doneDays,30,'天'),'30d'],
+  ['t-1000','千題王',3,'study','累計練習 3,000 題',()=>lkTot()>=3000,lkP(lkTot,3000,'題'),'1000'],
+  ['t-pet','寵物好朋友',0,'pet','寵物養到 Lv.10',()=>lkPetLv()>=10,()=>`Lv.${lkPetLv()} / 10`,'petfriend'],
+  ['t-wish','願望達人',1,'pet','今日願望集滿 5 顆愛心 3 次',()=>lkLim()>=3,lkP(lkLim,3,'次'),'wish'],
+  ['t-dex','寵物收藏家',2,'pet','圖鑑收集 8 隻寵物',()=>lkDex()>=8,lkP(lkDex,8,'隻'),'collector'],
+  ['t-maxpet','寵物滿級冠軍',3,'pet','寵物養到 Lv.30',()=>lkPetLv()>=30,()=>`Lv.${lkPetLv()} / 30`,'maxpet'],
+  ['t-farm','農場小主人',0,'farm','農場升到 Lv.5',()=>lkFarmLv()>=5,()=>`Lv.${lkFarmLv()} / 5`,'farmer'],
+  ['t-help','熱心好鄰居',1,'farm','幫同學整理農場 50 次（11/20 起算）',()=>lkA('fh')>=50,lkP(()=>lkA('fh'),50,'次'),'neighbor'],
+  ['t-land','農場大地主',2,'farm','農場升到 Lv.10',()=>lkFarmLv()>=10,()=>`Lv.${lkFarmLv()} / 10`,'land'],
+  ['t-harvest','豐收達人',2,'farm','農場收成 100 次',()=>lkA('hv')>=100,lkP(()=>lkA('hv'),100,'次'),'harvest'],
+  ['t-explore','遊戲探險家',0,'game','玩過 8 種不同的遊戲',()=>lkGames()>=8,lkP(lkGames,8,'種'),'explorer'],
+  ['t-battle','對戰小勇士',1,'game','對戰贏 10 場',()=>lkWin()>=10,lkP(lkWin,10,'場'),'battle'],
+  ['t-boss','打魔王勇者',2,'game','4 週都有參加打魔王',()=>lkA('bw')>=4,lkP(()=>lkA('bw'),4,'週'),'boss'],
+  ['t-star','閃亮之星',3,'all','拿到其他 15 個稱號',()=>lkTtN()>=15,lkP(()=>lkTtN(),15,'個'),'star']];
+const lkTtN=()=>LK_TT.filter(x=>x[0]!=='t-star'&&x[5]()).length;
+/* 以前用金幣買的稱號（現在改成成就）：買過的把錢退回去 */
+const LK_OLDTT={'t-practice':100,'t-math':200,'t-zh':200,'t-farm':150,'t-pet':150,'t-battle':200,'t-morning':150,'t-star':300};
 const LK={};LK_FR.forEach(([id,n,t])=>LK[id]={k:'fr',n,t,p:LK_TIER[t][1]});LK_NP.forEach(([id,n,p],i)=>LK[id]={k:'np',n,p,t:p>=800?3:p>=600?2:p>=400?1:0});
-LK_TT.forEach(([id,n,p,how,ok,prog])=>LK[id]={k:'tt',n,p,how,ok,prog,t:how?2:0});
+LK_TT.forEach(([id,n,t,cat,how,ok,prog,img])=>LK[id]={k:'tt',n,p:0,t,cat,how,ok,prog,img});
+const lkBadge=(id,cls)=>{const I=LK[id],C=LK_CAT.find(c=>c[0]===I.cat);return `<img class="${cls||'lkbg'}" src="img/look/ach-${I.img}.webp" alt="" draggable="false" onerror="this.onerror=null;this.src='img/ui/${C[2]}.webp';this.classList.add('fb')">`};
+/* 每次畫面更新時檢查：有新達成的稱號就跳通知；早自修做完記下這一天；以前買稱號的退錢 */
+let lkRfT=0;function lkAch(){if(!user||!sum||isTest(user.seat))return;const L=lkMe();
+  try{if(typeof amN==='function'&&amN()>0&&uqN('am')>=amN()){sum.amd=sum.amd||{};if(!sum.amd[dkey()]){sum.amd[dkey()]=1;saveSum(true)}}}catch(e){}
+  try{const p=PET.P();if(p&&!(p.cl&&p.cl.e&&p.cl.e.ttrf)){const n=Object.keys(L.own||{}).reduce((a,id)=>a+(LK_OLDTT[id]||0),0);if(n){p.cl=p.cl||{b:p.coin||0};p.cl.e=p.cl.e||{};p.cl.e.ttrf=n;p.coin=PET.coinOf(p);saveSum(true);lkRfT=1;setTimeout(()=>toast(`🎁 稱號改成「做到就解鎖」，以前買稱號的 🪙${n} 退還給你了`),900)}}}catch(e){}
+  const first=!L.ach;L.ach=L.ach||{};const nw=LK_TT.filter(x=>!L.ach[x[0]]&&x[5]());if(!nw.length){if(first)saveSum(true);return}
+  nw.forEach(x=>L.ach[x[0]]=1);saveSum(true);
+  setTimeout(()=>{lkRfT=0;toast(nw.length===1?`🎉 解鎖稱號「${nw[0][1]}」！到名片裝上吧`:`🎉 解鎖了 ${nw.length} 個稱號：${nw.map(x=>x[1]).join('、')}`);try{sfx.win();confetti(60)}catch(e){}},lkRfT?4500:900)}   // 剛退錢的話等退錢的通知看完再跳
+/* 對戰贏幾場、玩過哪些對戰遊戲：讀公開的對戰紀錄（一次登入讀一次） */
+let lkWinT=0;async function lkWinLoad(){if(!user||!sum||Date.now()-lkWinT<10*60000)return;lkWinT=Date.now();try{await fbReady;if(!db)return;
+  const v=(await timeout(db.ref(`${ROOT}/xq/${user.seat}`).get(),8000)).val()||{},H=Object.entries(v).filter(([,x])=>x).map(([k,x])=>({...x,k}));
+  const L=lkMe(),w=H.filter(x=>x.w===1).length,g=[...new Set(H.map(x=>{try{return xqG(x)}catch(e){return x.g}}).filter(Boolean))];
+  if(w!==(L.vw||0)||g.length!==((L.vg||[]).length)){L.vw=Math.max(L.vw||0,w);L.vg=[...new Set([...(L.vg||[]),...g])];saveSum(true);lkAch()}}catch(e){}}
 function lkMe(){if(!sum)return {own:{}};sum.look=sum.look||{own:{}};sum.look.own=sum.look.own||{};return sum.look}
 const lkHas=id=>{const I=LK[id];if(!I||!user)return false;if(isTest(user.seat))return true;if(I.ok)return !!I.ok();return !!lkMe().own[id]};
 /* 同學的名片：讀 learn/pet（記 30 秒） */
@@ -2429,14 +2476,14 @@ function lkShop(){if(!user||!sum)return;const old=document.getElementById('lksho
     const card=id=>{const I=LK[id],has=lkHas(id),on=L[I.k]===id&&has;let pv='';
       if(I.k==='fr')pv=lkAv(user.seat,user.seat,'big',null,id);
       else if(I.k==='np')pv=`<span class="lkn ${id}">${user.seat} 號</span>`;
-      else pv=`<em class="lkt">${I.n}</em>`;
-      const tag=I.k==='tt'?(I.how?'<i class="lkq e">成就</i>':''):`<i class="lkq" style="--qc:${LK_TIER[I.t][2]}">${LK_TIER[I.t][0]}</i>`;
+      else pv=`${lkBadge(id)}<em class="lkt">${I.n}</em>`;
+      const tag=`<i class="lkq" style="--qc:${LK_TIER[I.t][2]}">${LK_TIER[I.t][0]}</i>`;
       const btn=on?`<button class="lkb eq" data-off="${id}">使用中（按一下卸下）</button>`:has?`<button class="lkb use" data-use="${id}">換上</button>`:
         I.how?`<div class="lkhow">${I.how}<small>${I.prog()}</small></div>`:`<button class="lkb buy" data-buy="${id}" ${c<I.p?'disabled':''}>🪙 ${I.p}${c<I.p?'<small>金幣不夠</small>':''}</button>`;
       return `<div class="lkc${on?' on':''}${has?'':' lock'}">${tag}<div class="lkp">${pv}</div>${I.k!=='tt'?`<div class="lkcn">${I.n}</div>`:''}${btn}</div>`};
     box.innerHTML=`<div class="lkbox"><div class="lktop"><div class="lkme2">${lkAv(user.seat,user.seat,'big')}<div><div class="lkt1">${lkName(user.seat,user.seat+' 號')}</div><div class="lks">同學在排行榜、農場、寵物看得到你的名片</div></div></div><div class="lkcoin">🪙 <b>${T?'∞':c}</b></div></div>
       <div class="lktabs">${[['fr','頭像框'],['np','名牌'],['tt','稱號']].map(([k,n])=>`<button data-t="${k}" class="${lkTab===k?'on':''}">${n}</button>`).join('')}</div>
-      <div class="lkg ${lkTab}">${ids.map(card).join('')}</div>
+      ${lkTab==='tt'?`<div class="lktt">稱號不能買，做到條件就會自動解鎖（已經拿到 <b>${LK_TT.filter(x=>lkHas(x[0])).length}</b> / ${LK_TT.length} 個）</div>`+LK_CAT.map(([c,n,ic])=>`<div class="lkcat"><img class="ico ii" src="img/ui/${ic}.webp" alt="">${n}</div><div class="lkg tt">${ids.filter(id=>LK[id].cat===c).map(card).join('')}</div>`).join(''):`<div class="lkg ${lkTab}">${ids.map(card).join('')}</div>`}
       <div class="lkfoot"><button class="lkx">好了</button></div></div>`;
     box.querySelectorAll('.lktabs button').forEach(b=>tap(b,()=>{lkTab=b.dataset.t;paint()}));tap(box.querySelector('.lkx'),close);
     const set=(k,id)=>{const L=lkMe();L[k]=id;L.u=Date.now();saveSum(true);lkPub();paintMeLook();try{sfx.ok()}catch(e){}paint()};
@@ -3276,7 +3323,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v134';let verNew=false,verBusy=false;
+const APP_VER='learn601-v135';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}

@@ -541,7 +541,7 @@
       if (act === 'w') { f.water--; P.w = (P.w || 0) + 1; }
       if (act === 'g') P.g = 2; if (act === 'b') P.b = 2;
       if (act === 's') { P.s = (P.s || 0) + 1; f.tk = (f.tk || 0) + 1; f.store[P.c] = (f.store[P.c] || 0) + 1; msg(`🥷 偷摘了 1 個${S.C.n}，放進你的倉庫了！（會自動留 🪙1 回禮給主人）`); snd(900); }
-      else { addXp(1); let got = false; if ((f.hc || 0) < HELP_COIN_MAX) { f.hc = (f.hc || 0) + 1; addCoin(1); got = true; }
+      else { addXp(1); try { PET.note('fh', 1); } catch (e) { } let got = false; if ((f.hc || 0) < HELP_COIN_MAX) { f.hc = (f.hc || 0) + 1; addCoin(1); got = true; }
         /* 以前拿滿 10 枚以後還是顯示 🪙+1（其實沒加）：只有真的加了才顯示 */
         msg(`${act === 'w' ? '💧 幫忙澆水' : act === 'g' ? '🌿 幫忙拔雜草' : '🐛 幫忙捉蟲'}了！謝謝你 ❤️${got ? `　🪙+1（今天還能拿 ${HELP_COIN_MAX - f.hc} 枚）` : `　今天的幫忙金幣 ${HELP_COIN_MAX} 枚已經拿滿了，明天再來`}`); snd(700); }
       save(); paintV(); VC = null;
