@@ -777,12 +777,12 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #playt{margin-top:1rem}
 #playt .pyt{display:flex;align-items:center;gap:.6rem}#playt .pyi{width:3rem;height:3rem}
 #playt .pyh{font-size:1.3rem;font-weight:900;color:#6d4c9a}#playt .pys{font-size:1rem;font-weight:800;color:#657065}#playt .pys b{color:#2e7554}
-#playt .pyb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;margin-top:.7rem}
+#playt .pyb{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;margin-top:.7rem}
 #playt .pybtn{display:flex;flex-direction:column;align-items:center;gap:.1rem;border:3px solid #ece3f7;background:#fff;border-radius:18px;padding:.5rem .3rem;font-family:inherit;min-height:3rem}
 #playt .pybtn .pbi{width:2.6rem;height:2.6rem}#playt .pybtn b{font-size:1.1rem;color:#33443b}#playt .pybtn small{font-size:.85rem;color:#8a7a9a;font-weight:800}
 #playt .pybtn:active{transform:translateY(2px)}
 @media (max-width:900px),(orientation:portrait){.hgrid{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:520px){#nextc .nxr{grid-template-columns:minmax(0,1fr)}#playt .pybtn b{font-size:1rem}#playt .pybtn .pbi{width:2.2rem;height:2.2rem}}
+@media (max-width:520px){#playt .pyb{grid-template-columns:repeat(2,minmax(0,1fr))}#nextc .nxr{grid-template-columns:minmax(0,1fr)}#playt .pybtn b{font-size:1rem}#playt .pybtn .pbi{width:2.2rem;height:2.2rem}}
 
 /* ═══ 學習排行榜 ═══ */
 #sboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;background:none;box-shadow:none;padding:0}
@@ -1984,7 +1984,7 @@ function nextCard(){const c=el('div','cd');c.id='nextc';const u=nextUnit(),SJ=su
 function playCard(){const c=el('div','cd');c.id='playt';
   c.innerHTML=`<div class="pyt">${ico('vs-vs','pyi')}<div><div class="pyh">跟同學一起玩</div><div class="pys" id="pyon">看看誰在線上…</div></div></div><div class="pyb"></div>`;
   const B=c.querySelector('.pyb');
-  [['vs-pd','大砲對轟','2 人',()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'})],['vs-pd','大砲混戰','2～4 人',()=>openTool({...XQ_TOOL,f:'party.html'})],['vs-vs','更多對戰','軍棋・暗棋',()=>goView('game')]]
+  [['vs-pd','大砲對轟','2 人',()=>openTool({...XQ_TOOL,f:'chess.html?g=pd'})],['vs-pd','大砲混戰','2～4 人',()=>openTool({...XQ_TOOL,f:'party.html'})],['vs-dr','你畫我猜','3～8 人',()=>openTool({...XQ_TOOL,n:'你畫我猜',f:'draw.html'})],['vs-vs','更多對戰','軍棋・暗棋',()=>goView('game')]]
     .forEach(([im,n,sub,fn])=>{const b=el('button','pybtn',`${ico(im,'pbi')}<b>${n}</b><small>${sub}</small>`);tap(b,fn);B.appendChild(b)});
   const paintOn=()=>onlineSeats().then(o=>{const e=c.querySelector('#pyon');if(!e)return;const L=Object.keys(o).map(Number).filter(s=>s!==user.seat&&(isTest(user.seat)||!isTest(s)));
     e.innerHTML=!online?'📴 連上網路才能跟同學一起玩':L.length?`現在有 <b>${L.length}</b> 位同學在線上：${L.slice(0,6).map(s=>seatName(s)).join('、')}${L.length>6?'…':''}`:'現在沒有同學在線上，可以先練習，等一下再來看看'}).catch(()=>{});
@@ -2196,7 +2196,7 @@ function gBetter(g,a,b){if(!a)return false;if(!b)return true;const ta=tier(g,a),
 const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;if(g==='cups')return `${v} / 5`;if(g==='hunt')return `${v} ★`;return `${v} ${G[3]}`};
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 /* 雙人合作過關：2026-11-16 老師覺得關卡 bug 太多，從平台拿掉（coop.html 還在，排行榜也不顯示） */
-const DR_OPEN=false;      // 你畫我猜開放了沒（false：只有測試帳號看得到）
+const DR_OPEN=true;      // 你畫我猜開放了沒（2026-11-20 開放）
 const BK_OPEN=true;      // 方塊對戰開放了沒（2026-11-15 開放）
 /* 寵物彈射對戰：2026-11-15 老師覺得不好玩，從平台拿掉（sling.html 還在，以前的戰績照樣保留） */
 const TK_SELL=10;
@@ -3419,7 +3419,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v152';let verNew=false,verBusy=false;
+const APP_VER='learn601-v153';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
