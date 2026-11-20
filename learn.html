@@ -2689,15 +2689,21 @@ function startPractice(k,force){if(!force&&capOf(k)){capModal(k,()=>startPractic
   show$('prac');history.pushState({p:1},'');newRound()}
 function newRound(){let qs;
   const M=mixByKey(pu);
+  /* 出題避開今天做過的題目（做過的再做沒有獎勵），這一輪裡也不重複；同一種題型抽 8 次都是做過的，就換這個單元的其他題型；真的都做過了才讓重複題出現 */
+  const seen=new Set(qdDay().k),inR=new Set();let dupN=0;
+  const fresh=(u,t)=>{const alt=UN[u].types||[t],g=i=>genQ(u,i<8?t:alt[(Math.random()*alt.length)|0]);let q;
+    for(let i=0;i<14;i++){q=g(i);const k=qKey(q);if(!seen.has(k)){seen.add(k);inR.add(k);return q}}
+    dupN++;for(let i=0;i<14;i++){q=g(i);const k=qKey(q);if(!inR.has(k)){inR.add(k);return q}}return q};   // 新題目用完了：至少這一輪裡不要重複
   if(M){/* 綜合:10 題平均分給這一科的各單元(數學 4 個單元就是 3、3、2、2) */
     const us=UN.map((u,i)=>i).filter(i=>UN[i].g&&UN[i].s===M.s&&live(UN[i])),b=Math.floor(10/us.length),cnt=shuf(us.map((_,j)=>b+(j<10-b*us.length?1:0)));let items=[];
     us.forEach((u,j)=>{const ts=shuf([...new Set(UN[u].types)]);for(let c=0;c<cnt[j];c++)items.push([u,ts[c%ts.length]])});
     items=shuf(items);for(let i=1;i<items.length;i++)if(items[i][0]===items[i-1][0]){const j=items.findIndex((x,k)=>k>i&&x[0]!==items[i-1][0]);if(j>0)[items[i],items[j]]=[items[j],items[i]]}
-    qs=items.map(([u,t])=>genQ(u,t))}
+    qs=items.map(([u,t])=>fresh(u,t))}
   else if(pu==='am'){const R=amRunLoad();if(R){N=R.qs.length;round={qs:R.qs,res:R.res,det:R.det,t0:Date.now(),logged:false,lgd:R.lgd||[],amr:R.amr};AMK=R.amr;cur=R.res.findIndex(x=>!x);showQ();paintDots();paintP();return}
     qs=amQs()}
   else if(pu==='wb'){const W=wbLoad();qs=W.slice(0,10).map(x=>{const q=JSON.parse(JSON.stringify(x.q)),j=fixU(q,'wb');if(j!=null)q.u=j;return q})}
-  else qs=listFor(UN[pu].types,10).map(t=>genQ(pu,t));
+  else qs=listFor(UN[pu].types,10).map(t=>fresh(pu,t));
+  if(dupN>=3&&!capOf(pu))setTimeout(()=>toast('💡 這個單元今天的新題目快做完了，重複的題目沒有獎勵，換個單元試試吧！'),600);
   N=qs.length;
   qs.forEach(q=>{if(q.u!=null&&UN[q.u])q.uk=UN[q.u].key});
   round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,uk:q.uk,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false,lgd:[],amr:pu==='am'?AMK:null};cur=0;amRunSave();showQ()}
@@ -2812,6 +2818,7 @@ function check(){const q=round.qs[cur];
 /* 防亂點：題目出來後，選項先等「讀題時間」才能按（字越多越久；聽力題等錄音播完）。答錯一次後，剩下的選項也等一下 */
 let lkTok=0,optOpen=0;
 function lockOpts(q,ms){const O=$('#opts'),tok=++lkTok,t0=Date.now();optOpen=Infinity;
+  if(!ms){O.classList.remove('wait','au');optOpen=Date.now();return}   // 2026-11：題目一出來就能作答（拿掉「先看題目」「聽完再選」）；只留答錯後的「再想一想」
   const txt=[q.text,q.big,...(q.grp||[]),...(q.opts||[]).filter(o=>!isImg(o))].join(' ').replace(/<[^>]+>/g,'').replace(/\s+/g,'');
   const au=!ms&&!!(q.au||q.say), need=ms||q.lk||Math.min(READ_MAX,Math.max(READ_MIN,800+txt.length*45));
   O.classList.add('wait');O.classList.toggle('au',au);O.dataset.w=au?'🔊 聽完再選':ms?'再想一想…':'👀 先看題目…';O.style.setProperty('--lk',need+'ms');
@@ -3323,7 +3330,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v137';let verNew=false,verBusy=false;
+const APP_VER='learn601-v138';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
