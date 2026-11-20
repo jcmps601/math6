@@ -139,8 +139,8 @@ button{font-family:inherit;cursor:pointer}
 </style></head><body>
 
 <section class="scr on" id="home">
-  <div class="logo"><img src="img/ui/vs-pd.webp" alt="">大砲混戰</div>
-  <div class="note">2～4 個人一起打！輪到你：先<b>開車</b>移動，再調<b>角度</b>、<b>力道</b>，選砲彈發射（按 ⇄ 可以轉向）。<br>
+  <div class="logo" id="hLogo"><img src="img/ui/vs-pd.webp" alt="">大砲混戰</div>
+  <div class="note" id="hNote">2～4 個人一起打！輪到你：先<b>開車</b>移動，再調<b>角度</b>、<b>力道</b>，選砲彈發射（按 ⇄ 可以轉向）。<br>
     <b>各自為戰</b>：打到只剩最後一台就贏　<b>2 對 2</b>：把對方整隊打倒就贏。注意<b>風向</b>！</div>
   <div id="me"></div>
   <div class="menu">
@@ -157,7 +157,7 @@ button{font-family:inherit;cursor:pointer}
 </section>
 
 <section class="scr" id="lobby">
-  <div class="logo" style="font-size:clamp(1.6rem,min(6vw,6vh),2.6rem)"><img src="img/ui/vs-pd.webp" alt="">大砲混戰房間</div>
+  <div class="logo" id="lLogo" style="font-size:clamp(1.6rem,min(6vw,6vh),2.6rem)"><img src="img/ui/vs-pd.webp" alt="">大砲混戰房間</div>
   <div class="pinrow">房號<div id="pinBig">----</div></div>
   <div class="modes" id="modes"><button data-m="ffa">💥 各自為戰</button><button data-m="team">🤝 2 對 2</button><button data-m="boss" id="mBoss" hidden>⚔️ 一起打王</button></div>
   <div id="bossBox" hidden><div class="bosses" id="bosses"></div><div id="bossTip"></div></div>
@@ -182,7 +182,7 @@ button{font-family:inherit;cursor:pointer}
 <div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div id="ovSt"></div><div id="ovCoin"></div><div class="s" id="ovN"></div>
   <div class="row"><button class="btn" id="bBack">🔁 回房間</button><button class="btn" id="bAgain" hidden>🔁 再玩一次</button><button class="btn g" id="bOut">離開</button></div></div></div>
 
-<div class="ov" id="pick"><div class="box"><div class="t"><img class="ti" src="img/ui/vs-inv.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.35em">邀請同學來玩大砲混戰</div>
+<div class="ov" id="pick"><div class="box"><div class="t" id="pickT"><img class="ti" src="img/ui/vs-inv.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.35em">邀請同學來玩大砲混戰</div>
   <div class="s">綠色的同學現在在平台上，按一下就會邀請他（可以邀請好幾個人）</div><div id="pickList"></div><button class="btn g" id="pickX">好了</button></div></div>
 
 <div class="ov" id="testBox"><div class="box"><div class="t">🧪 測試模式（單機）</div>
@@ -264,10 +264,11 @@ async function openGarage(){if(!(inPlat()&&P.garage))return;await P.garage();pai
   if(G.mode==='net'&&G.pin&&G.slot&&G.players[G.slot])Net.update(`rooms/${G.pin}/players/${G.slot}`,{skin:mySkin()}).catch(()=>{})}
 const NO_TK='要有 1 張遊戲券才能玩（輸的人用掉 1 張，贏的人不用）。回平台練習 10 題答對 8 題就能拿到！';
 function paintMe(){const n=myName();$('#me').innerHTML=(n?`我是 <b>${n}</b>`+(inPlat()?'':' <button id="bName">改名字</button>'):'<button id="bName">先輸入你的名字</button>')
-    +(inPlat()?`<div style="margin-top:.3rem"><img class="ti" src="img/ui/rw-ticket.webp" alt="">遊戲券 × ${P.tickets()||0}　<small>（輸的人用 1 張）</small></div>`:'');
+    +(inPlat()?`<div style="margin-top:.3rem"><img class="ti" src="img/ui/rw-ticket.webp" alt="">遊戲券 × ${P.tickets()||0}　<small>（${bossPage()?'每人用 1 張，打贏有金幣':'輸的人用 1 張'}）</small></div>`:'');
   const b=$('#bName');if(b)b.onclick=askName}
 function askName(){const v=(prompt('你的名字或座號：',LS.get('xq_name',''))||'').trim().slice(0,10);if(v){LS.set('xq_name',v);paintMe()}return v}
 async function paintRec(){const e=$('#rec');if(!inPlat()||!P.xqStats){e.textContent='';return}
+  if(bossPage()){try{const s=await P.xqStats('pb');e.innerHTML=s.n?`我的一起打王：打倒魔王 <b>${s.w}</b> 次（共 ${s.n} 場）`:'還沒有打過魔王，找同學一起來挑戰！'}catch(x){}return}
   try{const s=await P.xqStats('pm');e.innerHTML=s.n?`我的大砲混戰戰績：<b>${s.w}</b> 勝 ${s.l} 敗${s.d?` ${s.d} 平手`:''}（共 ${s.n} 局）`:'還沒有玩過大砲混戰，快找同學一起來！'}catch(x){}}
 let AC=null;function tone(f,d,type='triangle',v=.08,at=0){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+at,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
 const sfx={join(){tone(660,.1,'triangle',.06);tone(880,.14,'triangle',.06,.08)},win(){[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.07,i*.1))}};
@@ -280,6 +281,15 @@ const R=()=>{const st=G.st;if(!st||!st.map)return null;return TK.replay(st.map,s
 const isBossSt=()=>!!G.st&&G.st.mode==='boss';
 const gameKey=()=>`${isBossSt()?'pb':'pm'}${G.pin}_${G.created||0}_${(G.st&&G.st.g)||1}`;   // 一起打王的戰績用 pb 開頭（平台分得出是合作）
 const BOSS_ON=()=>!inPlat()||isTestMe()||!!(P.bossOpen&&P.bossOpen());   // 一起打王還在測試：平台裡只有測試帳號看得到
+/* 大砲混戰、一起打王分開：從「一起打王」進來（?boss=1）或加入的房間是打王，整頁就是一起打王（標題、說明、戰績、房間只能打王） */
+const bossPage=()=>BOSS_ON()&&(G.st&&G.mode==='net'?G.st.mode==='boss':Q.has('boss'));
+function paintFlavor(){const b=bossPage(),k=b?'b':'m';if(paintFlavor.k===k)return;paintFlavor.k=k;
+  const ic=b?'img/ui/vs-boss.webp':'img/ui/vs-pd.webp';
+  $('#hLogo').innerHTML=`<img src="${ic}" alt="">${b?'一起打王':'大砲混戰'}`;$('#lLogo').innerHTML=`<img src="${ic}" alt="">${b?'一起打王房間':'大砲混戰房間'}`;
+  document.title=b?'601 一起打王':'601 大砲混戰';
+  $('#hNote').innerHTML=b?'2～4 個人<b>合作</b>打魔王！輪到你：開車移動、調<b>角度</b>、<b>力道</b>，選砲彈發射。<br>隊友不會打到彼此，<b>補血彈</b>可以幫隊友補血。10 輪內打倒魔王就贏，打贏有<b>金幣</b>。注意<b>風向</b>！'
+    :'2～4 個人一起打！輪到你：先<b>開車</b>移動，再調<b>角度</b>、<b>力道</b>，選砲彈發射（按 ⇄ 可以轉向）。<br><b>各自為戰</b>：打到只剩最後一台就贏　<b>2 對 2</b>：把對方整隊打倒就贏。注意<b>風向</b>！';
+  $('#bTest').hidden=b||!isTestMe();paintMe();paintRec()}
 const tokCount=()=>((G.st&&G.st.moves)||'').split(',').filter(Boolean).length;
 const plName=p=>p?(p.seat&&inPlat()&&P.seatName?P.seatName(p.seat):p.name||'同學'):'同學';
 /* 名字：開局時存在 state.names（有人中途離開也看得到他的名字） */
@@ -309,7 +319,7 @@ async function sendMove(tok){const st=G.st;if(!st||st.phase!=='play')return;
 
 /* ═════════════ 收到更新 ═════════════ */
 function onState(){
-  const st=G.st;if(!st)return;
+  const st=G.st;if(!st)return;paintFlavor();
   if(G.mode==='net'&&!G.players[G.slot]&&G.st&&!G.leaving){/* 我不在房間名單裡了（斷線被移掉）：補回去 */ rejoinSelf()}
   if(st.phase==='wait'||(st.phase==='end'&&G.ovHide===gameKey())||!st.map||(G.mode==='net'&&myIdx()<0)){$('#over').classList.remove('on');armLobby();paintLobby();show('lobby');return}   // 沒參加這一局的人留在房間，不會被拉進去
   showGame();
@@ -416,7 +426,7 @@ async function leave(){$('#over').classList.remove('on');closePick();
     G.un.forEach(f=>f());G.un=[];const p=`rooms/${G.pin}/players/${G.slot}`;Net.cancelDisc(p);
     try{await Net.remove(p);const pl=await Net.get(`rooms/${G.pin}/players`);if(!pl||!Object.values(pl).some(x=>x&&!x.off))await Net.remove(`rooms/${G.pin}`)}catch(e){}}
   Object.assign(G,{mode:'',pin:'',slot:'',st:null,players:{},arm:'',rec:'',leaving:false,offSince:{}});G.inv=new Set();
-  $('#offMsg').innerHTML='';show('home');paintMe();paintRec()}
+  $('#offMsg').innerHTML='';show('home');paintFlavor.k='';paintFlavor()}
 $('#bLeave').onclick=()=>{if(window.__xqBusy()&&!confirm(isBossSt()?'現在離開會用掉 1 張遊戲券、拿不到金幣，確定嗎？':R()&&R().mode==='team'?'現在離開算你輸（就算隊友最後贏了也一樣），確定嗎？':'現在離開算你輸，確定嗎？'))return;leave()};
 $('#bOut').onclick=leave;$('#bLLeave').onclick=leave;
 $('#bBack').onclick=()=>{G.ovHide=gameKey();$('#over').classList.remove('on');onState()};   // 只有自己回房間，別人還可以看結果
@@ -425,7 +435,7 @@ $('#bAgain').onclick=()=>{$('#over').classList.remove('on');soloStart(G.solo.n,G
 /* ═════════════ 房間（等人） ═════════════ */
 function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode==='team'?'team':st.mode==='boss'&&BOSS_ON()?'boss':'ffa',col=PALETTE(mode);
   $('#pinBig').textContent=G.pin;
-  $('#mBoss').hidden=!BOSS_ON();
+  paintFlavor();$('#modes').style.display=mode==='boss'?'none':'';$('#mBoss').hidden=true;   // 兩個分開：打王房間不能切回對戰，對戰房間也不能切成打王
   document.querySelectorAll('#modes button').forEach(b=>{b.classList.toggle('on',b.dataset.m===mode);b.disabled=!host});
   /* 一起打王：選魔王 */
   $('#bossBox').hidden=mode!=='boss';
@@ -546,13 +556,13 @@ $('#testGo').onclick=()=>{if(!isTestMe())return;$('#testBox').classList.remove('
 /* 名單打開時每 5 秒更新一次：同學剛上線也看得到，不用關掉再開 */
 let pickT=0;
 async function openPick(again){clearTimeout(pickT);if(!inPlat()||!P.seats)return;if(again&&!$('#pick').classList.contains('on'))return;
-  const L=$('#pickList');if(!again){L.innerHTML='讀取中…';$('#pick').classList.add('on')}
+  const L=$('#pickList');{const im=$('#pickT img');$('#pickT').textContent=isBossSt()?'邀請同學一起打王':'邀請同學來玩大砲混戰';if(im)$('#pickT').prepend(im)}if(!again){L.innerHTML='讀取中…';$('#pick').classList.add('on')}
   let on={};try{on=await P.online()}catch(e){}
   if(again&&!$('#pick').classList.contains('on'))return;
   const inRoom=new Set(Object.values(G.players||{}).map(p=>p&&p.seat).filter(Boolean));
   L.innerHTML='';P.seats().filter(s=>s!==P.seat()&&!inRoom.has(s)).forEach(s=>{const b=document.createElement('button');const live=!!on[s];
     b.className=G.inv.has(s)?'sent':live?'on':'';b.textContent=s>=98?'🧪 測試'+(s===99?1:2):P.seatName(s);b.disabled=!live||G.inv.has(s);b.title=live?'在線上':'不在線上';const cd=P.invCool(s);if(cd&&live&&!G.inv.has(s)){b.disabled=true;b.className='';b.textContent+='⏳';b.dataset.cd=cd;b.title='剛邀請過，等一下才能再邀請'}
-    b.onclick=async()=>{b.disabled=true;try{await P.invite(s,G.pin,'pm');G.inv.add(s);b.className='sent';lmsg(`已經邀請 ${P.seatName(s)}，等他按「接受」…`)}catch(e){b.disabled=false;lmsg(P.invErr(e))}};L.appendChild(b)});
+    b.onclick=async()=>{b.disabled=true;try{await P.invite(s,G.pin,isBossSt()?'pb':'pm');G.inv.add(s);b.className='sent';lmsg(`已經邀請 ${P.seatName(s)}，等他按「接受」…`)}catch(e){b.disabled=false;lmsg(P.invErr(e))}};L.appendChild(b)});
   P.invNote(L);if(!L.children.length)L.textContent='現在沒有其他同學';pickT=setTimeout(()=>openPick(true),5000)}
 function closePick(){$('#pick').classList.remove('on')}
 $('#pickX').onclick=closePick;
@@ -561,7 +571,7 @@ $('#bInv').onclick=async()=>{if(await create()){onState();openPick()}};
 window.addEventListener('pagehide',()=>{if(G.inv.size&&inPlat()&&P.uninvite)G.inv.forEach(s=>P.uninvite(s))});
 
 /* ═════════════ 開始 ═════════════ */
-paintMe();paintRec();paintSkin();if(inPlat()&&P.invite)$('#bInv').hidden=false;$('#bTest').hidden=!isTestMe();
+paintSkin();if(inPlat()&&P.invite)$('#bInv').hidden=false;paintFlavor();
 $('#bGarage').onclick=openGarage;
 addEventListener('resize',()=>{if($('#game').classList.contains('on'))TKV.fit()});
 (async()=>{await netReady;
