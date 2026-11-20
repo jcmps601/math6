@@ -238,7 +238,9 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 #acts button.off{opacity:.35}   /* 用 class 不用 :disabled：iPhone Safari 有時候按鈕打開了卻沒重畫，看起來還是灰的 */
 #acts .hide{display:none}
 /* 結算 */
-#end{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:5;padding:1rem}
+#end{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-start;justify-content:center;z-index:20;padding:1rem;overflow-y:auto;overscroll-behavior:contain}   /* z-index 要比手機的底部按鈕列（6）高；內容比螢幕高時可以捲動 */
+#end .box{margin:auto}
+@media (max-width:560px){#end .box{padding:1rem .9rem}#end h2{font-size:1.7rem}#end .big{font-size:3rem}#end .st{font-size:2rem}#end .sub{font-size:1.1rem;margin-bottom:.6rem}#end button{font-size:1.2rem;padding:.45rem .9rem}}
 #end.on{display:flex}
 #end .box{background:#fff;border-radius:28px;padding:1.4rem 2rem;text-align:center;min-width:min(26rem,100%);animation:fade .3s}
 #end h2{margin:.2rem 0 .5rem;font-size:2.3rem}
@@ -3330,7 +3332,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v138';let verNew=false,verBusy=false;
+const APP_VER='learn601-v139';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
