@@ -27,7 +27,7 @@
   };
   const seedN = C => C.sd || '種子', TOP_LV = Math.max(...Object.values(CROPS).map(C => C.lv));
   const CK = Object.keys(CROPS);
-  const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = 30, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 3, STEAL_PER_PLOT = 1, STEAL_WAIT = 60 * 60000;
+  const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = 50, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 3, STEAL_PER_PLOT = 1, STEAL_WAIT = 60 * 60000;
   /* 偷菜模式（自己選要不要參加）：兩個人都開才能互偷；一天只能切換一次；成熟 1 小時後才能被偷；每塊田最多被偷 1 個；每天最多偷 3 個；被偷的人拿到 🪙1 回禮 */
   const plotsFor = lv => lv >= 7 ? 12 : lv >= 5 ? 10 : lv >= 3 ? 8 : 6;
   const xpNeed = lv => 15 + 10 * (lv - 1);
@@ -219,7 +219,7 @@
     paint(); paintBar(); paintStore(); paintLog(); info(curK);
     tap(C.querySelector('#fzoom'), () => { zoomSet(!zoomOn()); paint(); paintZoom(); }); paintZoom();
     tap(C.querySelector('#fstore'), storeModal); tap(C.querySelector('#fsm'), smToggle);
-    WK = walker(C.querySelector('#fbox'), () => { const p = PET.P(); return p && p.st === 'pet' ? p : null; }, { own: 1, zoom: zoomOn }); paintPetInfo();
+    WK = walker(C.querySelector('#fbox'), () => { const p = PET.P(); return p && p.st === 'pet' ? p : null; }, { own: 1, zoom: zoomOn, auto: () => autoHelp() }); paintPetInfo();
     tap(C.querySelector('#fbox'), e => {   // tap：用手指捲動畫面時不會按到田
       if (e.target.closest('.fpet')) return petTap();
       if (e.target.closest('#fbarn')) return storeModal();
@@ -366,7 +366,7 @@
      走的路線是田地外圍一圈草地（農場座標）；晚上回房子旁邊睡覺。
      幫忙次數（每天）：寶寶 0 次（只會提醒）、第一次進化 3 次（捉蟲、拔草）、最終進化 6 次（還會澆水，不用花水） */
   const RING = [[450, 410], [620, 290], [930, 300], [1180, 462], [1100, 612], [940, 722], [700, 742], [560, 672], [400, 522]];
-  const SLEEP = [520, 300], PW = 150, SPEED = 120, HELP_N = [0, 3, 6];
+  const SLEEP = [520, 300], PW = 150, SPEED = 120, HELP_N = [0, 3, 6], AUTO_LV = 12;   // Lv.12 起寵物會自己去幫忙（次數跟點牠幫忙共用每天的上限）
   const IDLE = ['♪', '💗', '🌼', '✨', '😊', '🎵'];
   const pick = a => a[Math.floor(Math.random() * a.length)];
   let WK = null;
@@ -397,6 +397,7 @@
       if (night()) { w.classList.add('zz'); if (Math.hypot(pos[0] - SLEEP[0], pos[1] - SLEEP[1]) > 5) go(SLEEP[0], SLEEP[1]); say('💤', 6000); return sched(9000); }
       w.classList.remove('zz');
       const Fm = o.F ? o.F() : F();
+      if (o.auto && o.auto()) return sched(4800);   // 自己去幫忙（Lv.12 起）
       if (o.own && Math.random() < .4) { const k = needPlot(Fm); if (k >= 0 && !(k === lastK && Date.now() - lastT < 25000)) { lastK = k; lastT = Date.now(); const [x, y] = plotC(k), ms = go(x, y + 26, () => say(hint(Fm, k), 3200)); return sched(ms + 4200); } }
       if (Math.random() < .22) { say(pick(IDLE), 1600); return sched(); }
       idx = (idx + (Math.random() < .5 ? 1 : RING.length - 1)) % RING.length;
@@ -424,20 +425,27 @@
     return -1;
   }
   const helpLeft = (f, st) => { const today = dkey(); if (!f.ph || f.ph.d !== today) f.ph = { d: today, n: 0 }; return Math.max(0, HELP_N[st] - f.ph.n); };
+  /* 寵物去 k 這塊田幫忙（點牠、或 Lv.12 起自己去） */
+  function doHelp(k, st, auto) {
+    const f = F(), p = PET.P(); WK.busy(1); WK.say(auto ? '我來幫忙！' : '交給我！', 1500); const [x, y] = plotC(k);
+    WK.go(x, y + 26, () => {
+      const P2 = f.p[k], S = stat(P2); let t = '';
+      if (!S.empty && !night() && helpLeft(f, st) > 0) { if (S.bug) { P2.b = 2; t = '🐛 捉到蟲了'; } else if (S.weed) { P2.g = 2; t = '🌿 拔掉雜草了'; } else if (st >= 2 && S.thirsty) { P2.w = (P2.w || 0) + 1; P2.wt = Date.now(); t = '💧 澆好水了'; } }
+      if (t) { f.ph.n++; addXp(1); if (auto) { logAdd(`🐾 ${PET.nameOf(p)}自己去幫忙：${t}`); paintLog(); } fx(k, `🐾 ${t}`, t[0] === '💧' ? 'water' : ''); snd(760); save(); paint(); if (curK === k) info(k); WK.hop(); WK.say(t + '！'); paintPetInfo(); }
+      WK.busy(0);
+    });
+  }
+  function autoHelp() {
+    const p = PET.P(); if (!p || p.st !== 'pet' || !WK || night()) return false;
+    const lv = PET.lvOf(p.xp).lv; if (lv < AUTO_LV) return false;
+    const st = PET.stageOf(lv), f = F(), k = helpPlot(f, st); if (k < 0 || helpLeft(f, st) <= 0) return false;
+    doHelp(k, st, true); return true;
+  }
   function petTap() {
     const p = PET.P(); if (!p || p.st !== 'pet' || !WK) return;
     if (night()) { WK.say('💤 呼嚕…明天見'); return; }
     const st = PET.stageOf(PET.lvOf(p.xp).lv), f = F(), left = helpLeft(f, st), k = helpPlot(f, st);
-    if (st >= 1 && k >= 0 && left > 0) {
-      WK.busy(1); WK.say('交給我！', 1500); const [x, y] = plotC(k);
-      WK.go(x, y + 26, () => {
-        const P2 = f.p[k], S = stat(P2); let t = '';
-        if (S.bug) { P2.b = 2; t = '🐛 捉到蟲了'; } else if (S.weed) { P2.g = 2; t = '🌿 拔掉雜草了'; } else if (st >= 2 && S.thirsty) { P2.w = (P2.w || 0) + 1; t = '💧 澆好水了'; }
-        if (t) { f.ph.n++; addXp(1); fx(k, `🐾 ${t}`, t[0] === '💧' ? 'water' : ''); snd(760); save(); paint(); if (curK === k) info(k); WK.hop(); WK.say(t + '！'); paintPetInfo(); }
-        WK.busy(0);
-      });
-      return;
-    }
+    if (st >= 1 && k >= 0 && left > 0) return doHelp(k, st, false);
     WK.hop(); PET.patJoy(); snd(880);
     WK.say(st === 0 && needPlot(f) >= 0 ? `有田要照顧喔！<small>我 Lv.${PET.EVO[0]} 進化以後就能幫忙</small>`
       : st >= 1 && k >= 0 && left <= 0 ? '今天幫好多次了～明天再幫你！' : pick(['💗 嘿嘿～', '今天也一起加油！', '農場好漂亮！', PET.SPECIES[p.sp].say]), 2800);
@@ -451,8 +459,9 @@
     const e = document.getElementById('fpinfo'); if (!e) return; const p = PET.P();
     if (!p || p.st !== 'pet') { e.innerHTML = '🥚 孵出寵物以後，牠會來農場陪你、幫你顧田！'; return; }
     const st = PET.stageOf(PET.lvOf(p.xp).lv), nm = PET.nameOf(p), left = helpLeft(F(), st);
+    const lv = PET.lvOf(p.xp).lv, au = lv >= AUTO_LV;
     e.innerHTML = st === 0 ? `🐾 ${nm}會在農場走來走去，提醒你哪塊田要照顧。<b>Lv.${PET.EVO[0]} 進化</b>以後會幫忙捉蟲、拔草！`
-      : `🐾 點${nm}，牠會幫忙捉蟲、拔草${st >= 2 ? '、澆水' : ''}（今天還能 <b>${left}</b> 次）${st < 2 ? `。Lv.${PET.EVO[1]} 最終進化以後還會幫忙澆水！` : ''}`;
+      : `🐾 ${au ? `${nm}會自己去` : `點${nm}，牠會`}幫忙捉蟲、拔草${st >= 2 ? '、澆水' : ''}（今天還能 <b>${left}</b> 次）${!au ? `。<b>Lv.${AUTO_LV}</b> 以後會自己去幫忙！` : st < 2 ? `。Lv.${PET.EVO[1]} 最終進化以後還會幫忙澆水！` : ''}`;
     e.innerHTML += '<small>倉庫裡的菜也可以拿去餵牠</small>';
   }
 
