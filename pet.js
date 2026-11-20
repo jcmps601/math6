@@ -312,7 +312,7 @@
   function lvOf(xp) { let lv = 1, x = xp || 0; while (lv < MAXLV && x >= xpNeed(lv)) { x -= xpNeed(lv); lv++; } return { lv, cur: x, need: xpNeed(lv), max: lv >= MAXLV }; }
   const stageOf = lv => lv >= EVO[1] ? 2 : lv >= EVO[0] ? 1 : 0;
   const STAGE_N = ['寶寶', '第一次進化', '最終進化'];
-  const night = (d = new Date()) => night.f != null ? night.f : d.getHours() >= 21 || d.getHours() < 6;   // night.f：測試用，強制白天/晚上
+  const night = (d = new Date()) => night.f != null ? night.f : d.getHours() >= 22 || d.getHours() < 6;   // 晚上 10 點到早上 6 點（2026-11 從 9 點改成 10 點）；night.f：測試用，強制白天/晚上
   const formName = (sp, lv) => (SPECIES[sp] || SPECIES.chick).f[stageOf(lv || 1)];
 
   /* ───────── 畫寵物 ───────── 回傳 HTML：背後配件 → 身體（SVG 或圖）→ 前面配件，一層一層疊 */
