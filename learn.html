@@ -704,7 +704,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 #lkshop .lkg{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:.6rem}
 #lkshop .lkc{position:relative;background:#fff;border:3px solid #f1f3f5;border-radius:18px;padding:1rem .5rem .6rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;text-align:center}
 #lkshop .lkc.on{border-color:#7048e8;background:#f8f0fc}
-#lkshop .lkp{min-height:5.6rem;display:grid;place-items:center;font-size:1.3rem;font-weight:900}#lkshop .lkg.tt .lkp{min-height:3rem}#lkshop .lkg.tt .lkt{font-size:1.1rem}
+#lkshop .lkg.fr .lkp{min-height:7.8rem}#lkshop .lkg.fr .lkc{padding-top:1.5rem}#lkshop .lkp{min-height:5.6rem;display:grid;place-items:center;font-size:1.3rem;font-weight:900}#lkshop .lkg.tt .lkp{min-height:3rem}#lkshop .lkg.tt .lkt{font-size:1.1rem}
 #lkshop .lkcn{font-weight:900;color:#495057}
 #lkshop .lkq{position:absolute;top:.35rem;left:.45rem;font-style:normal;font-size:.75rem;font-weight:900;color:#fff;background:var(--qc,#adb5bd);border-radius:8px;padding:0 .4rem}#lkshop .lkq.e{background:#e8590c}
 #lkshop .lkb{width:100%;border:0;border-radius:12px;font-size:1rem;font-weight:900;padding:.4rem .3rem;min-height:44px}
@@ -2471,7 +2471,7 @@ let lkTab='fr';
 function lkShop(){if(!user||!sum)return;const old=document.getElementById('lkshop');if(old)old.remove();
   const box=el('div');box.id='lkshop';document.body.appendChild(box);const close=()=>{box.remove();paintMeLook();if(view==='home')render()};
   const coins=()=>{try{const p=PET.P();return p?PET.coinOf(p):0}catch(e){return 0}};
-  function paint(){const L=lkMe(),c=coins(),T=isTest(user.seat);
+  function paint(){const L=lkMe(),c=coins(),T=isTest(user.seat),ob=box.querySelector('.lkbox'),st=ob?ob.scrollTop:0;   // 重畫前記住捲到哪裡（按「換上」不要跳回最上面）
     const ids=Object.keys(LK).filter(id=>LK[id].k===lkTab);
     const card=id=>{const I=LK[id],has=lkHas(id),on=L[I.k]===id&&has;let pv='';
       if(I.k==='fr')pv=lkAv(user.seat,user.seat,'big',null,id);
@@ -2485,7 +2485,7 @@ function lkShop(){if(!user||!sum)return;const old=document.getElementById('lksho
       <div class="lktabs">${[['fr','頭像框'],['np','名牌'],['tt','稱號']].map(([k,n])=>`<button data-t="${k}" class="${lkTab===k?'on':''}">${n}</button>`).join('')}</div>
       ${lkTab==='tt'?`<div class="lktt">稱號不能買，做到條件就會自動解鎖（已經拿到 <b>${LK_TT.filter(x=>lkHas(x[0])).length}</b> / ${LK_TT.length} 個）</div>`+LK_CAT.map(([c,n,ic])=>`<div class="lkcat"><img class="ico ii" src="img/ui/${ic}.webp" alt="">${n}</div><div class="lkg tt">${ids.filter(id=>LK[id].cat===c).map(card).join('')}</div>`).join(''):`<div class="lkg ${lkTab}">${ids.map(card).join('')}</div>`}
       <div class="lkfoot"><button class="lkx">好了</button></div></div>`;
-    box.querySelectorAll('.lktabs button').forEach(b=>tap(b,()=>{lkTab=b.dataset.t;paint()}));tap(box.querySelector('.lkx'),close);
+    box.querySelector('.lkbox').scrollTop=st;box.querySelectorAll('.lktabs button').forEach(b=>tap(b,()=>{lkTab=b.dataset.t;paint();box.querySelector('.lkbox').scrollTop=0}));tap(box.querySelector('.lkx'),close);
     const set=(k,id)=>{const L=lkMe();L[k]=id;L.u=Date.now();saveSum(true);lkPub();paintMeLook();try{sfx.ok()}catch(e){}paint()};
     box.querySelectorAll('[data-use]').forEach(b=>tap(b,()=>{const id=b.dataset.use;set(LK[id].k,id)}));
     box.querySelectorAll('[data-off]').forEach(b=>tap(b,()=>set(LK[b.dataset.off].k,'')));
@@ -3323,7 +3323,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v136';let verNew=false,verBusy=false;
+const APP_VER='learn601-v137';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
