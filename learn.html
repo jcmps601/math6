@@ -2487,7 +2487,7 @@ let lkRfT=0;function lkAch(){if(!user||!sum||isTest(user.seat))return;const L=lk
   try{const p=PET.P();if(p&&!(p.cl&&p.cl.e&&p.cl.e.ttrf)){const n=Object.keys(L.own||{}).reduce((a,id)=>a+(LK_OLDTT[id]||0),0);if(n){p.cl=p.cl||{b:p.coin||0};p.cl.e=p.cl.e||{};p.cl.e.ttrf=n;p.coin=PET.coinOf(p);saveSum(true);lkRfT=1;setTimeout(()=>toast(`🎁 稱號改成「做到就解鎖」，以前買稱號的 🪙${n} 退還給你了`),900)}}}catch(e){}
   const first=!L.ach;L.ach=L.ach||{};const nw=LK_TT.filter(x=>!L.ach[x[0]]&&x[5]());if(!nw.length){if(first)saveSum(true);return}
   nw.forEach(x=>L.ach[x[0]]=1);saveSum(true);
-  setTimeout(()=>{lkRfT=0;toast(nw.length===1?`🎉 解鎖稱號「${nw[0][1]}」！到名片裝上吧`:`🎉 解鎖了 ${nw.length} 個稱號：${nw.map(x=>x[1]).join('、')}`);try{sfx.win();confetti(60)}catch(e){}},lkRfT?4500:900)}   // 剛退錢的話等退錢的通知看完再跳
+  setTimeout(()=>{lkRfT=0;toast(nw.length===1?`🎖️ 解鎖稱號「${nw[0][1]}」！到名片裝上吧`:`🎖️ 解鎖了 ${nw.length} 個稱號：${nw.map(x=>x[1]).join('、')}`);try{sfx.win();confetti(60)}catch(e){}},lkRfT?4500:900)}   // 剛退錢的話等退錢的通知看完再跳
 /* 對戰贏幾場、玩過哪些對戰遊戲：讀公開的對戰紀錄（一次登入讀一次） */
 let lkWinT=0;async function lkWinLoad(){if(!user||!sum||Date.now()-lkWinT<10*60000)return;lkWinT=Date.now();try{await fbReady;if(!db)return;
   const v=(await timeout(db.ref(`${ROOT}/xq/${user.seat}`).get(),8000)).val()||{},H=Object.entries(v).filter(([,x])=>x).map(([k,x])=>({...x,k}));
@@ -2528,7 +2528,7 @@ function lkShop(){if(!user||!sum)return;const old=document.getElementById('lksho
       return `<div class="lkc${on?' on':''}${has?'':' lock'}">${tag}<div class="lkp">${pv}</div>${I.k!=='tt'?`<div class="lkcn">${I.n}</div>`:''}${btn}</div>`};
     box.innerHTML=`<div class="lkbox"><div class="lktop"><div class="lkme2">${lkAv(user.seat,user.seat,'big')}<div><div class="lkt1">${lkName(user.seat,user.seat+' 號')}</div><div class="lks">同學在排行榜、農場、寵物看得到你的名片</div></div></div><div class="lkcoin">🪙 <b>${T?'∞':c}</b></div></div>
       <div class="lktabs">${[['fr','頭像框'],['np','名牌'],['tt','稱號']].map(([k,n])=>`<button data-t="${k}" class="${lkTab===k?'on':''}">${n}</button>`).join('')}</div>
-      ${lkTab==='tt'?`<div class="lktt">稱號不能買，做到條件就會自動解鎖（已經拿到 <b>${LK_TT.filter(x=>lkHas(x[0])).length}</b> / ${LK_TT.length} 個）</div>`+LK_CAT.map(([c,n,ic])=>`<div class="lkcat"><img class="ico ii" src="img/ui/${ic}.webp" alt="">${n}</div><div class="lkg tt">${ids.filter(id=>LK[id].cat===c).map(card).join('')}</div>`).join(''):`<div class="lkg ${lkTab}">${ids.map(card).join('')}</div>`}
+      ${lkTab==='tt'?`<div class="lktt">🎖️ 稱號不能買，做到條件就會自動解鎖（已經拿到 <b>${LK_TT.filter(x=>lkHas(x[0])).length}</b> / ${LK_TT.length} 個）</div>`+LK_CAT.map(([c,n,ic])=>`<div class="lkcat"><img class="ico ii" src="img/ui/${ic}.webp" alt="">${n}</div><div class="lkg tt">${ids.filter(id=>LK[id].cat===c).map(card).join('')}</div>`).join(''):`<div class="lkg ${lkTab}">${ids.map(card).join('')}</div>`}
       <div class="lkfoot"><button class="lkx">好了</button></div></div>`;
     box.querySelector('.lkbox').scrollTop=st;box.querySelectorAll('.lktabs button').forEach(b=>tap(b,()=>{lkTab=b.dataset.t;paint();box.querySelector('.lkbox').scrollTop=0}));tap(box.querySelector('.lkx'),close);
     const set=(k,id)=>{const L=lkMe();L[k]=id;L.u=Date.now();saveSum(true);lkPub();paintMeLook();try{sfx.ok()}catch(e){}paint()};
@@ -3388,7 +3388,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v149';let verNew=false,verBusy=false;
+const APP_VER='learn601-v150';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
