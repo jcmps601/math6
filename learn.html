@@ -2372,7 +2372,7 @@ function invNote(L){const ms=[...L.querySelectorAll('[data-cd]')].map(b=>+b.data
 function invDecText(v){const n=seatName(v.s);return v.why==='noticket'?`${n} 的遊戲券用完了，請他先去練習`:v.why==='busy'?`${n} 正在跟別人玩，等一下再邀請`:v.why==='study'?`${n} 正在練習題目，等練完再邀請`:v.why==='cool'?`${n} 現在不方便，過一陣子再邀請`:v.why==='dnd'?`${n} 現在不接受邀請`:`${n} 說下次再玩`}
 /* 方塊對戰的邀請也用 pm 送（資料庫只收 xq、aq、pd、pm），收到的人看房間的 meta/game 認出來 */
 async function sendInv(to,pin,g){const w=invCool(to);if(w>0)throw Object.assign(new Error('cool'),{cool:w});
-  if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:srvNow(),g:GK(g)==='bk'||GK(g)==='dr'?'pm':GK(g)}),8000);LS.set(invsKey(),[...invSent(),{s:+to,t:Date.now(),p:String(pin)}])}
+  if(!(await ensureBind()))throw new Error('bind');await timeout(db.ref(`${ROOT}/inv/${to}/${user.seat}`).set({p:String(pin),t:srvNow(),g:GK(g)==='bk'||GK(g)==='dr'||GK(g)==='pb'?'pm':GK(g)}),8000);LS.set(invsKey(),[...invSent(),{s:+to,t:Date.now(),p:String(pin)}])}
 function unInv(to){try{if(db&&user)db.ref(`${ROOT}/inv/${to}/${user.seat}`).remove()}catch(e){}}
 /* 中途跑掉(按上一頁、關掉、斷線)的那一局:下棋時先記「有一局還沒下完」,下次回到平台時補記輸、補扣 1 張券 */
 const xqpKey=()=>'learn601_xqp_'+(user&&user.seat);
@@ -2407,7 +2407,7 @@ async function listenInv(){if(invRef&&invCb)invRef.off('value',invCb);invRef=nul
     const [f,x]=list[0],iv={f:+f,p:x.p,t:x.t,g:GK(x.g)};
     const why=chessBusy()?'busy':invGate(+f);if(why)return bounceInv(iv,why);   // 不跳出來，自動回覆（刪掉之後會再通知一次，換下一個邀請）
     invPop(+f);
-    if(iv.g==='pm'){invNow=iv;db.ref(`rooms/${iv.p}/meta/game`).get().then(s=>{if(s.val()==='co')iv.co=1;if(s.val()==='bk')iv.g='bk';if(s.val()==='dr')iv.g='dr';if(invNow===iv)showInv(iv)}).catch(()=>{if(invNow===iv)showInv(iv)});return}   // 雙人合作過關也用 pm 的邀請
+    if(iv.g==='pm'){invNow=iv;db.ref(`rooms/${iv.p}/meta/game`).get().then(s=>{if(s.val()==='co')iv.co=1;if(s.val()==='bk')iv.g='bk';if(s.val()==='dr')iv.g='dr';if(s.val()==='pm')return db.ref(`rooms/${iv.p}/state/mode`).get().then(m=>{if(m.val()==='boss')iv.g='pb'})}).catch(()=>{}).then(()=>{if(invNow===iv)showInv(iv)}).catch(()=>{if(invNow===iv)showInv(iv)});return}   // 雙人合作過關也用 pm 的邀請
     showInv(iv)};
   invRef.on('value',invCb)}
 function invDnd(){return user?Math.max(0,LS.get(dndKey(),0)-Date.now()):0}
@@ -2423,7 +2423,7 @@ function invBox(){let b=document.getElementById('xqinv');if(b)return b;b=el('div
   tap(b.querySelector('#invYes'),()=>acceptInv());tap(b.querySelector('#invNo'),()=>{if(invNow)invNoMore(invNow.f);declineInv('no')});
   tap(b.querySelector('#invDnd'),()=>{invSetDnd(true);declineInv('dnd');toast('🔕 接下來 40 分鐘不會收到邀請，可以到「遊戲」頁打開');if(view==='game')render()});return b}
 function showInv(x){invNow=x;const b=invBox();b.querySelector('.xit').textContent=x.co?`🤝 ${seatName(x.f)} 邀請你一起玩雙人合作過關！`:`${GAMES[x.g].i} ${seatName(x.f)} 邀請你${GAMES[x.g].v}${GAMES[x.g].n}！`;
-  b.querySelector('.xis').textContent=x.co?'接受就會直接進到房間（開始時兩個人各用 1 張遊戲券）':(GAMES[x.g].many?'接受就會直接進到房間，大家都按「準備好了」，房主按開始就開打':GAMES[x.g].room?'接受就會直接進到房間，兩個人都按「準備好了」就開打':'接受就會直接進到棋盤')+(GAMES[x.g].topk?'（每個人用 1 張遊戲券，前幾名退回）':GAMES[x.g].top1?'（只有第一名不用遊戲券，其他人用 1 張）':'（輸的人用掉 1 張遊戲券，贏了不用）');b.classList.add('on');try{sfx.ok()}catch(e){}
+  b.querySelector('.xis').textContent=x.co?'接受就會直接進到房間（開始時兩個人各用 1 張遊戲券）':(GAMES[x.g].many?'接受就會直接進到房間，大家都按「準備好了」，房主按開始就開打':GAMES[x.g].room?'接受就會直接進到房間，兩個人都按「準備好了」就開打':'接受就會直接進到棋盤')+(GAMES[x.g].coop?'（每個人用 1 張遊戲券，打贏有金幣）':GAMES[x.g].topk?'（每個人用 1 張遊戲券，前幾名退回）':GAMES[x.g].top1?'（只有第一名不用遊戲券，其他人用 1 張）':'（輸的人用掉 1 張遊戲券，贏了不用）');b.classList.add('on');try{sfx.ok()}catch(e){}
   clearTimeout(showInv.t);showInv.t=setTimeout(()=>{if(invNow===x){hideInv();dropInv(x)}},Math.max(5000,INV_MS-(Date.now()-x.t)))}
 function hideInv(){invNow=null;const b=document.getElementById('xqinv');if(b)b.classList.remove('on')}
 function dropInv(x){try{db.ref(`${ROOT}/inv/${user.seat}/${x.f}`).remove()}catch(e){}}
@@ -2434,7 +2434,7 @@ function acceptInv(){const x=invNow;if(!x)return;
   /* 接受了：告訴邀請的人（他不用等冷卻），這個同學之前跳過幾次也歸零（以前接受 3 次後，第 4 次邀請會被自動擋掉） */
   try{db.ref(`rooms/${x.p}/acc/${user.seat}`).set(Date.now())}catch(e){}invMuteSave(x.f,m=>{m.h=[];m.u=0});
   if($('#prac').classList.contains('on'))leavePractice();
-  const t={...XQ_TOOL,f:(x.co?'coop.html':x.g==='pm'?'party.html':x.g==='ps'?'sling.html':x.g==='bk'?'blocks.html':x.g==='dr'?'draw.html':'chess.html')+'?join='+x.p};
+  const t={...XQ_TOOL,f:(x.co?'coop.html':x.g==='pm'?'party.html':x.g==='ps'?'sling.html':x.g==='bk'?'blocks.html':x.g==='dr'?'draw.html':x.g==='pb'?'party.html':'chess.html')+'?join='+x.p};
   if(vt){vt=XQ_TOOL;document.getElementById('vtitle').textContent=t.n;frameGo(t.f)}else openTool(t)}
 
 /* ===================== 坦克車庫（大砲對轟、大砲混戰的造型） =====================
@@ -3434,7 +3434,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v155';let verNew=false,verBusy=false;
+const APP_VER='learn601-v156';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
