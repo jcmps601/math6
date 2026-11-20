@@ -248,6 +248,41 @@
     { n: '閃亮金', f: 'sepia(.6) saturate(2.2) hue-rotate(-12deg) brightness(1.08)', lv: 25, p: 500, c: '#fcc419' }
   ];
   const ROOMS = [{ id: 'home', n: '溫馨小房間', lv: 1, p: 0 }, { id: 'meadow', n: '草原', lv: 7, p: 150 }, { id: 'beach', n: '海邊', lv: 14, p: 300 }, { id: 'space', n: '星空', lv: 20, p: 500 }];
+  /* ───────── 房間擺設：用金幣買，每個房間 5 個位置各放一件 ─────────
+     p.fo = {代號:1} 買過的（每隻寵物共用）；p.fz = {房間:{位置:代號}}；p.fzu 最後擺的時間（兩台平板以最後擺的為準）
+     圖：img/pet/代號.webp（512×512 正方形透明圖；放在地上的東西底部在圖的 93.75% 高）
+     位置：x＝場景寬度的 %（手機會切掉房間圖的左右兩邊，所以用場景寬度，東西才不會被切掉）、y＝離底部多高、h＝多大（都是房間圖高度的 %） */
+  const FZ_ROOM = {   // 名稱、x、y、h、價錢、i＝x 用房間圖的寬度（要對齊房間圖裡的東西，例如原本的床）
+    home: { w: ['牆上', 77, 73, 17, 150, 'i'], m: ['地毯', 50, -3, 40, 200], l: ['左邊', 15, 2, 40, 300], r: ['右邊', 84, 2, 34, 300], b: ['寵物床', 88.5, 37, 46, 400, 'i'] },
+    meadow: { s: ['天空', 78, 70, 24, 200, 'i'], m: ['地上中間', 50, -3, 40, 200], l: ['左邊', 15, 6, 42, 300], r: ['右邊', 85, 4, 34, 300], b: ['寵物床', 25, 36, 28, 400, 'i'] },
+    beach: { s: ['天空', 70, 68, 22, 200, 'i'], m: ['地上中間', 50, -3, 40, 200], l: ['左邊', 15, 6, 44, 300], r: ['右邊', 85, 4, 32, 300], b: ['寵物床', 76, 32, 28, 400, 'i'] },
+    space: { s: ['天空', 24, 66, 22, 200, 'i'], m: ['地上中間', 50, -3, 40, 200], l: ['左邊', 15, 6, 42, 300], r: ['右邊', 85, 4, 34, 300], b: ['寵物床', 76, 30, 30, 400, 'i'] }
+  };
+  const FZ_ORD = ['w', 's', 'm', 'b', 'l', 'r'];   // 畫的順序：牆上／天空 → 地毯 → 床 → 左右
+  /* 代號: [名稱, 房間, 位置, 大小（倍數，沒寫＝1）] */
+  const FU = {
+    'fu-clock': ['木頭掛鐘', 'home', 'w'], 'fu-frame': ['肉球相框', 'home', 'w'], 'fu-lights': ['星星小燈串', 'home', 'w', 1.3], 'fu-shelf': ['壁掛層架', 'home', 'w', 1.2], 'fu-board': ['小黑板', 'home', 'w'],
+    'fu-rug-berry': ['草莓地毯', 'home', 'm'], 'fu-rug-rainbow': ['彩虹地毯', 'home', 'm'], 'fu-rug-star': ['星空地毯', 'home', 'm'], 'fu-rug-cloud': ['雲朵地毯', 'home', 'm'],
+    'fu-bookcase': ['小書櫃', 'home', 'l'], 'fu-tent': ['城堡帳篷', 'home', 'l', 1.1], 'fu-slide': ['溜滑梯', 'home', 'l'], 'fu-sofa': ['小沙發', 'home', 'l'], 'fu-piano': ['小鋼琴', 'home', 'l'],
+    'fu-ball': ['彩色皮球', 'home', 'r', .7], 'fu-blocks': ['積木', 'home', 'r', .8], 'fu-train': ['玩具火車', 'home', 'r', .9], 'fu-plant': ['龜背芋盆栽', 'home', 'r', 1.15], 'fu-tank': ['小魚缸', 'home', 'r', .85], 'fu-teddy': ['小熊布偶', 'home', 'r', .85],
+    'fu-bed-cloud': ['雲朵床', 'home', 'b'], 'fu-bed-pumpkin': ['南瓜床', 'home', 'b'], 'fu-bed-castle': ['城堡床', 'home', 'b'], 'fu-bed-hammock': ['星星吊床', 'home', 'b'],
+    'fm-kite': ['風箏', 'meadow', 's'], 'fm-balloon': ['熱氣球', 'meadow', 's'], 'fm-picnic': ['野餐墊', 'meadow', 'm'], 'fm-flowermat': ['野花草墊', 'meadow', 'm'],
+    'fm-tent': ['露營帳篷', 'meadow', 'l'], 'fm-stump': ['樹樁桌椅', 'meadow', 'l'], 'fm-basket': ['野花籃', 'meadow', 'r', .85], 'fm-mushseat': ['蘑菇椅', 'meadow', 'r'], 'fm-hammock': ['樹葉吊床', 'meadow', 'b'], 'fm-nest': ['稻草小窩', 'meadow', 'b'],
+    'fb-gull': ['小海鷗', 'beach', 's'], 'fb-boat': ['小帆船', 'beach', 's', .8], 'fb-towel': ['海灘毛巾', 'beach', 'm'], 'fb-ring': ['游泳圈', 'beach', 'm', .8],
+    'fb-umbrella': ['陽傘躺椅', 'beach', 'l', 1.1], 'fb-castle': ['沙堡', 'beach', 'l'], 'fb-bucket': ['水桶鏟子', 'beach', 'r', .8], 'fb-shells': ['貝殼堆', 'beach', 'r', .8], 'fb-shellbed': ['貝殼床', 'beach', 'b'], 'fb-float': ['西瓜浮床', 'beach', 'b'],
+    'fs-meteor': ['流星燈串', 'space', 's', 1.3], 'fs-satellite': ['小衛星', 'space', 's'], 'fs-moonrug': ['月亮地毯', 'space', 'm'], 'fs-halo': ['星雲光環', 'space', 'm'],
+    'fs-rocket': ['小火箭', 'space', 'l'], 'fs-scope': ['望遠鏡', 'space', 'l'], 'fs-planetlamp': ['星球夜燈', 'space', 'r', .85], 'fs-spaceplant': ['外星盆栽', 'space', 'r', .85], 'fs-moonbed': ['月亮床', 'space', 'b'], 'fs-pod': ['星空艙', 'space', 'b']
+  };
+  const fuPrice = id => FZ_ROOM[FU[id][1]][FU[id][2]][4];
+  /* 房間裡擺好的東西（給 .pstage 用） */
+  function furLayer(p, rid) {
+    const Z = FZ_ROOM[rid], put = (p.fz && p.fz[rid]) || {}; if (!Z) return '';
+    const own = id => FU[id] && FU[id][1] === rid && (TST() || (p.fo && p.fo[id]));
+    const imgs = FZ_ORD.filter(z => Z[z] && own(put[z]) && FU[put[z]][2] === z).map(z => { const id = put[z], [, x, y, h] = Z[z], k = FU[id][3] || 1;
+      const L = Z[z][5] === 'i' ? `calc(50% + ${x - 50} * max(1cqw, 1.5006cqh))` : x + '%';   // 房間圖寬＝max(場景寬, 場景高×1.5)
+      return `<img class="pfu z${z}" src="${IMG}${id}.webp" alt="" draggable="false" style="left:${L};bottom:${y}%;height:${(h * k).toFixed(1)}%">`; }).join('');
+    return imgs ? `<div class="pfur">${imgs}</div>` : '';
+  }
   const FOODS = [
     { id: 'apple', i: '🍎', n: '蘋果', p: 3, f: 20, j: 0 },
     { id: 'rice', i: '🍙', n: '飯糰', p: 6, f: 35, j: 0 },
@@ -478,7 +513,8 @@
     /* 兩台裝置都有動過：買過的東西兩邊合起來；造型（帽子、眼鏡、房間、顏色）看哪一邊最後換的，
        不然在 A 台換的造型，會被 B 台比較新的整份資料蓋回去（看起來像「換了沒變」） */
     const un = k => { if (other[k] && typeof other[k] === 'object') pick[k] = Object.assign({}, other[k], pick[k] || {}); };
-    ['own', 'rooms', 'xo', 'dex', 'got'].forEach(un);
+    ['own', 'rooms', 'xo', 'dex', 'got', 'fo'].forEach(un);
+    if ((other.fzu || 0) > (pick.fzu || 0)) { pick.fz = other.fz; pick.fzu = other.fzu; }   // 房間擺設：看哪一台最後擺的
     /* 成就的次數（收成、錯題練會、打魔王週數）取兩邊比較大的；文字（例如這週的週次）用新的那邊 */
     const ach = Object.assign({}, other.ach || {}, pick.ach || {}); for (const k in other.ach || {}) if (typeof other.ach[k] === 'number' && typeof ach[k] === 'number') ach[k] = Math.max(ach[k], other.ach[k]); pick.ach = ach;
     /* 另一台孵出來的寵物、拿到的蛋不能被蓋掉（不然圖鑑有、寵物屋卻沒有；或任務達成了蛋卻不見） */
@@ -710,7 +746,7 @@
     if (checkAch(p)) save(p);   // 打開寵物頁也檢查一次：條件是練習結束後才達成的（例如最後一回拿到 3 顆星），不用再答一題才拿得到蛋
     const L = lvOf(p.xp || 0), st = stageOf(L.lv), S = SPECIES[p.sp];
     const Sg = el('div', 'cd pstage' + (night() ? ' night' : '')); Sg.id = 'pstage';
-    Sg.innerHTML = `${roomArt(p.room)}<div class="ptag"><b>${nameOf(p)}</b><small>${S.f[st]}（${S.n}）${S.r ? `<i class="ptier r${S.r}">${TIER[S.r]}</i>` : ''}</small></div><div class="pcoin">🪙 <b id="pcoin">${p.coin || 0}</b></div>
+    Sg.innerHTML = `${roomArt(p.room)}${furLayer(p, p.room || 'home')}<div class="ptag"><b>${nameOf(p)}</b><small>${S.f[st]}（${S.n}）${S.r ? `<i class="ptier r${S.r}">${TIER[S.r]}</i>` : ''}</small></div><div class="pcoin">🪙 <b id="pcoin">${p.coin || 0}</b></div>
       <div class="pbub" id="pbub">${moodLine(p)}</div><div class="ppet" id="ppet">${petArt(look(p, { mood: moodOf(p), cls: 'big' }))}</div><div id="pfx"></div><div id="plikes"></div>`;
     /* 寬版：左邊場景（約 60%）、右邊照顧資訊（約 40%）；窄版上下排 */
     const TOP = el('div', 'ptop'), R = el('div', 'pright'); TOP.appendChild(Sg); TOP.appendChild(R); Pn.appendChild(TOP); Pn.appendChild(wishCard(true));
@@ -735,7 +771,7 @@
     /* 分頁：點心、衣櫃、寵物屋、全班的寵物 */
     const er = p.eggs[0] && (p.eggs[0].ex || 0) >= EGG_NEED[p.eggs[0].t | 0];
     const T = el('div', 'ptabs'); T.id = 'ptabs';
-    [['food', '🍽️ 點心'], ['wear', '👒 衣櫃'], ['house', `🏠 寵物屋${er ? '<i class="pdot"></i>' : ''}`], ['class', '🐾 全班']].forEach(([k, n]) => { const b = el('button', '', n); b.dataset.k = k; tap(b, () => { tab = k; paintTab(); }); T.appendChild(b); });
+    [['food', '🍽️ 點心'], ['wear', '👒 衣櫃'], ['fur', '🛋️ 擺設'], ['house', `🏠 寵物屋${er ? '<i class="pdot"></i>' : ''}`], ['class', '🐾 全班']].forEach(([k, n]) => { const b = el('button', '', n); b.dataset.k = k; tap(b, () => { tab = k; paintTab(); }); T.appendChild(b); });
     Pn.appendChild(T);
     const C = el('div', 'cd ptab'); C.id = 'ptab'; Pn.appendChild(C); paintTab();
     Pn.appendChild(el('div', 'phow', `💡 一次就答對：經驗 +10、🪙+2；第二次才答對：經驗 +5、🪙+1。答對題目寵物也會吃飽、開心。每天前 ${BOOST_N} 題答對拿全額，之後減半。完成每日任務再 +30 經驗、🪙+10；吃飽又開心經驗 ×1.2！`));
@@ -888,7 +924,8 @@
       C.querySelectorAll('[data-i]').forEach(b => tap(b, () => wear(b.dataset.i)));
       C.querySelectorAll('[data-x]').forEach(b => tap(b, () => shiny(+b.dataset.x)));
       C.querySelectorAll('[data-r]').forEach(b => tap(b, () => room(b.dataset.r)));
-    } else if (tab === 'house') house(C);
+    } else if (tab === 'fur') furTab(C);
+    else if (tab === 'house') house(C);
     else classPets(C);
   }
   async function wear(id) {
@@ -923,6 +960,32 @@
       coinAdd(p, -r.p); p.rooms[id] = 1;
     }
     p.room = id; p.lu = Date.now(); save(p); render();
+  }
+
+  /* ───────── 房間擺設 ───────── */
+  let fuZ = '';
+  function furTab(C) {
+    const p = P(), rid = p.room || 'home', Z = FZ_ROOM[rid], R = ROOMS.find(x => x.id === rid) || ROOMS[0], zs = FZ_ORD.filter(z => Z[z]);
+    if (!zs.includes(fuZ)) fuZ = zs.includes('b') ? 'b' : zs[0];
+    const put = (p.fz && p.fz[rid]) || {}, has = id => TST() || !!(p.fo && p.fo[id]), c = p.coin || 0;
+    const ids = Object.keys(FU).filter(id => FU[id][1] === rid && FU[id][2] === fuZ);
+    let h = `<div class="psec">🛋️ ${R.n}的擺設 <small>每個位置放一件・換房間在「👒 衣櫃」</small></div>
+      <div class="pfuz">${zs.map(z => `<button data-z="${z}" class="${z === fuZ ? 'on' : ''}">${Z[z][0]}<small>${put[z] && FU[put[z]] && has(put[z]) ? FU[put[z]][0] : '空的'}</small></button>`).join('')}</div><div class="pgrid pfug">`;
+    ids.forEach(id => { const on = put[fuZ] === id && has(id), pr = fuPrice(id);
+      h += `<button class="pfuc${on ? ' on' : ''}${has(id) ? '' : ' lock'}" data-f="${id}"><img src="${IMG}${id}.webp" alt="" draggable="false"><b>${FU[id][0]}</b><em>${on ? '✅ 擺著（再點收起來）' : has(id) ? '擺上去' : `🪙 ${pr}`}</em></button>`; });
+    C.innerHTML = h + '</div>';
+    C.querySelectorAll('[data-z]').forEach(b => tap(b, () => { fuZ = b.dataset.z; paintTab(); }));
+    C.querySelectorAll('[data-f]').forEach(b => tap(b, () => furPut(b.dataset.f)));
+  }
+  async function furPut(id) {
+    const p = P(), [n, rid, z] = FU[id], pr = fuPrice(id); p.fo = p.fo || {}; p.fz = p.fz || {}; p.fz[rid] = p.fz[rid] || {};
+    if (p.fz[rid][z] === id) { delete p.fz[rid][z]; p.fzu = Date.now(); save(p); render(); return; }   // 再點一次＝收起來
+    if (!TST() && !p.fo[id]) {
+      if ((p.coin || 0) < pr) { say(`金幣不夠…還差 ${pr - (p.coin || 0)} 枚`, 2200); return; }
+      if (!(await ask(`<div class="paskf"><img src="${IMG}${id}.webp" alt=""></div>用 🪙${pr} 買「${n}」嗎？<small>買了以後放在${FZ_ROOM[rid][z][0]}，每一隻寵物的房間都看得到</small>`, '買！'))) return;
+      coinAdd(p, -pr); p.fo[id] = 1; try { sfx.ticket(); } catch (e) { }
+    }
+    p.fz[rid][z] = id; p.fzu = Date.now(); save(p); render(); setTimeout(() => { bounce('spin', 'happy', 1000); fx('✨', 'star', 4); say(pick2(['好漂亮的房間！', '我好喜歡！', '謝謝你！']), 2200); }, 300);
   }
 
   /* ───────── 寵物屋：蛋籃、我的寵物、圖鑑 ───────── */
@@ -1126,7 +1189,16 @@
   .pbar i{position:absolute;inset:0 auto 0 0;border-radius:1rem;background:linear-gradient(90deg,#74c0fc,#4dabf7);transition:width .8s}
   .pbar i.f{background:linear-gradient(90deg,#ffd43b,#fab005)}.pbar i.j{background:linear-gradient(90deg,#ff8fab,#f06595)}
   .pbar b{position:relative;display:block;text-align:center;font-size:.95rem;line-height:1.5rem;color:#333}.pbar.x b{line-height:1.7rem}
-  .pstage{position:relative;height:min(25rem,52vh);padding:0;overflow:hidden;border-radius:28px}
+  .pstage{position:relative;height:min(25rem,52vh);padding:0;overflow:hidden;border-radius:28px;container-type:size}
+  .pfur{position:absolute;left:0;right:0;bottom:0;height:100%;height:max(100cqh,66.64cqw);pointer-events:none}   /* 跟房間圖一樣高（房間圖 cover、靠下對齊） */
+  .pfu{position:absolute;aspect-ratio:1;transform:translate(-50%,6.25%);max-width:none}.pfu.zw,.pfu.zs{transform:translate(-50%,50%)}
+  .pstage.night .pfu{filter:brightness(.62) saturate(.85)}
+  .pfuz{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}.pfuz button{flex:1;min-width:5.2rem;border:3px solid #f1f3f5;background:#fff;border-radius:14px;padding:.3rem .2rem;font:900 1rem inherit;font-family:inherit;color:#555;display:flex;flex-direction:column;align-items:center}
+  .pfuz button small{font-size:.75rem;color:#999;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pfuz button.on{border-color:#f06595;color:#d6336c;background:#fff0f6}
+  .pfug{grid-template-columns:repeat(auto-fill,minmax(8rem,1fr))}.pfuc{background:#fff;border:3px solid #f1f3f5;border-radius:16px;padding:.4rem;display:flex;flex-direction:column;align-items:center;font-family:inherit}
+  .pfuc img{width:6rem;height:6rem;object-fit:contain}.pfuc b{font-size:1rem;color:#444}.pfuc em{font-style:normal;font-size:.9rem;font-weight:900;color:#e67700}.pfuc.on{border-color:#f06595;background:#fff0f6}.pfuc.on em{color:#2b8a3e}
+  .paskf img{width:8rem;height:8rem;object-fit:contain}
+  .ptabs button{white-space:nowrap}@media (max-width:430px){.ptabs{gap:.25rem}.ptabs button{font-size:.86rem!important;padding:.55rem .05rem!important}}   /* 5 個分頁：手機上不要換行 */
   .pstage .proom{position:absolute;inset:0;width:100%;height:100%}.proom.pimg{background-size:cover;background-position:50% 100%}.proom .pnight{position:absolute;inset:0;background:#1b1f4b;opacity:.35}
   .pstage .ppet{position:absolute;left:50%;bottom:2%;height:calc(100% - 5.6rem);aspect-ratio:1;max-width:82%;transform:translateX(-50%);cursor:pointer;touch-action:manipulation}
   .pstage .ppet>.pa,.pstage .ppet>.psvg{animation:pbob 2.6s ease-in-out infinite;transform-origin:50% 92%}
