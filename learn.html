@@ -382,6 +382,9 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 #seats button.lkseat{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;padding:.2rem}
 #seats .lkav.seat{width:2.9rem;height:2.9rem}#seats .lkav.seat>i{background:none;color:inherit;font-size:1.8rem}
 #seats .lkn{font-size:.95em;padding:0 .3em}#seats .lkt{font-size:.62rem;margin:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#seats .lkt{position:relative;z-index:2}   /* 稱號蓋在頭像框上面，不會被框擋住 */
+#seats button.hfr .lkav.seat{width:2.5rem;height:2.5rem;margin:.5rem 0 .45rem}#seats button.hfr.htt .lkav.seat{width:2.1rem;height:2.1rem;margin:.4rem 0 .5rem}#seats button.hfr.htt .lkav.seat>i{font-size:1.45rem}
+@media (max-width:560px){#seats button.hfr .lkav.seat{width:1.7rem;height:1.7rem;margin:.3rem 0 .25rem}#seats button.hfr.htt .lkav.seat{width:1.4rem;height:1.4rem;margin:.25rem 0 .3rem}#seats button.hfr.htt .lkav.seat>i{font-size:1rem}}
 @media (max-width:560px){#seats .lkav.seat{width:1.9rem;height:1.9rem}#seats .lkav.seat>i{font-size:1.25rem}#seats button.lkseat{gap:.05rem;padding:.1rem}#seats .lkt{font-size:.5rem;padding:0 .2em;border-width:1px}}
 #seats .sg button:active{transform:translateY(4px) scale(.96);box-shadow:0 1px 0 #a5d8ff}
 #seats .girl button:active{box-shadow:0 1px 0 #fcc2d7}
@@ -1628,7 +1631,7 @@ SEATS.forEach((grp,gi)=>{const G=el('div','sg'+(gi?' girl':''));grp.forEach(i=>{
 async function lkSeats(){let v;try{v=await lkLoad()}catch(e){return}if(!v)return;
   seats.querySelectorAll('button[data-s]').forEach(b=>{const s=+b.dataset.s,x=v[s]||{},L=lkOf(s,x);if(user&&user.seat===s)Object.assign(L,lkOf(s,x));
     const num=L.np?`<span class="lkn ${L.np}">${s}</span>`:String(s);
-    b.classList.toggle('lkseat',!!(L.fr||L.np||L.tt));
+    b.classList.toggle('lkseat',!!(L.fr||L.np||L.tt));b.classList.toggle('hfr',!!L.fr);b.classList.toggle('htt',!!L.tt);
     b.innerHTML=(L.fr?lkAv(s,num,'seat',x):num)+(L.tt?`<em class="lkt">${LK[L.tt].n}</em>`:'')})}
 {const tw=el('div');tw.className='tbw';TEST_SEATS.forEach(s=>{const tb=el('button','tbtn',testName(s));tap(tb,()=>openPin(s));tw.appendChild(tb)});seats.appendChild(tw)}
 let pinSeat=0,pinVal='',pinBusy=false;
@@ -3381,7 +3384,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v147';let verNew=false,verBusy=false;
+const APP_VER='learn601-v148';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
