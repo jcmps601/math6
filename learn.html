@@ -292,6 +292,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #tkcard .tksell{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;border-top:3px dotted #ffd8a8;padding-top:.6rem;font-size:1.1rem;font-weight:800;color:#868e96}
 #tkcard .tksell span{flex:1 1 14rem}#tkcard .tksell button{border:3px solid #ffd43b;background:#fff9db;color:#e67700;border-radius:14px;font-size:1.1rem;font-weight:900;padding:.35rem .9rem;min-height:48px}
 #tkcard .tksell .ii{width:1.2em;height:1.2em;vertical-align:-.2em}
+#tkcard .tkst{display:flex;align-items:center;gap:.35rem}#tkcard .tksell .tkpm{width:48px;padding:0;font-size:1.4rem;line-height:1}#tkcard .tksell .tkpm.off{opacity:.35}#tkcard .tknv{min-width:2.4rem;text-align:center;font-size:1.5rem;color:#e67700}#tkcard .tksell .tkall{background:#fff;font-size:1rem}#tkcard .tksell .tkgo{background:#ffd43b;color:#5c3d00}
 #tkcard .t{font-size:1.6rem;font-weight:900}#tkcard .s{font-size:1.15rem;color:#999;font-weight:800;margin-top:.2rem}#tkcard .go{margin:0 0 0 auto}
 #bgames,#bdiffs{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.6rem}
 .bgb,.bdb{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1.1rem;font-weight:900;color:#555;padding:.3rem .7rem}
@@ -2155,8 +2156,11 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   const can=left>0||(sum.tk||0)>0||isTest(user.seat);const b=el('button','go',left>0?'繼續玩 ▶':can?'進入樂園 ▶':'先去練習 ▶');tap(b,()=>can?openTool(GAME_TOOL):startPractice('mix'));c.appendChild(b);
   /* 不想玩遊戲的同學：遊戲券可以賣掉換金幣，1 張 🪙10，不限張數（只能賣，不能用金幣買回券） */
   const tn=sum.tk||0;if(!isTest(user.seat)&&tn>0){const sr=el('div','tksell',`<span>不想玩遊戲？遊戲券可以換金幣：1 張 ${ico('rw-coin','ii')}${TK_SELL}</span>`);
-    const s1=el('button','',`賣 1 張　${ico('rw-coin','ii')}+${TK_SELL}`);tap(s1,()=>sellTk(1));sr.appendChild(s1);
-    if(tn>1){const sa=el('button','',`全部賣掉（${tn} 張）　${ico('rw-coin','ii')}+${tn*TK_SELL}`);tap(sa,()=>sellTk(tn));sr.appendChild(sa)}c.appendChild(sr)}
+    /* 自己選要賣幾張：－ 數字 ＋、「全部」直接選最多 */
+    let sn=1;const st=el('div','tkst'),mi=el('button','tkpm','－'),nv=el('b','tknv','1'),pl=el('button','tkpm','＋'),al=el('button','tkall','全部'),go=el('button','tkgo','');
+    const upd=()=>{sn=Math.max(1,Math.min(tn,sn));nv.textContent=sn;go.innerHTML=`賣掉 ${sn} 張　${ico('rw-coin','ii')}+${sn*TK_SELL}`;mi.classList.toggle('off',sn<=1);pl.classList.toggle('off',sn>=tn)};
+    tap(mi,()=>{sn--;upd()});tap(pl,()=>{sn++;upd()});tap(al,()=>{sn=tn;upd()});tap(go,()=>sellTk(sn));
+    [mi,nv,pl].forEach(x=>st.appendChild(x));if(tn>1){st.appendChild(al);sr.appendChild(st)}sr.appendChild(go);upd();c.appendChild(sr)}
   P.appendChild(c);
   const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s"><span>跟同學連線對戰</span><span>輸的人用 1 張遊戲券</span><span>中途離開算輸</span></div><div class="xr" id="xqrec"></div></div>';
   const xw=el('div');xw.className='xbtns';const xv=el('button','go',ico('vs-inv','bi')+'邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
@@ -3332,7 +3336,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v141';let verNew=false,verBusy=false;
+const APP_VER='learn601-v142';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
