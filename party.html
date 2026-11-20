@@ -95,6 +95,7 @@ button{font-family:inherit;cursor:pointer}
 .rk em{font-style:normal;width:2.2rem;text-align:center;font-size:1.3rem}.rk i{width:1.2rem;height:1.2rem;border-radius:50%;flex:none}.rk span{flex:1}.rk small{color:#9a7a52;font-size:.9rem}
 .rk.me{outline:3px solid #f59f00}
 .row{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+#bRe{display:inline-flex;align-items:center;gap:.35rem}#bRe[hidden]{display:none}.rmi{width:1.6em;height:1.6em;margin:-.3em 0}#ovNext{line-height:1.5;margin-top:.3rem}#ovNext .no{color:#c92a2a}
 /* 邀請同學、同一台平板 */
 #pickList{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.2rem,1fr));grid-auto-rows:3.3rem;gap:.45rem;margin:.3rem 0 .6rem}
 #pickList button{height:3.3rem;border:3px solid #e9d5ae;background:#fff;border-radius:14px;font-size:1.15rem;font-weight:900;color:#aaa;padding:.3rem .2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -179,8 +180,8 @@ button{font-family:inherit;cursor:pointer}
   <div id="offMsg"></div>
 </section>
 
-<div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div id="ovSt"></div><div id="ovCoin"></div><div class="s" id="ovN"></div>
-  <div class="row"><button class="btn" id="bBack">🔁 回房間</button><button class="btn" id="bAgain" hidden>🔁 再玩一次</button><button class="btn g" id="bOut">離開</button></div></div></div>
+<div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div id="ovSt"></div><div id="ovCoin"></div><div class="s" id="ovN"></div><div class="s" id="ovNext" aria-live="polite"></div>
+  <div class="row"><button class="btn" id="bRe" hidden><img class="rmi" src="img/ui/ic-rematch.webp" alt=""><span>再玩一局</span></button><button class="btn g" id="bBack">回房間</button><button class="btn" id="bAgain" hidden>🔁 再玩一次</button><button class="btn g" id="bOut">回大廳</button></div></div></div>
 
 <div class="ov" id="pick"><div class="box"><div class="t" id="pickT"><img class="ti" src="img/ui/vs-inv.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.35em">邀請同學來玩大砲混戰</div>
   <div class="s">綠色的同學現在在平台上，按一下就會邀請他（可以邀請好幾個人）</div><div id="pickList"></div><button class="btn g" id="pickX">好了</button></div></div>
@@ -231,6 +232,7 @@ function localNet(){
   const write=f=>{const d=read();f(d);localStorage.setItem(KEY,JSON.stringify(d));fire()};
   return {mode:'local',get:async p=>getP(read(),p)??null,set:async(p,v)=>write(d=>setP(d,p,v)),
     update:async(p,v)=>write(d=>{for(const k in v)setP(d,p+'/'+k,v[k])}),remove:async p=>write(d=>setP(d,p,null)),
+    tx:async(p,fn)=>{let ok=false;write(d=>{const r=fn(JSON.parse(JSON.stringify(getP(d,p)??null)));if(r!==undefined){setP(d,p,r);ok=true}});return ok},
     on:(p,cb)=>{const l={p,cb};L.add(l);setTimeout(()=>cb(getP(read(),p)??null));return ()=>L.delete(l)},
     onDisc:()=>{},onDiscRm:()=>{},cancelDisc:()=>{},conn:cb=>{cb(true);return ()=>{}}};
 }
@@ -242,6 +244,7 @@ const netReady=(async()=>{
     await timeout(loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js'),10000);
     const app=firebase.apps.find(a=>a.name==='pm')||firebase.initializeApp(FIREBASE_CONFIG,'pm'),db=app.database();
     Net={mode:'firebase',get:async p=>(await timeout(db.ref(p).get(),8000)).val(),set:(p,v)=>db.ref(p).set(v),update:(p,v)=>db.ref(p).update(v),remove:p=>db.ref(p).remove(),
+      tx:async(p,fn)=>{const r=await db.ref(p).transaction(fn,undefined,false);return !!(r&&r.committed)},   // 開局、發射、離開都用 transaction：連點、兩台同時按、上一局晚到的訊息都不會蓋掉新的一局
       on:(p,cb)=>{const r=db.ref(p),h=s=>cb(s.val());r.on('value',h);return ()=>r.off('value',h)},
       onDisc:p=>{try{db.ref(p).onDisconnect().set({'.sv':'timestamp'})}catch(e){}},
       onDiscRm:p=>{try{db.ref(p).onDisconnect().remove()}catch(e){}},cancelDisc:p=>{try{db.ref(p).onDisconnect().cancel()}catch(e){}},
@@ -315,7 +318,10 @@ async function sendMove(tok){const st=G.st;if(!st||st.phase!=='play')return;
   if(N.over){upd.phase='end';upd.winner=N.winner;upd.reason=N.reason}
   if(G.mode==='solo'){G.st={...st,...upd};onState();return}
   const old={...st};G.st={...st,...upd};TKV.update();
-  try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){G.st=old;TKV.unlock();TKV.update();alert('連線失敗，這一發沒有送出，請再發射一次')}}
+  /* 只接在同一局、同一個局面後面：上一局晚到的發射不會寫進新的一局 */
+  try{const ok=await Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='play'||(cur.g||0)!==(st.g||0)||(cur.moves||'')!==(st.moves||''))return;return {...cur,...upd}});
+    if(!ok){G.st=old;TKV.unlock();TKV.update()}}
+  catch(e){G.st=old;TKV.unlock();TKV.update();alert('連線失敗，這一發沒有送出，請再發射一次')}}
 
 /* ═════════════ 收到更新 ═════════════ */
 function onState(){
@@ -346,7 +352,7 @@ function paintOver(){const st=G.st,r=R();if(!r)return;if(r.boss)return paintOver
   else L.innerHTML=TK.places(r).map(p=>`<div class="rk${p.i===me?' me':''}"><em>${p.place<=3?['🥇','🥈','🥉'][p.place-1]:p.place}</em><i style="background:${col[p.i]}"></i><span>${nm[p.i]}${p.i===me?'（我）':''}</span><small>${r.T[p.i].out?'離開了':r.T[p.i].hp>0?'剩 '+r.T[p.i].hp+' 血':'KO'}</small></div>`).join('');
   $('#ovSt').innerHTML=TKV.statsHTML(r,nm);
   $('#ovN').textContent=G.mode==='net'&&res===0&&inPlat()&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':'';
-  $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=G.mode!=='solo';
+  $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=G.mode!=='solo';paintNext();
   if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(res===1||(G.mode==='solo'))sfx.win()}}
 
 function paintOverBoss(r){const st=G.st,me=myIdx(),nm=names(),B=TK.BOSS[r.boss],win=TK.result(st.winner,0)===1,col=PALETTE('boss');
@@ -356,8 +362,21 @@ function paintOverBoss(r){const st=G.st,me=myIdx(),nm=names(),B=TK.BOSS[r.boss],
   $('#ovSt').innerHTML=TKV.statsHTML(r,nm);
   const c=G.coin;$('#ovCoin').innerHTML=me>=0&&win&&inPlat()?(c&&c.c?`🪙 每人 +${c.c} 金幣（今天第 ${c.n} 場）`:c&&c.full?'今天打王的金幣已經拿滿 3 場了（明天再來）':isTestMe()?'🪙 測試帳號不發金幣':''):'';
   $('#ovN').textContent=G.mode==='net'&&me>=0&&inPlat()&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':'';
-  $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=true;
+  $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=true;paintNext();
   if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(win)sfx.win()}}
+/* 原房間再玩一局：結果畫面直接按「再玩一局」＝自己按準備（不會替同學按），回到房間等房主開始。
+   下面那行寫下一局已準備幾人、誰還沒準備（沒券的寫出來）、下一局怎麼用遊戲券；人數變動時跟著更新 */
+function paintNext(){const el=$('#ovNext'),b=$('#bRe'),st=G.st;
+  if(G.mode!=='net'||!st||st.phase!=='end'||!G.players[G.slot]){el.textContent='';b.hidden=true;return}
+  const pl=G.players,on=SLOTS.filter(k=>pl[k]&&!pl[k].off),rd=on.filter(isRdy),wait=on.filter(k=>!isRdy(k)),mr=isRdy(G.slot),can=hasTicket();
+  const rule=isBossSt()?'下一局每個人用 1 張遊戲券':'下一局輸的人用 1 張遊戲券，贏的人不用';
+  el.innerHTML=`下一局：已準備 ${rd.length}／${on.length} 人`+(wait.length?`（還沒準備：${wait.map(k=>plName(pl[k])+(pl[k].tk===false?'<span class="no">・沒有遊戲券</span>':'')).join('、')}）`:'')
+    +`<br>${rule}`+(on.length<2?'<br>現在不到 2 個人，可以等同學加入，或回大廳':'')+(!can&&!mr?'<br><span class="no">🎟️ 你沒有遊戲券，不能準備下一局</span>':'');
+  b.hidden=false;b.disabled=mr||!can||!!G.reBusy;b.querySelector('span').textContent=mr?'已準備，等房主開始':'再玩一局'}
+$('#bRe').onclick=async()=>{if(G.mode!=='net'||!G.players[G.slot]||isRdy(G.slot)||G.reBusy)return;if(!hasTicket())return paintNext();
+  G.reBusy=1;paintNext();
+  try{await Net.update(`rooms/${G.pin}/players/${G.slot}`,{rdy:nextG(),tk:true,skin:mySkin()});G.reBusy=0;G.ovHide=gameKey();$('#over').classList.remove('on');onState()}
+  catch(e){G.reBusy=0;paintNext();$('#ovNext').insertAdjacentHTML('beforeend','<br><span class="no">連線失敗，請再按一次</span>')}};
 
 /* 戰績、遊戲券：這局有我、結束了，就記一次 */
 function record(force){const st=G.st,me=myIdx();if(!inPlat()||me<0||!st)return;const k=gameKey();if(G.rec===k)return;
@@ -412,7 +431,7 @@ function watchOff(){const st=G.st,box=$('#offMsg');
 async function markOut(i){const st=G.st;if(!st||st.phase!=='play')return;const out={...(st.out||{}),['i'+i]:tokCount()};
   const N=TK.replay(st.map,st.seed,st.moves||'',out,st.mode),upd={['out/i'+i]:tokCount(),t:Date.now()};
   if(N.over){upd.phase='end';upd.winner=N.winner;upd.reason=N.reason}
-  try{await Net.update(`rooms/${G.pin}/state`,upd)}catch(e){}}
+  try{await Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase!=='play'||(cur.g||0)!==(st.g||0))return;const n={...cur,out:{...(cur.out||{}),['i'+i]:tokCount()},t:upd.t};if(upd.phase){n.phase=upd.phase;n.winner=upd.winner;n.reason=upd.reason}return n})}catch(e){}}   // 只標記這一局
 setInterval(()=>{if($('#game').classList.contains('on'))watchOff()},500);
 /* 再來一局要有券：每個人把「我還有沒有券」寫在房間裡 */
 function sendTk(){if(G.mode!=='net'||!G.pin||!G.slot)return;const t=hasTicket();if(G.tkSent===G.pin+G.slot+t)return;G.tkSent=G.pin+G.slot+t;
@@ -475,7 +494,11 @@ $('#bStart').onclick=async()=>{if(!isHost())return;let pl;try{pl=await Net.get(`
   let mode=G.st&&G.st.mode==='team'&&ks.length===4?'team':G.st&&G.st.mode==='boss'&&BOSS_ON()?'boss':'ffa';
   const site=G.st&&TK.SITES[G.st.site]?G.st.site:undefined,ng=TK.newGame(ks.length,mode,{site,mv:G.ver===2?'v2':'',boss:G.st&&G.st.boss});
   const upd={phase:'play',order:ks.join(','),names:ks.map(k=>plName(pl[k]).replace(/[|,]/g,'')).join('|'),seats:ks.map(k=>+pl[k].seat||0).join(','),skins:ks.map(k=>pl[k].skin||'forest').join('|'),mode:ng.mode,map:ng.map,seed:ng.seed,moves:'',out:null,g:((G.st&&G.st.g)||0)+1,winner:null,reason:null,t:Date.now()};
-  try{await Net.update(`rooms/${G.pin}/state`,upd);Net.remove(`rooms/${G.pin}/live`).catch(()=>{})}catch(e){lmsg('連線失敗，請再按一次')}};
+  if(G.starting)return;G.starting=1;$('#bStart').disabled=true;const g0=(G.st&&G.st.g)||0;
+  /* 只有房間還沒開打、局數還是剛剛看到的那一局才開：連點、兩台同時按都只會開一局 */
+  try{const ok=await Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase==='play'||(cur.g||0)!==g0)return;const n={...cur,...upd};for(const k in n)if(n[k]===null)delete n[k];return n});
+    if(ok)Net.remove(`rooms/${G.pin}/live`).catch(()=>{});else lmsg('這一局已經開始了')}
+  catch(e){lmsg('連線失敗，請再按一次')}finally{G.starting=0;paintLobby()}};
 const lmsg=t=>{$('#lmsg').textContent=t||''};
 
 /* ═════════════ 建立、加入 ═════════════ */
@@ -484,7 +507,7 @@ function listen(){G.un.forEach(f=>f());G.un=[
   Net.on(`rooms/${G.pin}/state`,v=>{if(!v){if(G.mode==='net'&&!G.leaving){G.un.forEach(f=>f());G.un=[];G.mode='';show('home');msg('房間關掉了')}return}
     const was=G.st&&G.st.phase;G.st=v;if(was==='wait'&&v.phase==='play')G.ovHide='';onState()}),
   Net.on(`rooms/${G.pin}/live`,v=>TKV.setLive(v)),
-  Net.on(`rooms/${G.pin}/players`,v=>{const before=SLOTS.filter(k=>G.players[k]).length;G.players=v||{};const after=SLOTS.filter(k=>G.players[k]).length;
+  Net.on(`rooms/${G.pin}/players`,v=>{const before=SLOTS.filter(k=>G.players[k]).length;G.players=v||{};if($('#over').classList.contains('on'))paintNext();const after=SLOTS.filter(k=>G.players[k]).length;
     if(after>before&&before)sfx.join();if(G.st)onState()}),
   Net.on(`rooms/${G.pin}/dec`,v=>{if(!v||!inPlat()||Date.now()-(v.t||0)>60000)return;G.inv.delete(v.s);
     lmsg(P.decText(v))})];

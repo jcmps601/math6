@@ -214,6 +214,7 @@
       ${night() ? '<div class="fnight">🌙 晚上 10 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
       <div class="fmain"><div class="fbox" id="fbox"><div id="fsvg"></div><button class="fzoom" id="fzoom"></button></div>
         <div class="fside"><div class="finfo" id="finfo"></div><div class="fpinfo" id="fpinfo"></div></div></div>
+      <div class="fsum" id="fsum" aria-live="polite"></div>
       <div class="fbar" id="fbar"></div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
     paint(); paintBar(); paintStore(); paintLog(); info(curK);
@@ -233,14 +234,42 @@
     const old = document.getElementById('ffx'), kids = old ? [...old.childNodes] : [];   // 還在飛的小特效留下來（不然一重畫就不見）
     box.innerHTML = farmSVG(F(), { zoom: zoomOn(), d: fdS() });
     const nf = document.getElementById('ffx'); if (nf) kids.forEach(k => nf.appendChild(k));
+    paintSum(); paintBarState();
     if (WK) WK.redraw();
     markSel();
     const q = id => document.getElementById(id), f = F();
     if (q('fwater')) { q('fwater').textContent = f.water || 0; q('ffert').textContent = f.fert || 0; q('fcoin').textContent = coins(); }
   }
+  /* 農場摘要：從現在的田地資料直接算（不另外存計數）。點一下就把符合的田框起來一下，並選第一塊 */
+  function farmNeeds() {
+    const f = F(), n = plotsFor(lvOf(f.xp).lv), o = { ripe: [], thirsty: [], care: [] };
+    for (let k = 0; k < n; k++) { const S = stat(f.p[k]); if (S.empty) continue; if (S.ripe) o.ripe.push(k); else if (S.thirsty) o.thirsty.push(k); if (S.bug || S.weed) o.care.push(k); }
+    return o;
+  }
+  function paintSum() {
+    const e = document.getElementById('fsum'); if (!e || !F()) return; const N = farmNeeds();
+    const chips = [['ripe', '✨', '可收成'], ['thirsty', '💧', '需澆水'], ['care', '🐛', '有蟲／雜草']].filter(([k]) => N[k].length)
+      .map(([k, i, t]) => `<button class="fsc fsc-${k}" data-h="${k}">${i} ${t} <b>${N[k].length}</b> 塊</button>`).join('');
+    e.innerHTML = chips || '<span class="fok">✅ 農場目前照顧好了</span>';
+    e.querySelectorAll('[data-h]').forEach(b => tap(b, () => plotHint(N[b.dataset.h])));
+  }
+  let hintT = 0;
+  function plotHint(ks) {
+    if (!ks || !ks.length) return; clearTimeout(hintT);
+    const on = () => ks.forEach(k => { const g = document.querySelector(`#fsvg [data-k="${k}"]`); if (g) g.classList.add('fhint'); });
+    on(); curK = ks[0]; markSel(); info(curK); hintT = setTimeout(() => document.querySelectorAll('#fsvg .fhint').forEach(g => g.classList.remove('fhint')), 2400);   // 框 2.4 秒就消失（不會一直閃）
+    const g = document.querySelector(`#fsvg [data-k="${ks[0]}"]`); if (g && g.scrollIntoView) try { g.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (x) { }
+  }
+  /* 全部收成：至少 1 塊可以收才按得下去；晚上農場休息時也不能按 */
+  function paintBarState() {
+    const b = document.querySelector('#fbar [data-k="all"]'); if (!b || !F()) return; const n = farmNeeds().ripe.length;
+    b.disabled = !n || night() || hvBusy; b.title = night() ? '晚上農場休息' : n ? `${n} 塊可以收成` : '還沒有成熟的作物';
+    const s = b.querySelector('small'); if (s) s.textContent = night() ? '休息中' : n ? `${n} 塊` : '還沒有';
+  }
   function paintBar() {
     const B = document.getElementById('fbar'); if (!B) return; B.innerHTML = '';
-    [['all', '🧺', '全部收成'], ['water', '💧', '全部澆水'], ['store', '📦', '倉庫'], ['seed', '🌱', '種子一覽'], ['deco', '🏡', '農場裝飾']].forEach(([k, i, n]) => { const b = el('button', 'fbtn big', `<span class="fbi">${i}</span>${n}`); tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'deco' ? decoModal() : seedModal(-1)); B.appendChild(b); });
+    [['all', '<img class="fbim" src="img/ui/ic-harvest-all.webp" alt="">', '全部收成'], ['water', '💧', '全部澆水'], ['store', '📦', '倉庫'], ['seed', '🌱', '種子一覽'], ['deco', '🏡', '農場裝飾']].forEach(([k, i, n]) => { const b = el('button', 'fbtn big', `<span class="fbi">${i}</span>${n}${k === 'all' ? '<small></small>' : ''}`); b.dataset.k = k; tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'deco' ? decoModal() : seedModal(-1)); B.appendChild(b); });
+   paintBarState();
   }
   function paintZoom() { const b = document.getElementById('fzoom'); if (b) b.innerHTML = zoomOn() ? '🔎 看全景' : '🔍 放大田地'; }
   /* 選中的田：場景上加綠框，旁邊顯示作物、狀態和能做的事 */
@@ -252,7 +281,7 @@
     if (k >= plotsFor(lvOf(f.xp).lv)) { e.innerHTML = `<div class="fsh">🔒 還沒開放的田</div><div class="fss">農場升到 Lv.${k >= 10 ? 7 : k >= 8 ? 5 : 3} 就能用這塊田</div>`; return; }
     if (S.empty) { e.innerHTML = '<div class="fsh">空的田</div><div class="fss">選一種種子種下去吧！</div><div class="fact"><button class="fgo" id="fdo">🌱 種菜</button></div>'; tap(e.querySelector('#fdo'), () => seedModal(k)); return; }
     const chips = [S.ripe ? '<i class="ok">✨ 可以收成</i>' : `<i>⏰ 還要 ${mmss(S.left)}</i>`, S.thirsty ? '<i class="wt">💧 口渴了</i>' : '', S.weed ? '<i class="bd">🌿 有雜草</i>' : '', S.bug ? '<i class="bd">🐛 有蟲</i>' : ''].join('');
-    const acts = [S.bug ? ['bug', '🐛 捉蟲'] : null, S.weed ? ['weed', '🌿 拔草'] : null, S.ripe ? ['har', '🧺 收成'] : null, S.thirsty ? ['wat', '💧 澆水'] : null, !S.ripe && !P.fz && (f.fert || 0) > 0 ? ['fer', '🧴 施肥（時間減半）'] : null].filter(Boolean);
+    const acts = [S.bug ? ['bug', '🐛 捉蟲'] : null, S.weed ? ['weed', '🌿 拔草'] : null, S.ripe ? ['har', '🧺 收成'] : null, S.thirsty ? ['wat', `💧 澆水（用 1 滴，現在有 ${f.water || 0} 滴）`] : null, !S.ripe && !P.fz && (f.fert || 0) > 0 ? ['fer', `🧴 施肥：時間減半（用 1 包，現在有 ${f.fert || 0} 包）`] : null].filter(Boolean);
     e.innerHTML = `<div class="fsel2">${cropImg(P.c, S.stage, 'fsci')}<div><div class="fsh">${S.C.n}</div><div class="fchips">${chips}</div><div class="fss">預計收成 ${S.yieldN} 個${P.s ? `（被同學摘走 ${P.s} 個）` : ''}</div></div></div>
       ${acts.length ? `<div class="fact">${acts.map(([a, t], n) => `<button class="${n ? 'fgo2' : 'fgo'}" data-a="${a}">${t}</button>`).join('')}</div>` : ''}`;
     e.querySelectorAll('[data-a]').forEach(b => tap(b, () => { const a = b.dataset.a; if (a === 'fer') return fertilize(k); if (a === 'wat') return water(k); if (a === 'har') return harvest(k); tapPlot(k); }));
@@ -278,7 +307,7 @@
   function waterAll() {
     if (night()) return; const f = F(); let n = 0; for (let k = 0; k < plotsFor(lvOf(f.xp).lv); k++) if (water(k, true)) n++;
     const e = document.getElementById('finfo');
-    if (n) { save(); paint(); snd(600); if (e) e.innerHTML = `💧 澆了 ${n} 塊田！`; } else if (e) e.innerHTML = (f.water || 0) < 1 ? '💧 水用完了！去練習，每答對 1 題就有 1 滴水' : '現在沒有口渴的田';
+    if (n) { save(); paint(); snd(600); if (e) e.innerHTML = `💧 澆了 ${n} 塊田，用了 ${n} 滴水，還剩 ${f.water || 0} 滴`; } else if (e) e.innerHTML = (f.water || 0) < 1 ? '💧 水用完了！去練習，每答對 1 題就有 1 滴水' : '現在沒有口渴的田';
   }
   function harvest(k, quiet) {
     const f = F(), P = f.p[k], S = stat(P); if (!S.ripe) return 0;
@@ -286,11 +315,24 @@
     if (!quiet) { cheer(k); fx(k, `${S.C.n} ×${S.yieldN}`, 'har', P.c); snd(880); setTimeout(() => snd(1100), 120); save(); paint(); paintStore(); info(k); }
     return S.yieldN;
   }
+  /* 全部收成：先列出這次可以收的田，再一塊一塊用單格收成（同一套計算，不另外加獎勵）。
+     收成會把那塊田清空，所以同一輪作物不會收兩次；整個農場是一份資料，跟雲端合併時留經驗比較多的那份，兩台平板同時收也只會算一次。
+     結果一次說清楚：收了幾塊、幾個；有沒收成的也寫出來；沒網路時寫「先存在這台平板」 */
+  let hvBusy = 0, hvAt = 0;
   function harvestAll() {
-    if (night()) return; const f = F(); let n = 0, k0 = -1; for (let k = 0; k < MAXP; k++) { const c = f.p[k] && f.p[k].c; const y = harvest(k, true); if (y) { n += y; if (k0 < 0) k0 = k; fx(k, `+${y}`, 'har', c); } }
-    if (k0 >= 0) cheer(k0);
     const e = document.getElementById('finfo');
-    if (n) { save(); paint(); paintStore(); snd(880); setTimeout(() => snd(1100), 120); try { confetti(30); } catch (x) { } if (e) e.innerHTML = `🧺 收成了 ${n} 個，都放進倉庫了！`; } else if (e) e.innerHTML = '還沒有成熟的作物';
+    if (hvBusy) return; if (night()) { if (e) e.innerHTML = '🌙 晚上農場休息，明天早上 6 點以後再收成'; return; }
+    const f = F(), ks = farmNeeds().ripe; if (!ks.length) { if (e && Date.now() - hvAt > 4000) e.innerHTML = '還沒有成熟的作物'; paintBarState(); return; }   // 剛收完又多按一下：保留剛剛的結果
+    hvBusy = 1; paintBarState();
+    let done = 0, n = 0, k0 = -1; const got = {};
+    try { ks.forEach(k => { const c = f.p[k] && f.p[k].c, y = harvest(k, true); if (y) { done++; n += y; got[c] = (got[c] || 0) + y; if (k0 < 0) k0 = k; fx(k, `+${y}`, 'har', c); } }); }
+    finally { hvBusy = 0; }
+    if (k0 >= 0) cheer(k0);
+    if (done) { hvAt = Date.now(); save(); paint(); paintStore(); snd(880); setTimeout(() => snd(1100), 120); try { confetti(30); } catch (x) { } }
+    const list = Object.keys(got).map(c => `${CROPS[c].n}×${got[c]}`).join('、'), miss = ks.length - done;
+    const off = !navigator.onLine ? '<br><small>📴 現在沒有網路：先存在這台平板，連上網路後會自動上傳</small>' : '';
+    if (e) e.innerHTML = done ? `<img class="fbim" src="img/ui/ic-harvest-all.webp" alt=""> 已收成 ${done} 塊${miss ? `，${miss} 塊尚未完成（再按一次會只收剩下的）` : ''}：${list}，都放進倉庫了！${off}` : '這些作物已經收過了';
+    paintBarState();
   }
   function fertilize(k) {
     const f = F(), P = f.p[k], S = stat(P); if (S.empty || S.ripe || P.fz || (f.fert || 0) < 1) return;
@@ -651,6 +693,12 @@
   .farm [data-k].fsel{filter:drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 6px #9be37a)}
   .fbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:.6rem}
   .fbtn.big{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:3.4rem;font-size:1.2rem;border:3px solid #eaf4de}
+  .fbtn.big[data-k="all"]{flex-wrap:wrap;row-gap:0;align-content:center}.fbtn.big small{font-size:.72em;color:#8a9a6e;font-weight:800;flex-basis:100%;text-align:center;line-height:1.1}.fbtn.big small:empty{display:none}.fbtn:disabled{opacity:.5;filter:grayscale(.5)}.fbim{width:1.6em;height:1.6em;vertical-align:-.45em}
+  .fsum{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin-top:.6rem;min-height:2.75rem}
+  .fsc{border:2px solid #d8f5a2;background:#fff;color:#5c940d;border-radius:999px;padding:.4rem .9rem;font:900 1rem inherit;font-family:inherit;min-height:2.75rem}.fsc b{font-size:1.15em}
+  .fsc-ripe{border-color:#ffd8a8;color:#d9480f}.fsc-thirsty{border-color:#a5d8ff;color:#1971c2}.fsc-care{border-color:#ffc9c9;color:#c92a2a}
+  .fok{color:#5c940d;font-weight:900}
+  .farm [data-k].fhint{filter:drop-shadow(0 0 4px #f59f00) drop-shadow(0 0 4px #f59f00) drop-shadow(0 0 8px #ffd43b);transition:filter .3s}
   .fbtn .fbi{font-size:1.4rem}
   @media (max-width:900px),(orientation:portrait){.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}.fbar .fbtn:last-child{grid-column:1/-1}}
   .fdpv{border-radius:16px;overflow:hidden;margin-bottom:.5rem;background:#a5d8ff}.fdpv svg{display:block;width:100%;height:auto}.fdslot{cursor:pointer}

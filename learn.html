@@ -118,6 +118,12 @@ button{font-family:inherit;cursor:pointer}
 #vback{border:0;border-radius:14px;background:var(--o);color:#fff;font-size:1.3rem;font-weight:900;padding:.35rem 1rem;box-shadow:0 3px 0 #e8590c}
 #vtitle{font-size:1.3rem;font-weight:900;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #vframe{flex:1;border:0;width:100%}
+#vload{position:absolute;inset:3.5rem 0 0 0;display:flex;align-items:center;justify-content:center;gap:.6rem;background:#fffaf0;font-weight:900;font-size:1.2rem;color:#7a5a32;z-index:2}#vload img{width:2.4rem;height:2.4rem}#vload button,.ldr,#auerr button,.imgph button{border:2px solid #f08c00;background:#fff;color:#d9480f;border-radius:999px;font-family:inherit;font-weight:900;font-size:1rem;padding:.2rem .9rem;min-height:2.75rem;min-width:2.75rem}
+.vls{width:1.6rem;height:1.6rem;border:4px solid #ffd8a8;border-top-color:#f08c00;border-radius:50%;animation:vsp 1s linear infinite}@keyframes vsp{to{transform:rotate(360deg)}}
+.ld .ldi{width:1.8rem;height:1.8rem;vertical-align:-.5rem;margin-right:.3rem}.ld .ldr{margin-left:.5rem}
+#auerr{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.4rem;font-size:1rem;font-weight:800;color:#c92a2a}#auerr img{width:1.6rem;height:1.6rem}
+.imgph{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;background:#f8f9fa;border:2px dashed #ced4da;border-radius:12px;color:#495057;font-weight:800;font-size:1rem;padding:.4rem;box-sizing:border-box;vertical-align:middle}.imgph img{width:2rem;height:2rem}
+#ansc.imglock>*:not(#imglockm){pointer-events:none;opacity:.45}#imglockm{font-weight:900;color:#c92a2a;padding:.4rem;text-align:center}
 body.vw #bnav{display:none!important}   /* 開遊戲、教具時不顯示下方選單（上面有「回平台」），不然手機會擋住畫面 */
 @media (orientation:landscape) and (max-height:560px){   /* 手機橫拿：上方標題列、下方選單變矮，留更多畫面 */
  #vbar{padding:.2rem .5rem;border-bottom-width:2px}#vback{font-size:1.05rem;padding:.2rem .8rem;box-shadow:0 2px 0 #e8590c}#vtitle{font-size:1.05rem}
@@ -141,6 +147,15 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 .rvn{display:inline-block;margin-left:.5em;font-size:.85em;color:#868e96;font-weight:700}
 #utag{flex:none;font-weight:900;font-size:1.1rem;border-radius:12px;padding:.2rem .6rem;border:3px solid currentColor}
 #dots{display:flex;gap:.3rem;margin-left:auto}#dots i{width:1.1rem;height:1.1rem;border-radius:50%;background:#e9ecef}
+.qrep{flex:none;display:inline-flex;align-items:center;gap:.25rem;border:2px solid #e9ecef;background:#fff;color:#868e96;border-radius:999px;padding:.15rem .6rem .15rem .3rem;font:800 .85rem inherit;font-family:inherit;min-height:2.75rem;min-width:2.75rem;justify-content:center}.qrep img{width:1.6rem;height:1.6rem}
+@media (max-width:700px){.qrep span{display:none}.qrep{padding:.15rem}}
+#repm .pmc{max-width:30rem}#repm .rpo{display:flex;flex-direction:column;gap:.45rem;margin:.6rem 0}#repm label{display:flex;align-items:center;gap:.5rem;border:2px solid #e9ecef;border-radius:14px;padding:.55rem .8rem;font-weight:800;min-height:2.75rem}
+#repm label:has(input:checked){border-color:#f08c00;background:#fff9db}#repm input[type=radio]{width:1.3rem;height:1.3rem}#repm textarea{width:100%;box-sizing:border-box;border:2px solid #e9ecef;border-radius:12px;padding:.5rem;font:inherit;font-size:1rem;min-height:3.2rem}
+#repm .rpb{display:flex;gap:.6rem;justify-content:center;margin-top:.7rem}#repm #rpok:disabled{opacity:.45;filter:grayscale(.6)}#repm .rpx{border:2px solid #dee2e6;background:#fff;color:#495057;border-radius:16px;font-family:inherit;font-weight:900;font-size:1.15rem;padding:.4rem 1.4rem;min-height:2.75rem}#repm .rpm{min-height:1.4em;font-weight:800;color:#2b8a3e;text-align:center}#repm .rpm.no{color:#c92a2a}
+#repcard .repf{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0}#repcard select{font:inherit;font-size:1rem;padding:.3rem .5rem;border-radius:10px;border:2px solid #dee2e6;min-height:2.75rem}
+.rpi{border:2px solid #e9ecef;border-radius:14px;padding:.6rem .8rem;margin:.45rem 0;background:#fff}.rpi.st0{border-color:#ffc078}.rpi.st2{opacity:.6}.rpi .rph{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:900}
+.rpi .rpc{background:#fff4e6;color:#d9480f;border-radius:999px;padding:.1rem .6rem}.rpi .rpq{margin:.35rem 0;color:#495057;white-space:pre-wrap}.rpi .rpd{font-size:.9rem;color:#868e96}.rpi img{max-height:4rem;border:1px solid #dee2e6;border-radius:6px;margin-right:.3rem}
+#replist .rpi .rpa{display:flex;gap:.4rem;margin-top:.4rem}#replist .rpi .rpa button{color:#2b8a3e;box-shadow:none;min-height:2.75rem;border-radius:10px;border:2px solid #dee2e6;background:#fff;font:800 .95rem inherit;font-family:inherit;padding:.2rem .8rem}#replist .rpi .rpa button.on{background:#2b8a3e;color:#fff;border-color:#2b8a3e}
 #dots i.cur{outline:3px solid var(--o);outline-offset:2px}#dots i.ok{background:var(--g)}#dots i.ok2{background:#94d82d}#dots i.no{background:#ffa8a8}
 #q{font-size:1.9rem;font-weight:900;line-height:1.5;background:#fff;border-radius:20px;padding:.45rem 1rem;box-shadow:0 4px 0 #f1e3cf}
 #q .num{color:#1c7ed6}
@@ -671,10 +686,17 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .pgw{display:flex;align-items:flex-end;gap:.8rem;margin-top:.4rem}.pgb{display:flex;flex-direction:column;align-items:center;gap:.2rem}.pgb .bar{width:2.6rem;height:4.2rem;background:#f1f3f5;border-radius:10px;display:flex;align-items:flex-end;overflow:hidden}
 .pgb .bar i{display:block;width:100%;background:#b6d3c2;border-radius:10px 10px 0 0}.pgb.now .bar i{background:#51cf66}.pgb small{font-size:.85rem;font-weight:900;color:#657065}
 .pgm{flex:1;min-width:0;padding-bottom:.3rem}.pgu{font-size:.95rem;color:#657065;font-weight:800}
+.pgs small{font-size:.85rem;color:#657065}.pgf{margin-top:.5rem;font-weight:800;color:#33443b;display:flex;align-items:center;gap:.3rem}.pgf b{color:#2e7554;font-size:1.2rem}.pgfi{width:1.6rem;height:1.6rem}.pga{margin-top:.5rem}.pga .go{min-height:2.75rem;background:#fff!important;color:#2e7554!important;border:2px solid #b2f2bb;box-shadow:0 3px 0 #d3f9d8!important;font-size:1rem!important;padding:.35rem 1rem!important;width:auto}
 .rwbtn{border:2px solid #e7ddcc;background:#fff;border-radius:999px;font-size:1rem;font-weight:900;color:#657065;padding:.15rem .7rem .15rem .4rem;font-family:inherit}
 .rwh{max-width:24rem}.rwr{display:flex;align-items:center;gap:.7rem;background:#fffaf0;border-radius:16px;padding:.5rem .8rem;margin-bottom:.5rem;text-align:left}.rwr img.ico{width:2.6rem;height:2.6rem}.rwr b{font-size:1.25rem;color:#33443b;width:4.2rem}.rwr span{font-size:1.1rem;font-weight:800;color:#657065}
 .rws{font-size:.95rem;color:#888;font-weight:800;margin:.3rem 0 .7rem}.rwok{font-size:1.3rem}
 /* 裝置設定「減少動態效果」時，動畫都停下來 */
+html.rm *,html.rm *::before,html.rm *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}html.rm .cf{display:none!important}
+.cfc{max-width:32rem}.cfr{display:flex;align-items:center;gap:.6rem;padding:.55rem .2rem;border-bottom:1px solid #f1f3f5;min-height:2.75rem}.cfr>img{width:2.2rem;height:2.2rem;flex:none}.cfr span{flex:1;min-width:0;text-align:left}.cfr b{display:block;font-size:1.1rem}.cfr small{display:block;color:#868e96;font-size:.85rem;line-height:1.35}
+.cfr input[type=checkbox]{appearance:none;-webkit-appearance:none;width:3.4rem;height:2rem;border-radius:999px;background:#dee2e6;position:relative;flex:none;cursor:pointer;margin:0;transition:background .2s}.cfr input[type=checkbox]::after{content:'';position:absolute;top:.2rem;left:.2rem;width:1.6rem;height:1.6rem;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s}
+.cfr input[type=checkbox]:checked{background:#2b8a3e}.cfr input[type=checkbox]:checked::after{left:1.6rem}.cfr input:focus-visible,.cfo input:focus-visible+span{outline:3px solid #1c7ed6;outline-offset:2px}
+.cflr{border-bottom:0}.cfo{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.2rem 0 .4rem}.cfo label{display:flex;flex-direction:column;align-items:center;gap:.2rem;border:2px solid #e9ecef;border-radius:14px;padding:.5rem;min-height:2.75rem;cursor:pointer}.cfo label:has(input:checked){border-color:#2b8a3e;background:#ebfbee}.cfo input{position:absolute;opacity:0;pointer-events:none}.cfo small{color:#868e96;font-size:.8rem;text-align:center}
+.cfpv{display:flex;gap:.4rem;width:100%;justify-content:space-between}.cfpv i{font-style:normal;background:#fff;border:2px solid #ced4da;border-radius:8px;padding:.1rem .35rem;font-size:.85rem}.cfpv.sw{flex-direction:row-reverse}.cfb{text-align:center;margin-top:.6rem}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 /* 大砲混戰：雙人對戰卡片裡最顯眼的一顆（占兩格） */
@@ -885,7 +907,8 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .pn{text-decoration:underline;text-decoration-thickness:.06em;text-underline-offset:.24em;text-decoration-skip-ink:none;margin:0 .07em}
 .bk{text-decoration:underline wavy;text-decoration-thickness:.05em;text-underline-offset:.22em;text-decoration-skip-ink:none;margin:0 .07em}
 .em{text-decoration:underline double;text-underline-offset:.2em}
-#verbar{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:9999;background:#1c7ed6;color:#fff;font-weight:800;font-size:1rem;padding:.35rem 1rem;border-radius:0 0 .8rem .8rem;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;max-width:96vw;overflow:hidden;text-overflow:ellipsis}
+#verbar img{width:1.8rem;height:1.8rem;flex:none}#verbar button{border:0;border-radius:999px;font-family:inherit;font-weight:900;font-size:.95rem;padding:.2rem .8rem;min-height:2.75rem;min-width:2.75rem;background:#fff;color:#1c7ed6}#verbar button+button{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7)}
+#verbar{display:flex;align-items:center;gap:.5rem;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:9999;background:#1c7ed6;color:#fff;font-weight:800;font-size:1rem;padding:.35rem 1rem;border-radius:0 0 .8rem .8rem;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;max-width:96vw;overflow:hidden;text-overflow:ellipsis}
 
 /* 老師頁：題目與素材檢查 */
 #qabox .qactl{display:flex;flex-wrap:wrap;gap:.4rem .9rem;align-items:center;margin:.5rem 0}#qabox .qactl label{font-weight:700;white-space:nowrap}#qabox input[type=number]{width:3.4rem}
@@ -956,7 +979,7 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
   <div id="ptk"></div>
  </aside>
  <main>
-  <div id="top"><span id="qno">第 1 題</span><span id="utag"></span><span id="dots"></span></div>
+  <div id="top"><span id="qno">第 1 題</span><span id="utag"></span><span id="dots"></span><button id="qrep" class="qrep" type="button" aria-label="這題有問題"><img src="img/ui/ic-question-report.webp" alt=""><span>這題有問題</span></button></div>
   <div id="q"></div>
   <div id="body">
    <div class="card" id="figc"><canvas id="scr"></canvas><div id="pens"><button data-p="b" class="on" title="藍筆"><img class="ico" src="img/ui/pr-pen.webp" alt="藍筆"></button><button data-p="r" title="紅筆"><img class="ico" src="img/ui/pr-marker.webp" alt="紅筆"></button><button data-p="e" title="橡皮擦"><img class="ico" src="img/ui/pr-eraser.webp" alt="橡皮擦"></button><button data-p="c" title="全部擦掉"><img class="ico" src="img/ui/pr-trash.webp" alt="全部擦掉"></button><button data-p="h" title="停止畫筆" aria-label="停止畫筆"><img class="ico" src="img/ui/pr-pen-off.webp" alt="停止畫筆"></button></div><svg id="fig" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg><div id="bigc"></div><div id="steps"></div></div>
@@ -1020,6 +1043,12 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
   <div class="dhead"><b>🌅 早自修分組</b><button id="amload">讀取</button><button id="amsave">儲存</button><label class="amimp">📂 匯入分組檔<input type="file" id="amfile" accept=".json,application/json" hidden></label><span id="ammsg"></span></div>
   <div class="amnote">每天 15 題，先做 2 題成語。沒設定的學生是「一般」：1 篇閱讀測驗，剩下的國語、數學各一半，從學習頁目前的範圍出（國語第 7 課起、數學期末範圍的單元；新增單元會自動加入）。「學扶」可以數學、國語分開設，再勾要練的題型（都不勾＝全部題型），成語以外國語、數學各一半。<br>設定存在每位學生自己的雲端資料裡，同學看不到；網站的程式裡不會有任何人的分組。</div>
   <div id="amout"></div>
+ </div>
+ <div class="cd" id="repcard">
+  <div class="dhead"><b>🚩 學生回報的題目問題</b><button id="repload">讀取</button><span id="repmsg"></span></div>
+  <div class="amnote">學生在練習時按「這題有問題」送來的。只有老師看得到（存在每位學生自己的資料裡）；回報不會改題目、不會改對錯，也不會加獎勵。</div>
+  <div class="repf"><select id="repfs" aria-label="處理狀態"><option value="0">未處理</option><option value="1">已查看</option><option value="2">已處理</option><option value="">全部</option></select><select id="repfj" aria-label="科目"><option value="">全部科目</option></select><select id="repfc" aria-label="問題類型"><option value="">全部類型</option><option value="img">圖片不清楚</option><option value="ans">答案可能有問題</option><option value="snd">聲音沒播放</option></select></div>
+  <div id="replist"><div class="dnone">按「讀取」看學生回報的題目</div></div>
  </div>
  <div class="cd" id="qacard">
   <div class="dhead"><b>🔎 題目與素材檢查</b><button id="qaopen">打開</button><span id="qaomsg"></span></div>
@@ -1587,7 +1616,7 @@ async function ensureBind(){if(!user||!db||!fauth)return false;
   try{if(!fauth.currentUser)await timeout(fauth.signInAnonymously(),10000);const u=fauth.currentUser;if(!u)return false;
     const k=u.uid+'|'+user.seat+'|'+user.pin;if(boundKey===k)return true;
     await timeout(db.ref(`${ROOT}/bind/${u.uid}`).set({s:String(user.seat),p:String(user.pin)}),10000);boundKey=k;return true}catch(e){return false}}
-async function flush(){if(!db||!online||flushing||!Q.length)return;flushing=true;
+async function flush(){repFlush().catch(()=>{});if(!db||!online||flushing||!Q.length)return;flushing=true;
   while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/')||it.p.startsWith(ROOT+'/boss/')||it.p.startsWith(ROOT+'/stat/')||it.p.startsWith(ROOT+'/pet')||it.p.startsWith(ROOT+'/farm');   // pet/、petlike/、farm/、farmact/
     if(isLb&&!(await ensureBind()))break;
     /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
@@ -1634,6 +1663,9 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   if(r.qd&&r.qd.d===dkey()){if(!sum.qd||sum.qd.d!==r.qd.d)sum.qd={d:r.qd.d,k:(r.qd.k||[]).slice()};else sum.qd.k=[...new Set([...(sum.qd.k||[]),...(r.qd.k||[])])]}   // 今天做過的題目
   sum.amr=mx(sum.amr,r.amr);   // 早自修讀到第幾篇
+  if(r.rh&&typeof r.rh==='object'){sum.rh=sum.rh||{};for(const k in r.rh){if(!Array.isArray(r.rh[k]))continue;const M=new Map();[...(sum.rh[k]||[]),...r.rh[k]].forEach(x=>{if(x&&x.t)M.set(x.t,x)});sum.rh[k]=[...M.values()].sort((a,b)=>a.t-b.t).slice(-5)}}   // 每個單元最近 5 回（我的進步）：兩台合起來，同一回不重複
+  if(r.dn&&typeof r.dn==='object'){sum.dn=sum.dn||{};for(const k in r.dn)sum.dn[k]=mx(sum.dn[k],r.dn[k])}
+  if(Array.isArray(r.wf)){const M=new Map();[...(sum.wf||[]),...r.wf].forEach(x=>{if(Array.isArray(x))M.set(x[0]+'|'+x[1],x)});sum.wf=[...M.values()].filter(x=>x[0]>Date.now()-35*864e5).sort((a,b)=>a[0]-b[0])}   // 錯題本訂正紀錄：兩台合起來、同一筆不重複
   if(r.bsr&&r.bsr.d===dkey()&&(!sum.bsr||sum.bsr.d!==r.bsr.d||(r.bsr.n||0)>(sum.bsr.n||0)))sum.bsr={d:r.bsr.d,n:r.bsr.n||0};   // 今天打王拿過幾次金幣
   if(r.rv){sum.rv=sum.rv||{};for(const k in r.rv){const a=sum.rv[k],b=r.rv[k];if(b&&(!a||(b.m||0)>(a.m||0)))sum.rv[k]=b}}   // 延後複習：每一筆看比較新的
   if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
@@ -1735,11 +1767,41 @@ function tone(f,d,type,v,at){if(!sndOn)return;try{AC=AC||new (window.AudioContex
   o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v||.08,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
 const sfx={ok(){tone(784,.12,'triangle',.09);tone(1175,.18,'triangle',.08,.09)},no(){tone(220,.18,'sine',.07);tone(180,.22,'sine',.06,.1)},
   ticket(){[659,784,988,1319].forEach((f,i)=>tone(f,.16,'triangle',.08,i*.08))},win(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.08,i*.1))},done(){tone(659,.15,'triangle',.07);tone(880,.2,'triangle',.07,.12)}};
-function paintSnd(){const b=document.getElementById('sndBtn');if(b){b.innerHTML=ico('nav-snd','bi')+(sndOn?'音效':'靜音');b.classList.toggle('mute',!sndOn)}}
-{const b=document.getElementById('sndBtn');if(b)tap(b,()=>{sndOn=!sndOn;LS.set('learn601_snd',sndOn);paintSnd();if(sndOn)sfx.ok()})}
+function paintSnd(){const b=document.getElementById('sndBtn');if(b){b.innerHTML=ico('nav-snd','bi')+(sndOn?'聲音・設定':'靜音・設定');b.setAttribute('aria-label','聲音與設定');b.classList.toggle('mute',!sndOn)}}
+{const b=document.getElementById('sndBtn');if(b)tap(b,()=>cfgOpen())}
+/* ===== 聲音與舒適度設定（從原本的「音效」按鈕進來，不另外多一個按鈕）=====
+   跟著學生帳號記：learn601_cfg_座號 = {snd 音效, say 題目自動朗讀, rm 減少動態, lr 左右手操作}；還沒登入、沒設定過的用系統「減少動態效果」當預設
+   ・音效：答對、答錯、按鈕的聲音（不會關掉題目朗讀／聽力）
+   ・題目朗讀：換題時自動播聽力、自動唸題目；關掉以後按 🔊 還是聽得到
+   ・挑戰樂園背景音樂：只有挑戰樂園有音樂，存在它自己的 cg601_bgmOff
+   ・減少動態：裝飾晃動、搖晃、閃光、彩帶、慶祝動畫都停掉；遊戲規則、時間、彈道不變
+   ・左右手：只給有左右兩組觸控鍵的遊戲（方塊對戰、雙人合作），把兩組鍵左右對調；鍵盤方向不變。遊戲開始時才套用，不會在按住鍵時切換
+   遊戲頁從 learn601_cfg_cur 讀目前登入的人的設定 */
+const sysRM=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}};
+function cfgGet(){const d={snd:LS.get('learn601_snd',true),say:true,rm:null,lr:0};return Object.assign(d,user?LS.get('learn601_cfg_'+user.seat,{}):{})}
+function cfgRM(){const c=cfgGet();return c.rm==null?sysRM():!!c.rm}
+function cfgApply(){const c=cfgGet();sndOn=c.snd!==false;paintSnd();document.documentElement.classList.toggle('rm',cfgRM());
+  LS.set('learn601_cfg_cur',{rm:cfgRM()?1:0,lr:c.lr?1:0,say:c.say!==false?1:0})}
+function cfgSet(k,v){if(!user){if(k==='snd')LS.set('learn601_snd',v);cfgApply();return}const c=LS.get('learn601_cfg_'+user.seat,{});c[k]=v;LS.set('learn601_cfg_'+user.seat,c);cfgApply()}
+function cfgOpen(){if(document.getElementById('cfgm'))return;const c=cfgGet(),bgmOff=(()=>{try{return localStorage.getItem('cg601_bgmOff')==='1'}catch(e){return false}})();
+  const m=el('div','pmod','');m.id='cfgm';const sw=(k,on,t,d,icon)=>`<label class="cfr">${icon?`<img src="img/ui/${icon}.webp" alt="">`:''}<span><b>${t}</b><small>${d}</small></span><input type="checkbox" role="switch" data-k="${k}"${on?' checked':''}></label>`;
+  m.innerHTML=`<div class="pmc cfc" role="dialog" aria-modal="true" aria-labelledby="cft"><div class="pmh" id="cft">聲音與設定</div>
+    ${sw('snd',sndOn,'音效','答對、答錯、按按鈕的聲音（不會關掉題目朗讀）','nav-snd')}
+    ${sw('say',c.say!==false,'題目自動朗讀','換題時自動播聽力、唸題目；關掉後按 🔊 還是聽得到','ic-sound-on')}
+    ${sw('bgm',!bgmOff,'挑戰樂園背景音樂','只有挑戰樂園有背景音樂','ic-music-on')}
+    ${sw('rm',cfgRM(),'減少動態','裝飾晃動、閃光、彩帶、慶祝動畫都停掉（遊戲規則、倒數、彈道不變）'+(c.rm==null?'<br>現在跟著平板的「減少動態效果」設定':''),'ic-reduce-motion')}
+    <div class="cfr cflr"><img src="img/ui/ic-control-layout.webp" alt=""><span><b>操作按鈕配置</b><small>方塊對戰、雙人合作的觸控鍵；下一場遊戲開始時套用</small></span></div>
+    <div class="cfo" role="radiogroup" aria-label="操作按鈕配置">${[[0,'右手','移動鍵在左、動作鍵在右'],[1,'左手','動作鍵在左、移動鍵在右']].map(([v,t,d])=>`<label><input type="radio" name="cflr" value="${v}"${(c.lr?1:0)===v?' checked':''}><span class="cfpv ${v?'sw':''}"><i>◀ ▶</i><i>↻ ⬇</i></span><b>${t}</b><small>${d}</small></label>`).join('')}</div>
+    <div class="cfb"><button class="go" id="cfok">好了</button></div></div>`;
+  document.body.appendChild(m);
+  m.querySelectorAll('input[type=checkbox]').forEach(x=>x.addEventListener('change',()=>{const k=x.dataset.k;
+    if(k==='bgm'){try{localStorage.setItem('cg601_bgmOff',x.checked?'0':'1')}catch(e){}return}
+    cfgSet(k,x.checked);if(k==='snd'&&x.checked)sfx.ok();if(k==='say'&&!x.checked)stopAu()}));
+  m.querySelectorAll('input[name=cflr]').forEach(x=>x.addEventListener('change',()=>cfgSet('lr',+x.value)));
+  tap(m.querySelector('#cfok'),()=>m.remove());tap(m,e=>{if(e.target===m)m.remove()});setTimeout(()=>{const f=m.querySelector('input');f&&f.focus()},50)}
 /* 彩帶 */
 const CCOL=['#ff6b6b','#ffd43b','#51cf66','#339af0','#cc5de8','#ff922b'];
-function confetti(n){for(let i=0;i<n;i++){const e=document.createElement('i');e.className='cf';e.style.left=Math.random()*100+'vw';e.style.background=CCOL[i%CCOL.length];
+function confetti(n){if(document.documentElement.classList.contains('rm'))return;for(let i=0;i<n;i++){const e=document.createElement('i');e.className='cf';e.style.left=Math.random()*100+'vw';e.style.background=CCOL[i%CCOL.length];
   e.style.animationDuration=(1.8+Math.random()*1.6)+'s';e.style.animationDelay=Math.random()*.5+'s';if(Math.random()<.4)e.style.borderRadius='50%';document.body.appendChild(e);setTimeout(()=>e.remove(),4200)}}
 function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
   for(let i=0;i<n;i++){const e=document.createElement('i');e.className='bs';const a=Math.random()*Math.PI*2,d=50+Math.random()*70;
@@ -1748,7 +1810,7 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
-function enterHome(){show$('home');presence();listenInv();listenSum();amLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
+function enterHome(){cfgApply();show$('home');presence();listenInv();listenSum();amLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);wbPull();paintMeLook();render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
@@ -1836,7 +1898,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
   const m=el('div','pmod','');m.id='more';m.innerHTML=`<div class="pmc moresheet"><div class="pmh">更多</div><div class="mgrid">
     <button data-k="game">${ico('nav-game')}<b>挑戰樂園</b><small>遊戲・排行榜・對戰</small></button>
     <button data-k="wb">${ico('nav-wb')}<b>錯題再練</b><small>${wbn?`${wbn} 題待練`:'目前沒有錯題'}</small></button>
-    <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>音效</b><small>${sndOn?'開著':'關著'}</small></button>
+    <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>聲音與設定</b><small>音效${sndOn?'開著':'關著'}・朗讀・減少動態</small></button>
     <button data-k="fs">${ico(full?'ic-fullscreen-exit':'nav-fs')}<b>全螢幕</b><small>${full?'離開全螢幕':'畫面變大'}</small></button>
     <button data-k="help">${ico('pr-hint')}<b>獎勵說明</b><small>金幣、水滴、遊戲券</small></button>
     <button data-k="off">${ico('ic-sync-done')}<b>帶回家準備</b><small>${offReady()?'✅ 可以離線使用':'在家沒網路也能練'}</small></button>
@@ -1852,7 +1914,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     if(k==='pw'){closeMore();return pwChange()}
     if(k==='lite'){LS.set('learn601_lite',liteOn()?0:1);liteApply();closeMore();return toast(liteOn()?'⚡ 省電模式開了：動畫變少，比較順':'省電模式關了')}
     if(k==='off'){closeMore();return offPrep()}
-    if(k==='snd'){fire('sndBtn');return openMore()}
+    if(k==='snd'){closeMore();return cfgOpen()}
     if(k==='fs'){closeMore();return fire('fsBtn')}
     if(k==='out'){closeMore();return fire('logout')}}));
   tap(m.querySelector('.pmx'),closeMore);tap(m,e=>{if(e.target===m)closeMore()})}
@@ -2015,14 +2077,99 @@ const starN=b=>b>=9?3:b>=7?2:b>=5?1:0;
 const starRow=b=>{const n=starN(b);return `<span class="srow">${[0,1,2].map(i=>ico(i<n?'rw-star':'rw-star0','st')).join('')}</span>`};
 function unitState(k){const done=(sum.dn&&sum.dn[k])||sum.best[k]!=null;return `<span class="ust ${done?'d':'n'}">${done?'已完成':'還沒開始'}</span>${starRow(sum.best[k]||0)}`}
 /* 我的進步：最近練的那個單元，比較最後兩次「一次就答對」的題數（同單元、同題數） */
-function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let key=null,t=0;for(const k in R){const a=R[k],x=a[a.length-1];if(x&&x.t>t){t=x.t;key=k}}
-  const U=key?(UN.find(u=>u.key===key)||mixByKey(key)):null;let h=`<div class="pgt">${ico('ic-thumbs-up','pgi')}我的進步</div>`;
-  if(!key||!U){c.innerHTML=h+'<div class="pgs">完成第一次練習，就能看到自己的紀錄</div>';return c}
-  const a=R[key].filter(x=>x.n===R[key][R[key].length-1].n),now=a[a.length-1],prev=a.length>1?a[a.length-2]:null,nm=U.name;
-  if(!prev){c.innerHTML=h+`<div class="pgs">${nm}：這次一次答對 <b>${now.f}</b> 題</div>`;return c}
-  const d=now.f-prev.f,msg=d>0?`比上次多答對 <b>${d}</b> 題`:d===0?'和上次一樣，繼續累積':'這次練習完成了，一起看看需要再練的地方',mx=Math.max(now.n,1);
-  c.innerHTML=h+`<div class="pgw"><div class="pgb"><div class="bar"><i style="height:${prev.f/mx*100}%"></i></div><small>上次 ${prev.f} 題</small></div><div class="pgb now"><div class="bar"><i style="height:${now.f/mx*100}%"></i></div><small>這次 ${now.f} 題</small></div>
-    <div class="pgm"><div class="pgu">${nm}（一次就答對）</div><div class="pgs">${msg}</div></div></div>`;return c}
+/* ===================== 這題有問題（題目回報） =====================
+   學生在練習時按「這題有問題」→ 選一種問題（聲音題才有「聲音沒播放」）＋可以寫一點備註 → 送出。
+   ・打開的那一刻就把這一題記下來（之後換題也不會送錯題）；送的內容：題目指紋、單元、題型、題目文字、選項、答案、圖片路徑、平台版本、時間。不放密碼、座號以外的個人資料
+   ・存在學生自己的資料 learn/u/座號/密碼/rep/編號（只有學生自己和有全班密碼的老師讀得到，其他同學看不到）。編號＝日期＋題目＋問題種類：同一天同一題同一種只會有一筆，重送也不會變兩筆
+   ・沒網路先存在平板（learn601_rq），連上再送；這個佇列跟進度分開，萬一雲端不讓寫，也不會卡住進度上傳
+   ・回報不加獎勵、不改對錯、不改題庫 */
+const rEsc=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const REP_CAT={img:'圖片不清楚',ans:'答案可能有問題',snd:'聲音沒播放'};
+const repHash=t=>{let h=2166136261;for(const c of String(t)){h^=c.codePointAt(0);h=Math.imul(h,16777619)>>>0}return h.toString(36)};
+const repPlain=h=>{const d=document.createElement('div');d.innerHTML=String(h||'');d.querySelectorAll('svg,style,script').forEach(x=>x.remove());return d.textContent.replace(/\s+/g,' ').trim().slice(0,400)};
+let repBusy=false;
+async function repFlush(only){if(repBusy||!db||!online||!user)return 'queued';repBusy=true;let res='queued';
+  try{const L=LS.get('learn601_rq',[]);for(const it of [...L]){if(it.s!==user.seat)continue;
+      try{await timeout(db.ref(`${ROOT}/u/${it.s}/${it.p}/rep/${it.id}`).update(it.r),10000);const M=LS.get('learn601_rq',[]).filter(x=>x.id!==it.id);LS.set('learn601_rq',M);if(it.id===only)res='sent'}
+      catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){const M=LS.get('learn601_rq',[]).filter(x=>x.id!==it.id);LS.set('learn601_rq',M);if(it.id===only)res='perm'}else break}}}
+  finally{repBusy=false}return res}
+function repOpen(){if(!round||!round.qs||!user||document.getElementById('repm'))return;const q=round.qs[cur];if(!q)return;
+  /* 打開時就固定這一題 */
+  const U=UN.find(u=>u.key===q.uk)||(typeof pu==='number'?UN[pu]:null),au=!!(q.au||q.speak||document.querySelector('#q .au,#q audio,#q [data-au]'));
+  const imgs=[...document.querySelectorAll('#q img,#bigc img,#fig img,#opts img')].map(x=>x.getAttribute('src')).filter(x=>x&&!/^data:|img\/ui\//.test(x)).slice(0,6);
+  const ansTxt=a=>a==null?'':Array.isArray(a)?a.join('：'):typeof a==='object'?(a.n!=null&&a.d!=null?`${a.w?a.w+' 又 ':''}${a.n}/${a.d}`:JSON.stringify(a)):String(a);
+  const shown=[...document.querySelectorAll('#bigc,#fig')].map(e=>String(e.textContent||'').replace(/\s+/g,' ').trim()).filter(Boolean).join(' ').slice(0,200);   // 題目畫面上另外顯示的數字（比、算式、圖上的字），重現題目要用
+  const snap={k:qKey(q),qid:typeof q.id==='string'?q.id.slice(0,200):'',u:U?U.key:String(pu),j:U?U.s:'',un:U?(U.nav||U.name):'',t:q.t||'',q:repPlain(q.text||q.q||document.getElementById('q').innerHTML),sh:shown,o:(q.opts||[]).map(x=>repPlain(typeof x==='object'?JSON.stringify(x):x)).slice(0,8),a:repPlain(ansTxt(q.a!=null?q.a:q.ans)),im:imgs,v:APP_VER};
+  const m=el('div','pmod','');m.id='repm';
+  m.innerHTML=`<div class="pmc" role="dialog" aria-modal="true" aria-labelledby="rpt"><div class="pmh" id="rpt"><img src="img/ui/ic-question-report.webp" alt="" style="width:1.8rem;height:1.8rem;vertical-align:-.45rem"> 這題有問題</div>
+    <div class="rps">${rEsc(snap.un)}　${rEsc(snap.q.slice(0,40))}${snap.q.length>40?'…':''}</div>
+    <div class="rpo" role="radiogroup" aria-label="問題種類">${['img','ans'].concat(au?['snd']:[]).map(k=>`<label><input type="radio" name="rpc" value="${k}">${REP_CAT[k]}</label>`).join('')}</div>
+    <textarea id="rpn" maxlength="100" placeholder="想多說一點可以寫在這裡（可以不寫）" aria-label="備註（可以不寫）"></textarea>
+    <div class="rpm" id="rpm" aria-live="polite"></div>
+    <div class="rpb"><button class="go" id="rpok" disabled>送出</button><button class="rpx" id="rpx">取消</button></div></div>`;
+  document.body.appendChild(m);const ok=m.querySelector('#rpok');
+  m.querySelectorAll('input[name=rpc]').forEach(x=>x.addEventListener('change',()=>{ok.disabled=false}));
+  const close=()=>m.remove();tap(m.querySelector('#rpx'),close);
+  tap(ok,async()=>{if(ok.disabled)return;const c=(m.querySelector('input[name=rpc]:checked')||{}).value;if(!c)return;ok.disabled=true;const M=m.querySelector('#rpm');
+    const id=`${dkey()}_${repHash(snap.k)}_${c}`,note=m.querySelector('#rpn').value.trim().slice(0,100),sent=LS.get('learn601_rs',{});
+    if(sent[id]&&sent[id].n===note&&Date.now()-sent[id].t<10*60000){M.textContent='這題剛剛已經回報過了，謝謝你！';setTimeout(close,1400);return}   // 快速重複送出：不再送
+    const rec=Object.assign({},snap,{c,n:note,at:Date.now()});
+    const L=LS.get('learn601_rq',[]).filter(x=>x.id!==id);L.push({id,s:user.seat,p:user.pin,r:rec});LS.set('learn601_rq',L);
+    sent[id]={n:note,t:Date.now()};for(const k in sent)if(Date.now()-sent[k].t>864e5)delete sent[k];LS.set('learn601_rs',sent);
+    M.textContent='送出中…';const res=await repFlush(id);
+    if(res==='sent'){M.textContent='已送出，謝謝你幫忙檢查！';setTimeout(close,1400)}
+    else if(res==='perm'){M.className='rpm no';M.textContent='現在沒辦法送出，請直接告訴老師是哪一題'}
+    else{M.textContent='已暫存，連線後再送出';setTimeout(close,1600)}});
+  setTimeout(()=>{const f=m.querySelector('input[name=rpc]');f&&f.focus()},50)}
+tap($('#qrep'),repOpen);
+/* 練習頁的圖片讀不到：保留原本大小的位置、寫「圖片沒有載入」＋「重新載入」（只重載這一張，不重出題、不重算分）。
+   題目本身的圖（題目文字、上方大圖、圖形區）還沒載好時，先暫停作答，免得看著破圖作答 */
+document.addEventListener('error',e=>{const im=e.target;if(!im||im.tagName!=='IMG'||!im.closest||!im.closest('#prac')||im.dataset.nofb||/img\/ui\//.test(im.getAttribute('src')||''))return;imgFail(im)},true);
+function imgFail(im){if(im.dataset.fail)return;im.dataset.fail='1';const r=im.getBoundingClientRect(),w=Math.max(r.width,parseFloat(im.getAttribute('width'))||0,96),h=Math.max(r.height,parseFloat(im.getAttribute('height'))||0,72);
+  const ph=document.createElement('span');ph.className='imgph';ph.style.minWidth=w+'px';ph.style.minHeight=h+'px';ph.setAttribute('role','status');
+  ph.innerHTML=`<img src="img/ui/ic-retry-load.webp" alt="" data-nofb="1"><span>圖片沒有載入</span><button type="button">重新載入</button>`;
+  im.style.display='none';im.after(ph);const key=im.closest('#q,#bigc,#fig');if(key)imgLock(true);
+  ph.querySelector('button').addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();ph.querySelector('span').textContent='重新載入中…';
+    const src=(im.getAttribute('src')||'').replace(/([?&])r=\d+&?/,'$1').replace(/[?&]$/,''),n=new Image();
+    n.onload=()=>{im.src=n.src;im.style.display='';delete im.dataset.fail;ph.remove();if(!document.querySelector('#prac .imgph'))imgLock(false)};
+    n.onerror=()=>{ph.querySelector('span').textContent='還是沒有載入，檢查網路後再試一次'};n.src=src+(src.includes('?')?'&':'?')+'r='+Date.now()})}
+function imgLock(on){const a=document.getElementById('ansc');if(!a)return;a.classList.toggle('imglock',on);let m=document.getElementById('imglockm');
+  if(on&&!m){m=document.createElement('div');m.id='imglockm';m.textContent='題目的圖片還沒載入，載入好以後再作答';a.prepend(m)}else if(!on&&m)m.remove()}
+/* 老師：讀全班的回報（每位學生自己的 rep），可以篩選、標記已查看／已處理 */
+let REPS=null;
+async function repLoad(){const pins=LS.get('learn601_pins',null),M=$('#repmsg');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+  M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上雲端';return}
+  const all=[];await Promise.all(Object.keys(pins).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/rep`).get(),10000)).val()||{};for(const id in v)all.push(Object.assign({s,id,p:pins[s]},v[id]))}catch(e){}}));
+  REPS=all.sort((a,b)=>(b.at||0)-(a.at||0));M.textContent=`共 ${all.length} 筆`;
+  const js=[...new Set(all.map(x=>x.j).filter(Boolean))],SJ=$('#repfj'),cur=SJ.value;SJ.innerHTML='<option value="">全部科目</option>'+js.map(j=>`<option value="${j}">${(SUBJ.find(x=>x.k===j)||{}).n||j}</option>`).join('');SJ.value=cur;repPaint()}
+function repPaint(){const L=$('#replist');if(!REPS){return}const fs=$('#repfs').value,fj=$('#repfj').value,fc=$('#repfc').value;
+  const A=REPS.filter(x=>(fs===''||String(x.st||0)===fs)&&(!fj||x.j===fj)&&(!fc||x.c===fc));
+  if(!A.length){L.innerHTML='<div class="dnone">沒有符合的回報</div>';return}
+  const t=x=>{const d=new Date(x.at||0);return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+  L.innerHTML=A.map((x,i)=>`<div class="rpi st${x.st||0}"><div class="rph"><span class="rpc">${REP_CAT[x.c]||x.c}</span><span>${rEsc(seatName(x.s))}</span><span>${rEsc(x.un||x.u||'')}${x.t?'・'+rEsc(x.t):''}</span><span class="rpd">${t(x)}・${rEsc(x.v||'')}</span></div>
+    ${x.n?`<div><b>備註：</b>${rEsc(x.n)}</div>`:''}<div class="rpq">${rEsc(x.q||'')}${x.sh?`<br><small>畫面上：${rEsc(x.sh)}</small>`:''}</div>${(x.o||[]).length?`<div class="rpd">選項：${x.o.map(esc).join('｜')}</div>`:''}<div class="rpd">答案：${rEsc(x.a||'')}　題目指紋：${rEsc(x.k||'')}${x.qid?`　題庫編號：${rEsc(x.qid)}`:''}</div>
+    ${(x.im||[]).map(src=>`<a href="${rEsc(src)}" target="_blank" rel="noopener"><img src="${rEsc(src)}" alt="題目圖片"></a>`).join('')}
+    <div class="rpa">${[['0','未處理'],['1','已查看'],['2','已處理']].map(([v,n])=>`<button data-i="${REPS.indexOf(x)}" data-v="${v}" class="${String(x.st||0)===v?'on':''}">${n}</button>`).join('')}</div></div>`).join('');
+  L.querySelectorAll('[data-v]').forEach(b=>tap(b,async()=>{const x=REPS[+b.dataset.i],v=+b.dataset.v;try{await timeout(db.ref(`${ROOT}/u/${x.s}/${x.p}/rep/${x.id}/st`).set(v),10000);x.st=v;repPaint()}catch(e){$('#repmsg').textContent='更新失敗：'+(e.code||e.message||e)}}))}
+tap($('#repload'),repLoad);['#repfs','#repfj','#repfc'].forEach(k=>$(k).addEventListener('change',repPaint));
+/* 我的進步：只跟自己比，最多兩個重點，數字都查得到出處
+   ・同一個單元、題數一樣的完整回合（sum.rh，每個單元留最近 5 回）才放在一起比，題數不同的不混在一起
+   ・有 3 回以上：寫「最近 3 回合：一次答對 6、7、8 題」；不到 3 回就說再練幾次才看得到變化；少了不說「退步」
+   ・這週訂正：只數錯題本真的答對拿掉的紀錄（sum.wf），刪除、換範圍不算 */
+function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let key=null,t=0,U=null;
+  for(const k in R){const a=R[k],x=Array.isArray(a)&&a[a.length-1],u=UN.find(u=>u.key===k)||mixByKey(k);if(x&&u&&x.t>t){t=x.t;key=k;U=u}}   // 最近練過、而且現在還有的單元
+  let h=`<div class="pgt">${ico('ic-learning-growth','pgi')}我的進步</div>`;
+  const wk=(()=>{const d=new Date(),m=new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7)).getTime();return (sum.wf||[]).filter(x=>Array.isArray(x)&&x[0]>=m).length})();
+  const fix=wk?`<div class="pgf">${ico('unit-wb','pgfi')}這週在錯題本訂正了 <b>${wk}</b> 題</div>`:'';
+  if(!key||!U){c.innerHTML=h+'<div class="pgs">完成第一次練習，就能看到自己的紀錄</div>'+fix;return c}
+  const last=R[key][R[key].length-1],a=R[key].filter(x=>x.n===last.n).slice(-3),nm=U.name,N=last.n;
+  const bars=a.map((x,i)=>`<div class="pgb${i===a.length-1?' now':''}"><div class="bar"><i style="height:${x.f/Math.max(N,1)*100}%"></i></div><small>${x.f} 題</small></div>`).join('');
+  let msg;
+  if(a.length<3)msg=`${a.length===1?'這次':'最近 '+a.length+' 回合'}：一次答對 ${a.map(x=>`<b>${x.f}</b>`).join('、')} 題（共 ${N} 題）<br><small>再完成 ${3-a.length} 次這個單元的練習，就能看到變化</small>`;
+  else{const d=a[2].f-a[0].f;msg=`最近 3 回合：一次答對 ${a.map(x=>`<b>${x.f}</b>`).join('、')} 題（共 ${N} 題）<br><small>${d>0?`比 3 回合前多答對 ${d} 題`:d===0?'和 3 回合前一樣，繼續保持':'這幾回有高有低，再練一次看看'}</small>`}
+  c.innerHTML=h+`<div class="pgw">${bars}<div class="pgm"><div class="pgu">${nm}（一次就答對）</div><div class="pgs">${msg}</div></div></div>${fix}<div class="pga"><button class="go gray" id="pgGo">再練這個單元</button></div>`;
+  tap(c.querySelector('#pgGo'),()=>startPractice(isMix(U)?U.key:UN.indexOf(U)));
+  return c}
 /* 獎勵說明：第一次在首頁出現，之後從「獎勵說明」再看 */
 function rewardHelp(){const m=el('div','pmod','');m.id='rwhelp';m.innerHTML=`<div class="pmc rwh"><div class="pmh">學習獎勵</div>
   <div class="rwr">${ico('rw-coin')}<b>金幣</b><span>買點心與造型</span></div><div class="rwr">${ico('ic-water-drop')}<b>水滴</b><span>照顧農場</span></div><div class="rwr">${ico('rw-ticket')}<b>遊戲券</b><span>進入挑戰樂園</span></div>
@@ -2074,6 +2221,10 @@ async function loadStatBoard(L){let S;try{await lkLoad();S=await statAll()}catch
     const tip=B.k==='acc'&&user&&!isTest(user.seat)&&(sum.total||0)<STAT_MIN?`<div class="wrme">我做了 ${sum.total||0} 題，再 ${STAT_MIN-(sum.total||0)} 題就上榜</div>`:'';
     return `<div class="bcol" style="--dc:${B.c}"><div class="bh">${ico(B.img,'hi2')}${B.n}<small>${B.sub}${mi>=0?`・我第 ${on[mi].rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去練習！</div>'}${tip}</div>`}).join('')}
 /* 首頁：本週練習王、一次就答對的前 3 名＋我的名次 */
+/* 讀取太久（12 秒還在「讀取中」）：改成說明＋「重新載入」，不要一直轉 */
+function ldWatch(box,retry){setTimeout(()=>{if(!box.isConnected)return;const l=box.querySelector('.ld');if(!l||!/讀取中/.test(l.textContent))return;
+  l.innerHTML=`<img src="img/ui/ic-retry-load.webp" alt="" class="ldi">載入比較久${navigator.onLine?'':'（現在沒有網路）'}<button type="button" class="ldr">重新載入</button>`;
+  tap(l.querySelector('.ldr'),()=>{l.innerHTML='讀取中…';retry();ldWatch(box,retry)})},12000)}
 function statCardHome(){const c=el('div','cd');c.id='shome';c.innerHTML='<div class="ld">讀取中…</div>';
   lkLoad().then(()=>statAll()).then(S=>{if(!c.isConnected)return;if(!S||S.denied){c.innerHTML=`<div class="ld">${S&&S.denied?'⏳ 學習排行榜還沒開通':'📴 連上網路才看得到排行榜'}</div>`;return}
     c.innerHTML=[STAT_BOARDS[0],STAT_BOARDS[2]].map(B=>{const on=statRank(B,S.rows),me=user&&on.find(x=>x.seat===user.seat);
@@ -2085,7 +2236,7 @@ function statCardHome(){const c=el('div','cd');c.id='shome';c.innerHTML='<div cl
 function renderLearn(P){const h=el('div','h1',`<span class="tag">✏️</span>學習`);h.style.setProperty('--c','#1c7ed6');P.appendChild(h);
   P.appendChild(subjBar());P.appendChild(unitCards());P.appendChild(statCard());
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}學習排行榜<small>（測試帳號不上榜）</small>`));
-  const sb=el('div','cd');sb.id='sboard';sb.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(sb);statPush();loadStatBoard(sb)}
+  const sb=el('div','cd');sb.id='sboard';sb.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(sb);statPush();loadStatBoard(sb);ldWatch(sb,()=>loadStatBoard(sb))}
 function renderUnit(P,u,ui){const h=el('div','h1',`<span class="tag">${isMix(u)?'★':uTag(u)}</span>${u.name}`);h.style.setProperty('--c',u.c);P.appendChild(h);
   if(u.g||isMix(u)){const c=el('div','cd');c.id='practice';c.style.setProperty('--c',u.c);const b=sum.best[u.key]||0;
     c.innerHTML=`<div class="bi">✏️</div><div><div class="t">練習 ${N} 題</div><div class="s">${b?`最佳 ${b} / ${N}　${stars(b)}`:'還沒練習過'}</div></div>`;
@@ -2121,8 +2272,11 @@ function wbSave(W){LS.set(wbKey(),W);enqueue(`${base()}/wb`,W.map(x=>({k:x.k,u:x
 async function wbPull(){if(!db||!user)return;try{const cm=(await timeout(db.ref(`${base()}/wbq`).get(),10000)).val()||{};const ch=wbMerge(cm),W=wbLoad();
   if(W.some(x=>!cm[x.k]||(cm[x.k].m||0)<(x.m||0)))enqueue(`${base()}/wbq`,wbMap(W,wbTomb()),true);
   if(ch){paintNavs();if(view==='wb'||view==='home')render()}}catch(e){}}
+/* 錯題本「訂正成功」的紀錄：只有在錯題本裡真的答對、從錯題本拿掉那一刻才記（刪除、換範圍不算）。
+   sum.wf = [[時間, 題目指紋], …]，留 35 天，跟著摘要同步；「我的進步」的「這週訂正幾題」就是數這個 */
+function wfLog(k){sum.wf=(sum.wf||[]).filter(x=>Array.isArray(x)&&x[0]>Date.now()-35*864e5);if(!sum.wf.some(x=>x[1]===k&&Date.now()-x[0]<6e4))sum.wf.push([Date.now(),k]);saveSum(true)}
 function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
-  if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];const T=wbTomb();T[k]=Date.now();LS.set(wbxKey(),T);wbSave(W);if(!q.rv)rvAdd(x.q,x.k);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
+  if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];const T=wbTomb();T[k]=Date.now();LS.set(wbxKey(),T);wbSave(W);wfLog(k);if(!q.rv)rvAdd(x.q,x.k);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
   if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();x.m=Date.now();W.push(x)}
   else{const c=JSON.parse(JSON.stringify(q));delete c.rv;delete c.rvs;W.push({k,q:c,n:1,d:dkey(),m:Date.now()});const T=wbTomb();if(T[k]){delete T[k];LS.set(wbxKey(),T)}}   // 複習題答錯：照原本的方式存進錯題本（rvk 留著，之後過關會接回同一筆複習）
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
@@ -2239,7 +2393,7 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   [xv,xb,xa,xp,xm,...(pbOK?[xb2]:[]),...(bkOK?[xk]:[]),...(drOK?[xr]:[]),xg,xd].forEach(b=>xw.appendChild(b));x.appendChild(xw);P.appendChild(x);
   const xh=el('div','cd');xh.id='xqhist';P.appendChild(xh);paintXq();
   P.appendChild(el('div','sec',`${ico('rw-trophy','hi2')}雙人對戰排行榜<small>（勝率：下滿 ${WR_MIN} 局才上榜；方塊對戰比段位、40 排比秒數）</small>`));
-  const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);
+  const wr=el('div','cd');wr.id='wrboard';wr.innerHTML='<div class="ld">讀取中…</div>';P.appendChild(wr);loadWR(wr);ldWatch(wr,()=>loadWR(wr));
   P.appendChild(el('div','sec',ico('rw-trophy','hi2')+'全班排行榜（四個難度分開排名，★＝拿到 1 顆星）'));
   /* 切換遊戲只換下面的排行榜，不重畫整頁（頁面不會跳） */
   const gc=el('div');gc.id='bgames';const L=el('div','cd');L.id='board';L.innerHTML='<div class="ld">讀取中…</div>';
@@ -2644,7 +2798,13 @@ window.__learn601={
 /* ===================== 教具檢視 ===================== */
 let vt=null,vtStart=0,vtFrom='home';
 /* 每次換一個新的 iframe:這樣 iframe 裡換頁不會多出「上一頁」的紀錄(上一頁一定是回到平台) */
-function frameGo(u){const old=document.getElementById('vframe'),fr=document.createElement('iframe');fr.id='vframe';fr.title='教具';if(u&&u!=='about:blank')fr.src=u;old.replaceWith(fr)}
+function frameGo(u){const old=document.getElementById('vframe'),fr=document.createElement('iframe');fr.id='vframe';fr.title='教具';if(u&&u!=='about:blank')fr.src=u;old.replaceWith(fr);vLoad(u&&u!=='about:blank'?u:'',fr)}
+/* 開遊戲、教具：還沒載好先寫「正在載入」；15 秒還沒好就給「重新載入」（只重載這一頁） */
+let vLoadT=0;function vLoad(u,fr){clearTimeout(vLoadT);let m=document.getElementById('vload');if(!u){if(m)m.remove();return}
+  if(!m){m=document.createElement('div');m.id='vload';m.setAttribute('role','status');document.getElementById('viewer').appendChild(m)}
+  m.innerHTML='<span class="vls"></span>正在載入…';fr.addEventListener('load',()=>{if(document.getElementById('vframe')===fr){clearTimeout(vLoadT);m.remove()}},{once:true});
+  vLoadT=setTimeout(()=>{if(document.getElementById('vframe')!==fr||!m.isConnected)return;m.innerHTML=`<img src="img/ui/ic-retry-load.webp" alt="">載入比較久${navigator.onLine?'':'（現在沒有網路）'}<button type="button">重新載入</button>`;
+    tap(m.querySelector('button'),()=>frameGo(u))},15000)}
 function openTool(t,from){vt=t;vtStart=Date.now();vtFrom=from||'home';document.getElementById('vtitle').textContent=t.n;frameGo(t.f);
   document.getElementById('viewer').classList.add('on');document.body.classList.add('vw');history.pushState({v:1},'')}
 function closeTool(){if(!vt)return;const sec=Math.round((Date.now()-vtStart)/1000);
@@ -2704,8 +2864,13 @@ function speak(t){if(!t||!('speechSynthesis' in window))return;try{speechSynthes
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 const sayBtn=(t,a)=>`<button class="say" data-say="${esc(t||'')}" data-au="${esc(a||'')}">🔊</button>`;
 /* 錄音檔:同時只播一個 */
-let AUD=null;function playAu(src){try{if(AUD)AUD.pause();if('speechSynthesis' in window)speechSynthesis.cancel();AUD=new Audio(src);AUD.play().catch(()=>{})}catch(e){}}
-function stopAu(){try{if(AUD)AUD.pause();if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}}
+/* 播聲音：一次只播一段（換新的先停舊的）。播不出來（平板擋自動播放、檔案讀不到）就在題目下面說，按「再聽一次」重播 */
+let AUD=null;function playAu(src){auErr(false);try{if(AUD){AUD.onerror=null;AUD.pause()}if('speechSynthesis' in window)speechSynthesis.cancel();const a=AUD=new Audio(src);a.onerror=()=>{if(AUD===a)auErr(src,'load')};a.play().catch(e=>{if(AUD===a)auErr(src,e&&e.name==='NotAllowedError'?'block':'load')})}catch(e){auErr(src,'load')}}
+function auErr(src,why){let m=document.getElementById('auerr');if(!src){if(m)m.remove();return}const host=document.getElementById('q');if(!host||!document.getElementById('prac').classList.contains('on'))return;
+  if(!m){m=document.createElement('div');m.id='auerr';m.setAttribute('role','status');host.appendChild(m)}
+  m.innerHTML=`<img src="img/ui/ic-retry-load.webp" alt="">${why==='block'?'聲音沒有播出來（平板擋住自動播放）':'聲音沒有載入成功'}<button type="button">再聽一次</button>`;
+  m.querySelector('button').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();playAu(src)})}
+function stopAu(){auErr(false);try{if(AUD){AUD.onerror=null;AUD.pause()}if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}}
 const sayIt=(t,a)=>a?playAu(a):speak(t);
 document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('.say');if(b){e.preventDefault();sayIt(b.dataset.say,b.dataset.au)}});
 
@@ -2817,7 +2982,7 @@ function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';s
   $('#prac').classList.toggle('en',isEn);$('#qno').innerHTML=`第 ${cur+1} 題`+(q.rv?'<small class="rvtag">複習</small>':'');const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
   const svg=$('#fig');svg.innerHTML='';if(q.fig){svg.style.display='';F[q.fig[0]](svg,q.fig[1]);$('#bigc').style.display='none';$('#bigc').innerHTML=''}else{svg.style.display='none';$('#bigc').style.display='';$('#bigc').innerHTML=(q.say||q.au?sayBtn(q.say,q.au):'')+(q.big||'')}
-  stopAu();if(q.say||q.au)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
+  imgLock(false);stopAu();if((q.say||q.au)&&cfgGet().say!==false)sayIt(q.say,q.au);   // 在點按的當下播放,平板才不會擋
   $('#figc').classList.remove('solv');$('#steps').innerHTML='';fitBig();
   const A=$('#ansc');A.classList.toggle('frmode',q.type==='frac'||q.type==='ratio');A.classList.toggle('rtmode',q.type==='ratio');A.classList.toggle('chmode',q.type==='mc'||q.type==='grp');if(q.type!=='mc')$('#body').classList.remove('wideo','halfo');
   $('#box').textContent='';$('#box').className='ib';$('#fbx').className='';['bw','bn','bd'].forEach(id=>$('#'+id).className='ib');$('#rev').style.display='none';$('#rev').innerHTML='';
@@ -2953,7 +3118,7 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   else if(!rew){round.capped=1;if(!round.capNote){round.capNote=1;$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">今天這個單元的獎勵拿滿了</span>')}}
   else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
   if(pu==='am'&&round.amr!=null&&round.res.every(x=>x))sum.amr=Math.max(sum.amr||0,round.amr+1);   // 10 題都做完（還沒按看結果就離開也算）：閱讀測驗下次換下一篇
-  saveSum(round.got>0||rushed);amRunSave();if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&sndOn)setTimeout(()=>speak(q.speak),300);
+  saveSum(round.got>0||rushed);amRunSave();if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&cfgGet().say!==false)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.type==='grp'?'綠色的是正確答案，看一下再下一題':q.id&&q.type==='mc'?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
@@ -3434,17 +3599,32 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v157';let verNew=false,verBusy=false;
+const APP_VER='learn601-v158';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
+/* 有新版時不強制重新載入：
+   ・在首頁、登入畫面（沒有在練習、玩遊戲、看結算、開著視窗、正在收成或購買）：上方出現「有新版：立即更新／稍後」
+   ・其他時候：只寫「有新版，回首頁後可更新」
+   ・按「立即更新」前先把還沒上傳的進度送一送（沒送完也沒關係，進度存在平板上，重新載入不會不見）
+   ・「稍後」：這一版 30 分鐘內不再問；2 分鐘內剛更新過也不再重來（多個分頁、網路檔案還沒換好時，避免一直重新載入） */
 function verSafe(){const on=id=>{const e=document.getElementById(id);return !!e&&e.classList.contains('on')};
-  return (on('home')||on('login'))&&!on('viewer')&&!on('pinbox')&&!on('end')&&!document.getElementById('pwm')}
+  return (on('home')||on('login'))&&!on('viewer')&&!on('pinbox')&&!on('end')&&!document.querySelector('.pmod')&&!document.getElementById('pwm')}
+function verLater(){try{return JSON.parse(sessionStorage.getItem('learn601_vl')||'0')}catch(e){return 0}}
 function verApply(){if(!verNew)return;
   let last=0;try{last=+sessionStorage.getItem('learn601_vr')||0}catch(e){}
-  if(Date.now()-last<120000)return;   // 2 分鐘內剛更新過就不再重來（網路上的檔案還沒全部換好時，避免一直重新載入）
-  if(verSafe()){try{sessionStorage.setItem('learn601_vr',String(Date.now()))}catch(e){}location.reload();return}
-  if(!document.getElementById('verbar')){const b=document.createElement('div');b.id='verbar';b.textContent='🔄 平台有新版本，回到首頁就會自動更新';document.body.appendChild(b)}}
+  const recent=Date.now()-last<120000,later=verLater(),snooze=later&&later.v===APP_VER&&Date.now()-later.t<1800000;
+  let b=document.getElementById('verbar');
+  if(snooze||recent){if(b)b.remove();return}
+  if(!b){b=document.createElement('div');b.id='verbar';b.setAttribute('role','status');document.body.appendChild(b)}
+  const safe=verSafe(),key=safe?'safe':'busy';if(b.dataset.k===key)return;b.dataset.k=key;
+  b.innerHTML=`<img src="img/ui/ic-update-ready.webp" alt=""><span>${safe?'平台有新版':'平台有新版，回首頁後可更新'}</span>`+(safe?'<button id="verGo">立即更新</button><button id="verNo">稍後</button>':'');
+  if(safe){tap(b.querySelector('#verGo'),verNow);tap(b.querySelector('#verNo'),()=>{try{sessionStorage.setItem('learn601_vl',JSON.stringify({v:APP_VER,t:Date.now()}))}catch(e){}b.remove()})}}
+async function verNow(){const b=document.getElementById('verbar');if(!verSafe()){if(b)b.dataset.k='';return verApply()}
+  if(b){b.querySelector('span').textContent='更新中…';b.querySelectorAll('button').forEach(x=>x.disabled=true)}
+  try{if(Q.length&&online){await Promise.race([flush(),new Promise(r=>setTimeout(r,5000))])}}catch(e){}
+  try{const r=await navigator.serviceWorker?.getRegistration();if(r){await Promise.race([r.update(),new Promise(x=>setTimeout(x,4000))])}}catch(e){}
+  try{sessionStorage.setItem('learn601_vr',String(Date.now()))}catch(e){}location.reload()}
 if(!/[?&]qa=1/.test(location.search))setTimeout(verCheck,2500);setInterval(()=>{if(document.visibilityState==='visible')verCheck()},300000);setInterval(verApply,15000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')verCheck()});addEventListener('pageshow',e=>{if(e.persisted)verCheck()});
 addEventListener('hashchange',()=>{if(location.hash==='#setup')openSetup()});
