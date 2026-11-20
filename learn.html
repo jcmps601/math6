@@ -499,7 +499,7 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 #xqinv .xir{display:flex;gap:.6rem;justify-content:center}#xqinv .xir button{border:0;border-radius:16px;font:900 1.3rem 'PingFang TC','Microsoft JhengHei',sans-serif;padding:.45rem 1.2rem;background:#f1f3f5;color:#666}
 #xqinv .xir button.xok{background:#2f9e44;color:#fff;box-shadow:0 4px 0 #2b8a3e}
 #xqinv .xdnd{border:0;background:none;color:#8a7a62;font:800 1rem 'PingFang TC','Microsoft JhengHei',sans-serif;margin-top:.45rem;padding:.25rem .6rem;text-decoration:underline}
-#xqcard .xi{flex:1;min-width:12rem}#xqcard .xr{font-size:1.15rem;font-weight:800;color:#7a5a32;margin-top:.25rem}#xqcard .xr b{color:#c0392b}
+#xqcard .xi{flex:1;min-width:12rem}#xqcard .xr{font-size:1.15rem;font-weight:800;color:#7a5a32;margin-top:.25rem}#xqcard .xr b{color:#c0392b}#xqcard .xr .xg{display:inline-block;white-space:nowrap;margin:.15rem .45rem .15rem 0;padding:.1rem .6rem;border-radius:999px;background:#f6efe4;font-size:1rem}#xqcard .xr .xl{display:block;margin-bottom:.1rem}
 #xqcard .xbtns{display:flex;gap:.5rem;flex-wrap:wrap;margin-left:auto}#xqcard .xbtns .go{margin:0}
 @media (max-width:760px){#xqcard{flex-wrap:wrap}#xqcard .xbtns{width:100%;margin-left:0}#xqcard .xbtns .go{flex:1 1 40%;font-size:1.15rem}}#xqcard .go.gray{background:#868e96;box-shadow:0 4px 0 #495057}
 #xqcard .s span{display:inline-block;margin-right:.6em}#xqcard .xi{min-width:14rem}#xqcard .xbtns{display:grid;grid-template-columns:repeat(2,minmax(9.5rem,1fr));flex:0 1 auto}#xqcard .xbtns .go{white-space:nowrap;justify-content:center}
@@ -2401,7 +2401,7 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
   P.appendChild(gc);P.appendChild(L);loadBoard(L)}
 async function paintXq(){const r=document.getElementById('xqrec'),h=document.getElementById('xqhist');if(!r)return;const S=await xqStats();
   const one=(t,n)=>{const H=S.h.filter(x=>xqG(x)===t);if(!H.length)return '';const w=H.filter(x=>x.w===1).length,l=H.filter(x=>x.w===0).length,d=H.filter(x=>x.w===2).length;return `${n} <b>${w}</b> 勝 <b>${l}</b> 敗${d?` ${d} 和`:''}`};
-  r.innerHTML=S.n?'我的戰績：'+Object.keys(GAMES).map(k=>one(k,GAMES[k].n)).filter(Boolean).join('　・　'):'還沒有對戰紀錄';
+  r.innerHTML=S.n?'<span class="xl">我的戰績</span>'+Object.keys(GAMES).map(k=>one(k,GAMES[k].n)).filter(Boolean).map(t=>`<span class="xg">${t}</span>`).join(''):'還沒有對戰紀錄';   // 每個遊戲一顆小標籤，不會把「7 敗」拆到下一行
   if(!h)return;if(!S.n){h.style.display='none';return}h.style.display='';
   const d=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`};
   h.innerHTML='<div class="xht">♟️ 最近的對戰</div>'+S.h.slice(0,8).map(x=>`<div class="xhr"><span class="${x.w===1?'w':x.w===2?'d':'l'}">${x.w===1?'勝':x.w===2?'和':'敗'}</span><em>${GAMES[xqG(x)].n}</em><b>對 ${x.o?seatName(x.o):'同學'}</b><small>${x.r||''}${x.n?`・${x.n} 步`:''}</small><i>${d(x.t)}</i></div>`).join('')}
@@ -3599,7 +3599,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v158';let verNew=false,verBusy=false;
+const APP_VER='learn601-v159';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
