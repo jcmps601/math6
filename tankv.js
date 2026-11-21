@@ -173,7 +173,7 @@
   const tankCenter = i => { if (isBoss(i)) { const b = TK.bossBody(shown); return [b.cx, b.cy]; } return [V.T[i].x, V.T[i].y - 16]; };
   /* 某一台坦克在 x、角度 a 時，畫面上的砲管轉軸和砲口（跟 drawTank 同一套算法） */
   function barrelAt(i, x, a) {
-    if (isBoss(i)) { const [mx, my] = TK.bossMouth(shown); return { px: mx, py: my, mx, my }; }
+    if (isBoss(i)) { const [mx, my] = TK.bossMouth(shown, shown.bm ? x : shown.bossX); return { px: mx, py: my, mx, my }; }
     const sk = skinOf(i), g = V4[sk], s = TANK_WW / BODY_W, P = g ? g.p : PORT[sk], bot = g ? g.bot : BODY_BOTTOM, rad = a * Math.PI / 180, face = Math.cos(rad) >= 0 ? 1 : -1, tilt = slope(x) * .8;
     const lx = (P[0] - BODY_W / 2) * s * face, ly = (P[1] - bot) * s, y0 = groundY(x) + 1;
     const px = x + lx * Math.cos(tilt) - ly * Math.sin(tilt), py = y0 + lx * Math.sin(tilt) + ly * Math.cos(tilt);
@@ -274,6 +274,7 @@
     const fromX = live && live.s === side ? live.x : (drive.i === side ? drive.x : pre.T[side].x);
     anim = { m, side, sk: skinOf(side), pre, q, ph: 'drive', t: 0, fromX, toX: isFinite(m.x) ? m.x : pre.T[side].x, fromA: V.T[side].a, ii: 0 };
     V.T[side].x = fromX; V.T[side].tx = fromX; live = null; pendingFire = false; paintCtl();
+    if (isBoss(side) && Math.abs(anim.toX - fromX) > 5) texts.push({ x: TK.bossBody(pre).cx, y: TK.bossBody(pre).cy - 150, t: anim.toX < fromX ? '◀ 魔王移動了！' : '魔王移動了！ ▶', c: '#7c3aed', life: 90, s: 34 });   // 提醒要重新瞄準
   }
   function finish() {
     const q = anim.q, side = anim.side; anim = null; shells = [];
@@ -490,13 +491,14 @@
   /* ───────── 坦克 ───────── */
   /* 魔王：大大的圖（腳底對齊地面）、狂暴時身後發紅光、開護盾時一層藍色泡泡 */
   function drawBoss(c, i, now) {
-    const t = V.T[i], k = shown.boss, im = img('boss-' + k), by = shown.bossY, D = BOSS_D, b = TK.bossBody(shown), rage = t.hp > 0 && t.hp <= (t.max || 1) / 2;
+    const t = V.T[i], k = shown.boss, im = img('boss-' + k), by = shown.bossY, D = BOSS_D, b0 = TK.bossBody(shown), rage = t.hp > 0 && t.hp <= (t.max || 1) / 2;
+    const ox = (t.x || shown.bossX) - shown.bossX, b = { ...b0, cx: b0.cx + ox }, walking = Math.abs(ox) > 1 || (anim && anim.side === i && anim.ph === 'drive');   // 魔王走路時（b4），整隻跟著畫面上的位置移動
     c.save();
     if (t.dead) { t.dy = Math.min(60, (t.dy || 0) + .6); c.globalAlpha = Math.max(.25, 1 - t.dy / 70); c.translate(0, t.dy); }
     let jx = 0; if (t.shakeT > 0) { jx = (Math.random() - .5) * 10; t.shakeT--; }
     if (rage) { const p = .55 + .25 * Math.sin(now / 160), gr = c.createRadialGradient(b.cx, b.cy, 10, b.cx, b.cy, b.rx * 1.5); gr.addColorStop(0, `rgba(239,68,68,${p * .55})`); gr.addColorStop(1, 'rgba(239,68,68,0)'); c.fillStyle = gr; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx * 1.5, b.ry * 1.5, 0, 0, 7); c.fill(); }
-    c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(shown.bossX, by + 2, b.rx * 1.05, 10, 0, 0, 7); c.fill();
-    const breathe = 1 + .012 * Math.sin(now / 420), x0 = shown.bossX - D / 2 + jx, y0 = by - (BOSS_ANC[k] || .82) * D * breathe;
+    c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(b.cx, by + 2, b.rx * 1.05, 10, 0, 0, 7); c.fill();
+    const hop = walking ? Math.abs(Math.sin(now / 90)) * 7 : 0, breathe = 1 + .012 * Math.sin(now / 420), x0 = b.cx - D / 2 + jx, y0 = by - (BOSS_ANC[k] || .82) * D * breathe - hop;
     if (ok(im)) { c.drawImage(im, x0, y0, D, D * breathe); if (t.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = t.flash / 14 * .55; c.drawImage(im, x0, y0, D, D * breathe); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; t.flash--; } }
     else { c.fillStyle = '#6d28d9'; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx, b.ry, 0, 0, 7); c.fill(); }
     if (shown.shield && !t.dead) { const p = .5 + .15 * Math.sin(now / 200); c.fillStyle = `rgba(116,192,252,${p * .35})`; c.strokeStyle = `rgba(28,126,214,${p})`; c.lineWidth = 5; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx * 1.25, b.ry * 1.35, 0, 0, 7); c.fill(); c.stroke(); }
