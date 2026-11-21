@@ -2804,10 +2804,10 @@ window.__learn601={
   coRecord(n,g){if(!user||!sum||isTest(user.seat))return;const s=Math.round(+n||0)*100+Math.min(99,Math.round(+g||0));if(!(s>(sum.co||0)))return;
     sum.co=s;saveSum(true);enqueue(`${ROOT}/lb/coop/${user.seat}`,{d:0,s,t:Date.now()},true)},
   /* 你畫我猜：被檢舉作廢的題目記在自己的紀錄（老師後台「你畫我猜檢舉紀錄」看得到） */
-  /* 一起打王：開放了沒、打贏的金幣（普通 20、困難 40；每天前 3 場，測試帳號不發） */
+  /* 一起打王：開放了沒、打贏的金幣（普通 30、困難 60；每天前 3 場，測試帳號不發） */
   bossOpen:()=>BOSS_OPEN,
   bossReward(kind){if(!user||!sum)return null;if(isTest(user.seat))return {c:0,n:0};const d=dkey(),r=sum.bsr&&sum.bsr.d===d?sum.bsr:{d,n:0};
-    if(r.n>=BOSS_COIN_DAY)return {c:0,n:r.n,full:1};const c=kind==='thunder'?40:20,p=PET.P();if(!p)return null;
+    if(r.n>=BOSS_COIN_DAY)return {c:0,n:r.n,full:1};const c=kind==='thunder'?60:30,p=PET.P();if(!p)return null;
     r.n++;sum.bsr=r;PET.coinAdd(p,c);saveSum(true);logPush({k:'boss',b:kind,c});paintNavs();return {c,n:r.n}},
   drLog(v){if(!user||!v)return;logPush({k:'dv',rk:String(v.rk||'').slice(0,60),dr:+v.dr||0,w:String(v.w||'').slice(0,20),by:String(v.by||'').slice(0,40),gn:+v.gn||0,me:v.me==='dr'?'dr':'rp'})},
   useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
@@ -3637,7 +3637,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v160';let verNew=false,verBusy=false;
+const APP_VER='learn601-v161';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
