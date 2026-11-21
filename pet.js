@@ -705,8 +705,10 @@
   function wishCard(noPic) {
     const p = P(), { w, a, b, c } = wishParts(p), n = Math.min(((sum.days || {})[dkey()] || 0), GOAL), H = heartsOf(p), egg = p.st === 'egg', nm = egg ? '蛋蛋' : nameOf(p);
     const C = el('div', 'cd' + (noPic ? ' np' : ''), ''); C.id = 'wish';
-    const hearts = '❤️'.repeat(Math.min(H.n || 0, HEART_NEED)) + '🤍'.repeat(Math.max(0, HEART_NEED - (H.n || 0)));
-    const row = (k, on, txt, pr) => `<button class="wr${on ? ' d' : ''}" data-w="${k}"${on ? ' disabled' : ''}><i>${on ? '✅' : '⬜'}</i><span>${txt}</span>${pr ? `<b>${pr}</b>` : ''}${on ? '' : '<u>▶</u>'}</button>`;
+    /* 愛心、勾選框用平台自己的圖示（2026-11 介面優化包）；有幾顆的文字由旁邊的「集滿 5 顆」和 title 說明 */
+    const hn = Math.min(H.n || 0, HEART_NEED), hi = on => `<img class="whi" src="img/ui/ui-wish-heart-${on ? 'filled' : 'empty'}.webp" alt="">`;
+    const hearts = `<span class="whs" title="本週愛心 ${hn} / ${HEART_NEED}">${hi(1).repeat(hn)}${hi(0).repeat(HEART_NEED - hn)}</span>`;
+    const row = (k, on, txt, pr) => `<button class="wr${on ? ' d' : ''}" data-w="${k}"${on ? ' disabled' : ''}><i><img class="wti" src="img/ui/ui-task-${on ? 'complete' : 'pending'}.webp" alt="${on ? '已完成' : '未完成'}"></i><span>${txt}</span>${pr ? `<b>${pr}</b>` : ''}${on ? '' : '<u>▶</u>'}</button>`;
     C.innerHTML = `${noPic ? '' : `<div class="wv">${egg ? eggSVG(Math.min(1, (p.ex || 0) / EGG_NEED[0]), '') : petArt(look(p, { mood: moodOf(p) }))}</div>`}<div class="wi"><div class="wt"><span>🐾 ${nm}的今日願望</span><small>${H.g ? '本週禮物領到了 🎁' : `<em>${hearts}</em> 集滿 ${HEART_NEED} 顆送限定配件`}</small></div>
       ${row(1, a, `練習 ${GOAL} 題`, a ? '' : `${n}/${GOAL}`)}${row(2, b, wishSay(w), b ? '' : `${Math.min(w.n || 0, w.need)}/${w.need}`)}${egg ? '' : row(3, c, night() ? `摸摸${nm}的頭，陪牠睡覺` : `陪${nm}：餵點心或一起玩`)}</div>`;
     C.querySelectorAll('.wr:not(.d)').forEach(B => tap(B, () => {
@@ -1215,7 +1217,7 @@
   #wish{display:flex;gap:1rem;align-items:center;margin-top:1rem}#wish .wv{width:6.5rem;height:6.5rem;flex:none}#wish .wi{flex:1;min-width:0}
   #wish .wt{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.2rem .8rem;font-size:1.3rem;font-weight:900;color:#c2255c}#wish .wt small{font-size:.95rem;color:#888;font-weight:800}#wish .wt em{font-style:normal;letter-spacing:.05em;filter:drop-shadow(0 0 1.5px #e8a0b4)}
   #wish .wr{display:flex;align-items:center;gap:.55rem;width:100%;border:0;border-radius:14px;background:#fff4e6;color:#5c4a32;font:inherit;font-size:1.12rem;font-weight:800;text-align:left;padding:.5rem .8rem;margin-top:.4rem;cursor:pointer}
-  #wish .wr.d{background:#ebfbee;color:#2b8a3e;cursor:default}#wish .wr i{font-style:normal;flex:none}#wish .wr span{flex:1;min-width:0;line-height:1.3}#wish .wr b{flex:none;color:#e67700}#wish .wr u{flex:none;text-decoration:none;color:#e8590c}
+  #wish .wr.d{background:#ebfbee;color:#2b8a3e;cursor:default}#wish .wr i{font-style:normal;flex:none;display:flex}#wish .wti{width:1.45rem;height:1.45rem;object-fit:contain}#wish .whs{display:inline-flex;gap:.08rem;vertical-align:-.2rem}#wish .whi{width:1.15rem;height:1.15rem;object-fit:contain}#wish .wr span{flex:1;min-width:0;line-height:1.3}#wish .wr b{flex:none;color:#e67700}#wish .wr u{flex:none;text-decoration:none;color:#e8590c}
   @media (max-width:600px){#wish{align-items:flex-start;gap:.5rem}#wish .wv{width:3.8rem;height:3.8rem}#wish .wt{font-size:1.15rem}#wish .wr{font-size:1rem;padding:.45rem .6rem}}
   .pa .pflt{animation:pflt 2.6s ease-in-out infinite}@keyframes pflt{50%{transform:translateY(-5px)}}
   .pspk i{position:absolute;width:22%;height:22%;background:center/contain no-repeat;animation:pspk 1.8s ease-in-out infinite}
