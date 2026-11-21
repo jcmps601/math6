@@ -213,9 +213,9 @@
         <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧴 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div><button class="fsm${f.sm ? ' on' : ''}" id="fsm">🥷 偷菜模式：${f.sm ? '開' : '關'}</button></div>
       ${night() ? '<div class="fnight">🌙 晚上 10 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
       <div class="fmain"><div class="fbox" id="fbox"><div id="fsvg"></div><button class="fzoom" id="fzoom"></button></div>
-        <div class="fside"><div class="finfo" id="finfo"></div><div class="fpinfo" id="fpinfo"></div></div></div>
+        <div class="fside"><div class="finfo" id="finfo"></div><div class="fpinfo" id="fpinfo"></div></div>
       <div class="fsum" id="fsum" aria-live="polite"></div>
-      <div class="fbar" id="fbar"></div>
+      <div class="fbar" id="fbar"></div></div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
     paint(); paintBar(); paintStore(); paintLog(); info(curK);
     tap(C.querySelector('#fzoom'), () => { zoomSet(!zoomOn()); paint(); paintZoom(); }); paintZoom();
@@ -700,7 +700,8 @@
   .fok{color:#5c940d;font-weight:900}
   .farm [data-k].fhint{filter:drop-shadow(0 0 4px #f59f00) drop-shadow(0 0 4px #f59f00) drop-shadow(0 0 8px #ffd43b);transition:filter .3s}
   .fbtn .fbi{font-size:1.4rem}
-  @media (max-width:900px),(orientation:portrait){.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}.fbar .fbtn:last-child{grid-column:1/-1}}
+  .fmain>.fsum,.fmain>.fbar{grid-column:1/-1;margin-top:0}   /* 摘要、全部收成／澆水按鈕放在 .fmain 裡：電腦在田地下方整排，手機緊接在田地下面（說明框排到後面） */
+  @media (max-width:900px),(orientation:portrait){.fmain>.fside{order:3}.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}.fbar .fbtn:last-child{grid-column:1/-1}}
   .fdpv{border-radius:16px;overflow:hidden;margin-bottom:.5rem;background:#a5d8ff}.fdpv svg{display:block;width:100%;height:auto}.fdslot{cursor:pointer}
   .fdsl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.35rem;margin-bottom:.35rem}
   .fdsl button{border:3px solid #d8f5a2;background:#fff;border-radius:14px;padding:.25rem .1rem;font:800 .85rem/1.2 inherit;font-family:inherit;color:#5c940d;display:flex;flex-direction:column;align-items:center;min-width:0}
