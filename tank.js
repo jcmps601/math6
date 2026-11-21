@@ -21,7 +21,7 @@
      地圖「b4」（2026-11-21 起）：右邊一整塊平台（x ≥ 1020，炸不壞），魔王每一回合先走到新的位置再攻擊（普通走 60～150、困難走 120～260、地獄走 150～300），
      玩家不能一直用同一個角度、力道；舊的「b3」房間照當時規則（魔王站著不動）。 */
 (function (root) {
-  const VER = 6;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）。3＝拿掉鑽地彈、築牆彈；4＝加了一起打王；5＝魔王會移動；6＝地獄魔王（隕石）
+  const VER = 7;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）。3＝拿掉鑽地彈、築牆彈；4＝加了一起打王；5＝魔王會移動；6＝地獄魔王（隕石）；7＝魔王的頭也打得到、頭是弱點
   const HP = 100, FUEL = 180, SUB = 3, STEP = 4, VOID = 900;
   const GRAV = 0.18, WK = 0.0035, VK = 0.17;
   /* 場地：重力倍數、風倍數、坑的倍數、岩漿高度、浮島空隙、雪地會滑 */
@@ -60,11 +60,12 @@
     F: { name: '暗焰隕石', D: 46, R: 85, cr: 50, n: 1, lim: 0, meteor: 1 }
   };
   /* 魔王：hp＝每個玩家給幾滴血；w、h＝身體大小（被打中的範圍是橢圓）；seq＝招式順序（A 瞄準打、Y 砲彈雨、G 護盾），血剩一半以下「狂暴」：瞄準打變三連發
+     parts＝被打中的範圍：幾個橢圓 [離魔王腳底中間往右, 往下, 橫半徑, 直半徑]（照魔王圖量的：身體、手、頭），最後一個是頭＝弱點（傷害 ×WEAK）
      err＝瞄準時故意偏多少度（越小越準）；M＝鎖定（只有地獄魔王有）：打一發＋畫紅圈，下一回合隕石砸紅圈 */
   const BOSS = {
-    rock: { n: '岩甲巨獸', hp: 120, w: 250, h: 170, err: 7, shot: 'R', shot3: 'Q', seq: ['A', 'A', 'Y', 'A', 'G'], rounds: 10, coin: 30, mv: [60, 150] },
-    thunder: { n: '雷霆機甲龍', hp: 160, w: 220, h: 190, err: 4, shot: 'Z', shot3: 'X', seq: ['A', 'Y', 'A', 'G', 'A', 'Y'], rounds: 10, coin: 60, mv: [120, 260] },
-    hell: { n: '暗焰魔龍王', hp: 180, w: 230, h: 210, err: 2, shot: 'P', shot3: 'K', seq: ['A', 'Y', 'M', 'A', 'G', 'A', 'M'], rounds: 10, coin: 100, mv: [150, 300], lock: 'thunder' }
+    rock: { n: '岩甲巨獸', hp: 135, w: 250, h: 170, err: 7, shot: 'R', shot3: 'Q', seq: ['A', 'A', 'Y', 'A', 'G'], rounds: 10, coin: 30, mv: [60, 150], parts: [[0, -82, 115, 78], [-108, -95, 55, 52]] },
+    thunder: { n: '雷霆機甲龍', hp: 195, w: 220, h: 190, err: 4, shot: 'Z', shot3: 'X', seq: ['A', 'Y', 'A', 'G', 'A', 'Y'], rounds: 10, coin: 60, mv: [120, 260], parts: [[0, -91, 101, 87], [-75, -87, 50, 60], [-95, -172, 60, 45]] },
+    hell: { n: '暗焰魔龍王', hp: 235, w: 230, h: 210, err: 2, shot: 'P', shot3: 'K', seq: ['A', 'Y', 'M', 'A', 'G', 'A', 'M'], rounds: 10, coin: 100, mv: [150, 300], lock: 'thunder', parts: [[0, -101, 106, 97], [-55, -108, 60, 90], [-140, -143, 35, 55], [-85, -218, 50, 50]] }
   };
   const BOSS_SITES = ['grass', 'desert', 'snow', 'moon'], BOSS_FLAT = 150, BOSS_W = ['n', 't', 'b', 'c', 'h', 's'];
   const BOSS_P0 = 1020, BOSS_X0 = 1140, BOSS_X1 = 1400, PL_MAX = 860;   // b4：魔王的平台從 1020 開始；魔王在 1140～1400 走動；玩家站在 860 以左
@@ -224,10 +225,15 @@
   /* 魔王的身體：橢圓（中心、半徑），嘴巴＝魔王的砲口 */
   const bossBody = S => { const B = BOSS[S.boss]; return { cx: S.bossX, cy: S.bossY - B.h * .48, rx: B.w * .46, ry: B.h * .46 }; };
   const bossMouth = (S, x = S.bossX) => { const B = BOSS[S.boss]; return [x - B.w * .44, S.bossY - B.h * .62]; };
-  const inBoss = (S, x, y, pad = 0) => { const b = bossBody(S); return ((x - b.cx) / (b.rx + pad)) ** 2 + ((y - b.cy) / (b.ry + pad)) ** 2 < 1; };
-  /* 爆炸離魔王身體邊緣多遠 */
+  /* 2026-11-21：原本只有身體一個橢圓，打頭會直接穿過去 → 改成身體、手、頭好幾塊（BOSS.parts），頭是弱點 */
+  const WEAK = 1.3;
+  const bossParts = S => BOSS[S.boss].parts.map(([dx, dy, rx, ry]) => ({ cx: S.bossX + dx, cy: S.bossY + dy, rx, ry }));
+  const kOf = (b, x, y, pad = 0) => Math.hypot((x - b.cx) / (b.rx + pad), (y - b.cy) / (b.ry + pad));
+  const inBoss = (S, x, y, pad = 0) => bossParts(S).some(b => kOf(b, x, y, pad) < 1);
+  const bossWeak = (S, x, y) => { const P = bossParts(S); return kOf(P[P.length - 1], x, y) < 1.15; };   // 爆炸點在頭上（含邊緣一點點）＝打中弱點
+  /* 爆炸離魔王最近的那一塊邊緣多遠 */
   function bossDmg(S, ex, ey, P) {
-    if (!P.D) return 0; const b = bossBody(S), k = Math.hypot((ex - b.cx) / b.rx, (ey - b.cy) / b.ry), d = Math.max(0, (k - 1) * Math.min(b.rx, b.ry));
+    if (!P.D) return 0; const d = Math.min(...bossParts(S).map(b => Math.max(0, (kOf(b, ex, ey) - 1) * Math.min(b.rx, b.ry))));
     return d >= P.R ? 0 : Math.round(P.D * (1 - .75 * d / P.R));
   }
 
@@ -471,7 +477,7 @@
     if (S.boss) {   // 一起打王：隊友不互相傷害、補血彈補隊友、魔王的護盾擋一半
       const fromB = F.i === S.bi;
       for (let j = 0; j < n; j++) {
-        if (j === S.bi) { d[j] = fromB ? 0 : S.shield ? Math.round(d[j] / 2) : d[j]; continue; }
+        if (j === S.bi) { let v = fromB ? 0 : d[j]; if (v > 0 && bossWeak(S, ex, ey)) v = Math.round(v * WEAK); d[j] = S.shield ? Math.round(v / 2) : v; continue; }   // 打中頭（弱點）傷害 ×1.5，護盾再減半
         if (fromB) continue;
         if (W0.heal) { const t = F.T[j]; if (!t.on) { d[j] = 0; continue; } const [cx, cy] = center(g, t.x), dd = Math.max(0, Math.hypot(cx - ex, cy - ey) - 10); d[j] = r.hit === j ? -(W0.heal + 6) : dd >= W0.R ? 0 : -Math.round(W0.heal * (1 - .5 * dd / W0.R)); }
         else d[j] = 0;
@@ -537,5 +543,5 @@
     return dx * Math.max(.6, 1 + up * 2.4);
   }
   /* 補給箱、各種砲彈的中文名字（畫面用） */
-  root.TK = { VER, W: 1600, H: 700, HP, FUEL, SUB, GRAV, WK, VK, VOID, WEAP, WK_, SITES, SITE_KEYS, CRATE_W, rng, windRaw, newGame, decode, replay, parse, fire, pass, preview, launch, stepFlight, resolveHit, crater, mound, center, gAt, isVoid, left, weapons, canDrive, driveCost, alive, nextAlive, teamOf, enemy, result, places, tanksOf, crateNear, crR, BOSS, BOSS_SITES, bossMove, bossBody, bossMouth };
+  root.TK = { VER, W: 1600, H: 700, HP, FUEL, SUB, GRAV, WK, VK, VOID, WEAP, WK_, SITES, SITE_KEYS, CRATE_W, rng, windRaw, newGame, decode, replay, parse, fire, pass, preview, launch, stepFlight, resolveHit, crater, mound, center, gAt, isVoid, left, weapons, canDrive, driveCost, alive, nextAlive, teamOf, enemy, result, places, tanksOf, crateNear, crR, BOSS, BOSS_SITES, bossMove, bossBody, bossMouth, bossParts, bossWeak, WEAK };
 })(typeof window !== 'undefined' ? window : globalThis);
