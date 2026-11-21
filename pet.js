@@ -161,6 +161,19 @@
       + `<path d="M60 127 Q113 121.5 170 127" fill="none" stroke="#c9e5fb" stroke-width="2" stroke-linecap="round" opacity=".9"/>`
       + `</svg>`;
   }
+  /* 潛水鏡（2026-11 換成寵物專用的三款，沒有鼻罩）：round 圓臉、wide 寬臉、beak 鳥喙。同一個商品，依寵物和型態換款。
+     GOG＝兩個透明鏡片的中心（512×512 原圖座標）、鏡片的半高。對位：兩個鏡片中心的中點對到兩眼中點，
+     鏡片中心距＝兩眼距離（眼睛比鏡片大時再放大，讓眼睛整個在鏡片裡），跟著頭歪 */
+  const GOG = { round: [150.4, 256.1, 360.3, 256.0, 55.5], wide: [146.1, 256.9, 364.7, 256.9, 37.5], beak: [133.9, 259.2, 375.4, 259.2, 43] };
+  /* 每一隻、每個型態都看過試戴圖選的款式：大多數用寬臉款（鏡框比較細，不會蓋住整張臉），鳥類用鳥喙款，臉圓、眼睛大的用圓臉款 */
+  const GOGT = { chick: ['beak', 'beak', 'beak'], penguin: ['beak', 'beak', 'beak'], blob: ['round', 'round', 'round'], octopus: ['round', 'round', 'round'] };
+  const GOGA = {};   // 個別微調 '寵物-型態': [往右, 往下, 放大倍數]（200×200 座標）
+  const gogType = (sp, st) => (GOGT[sp] && GOGT[sp][st]) || 'wide';
+  function gogNew(g, sp, st) {
+    const t = gogType(sp, st), G = GOG[t], cx = (G[0] + G[2]) / 2, cy = (G[1] + G[3]) / 2, [dx, dy, k] = GOGA[sp + '-' + st] || [0, 0, 1];
+    const s = Math.max(g.d / (G[2] - G[0]) * 1.06, g.es * .62 / GOG.round[4]) * k, S = 512 * s;   // 鏡片中心距跟眼距一樣；眼睛特別大時才放大（三款都用圓款的鏡片高度算，換款不會忽大忽小）
+    return `<g transform="translate(${F1(g.mx + dx)} ${F1(g.my + dy)}) rotate(${F1(g.a)})"><image href="${IMG}acc-goggle-${t}.webp" x="${F1(-cx * s)}" y="${F1(-cy * s)}" width="${F1(S)}" height="${F1(S)}"/></g>`;
+  }
   let rbwN = 0; const RBC = 1.3;   // 彩虹雲的雲底寬＝身體寬 × 1.3
   function rainbowArc(g) {
     const cw = Math.min(196, g.bw * RBC), ch = cw * .522, top = Math.min(g.bot + 6 - ch * .72, 199 - ch), land = top + ch * .42;   // 雲圖的上緣、彩虹兩腳落在雲上的高度
@@ -199,12 +212,13 @@
   function accImg(id, q, ht, sp, st) {
     if (ITEMS[id] && ITEMS[id].base) { const B = ITEMS[id].base; return accImg(B, q, ht, sp, st).split(`acc-${B}.webp`).join(`acc-${id}.webp`); }
     const A = adjOf(sp, st, id); if (A && !Array.isArray(A) && A.w) return absAcc(id, A);
-    const out = accImg0(id, q, ht, sp), g = out.g;
+    const out = accImg0(id, q, ht, sp, st), g = out.g;
     return wrapAdj(out.s, g.pv[0], g.pv[1], A);
   }
-  function accImg0(id, q, ht, sp) {
+  function accImg0(id, q, ht, sp, st) {
     const f = AP[id]; if (!f) return { s: '', g: { pv: [100, 100] } };
     const a = q[3] * Math.PI / 180, g = { sp, mx: q[0], my: q[1], d: q[2], a: q[3], es: q[4], tx: q[5], ty: q[6], hw: q[7], chin: q[8], bot: q[9], bx0: q[10], bx1: q[11], ex: Math.cos(a), ey: Math.sin(a) };
+    if (id === 'goggle') { g.pv = [g.mx, g.my]; return { s: gogNew(g, sp, st | 0), g }; }   // 潛水鏡：寵物專用三款
     if (GL[id]) { g.pv = [g.mx, g.my]; return { s: glassPair(id, g), g }; }
     if (ht) { const P = headAcc(id, g, ht); if (P) return { s: P, g }; }
     g.tl = Math.hypot(g.tx - g.mx, g.ty - g.my); g.ux = (g.tx - g.mx) / (g.tl || 1); g.uy = (g.ty - g.my) / (g.tl || 1);
@@ -456,6 +470,7 @@
   function starPath(cx, cy, R, r) { let d = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; d += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1); } return d + 'Z'; }
   /* 一個配件單獨畫在小框框裡（商店用） */
   function itemSVG(k) {
+    if (k === 'goggle') return `<img class="isvg" src="${IMG}acc-goggle-round.webp" alt="" draggable="false">`;   // 潛水鏡：商店圖示用新的圓臉款
     if (AR[k]) return `<img class="isvg" src="${IMG}acc-${k}.webp" alt="" draggable="false">`;
     if (PH[k]) return `<svg class="isvg" viewBox="-4 -4 108 ${(100 * PH[k][0] + 8).toFixed(0)}">${PH[k][1]}</svg>`;
     const I = ITEMS[k], VB = { bow: '100 50 56 48', flower: '106 52 48 48', bowtie: '72 134 56 40', helmet: '30 16 140 168', halo: '60 20 80 36', lei: '46 132 108 40', balloon: '116 30 84 110', grad: '40 24 120 72', cape: '24 112 152 90' };
@@ -1325,5 +1340,5 @@
   const S = document.createElement('style'); S.textContent = css + `
   @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
-  window.PET = { wishCard, _ADJ: ADJ, coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { wishCard, _ADJ: ADJ, _GOGT: GOGT, _GOGA: GOGA, coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();
