@@ -136,8 +136,8 @@
   const BOSSC = { main: '#7c3aed', dark: '#5b21b6', name: '魔王' };
   const COL = i => isBoss(i) ? BOSSC : (TEAMC[shown && shown.mode === 'team' ? 'team' : 'ffa'])[i] || TEAMC.ffa[0];
   const nm = i => isBoss(i) ? TK.BOSS[shown.boss].n : (host.names()[i] || COL(i).name + '色坦克');
-  const BOSS_D = 340, BOSS_ANC = { rock: .812, thunder: .83 };   // 魔王圖畫在場上的大小、腳底在圖的哪裡（美術給的錨點）
-  Object.keys(TK.BOSS).forEach(k => { img('boss-' + k); img('boss-' + k + '-shot'); }); img('ammo-heal');
+  const BOSS_D = 340, BOSS_DK = { hell: 370 }, BOSS_ANC = { rock: .812, thunder: .83, hell: .886 };   // 魔王圖畫在場上的大小、腳底在圖的哪裡（美術給的錨點）
+  Object.keys(TK.BOSS).forEach(k => { img('boss-' + k); img('boss-' + k + '-shot'); }); img('ammo-heal'); img('boss-hell-meteor');
   const BLEND = 12;   // 畫面上的砲口差，飛幾步之內接回真正的彈道
   const skinOf = i => { const s = host.skins && host.skins()[i]; return SKINS.includes(s) ? s : SKINS[i % 2 ? 2 : 0]; };
   const L = () => LOOK[shown && shown.site] || LOOK.grass;
@@ -289,6 +289,7 @@
       else if (e.k === 'void') texts.push({ x: t.x, y: H - 140, t: `${nm(e.i)} 掉下去了！`, c: '#7c2d12', life: 120, s: 38, vy: -.3 });
       else if (e.k === 'slide') texts.push({ x: t.tx, y: groundY(t.tx) - 110, t: '溜～', c: '#1c7ed6', life: 60, s: 28 });
       else if (e.k === 'drop') { const c = V.crates.find(z => z.id === e.id); if (c) c.fall = 1; }
+      else if (e.k === 'mark') texts.push({ x: Math.max(240, Math.min(W - 240, e.x)), y: groundY(e.x) - 215, t: '被鎖定了！下一輪隕石砸這裡', c: '#a21caf', life: 150, s: 30 });
     }
     if (shown.ev.some(e => e.k === 'void')) setTimeout(() => shown.ev.filter(e => e.k === 'void').forEach(e => bigBoom(e.i, true)), 50);
     next();
@@ -307,7 +308,8 @@
       A.F = TK.launch(A.pre, V.g, A.side, T.x, A.m.a, A.m.p, A.m.w); A.F.crates = V.crates.map(c => ({ ...c }));
       shells = A.F.sh; { const B = barrelAt(A.side, T.x, A.m.a), r = A.m.a * Math.PI / 180, dx = B.mx - (T.x + 26 * Math.cos(r)), dy = B.my - (groundY(T.x) - 16 - 26 * Math.sin(r)); const bs = isBoss(A.side); shells.forEach(s => { s.trail = []; s.mzx = bs ? 0 : dx; s.mzy = bs ? 0 : dy; });
       if (A.m.w === 'G') { snd.tele(); texts.push({ x: TK.bossBody(shown).cx, y: TK.bossBody(shown).cy - 140, t: '護盾！這一輪傷害減半', c: '#1c7ed6', life: 110, s: 36 }); }
-      if (A.m.w === 'Y') texts.push({ x: W / 2 - 200, y: 200, t: '砲彈雨！', c: '#7c3aed', life: 90, s: 46 }); }
+      if (A.m.w === 'Y') texts.push({ x: W / 2 - 200, y: 200, t: '砲彈雨！', c: '#7c3aed', life: 90, s: 46 });
+      if (A.m.w === 'F') texts.push({ x: W / 2 - 200, y: 200, t: '暗焰隕石！', c: '#a21caf', life: 100, s: 50 }); }
       lastShot[A.side] = { x: T.x, a: A.m.a, p: A.m.p };
       snd.fire(); const Bf = barrelAt(A.side, T.x, A.m.a), ang = A.m.a * Math.PI / 180;
       fxAdd(A.sk, 'muzzle', Bf.mx, Bf.my, -ang, .6, 9);   // 三連發也只有一次（發射只走這裡一次）
@@ -491,7 +493,7 @@
   /* ───────── 坦克 ───────── */
   /* 魔王：大大的圖（腳底對齊地面）、狂暴時身後發紅光、開護盾時一層藍色泡泡 */
   function drawBoss(c, i, now) {
-    const t = V.T[i], k = shown.boss, im = img('boss-' + k), by = shown.bossY, D = BOSS_D, b0 = TK.bossBody(shown), rage = t.hp > 0 && t.hp <= (t.max || 1) / 2;
+    const t = V.T[i], k = shown.boss, im = img('boss-' + k), by = shown.bossY, D = BOSS_DK[k] || BOSS_D, b0 = TK.bossBody(shown), rage = t.hp > 0 && t.hp <= (t.max || 1) / 2;
     const ox = (t.x || shown.bossX) - shown.bossX, b = { ...b0, cx: b0.cx + ox }, walking = Math.abs(ox) > 1 || (anim && anim.side === i && anim.ph === 'drive');   // 魔王走路時（b4），整隻跟著畫面上的位置移動
     c.save();
     if (t.dead) { t.dy = Math.min(60, (t.dy || 0) + .6); c.globalAlpha = Math.max(.25, 1 - t.dy / 70); c.translate(0, t.dy); }
@@ -505,6 +507,18 @@
     c.restore();
     if (rage && !t.dead) { c.font = `900 26px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; const ty = b.cy - b.ry - 70 + 4 * Math.sin(now / 150); c.strokeText('狂暴！', b.cx, ty); c.fillStyle = '#dc2626'; c.fillText('狂暴！', b.cx, ty); }
     if (!anim && !shown.over && V.turn === i && !t.dead) { const ax = b.cx, ay = b.cy - b.ry - 40 + 5 * Math.sin(now / 180); c.fillStyle = BOSSC.main; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(ax - 15, ay); c.lineTo(ax + 15, ay); c.lineTo(ax, ay + 17); c.closePath(); c.stroke(); c.fill(); }
+  }
+  /* 地獄魔王的紅圈：下一次輪到魔王，隕石砸在這裡；自己的坦克在圈裡就提醒快開走 */
+  function drawMark(c, now) {
+    const m = shown.boss && !shown.over && shown.mark; if (!m) return;
+    const R = TK.WEAP.F.R + 10, y = groundY(m.x), p = .5 + .5 * Math.sin(now / 140);
+    c.save(); c.fillStyle = `rgba(220,38,38,${.14 + .12 * p})`; c.strokeStyle = `rgba(190,24,93,${.6 + .4 * p})`; c.lineWidth = 4; c.setLineDash([12, 8]);
+    c.beginPath(); c.ellipse(m.x, y - 4, R, 22, 0, 0, 7); c.fill(); c.stroke(); c.setLineDash([]);
+    c.globalAlpha = .55 + .45 * p; c.lineWidth = 3; c.beginPath(); c.moveTo(m.x, y - 4); c.lineTo(m.x, y - 160); c.stroke(); c.globalAlpha = 1;
+    const me = host.me(), inMe = me >= 0 && me !== shown.bi && V.T[me] && !V.T[me].dead && TK.alive(shown, me) && Math.abs(V.T[me].x - m.x) < R;   // 自己在圈裡：標籤換成「快開出紅圈！」
+    const lx = Math.max(90, Math.min(W - 90, m.x)), ly = y - 168 + (inMe ? 4 * Math.sin(now / 120) : 0), tx = inMe ? '快開出紅圈！' : '隕石落點';
+    c.font = `900 ${inMe ? 28 : 24}px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; c.strokeText(tx, lx, ly); c.fillStyle = inMe ? '#dc2626' : '#be185d'; c.fillText(tx, lx, ly);
+    c.restore();
   }
   function drawTank(c, i, now) {
     if (isBoss(i)) return drawBoss(c, i, now);
@@ -574,7 +588,9 @@
       const [X, Y] = shellXY(s);
       const w = anim && anim.m.w, bg = w === 's', r = bg ? 9 : (w === 't' || s.sub) ? 5 : 7;
       if (bg) { const gl = c.createRadialGradient(X, Y, 0, X, Y, 26); gl.addColorStop(0, 'rgba(255,200,80,.9)'); gl.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 26, 0, 7); c.fill(); }
-      const bossW = anim && isBoss(anim.side), oi = bossW ? img('boss-' + shown.boss + '-shot') : w === 'h' ? img('ammo-heal') : null;
+      const bossW = anim && isBoss(anim.side);
+      if (bossW && w === 'F') { const mi = img('boss-hell-meteor'); if (ok(mi)) { const L = 124; c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 0) - Math.PI * .75); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(mi, -L * .3, -L * .7, L, L); c.restore(); continue; } }   // 隕石：圖的石頭在左下、火焰尾巴往右上，轉到跟飛的方向一樣
+      const oi = bossW ? img('boss-' + shown.boss + '-shot') : w === 'h' ? img('ammo-heal') : null;
       if (oi && ok(oi)) { const L2 = bossW ? (w === 'Q' || w === 'X' || w === 'Y' ? 30 : 38) : 30; c.save(); c.translate(X, Y); if (bossW) c.rotate(s.t / 12); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 5; c.drawImage(oi, -L2 / 2, -L2 / 2, L2, L2); c.restore(); continue; }
       const ask = anim && anim.sk, sk = (!w || w === 'n') && !s.sub && anim ? ask : null, si = sk && SHELL_SK.includes(sk) ? img(shellName(sk)) : null;
       /* 傳說三款：每顆砲彈後面接一條主題拖尾（亮尖接彈尾，往後淡出）；多顆時縮小、變淡 */
@@ -711,7 +727,7 @@
     const c = ctx; c.setTransform(K, 0, 0, K, 0, 0);
     let sx = 0, sy = 0; if (shake > .3) { sx = (Math.random() - .5) * shake; sy = (Math.random() - .5) * shake; shake *= .9; } else shake = 0;
     drawBG(c); c.setTransform(K, 0, 0, K, sx * K, sy * K);
-    drawClouds(c, dt); drawTerrain(c, now); drawCrates(c, now, dt);
+    drawClouds(c, dt); drawTerrain(c, now); drawCrates(c, now, dt); drawMark(c, now);
     drawAim(c);
     for (let i = 0; i < V.T.length; i++) drawTank(c, i, now);
     drawShells(c); drawParts(c, dt);
