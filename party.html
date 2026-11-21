@@ -307,7 +307,7 @@ function paintFlavor(){const b=bossPage(),k=b?'b':'m';if(paintFlavor.k===k)retur
   const ic=b?'img/ui/vs-boss.webp':'img/ui/vs-pd.webp';
   $('#hLogo').innerHTML=`<img src="${ic}" alt="">${b?'一起打王':'大砲混戰'}`;$('#lLogo').innerHTML=`<img src="${ic}" alt="">${b?'一起打王房間':'大砲混戰房間'}`;
   document.title=b?'601 一起打王':'601 大砲混戰';
-  $('#hNote').innerHTML=b?'2～4 個人<b>合作</b>打魔王！輪到你：開車移動、調<b>角度</b>、<b>力道</b>，選砲彈發射。<br>隊友不會打到彼此，<b>補血彈</b>可以幫隊友補血。10 輪內打倒魔王就贏，打贏有<b>金幣</b>。注意<b>風向</b>！'
+  $('#hNote').innerHTML=b?'2～4 個人<b>合作</b>打魔王！輪到你：開車移動、調<b>角度</b>、<b>力道</b>，選砲彈發射。<br>隊友不會打到彼此，<b>補血彈</b>可以幫隊友補血。10 輪內打倒魔王就贏，魔王會<b>移動</b>，每次都要重新瞄準。打贏有<b>金幣</b>。注意<b>風向</b>！'
     :'2～4 個人一起打！輪到你：先<b>開車</b>移動，再調<b>角度</b>、<b>力道</b>，選砲彈發射（按 ⇄ 可以轉向）。<br><b>各自為戰</b>：打到只剩最後一台就贏　<b>2 對 2</b>：把對方整隊打倒就贏。注意<b>風向</b>！';
   $('#bTest').hidden=b||!isTestMe();paintMe();paintRec()}
 const tokCount=()=>((G.st&&G.st.moves)||'').split(',').filter(Boolean).length;
@@ -482,7 +482,7 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
   if(mode==='boss'){const bk=TK.BOSS[st.boss]?st.boss:'rock';
     $('#bosses').innerHTML=Object.entries(TK.BOSS).map(([k,B])=>`<button data-b="${k}" class="${k===bk?'on':''}" ${host?'':'disabled'}><img src="img/game/boss-${k}.webp" alt=""><span>${B.n}<small>${k==='rock'?'普通':'困難'}・贏了每人 +${B.coin} 金幣</small></span></button>`).join('');
     $('#bosses').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!isHost())return;Net.update(`rooms/${G.pin}/state`,{boss:b.dataset.b,t:Date.now()}).catch(()=>{})});
-    $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。`}
+    $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！魔王每一回合都會移動，記得重新瞄準。隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。`}
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
     const ci=i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?MPI('reconnecting')+'重新連線中':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">'+MPI('ready')+'準備好了</span>':MPI('waiting')+'還沒準備'}</small></div></div>`}).join('');
