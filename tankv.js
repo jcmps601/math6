@@ -136,8 +136,9 @@
   const BOSSC = { main: '#7c3aed', dark: '#5b21b6', name: '魔王' };
   const COL = i => isBoss(i) ? BOSSC : (TEAMC[shown && shown.mode === 'team' ? 'team' : 'ffa'])[i] || TEAMC.ffa[0];
   const nm = i => isBoss(i) ? TK.BOSS[shown.boss].n : (host.names()[i] || COL(i).name + '色坦克');
-  const BOSS_D = 340, BOSS_DK = { hell: 370 }, BOSS_ANC = { rock: .812, thunder: .83, hell: .886 };   // 魔王圖畫在場上的大小、腳底在圖的哪裡（美術給的錨點）
-  Object.keys(TK.BOSS).forEach(k => { img('boss-' + k); img('boss-' + k + '-shot'); }); img('ammo-heal'); img('boss-hell-meteor');
+  const BOSS_D = 340, BOSS_DK = { hell: 370 }, BOSS_ANC = { rock: .812, thunder: .83, hell: .886 };
+  const BOSS_VIS = { rock: [.047, .186, .953, .812], thunder: [.047, .17, .953, .832], hell: [.047, .111, .953, .887] };   // 魔王圖有畫東西的範圍（圖寬、圖高的比例），護盾要包住這一塊   // 魔王圖畫在場上的大小、腳底在圖的哪裡（美術給的錨點）
+  Object.keys(TK.BOSS).forEach(k => { img('boss-' + k); img('boss-' + k + '-rage'); img('boss-' + k + '-shot'); }); img('boss-shield'); img('ammo-heal'); img('boss-hell-meteor');
   const BLEND = 12;   // 畫面上的砲口差，飛幾步之內接回真正的彈道
   const skinOf = i => { const s = host.skins && host.skins()[i]; return SKINS.includes(s) ? s : SKINS[i % 2 ? 2 : 0]; };
   const L = () => LOOK[shown && shown.site] || LOOK.grass;
@@ -365,7 +366,8 @@
       if (d < 0) { const add = Math.min(-d, (t.max || TK.HP) - t.hp); t.hp += add; texts.push({ x: t.x, y: tyy, t: '+' + add + ' 補血', c: '#2f9e44', life: 90, s: 40, vy: -.6 }); return; }
       t.hp = Math.max(0, t.hp - d); t.flash = 14; t.shakeT = 12;
       texts.push({ x: bb ? TK.bossBody(shown).cx : t.x, y: tyy, t: '-' + d + (bb && shown.shield ? ' 護盾' : ''), c: '#dc2626', life: 80, s: d >= 25 || bb ? 50 : 40, vy: -.6 });
-      if (e.hit === j + 1) { texts.push({ x: bb ? TK.bossBody(shown).cx : t.x, y: tyy + 44, t: '直擊！', c: '#f59f00', life: 80, s: 32, vy: -.6 }); snd.clang(); }
+      if (bb && TK.bossWeak && TK.bossWeak(shown, e.x, e.y)) { texts.push({ x: TK.bossBody(shown).cx, y: tyy + 46, t: `打中弱點！×${TK.WEAK}`, c: '#e8590c', life: 90, s: 36, vy: -.6 }); snd.clang(); }   // 打中魔王的頭
+      else if (e.hit === j + 1) { texts.push({ x: bb ? TK.bossBody(shown).cx : t.x, y: tyy + 44, t: '直擊！', c: '#f59f00', life: 80, s: 32, vy: -.6 }); snd.clang(); }
       if (t.hp <= 0 && !t.dead) { t.dead = 1; setTimeout(() => bigBoom(j), 250); }
     });
   }
@@ -493,7 +495,7 @@
   /* ───────── 坦克 ───────── */
   /* 魔王：大大的圖（腳底對齊地面）、狂暴時身後發紅光、開護盾時一層藍色泡泡 */
   function drawBoss(c, i, now) {
-    const t = V.T[i], k = shown.boss, im = img('boss-' + k), by = shown.bossY, D = BOSS_DK[k] || BOSS_D, b0 = TK.bossBody(shown), rage = t.hp > 0 && t.hp <= (t.max || 1) / 2;
+    const t = V.T[i], k = shown.boss, rage0 = t.hp > 0 && t.hp <= (t.max || 1) / 2, imR = img('boss-' + k + '-rage'), im = rage0 && ok(imR) ? imR : img('boss-' + k), by = shown.bossY, D = BOSS_DK[k] || BOSS_D, b0 = TK.bossBody(shown), rage = t.hp > 0 && t.hp <= (t.max || 1) / 2;
     const ox = (t.x || shown.bossX) - shown.bossX, b = { ...b0, cx: b0.cx + ox }, walking = Math.abs(ox) > 1 || (anim && anim.side === i && anim.ph === 'drive');   // 魔王走路時（b4），整隻跟著畫面上的位置移動
     c.save();
     if (t.dead) { t.dy = Math.min(60, (t.dy || 0) + .6); c.globalAlpha = Math.max(.25, 1 - t.dy / 70); c.translate(0, t.dy); }
@@ -503,9 +505,20 @@
     const hop = walking ? Math.abs(Math.sin(now / 90)) * 7 : 0, breathe = 1 + .012 * Math.sin(now / 420), x0 = b.cx - D / 2 + jx, y0 = by - (BOSS_ANC[k] || .82) * D * breathe - hop;
     if (ok(im)) { c.drawImage(im, x0, y0, D, D * breathe); if (t.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = t.flash / 14 * .55; c.drawImage(im, x0, y0, D, D * breathe); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; t.flash--; } }
     else { c.fillStyle = '#6d28d9'; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx, b.ry, 0, 0, 7); c.fill(); }
-    if (shown.shield && !t.dead) { const p = .5 + .15 * Math.sin(now / 200); c.fillStyle = `rgba(116,192,252,${p * .35})`; c.strokeStyle = `rgba(28,126,214,${p})`; c.lineWidth = 5; c.beginPath(); c.ellipse(b.cx, b.cy, b.rx * 1.25, b.ry * 1.35, 0, 0, 7); c.fill(); c.stroke(); }
+    if (shown.shield && !t.dead) {   // 護盾（第 10 批新圖，黑底去掉後的發光泡泡）：包住魔王被打中的範圍（身體、手、頭），會輕輕呼吸
+      const V0 = BOSS_VIS[k] || [.05, .15, .95, .85], an = BOSS_ANC[k] || .82, x0p = x0 + V0[0] * D, x1p = x0 + V0[2] * D, y0p = by - (an - V0[1]) * D, y1p = by - (an - V0[3]) * D;   // 魔王圖實際有畫東西的範圍（角、水晶、翅膀、尾巴都包進去）
+      const si = img('boss-shield'), p = .5 + .5 * Math.sin(now / 300), w = (x1p - x0p) * 1.12 * (1 + .015 * p), h = (y1p - y0p) * 1.28 * (1 + .015 * p), cx = (x0p + x1p) / 2, cy = (y0p + y1p) / 2 + (y1p - y0p) * .04;
+      if (ok(si)) { c.globalAlpha = .82 + .18 * p; c.drawImage(si, cx - w / 2, cy - h / 2, w, h); c.globalAlpha = 1; }
+      else { c.fillStyle = 'rgba(116,192,252,.18)'; c.strokeStyle = 'rgba(28,126,214,.7)'; c.lineWidth = 5; c.beginPath(); c.ellipse(cx, cy, w / 2, h / 2, 0, 0, 7); c.fill(); c.stroke(); }
+    }
     c.restore();
     if (rage && !t.dead) { c.font = `900 26px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; const ty = b.cy - b.ry - 70 + 4 * Math.sin(now / 150); c.strokeText('狂暴！', b.cx, ty); c.fillStyle = '#dc2626'; c.fillText('狂暴！', b.cx, ty); }
+    if (!anim && !shown.over && V.turn !== i && !t.dead && TK.bossParts) {   // 玩家瞄準時：頭上一圈淡淡的準星，提示那裡是弱點
+      const P = TK.bossParts(shown), h = P[P.length - 1], p = .5 + .5 * Math.sin(now / 260), hx = h.cx + ox, R = Math.max(h.rx, h.ry) * (1.05 + .06 * p);
+      c.save(); c.strokeStyle = `rgba(255,196,0,${.45 + .35 * p})`; c.lineWidth = 3; c.setLineDash([10, 8]); c.beginPath(); c.arc(hx, h.cy, R, 0, 7); c.stroke(); c.setLineDash([]);
+      c.lineWidth = 3; for (const a of [0, 1.5708, 3.1416, 4.7124]) { c.beginPath(); c.moveTo(hx + Math.cos(a) * (R - 8), h.cy + Math.sin(a) * (R - 8)); c.lineTo(hx + Math.cos(a) * (R + 8), h.cy + Math.sin(a) * (R + 8)); c.stroke(); }
+      c.restore();
+    }
     if (!anim && !shown.over && V.turn === i && !t.dead) { const ax = b.cx, ay = b.cy - b.ry - 40 + 5 * Math.sin(now / 180); c.fillStyle = BOSSC.main; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(ax - 15, ay); c.lineTo(ax + 15, ay); c.lineTo(ax, ay + 17); c.closePath(); c.stroke(); c.fill(); }
   }
   /* 地獄魔王的紅圈：下一次輪到魔王，隕石砸在這裡；自己的坦克在圈裡就提醒快開走 */
