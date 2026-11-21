@@ -18,10 +18,10 @@
    ・一起打王（mode 'boss'，2026-11）：地圖「b3|場地|0|輪數|玩家x…,魔王x|地面高度|魔王代號」，最後一台是魔王（S.bi）。
      玩家輪流打一發、再換魔王打一發，算一輪；輪數用完還沒打倒＝輸。隊友不會互相傷害，補血彈打到隊友是補血（扣血記成負的）。
      魔王怎麼打由 bossMove(S) 決定（亂數用 rng(seed)，誰的平板算都一樣），算好寫成一步棋，跟玩家一樣存進棋譜。
-     地圖「b4」（2026-11-21 起）：右邊一整塊平台（x ≥ 1020，炸不壞），魔王每一回合先走到新的位置再攻擊（普通走 60～150、困難走 120～260），
+     地圖「b4」（2026-11-21 起）：右邊一整塊平台（x ≥ 1020，炸不壞），魔王每一回合先走到新的位置再攻擊（普通走 60～150、困難走 120～260、地獄走 150～300），
      玩家不能一直用同一個角度、力道；舊的「b3」房間照當時規則（魔王站著不動）。 */
 (function (root) {
-  const VER = 5;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）。3＝拿掉鑽地彈、築牆彈；4＝加了一起打王；5＝魔王會移動
+  const VER = 6;                              // 房間版本：不一樣的平板不能一起玩（算出來會不一樣）。3＝拿掉鑽地彈、築牆彈；4＝加了一起打王；5＝魔王會移動；6＝地獄魔王（隕石）
   const HP = 100, FUEL = 180, SUB = 3, STEP = 4, VOID = 900;
   const GRAV = 0.18, WK = 0.0035, VK = 0.17;
   /* 場地：重力倍數、風倍數、坑的倍數、岩漿高度、浮島空隙、雪地會滑 */
@@ -52,13 +52,19 @@
     Z: { name: '雷電球', D: 28, R: 56, cr: 34, n: 1, lim: 0 },
     X: { name: '雷電三連', D: 21, R: 52, cr: 30, n: 3, lim: 0, spread: 5 },
     Y: { name: '砲彈雨', D: 16, R: 50, cr: 28, n: 1, lim: 0, rain: 1 },
-    G: { name: '護盾', D: 0, R: 0, cr: 0, n: 0, lim: 0, guard: 1 }
+    G: { name: '護盾', D: 0, R: 0, cr: 0, n: 0, lim: 0, guard: 1 },
+    /* 地獄魔王（暗焰魔龍王）：M＝瞄準打一發，同時在一台坦克腳下畫紅圈；下一次輪到魔王，F 隕石就砸在紅圈（玩家要開車躲開） */
+    P: { name: '暗焰球', D: 30, R: 58, cr: 36, n: 1, lim: 0 },
+    K: { name: '暗焰三連', D: 22, R: 52, cr: 32, n: 3, lim: 0, spread: 5 },
+    M: { name: '暗焰鎖定', D: 30, R: 58, cr: 36, n: 1, lim: 0, mark: 1 },
+    F: { name: '暗焰隕石', D: 46, R: 85, cr: 50, n: 1, lim: 0, meteor: 1 }
   };
   /* 魔王：hp＝每個玩家給幾滴血；w、h＝身體大小（被打中的範圍是橢圓）；seq＝招式順序（A 瞄準打、Y 砲彈雨、G 護盾），血剩一半以下「狂暴」：瞄準打變三連發
-     err＝瞄準時故意偏多少度（越小越準） */
+     err＝瞄準時故意偏多少度（越小越準）；M＝鎖定（只有地獄魔王有）：打一發＋畫紅圈，下一回合隕石砸紅圈 */
   const BOSS = {
     rock: { n: '岩甲巨獸', hp: 120, w: 250, h: 170, err: 7, shot: 'R', shot3: 'Q', seq: ['A', 'A', 'Y', 'A', 'G'], rounds: 10, coin: 30, mv: [60, 150] },
-    thunder: { n: '雷霆機甲龍', hp: 160, w: 220, h: 190, err: 4, shot: 'Z', shot3: 'X', seq: ['A', 'Y', 'A', 'G', 'A', 'Y'], rounds: 10, coin: 60, mv: [120, 260] }
+    thunder: { n: '雷霆機甲龍', hp: 160, w: 220, h: 190, err: 4, shot: 'Z', shot3: 'X', seq: ['A', 'Y', 'A', 'G', 'A', 'Y'], rounds: 10, coin: 60, mv: [120, 260] },
+    hell: { n: '暗焰魔龍王', hp: 180, w: 230, h: 210, err: 2, shot: 'P', shot3: 'K', seq: ['A', 'Y', 'M', 'A', 'G', 'A', 'M'], rounds: 10, coin: 100, mv: [150, 300], lock: 'thunder' }
   };
   const BOSS_SITES = ['grass', 'desert', 'snow', 'moon'], BOSS_FLAT = 150, BOSS_W = ['n', 't', 'b', 'c', 'h', 's'];
   const BOSS_P0 = 1020, BOSS_X0 = 1140, BOSS_X1 = 1400, PL_MAX = 860;   // b4：魔王的平台從 1020 開始；魔王在 1140～1400 走動；玩家站在 860 以左
@@ -279,7 +285,7 @@
       T: M.xs.map(x => ({ x, hp: HP, max: HP, used: { t: 0, b: 0, c: 0, d: 0, w: 0, p: 0, s: 0, h: 0 }, bonus: {}, out: false, ko: -1, st: { shots: 0, hits: 0, far: 0, best: 0, dmg: 0, heal: 0 } })),
       turn: M.first != null ? M.first % n : (seed >>> 0) % n, k: 0, a: 0, seed: seed | 0, last: null, over: false, maxT: n * M.per, per: M.per, crates: [], cid: 0, ev: []
     };
-    if (M.boss) { const B = BOSS[M.boss]; Object.assign(S, { boss: M.boss, bm: M.bm, bi, bossX: M.xs[bi], bossY: gAt(M.g, M.xs[bi]), shield: false, bt: 0 }); S.T[bi].hp = S.T[bi].max = Math.round(B.hp * (n - 1) * [1, 1, 1.05, 1.15][n - 2]); }   // 人多的時候魔王血再多一點（4 個人一起打太輕鬆）
+    if (M.boss) { const B = BOSS[M.boss]; Object.assign(S, { boss: M.boss, bm: M.bm, bi, bossX: M.xs[bi], bossY: gAt(M.g, M.xs[bi]), shield: false, bt: 0, mark: null }); S.T[bi].hp = S.T[bi].max = Math.round(B.hp * (n - 1) * [1, 1, 1.05, 1.15][n - 2]); }   // 人多的時候魔王血再多一點（4 個人一起打太輕鬆）
     S.first = S.turn;
     const list = moves ? String(moves).split(',').filter(Boolean) : [];
     const outs = Object.entries(out || {}).map(([k, v]) => [+String(k).replace(/\D/g, ''), +v]).filter(([i, v]) => i >= 0 && i < n && isFinite(v)).sort((a, b) => a[1] - b[1]);
@@ -343,6 +349,11 @@
       if (S.sp.lava && me.hp > 0 && !me.out && !isB && gAt(g, me.x) > S.sp.lava) { me.hp -= 10; S.ev.push({ k: 'lava', i, d: 10 }); }
     }
     for (let j = 0; j < S.n; j++) if (S.T[j].hp <= 0 && S.T[j].ko < 0) { S.T[j].hp = 0; S.T[j].ko = S.k; }
+    if (isB && !m.pass && WEAP[m.w].meteor) S.mark = null;   // 隕石砸下來了
+    if (isB && !m.pass && WEAP[m.w].mark) {   // 鎖定：挑一台還活著的坦克，在它腳下畫紅圈（亂數用 seed，每台平板算出來都一樣）
+      const r = rng(((S.seed ^ 0x51ed27) >>> 0) + S.a * 313), pl = [...Array(S.n).keys()].filter(j => j !== S.bi && alive(S, j));
+      if (pl.length) { const j = pl[Math.floor(r() * pl.length)]; S.mark = { x: Math.round(S.T[j].x), i: j }; S.ev.push({ k: 'mark', i: j, x: S.mark.x }); }
+    }
     S.a++; S.last = m; S.turn = nextAlive(S, i);
     if (!L && S.a % 4 === 0) dropCrate(S);
     check(S, before);
@@ -393,6 +404,11 @@
       S.T.forEach((t, j) => { if (j === i || !alive(S, j)) return; sh.push({ k: sh.length, x: clamp(t.x + (r() - .5) * 200, 10, S.W - 10), y: -30 - r() * 120, vx: (r() - .5) * .6, vy: 1.5, live: true, away: true, t: 0, bn: 0, bounced: 0, sub: 0, drill: 0 }); });
       return { S, g, i, w, sh, T: tanksOf(S, i, x), crates: S.legacy ? [] : S.crates.slice(), wind: S.wind, grav: GRAV * S.sp.grav, ev: [] };
     }
+    if (W0.meteor && S.mark) {   // 隕石：從右上方斜斜砸向紅圈（不受風影響；起點往回推算，剛好落在紅圈中間）
+      const gv = GRAV * S.sp.grav, vx = -1.9, vy = 3, y0 = -60, yg = gAt(g, S.mark.x) - 16, t = (-vy + Math.sqrt(vy * vy + 2 * gv * (yg - y0))) / gv;
+      sh.push({ k: 0, x: S.mark.x - vx * t, y: y0, vx, vy, live: true, away: true, t: 0, bn: 0, bounced: 0, sub: 0, drill: 0, nw: 1 });
+      return { S, g, i, w, sh, T: tanksOf(S, i, x), crates: S.legacy ? [] : S.crates.slice(), wind: S.wind, grav: GRAV * S.sp.grav, ev: [] };
+    }
     for (let k = 0; k < W0.n; k++) {
       const ang = (a + (W0.n > 1 ? (k - 1) * W0.spread : 0)) * Math.PI / 180, v = p * VK;
       sh.push({ k, x: cx + 26 * Math.cos(ang), y: cy - 26 * Math.sin(ang), vx: v * Math.cos(ang), vy: -v * Math.sin(ang), live: true, away: false, t: 0, bn: W0.bn || 0, bounced: 0, sub: 0, drill: 0 });
@@ -410,7 +426,7 @@
         if (hit >= 0 || s.drill <= 0 || s.y >= S.FLOOR || s.x < 0 || s.x >= S.W) { s.live = false; out.push({ s, x: clamp(s.x, 0, S.W - 1), y: Math.min(s.y, S.FLOOR), hit }); }
         continue;
       }
-      s.vx += F.wind * WK * dt; s.vy += F.grav * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t++;
+      if (!s.nw) s.vx += F.wind * WK * dt; s.vy += F.grav * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t++;
       if (s.x < -80 || s.x > S.W + 80 || s.y > S.H + 40) { s.live = false; continue; }
       if (W0.split && !s.sub && s.vy >= 0 && s.t > 6) {   // 散花彈：飛到最高點分成 5 顆
         s.live = false; F.ev.push({ k: 'split', x: s.x, y: s.y });
@@ -491,6 +507,7 @@
     /* b4：先決定走到哪裡（往一邊走一段；走不下就往另一邊），玩家每一輪都要重新瞄準 */
     let nx = S.bossX;
     if (S.bm) { const d = Math.round(B.mv[0] + r() * (B.mv[1] - B.mv[0])), dir = r() < .5 ? -1 : 1; nx = S.bossX + dir * d; if (nx < BOSS_X0 || nx > BOSS_X1) nx = S.bossX - dir * d; nx = clamp(nx, BOSS_X0, BOSS_X1); }
+    if (S.mark) return fire(S, nx, 150, 50, 'F').tok;   // 上一回合畫了紅圈：這一回合隕石砸下來
     if (act === 'G') return fire(S, nx, 150, 50, 'G').tok;
     if (act === 'Y') return fire(S, nx, 150, 50, 'Y').tok;
     const low = pl.slice().sort((a, b) => S.T[a].hp - S.T[b].hp)[0], tgt = r() < .45 ? low : pl[Math.floor(r() * pl.length)];
@@ -500,7 +517,7 @@
     for (let a = 100; a <= 170; a += 5) for (let p = 30; p <= 100; p += 5) { const x = sim(a, p), e = Math.abs(x - tx); if (!best || e < best.e) best = { a, p, e }; }
     for (let a = best.a - 4; a <= best.a + 4; a++) for (let p = best.p - 4; p <= best.p + 4; p++) { if (p < 10 || p > 100) continue; const x = sim(a, p), e = Math.abs(x - tx); if (e < best.e) best = { a, p, e }; }
     const err = B.err * (rage ? .7 : 1), a = clamp(Math.round(best.a + (r() - .5) * 2 * err), 91, 179), p = clamp(Math.round(best.p + (r() - .5) * err * .8), 10, 100);
-    return fire(S, nx, a, p, rage ? B.shot3 : B.shot).tok;
+    return fire(S, nx, a, p, act === 'M' ? 'M' : rage ? B.shot3 : B.shot).tok;
   }
   /* 預覽：只畫前面一小段 */
   function preview(S, i, x, a, p, ticks = 22) {
