@@ -117,6 +117,7 @@ button{font-family:inherit;cursor:pointer}
 #pickList button.sent{border-color:#f59f00;background:#fff3bf;color:#c2410c}
 #pickList button:disabled{opacity:.6}
 @media (max-height:620px){#home,#lobby{gap:.5rem;padding:.6rem}.menu{gap:.5rem}}
+.mpi{width:1.45em;height:1.45em;vertical-align:-.4em;margin-right:.15em}#lwait{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:3.6rem}#lwait .mpi.big{width:3.2rem;height:3.2rem;margin:0;flex:none}
 </style></head><body>
 
 <section class="scr on" id="home">
@@ -472,8 +473,12 @@ function watchOff(){const st=G.st,box=$('#offMsg');if(!st||st.phase!=='play'){G.
   const first=[...ord.keys()].find(i=>online(i)&&!isOut(i)),watcher=first===me;
   ord.forEach((k,i)=>{const p=G.players[k],gone=!p||p.off;if(!gone||isOut(i)||i===me){delete G.offSince[i];return}
     const t0=G.offSince[i]||(G.offSince[i]=now),left=Math.ceil((OFF_MS-(now-t0))/1000);
-    if(left>0){lines.push(`📴 ${nm[i]} 離線了，${left} 秒內沒回來就出局`);return}
+    if(left>0){lines.push(`${MPI('reconnecting')}${nm[i]} 離線了，${left} 秒內沒回來就出局`);return}
     if(me>=0&&(watcher||now-t0>OFF_MS+10000)){G.offSince[i]=now+60000;markOut(i)}});
+  /* 主動離開（按離開、或離線太久被判出局）：顯示 6 秒「離開了」，跟「重新連線中」分開 */
+  if(G.outKey!==gameKey()){G.outKey=gameKey();G.outSeen={};Object.keys(st.out||{}).forEach(k=>G.outSeen[k]=0)}
+  Object.keys(st.out||{}).forEach(k=>{if(G.outSeen[k]==null)G.outSeen[k]=now});
+  Object.entries(G.outSeen).forEach(([k,t])=>{const i=+k.slice(1);if(t&&now-t<6000&&i!==myIdx())lines.push(`${MPI('teammate-left')}${nm[i]} 離開了這一局`)});
   box.innerHTML=lines.join('<br>')}
 async function markOut(i){const st=G.st;if(!st||st.phase!=='play'||isOut(i))return;
   try{await Net.update(`rooms/${G.pin}/state`,{['out/i'+i]:st.tn,t:Date.now()})}catch(e){}
@@ -561,6 +566,17 @@ function rulesOnce(){if(LS.get('dr_rule','')!==new Date().toDateString())rulesSh
 /* ═════════════ 房間（等人） ═════════════ */
 const nextG=()=>((G.st&&G.st.g)||0)+1;
 const isRdy=k=>{const p=G.players[k];return !!p&&!p.off&&p.tk!==false&&p.rdy===nextG()};
+/* 房間的狀態：一行短句＋狀態圖（等人、準備好了、重新連線、同學離開）；可不可以開始照 startBlock() 的實際結果 */
+const MPI=(n,c)=>`<img class="mpi${c?' '+c:''}" src="img/ui/mp-${n}.webp" alt="" draggable="false">`;
+function lobbyLine(st,host,mr,why,n,hsName){let ic='waiting',t;
+  if(st.phase==='play')t='這一局已經開始了，等他們玩完，下一局再一起玩';
+  else if(!hasTicket()){ic='';t='🎟️ 遊戲券不足，先完成練習才能準備。'}
+  else if(!why){ic='ready';t=host?'大家都準備好了，按「開始！」':`大家都準備好了，等房主（${hsName}）開始。`}
+  else if(/至少/.test(why))t=`目前 ${n} 人，${why}，可以邀請同學。`;
+  else if(!mr)t=host?'按「我準備好了」，大家都準備好就可以開始':'按「我準備好了」，等房主按開始';
+  else if(!host){ic='ready';t=`你準備好了。${why}`}
+  else t=why;
+  return (ic?MPI(ic,'big'):'')+`<span>${t}</span>`}
 function startBlock(){const pl=G.players;if(G.st&&G.st.phase==='play')return '這一局還在玩';
   const on=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false),rd=on.filter(isRdy);
   if(on.length<MIN_N&&!(isTestMe()&&on.length>=2))return `至少要 ${MIN_N} 個人（有遊戲券、在線上）才能開始`;
@@ -571,11 +587,11 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),bank=BANK_N[s
   $('#bankTip').textContent=BANK_TIP[bank];
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;const rd=isRdy(k);
-    return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i>${i+1}</i><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'房主・':''}${p.off?'📴 離線':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">✅ 準備好了</span>':'⏳ 還沒準備'}</small></div></div>`}).join('');
+    return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i>${i+1}</i><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'房主・':''}${p.off?MPI('reconnecting')+'重新連線中':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">'+MPI('ready')+'準備好了</span>':MPI('waiting')+'還沒準備'}</small></div></div>`}).join('');
   const ready=SLOTS.filter(isRdy).length,why=startBlock(),mr=isRdy(G.slot);
   $('#bStart').hidden=!host;$('#bStart').disabled=!!why;
   const rb=$('#bReady');rb.textContent=mr?'取消準備':'我準備好了';rb.disabled=!mr&&(!hasTicket()||st.phase==='play');
-  $('#lwait').textContent=st.phase==='play'?'這一局已經開始了，等他們玩完，下一局再一起玩':host?(why||`${ready} 個人都準備好了，按「開始！」`):mr?`等房主（${plName(pl[hs])}）按開始…`:'按「我準備好了」，等房主按開始';
+  $('#lwait').innerHTML=lobbyLine(st,host,mr,why,SLOTS.filter(k=>pl[k]).length,plName(pl[hs]));
   $('#bInv2').hidden=!(inPlat()&&P.invite)||n>=8;
   if(!hasTicket())$('#lmsg').textContent='🎟️ 你的遊戲券用完了，不能按準備。回平台練習 10 題答對 8 題就能拿到！'}
 $('#bReady').onclick=async()=>{if(G.mode!=='net'||!G.players[G.slot])return;const on=!isRdy(G.slot);if(on&&!hasTicket())return lmsg('🎟️ '+NO_TK);
