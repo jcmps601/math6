@@ -117,7 +117,7 @@ button{font-family:inherit;cursor:pointer}
 .bosses{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
 .bosses button{display:flex;align-items:center;gap:.4rem;border:3px solid #e9d5ae;background:#fff;border-radius:16px;padding:.25rem .7rem .25rem .3rem;font-weight:900;font-size:1.05rem;color:#7a5a32}
 .bosses button img{width:3.6rem;height:3.6rem;object-fit:contain}.bosses button small{display:block;font-size:.8rem;color:#9a7a52}
-.bosses button.on{border-color:#7c3aed;background:#f3f0ff;color:#5b21b6}.bosses button:disabled{cursor:default}.bosses button:disabled:not(.on){opacity:.55}
+.bosses button.lock img{filter:grayscale(1) brightness(.7)}.bosses button.on{border-color:#7c3aed;background:#f3f0ff;color:#5b21b6}.bosses button:disabled{cursor:default}.bosses button:disabled:not(.on){opacity:.55}
 #bossTip{font-size:.95rem;font-weight:800;color:#7a5a32;max-width:34rem}
 #ovCoin{font-size:1.15rem;font-weight:900;color:#2b8a3e}#ovCoin:empty{display:none}
 /* 場地、車庫、結算 */
@@ -227,7 +227,7 @@ button{font-family:inherit;cursor:pointer}
    ・有人離線：20 秒沒回來就出局（state.out）。按「離開」也是出局，算輸。
    ・在平台裡：輸的人用掉 1 張遊戲券（贏的、平手不用），戰績記在 learn/xq（g:'pm'）。
    ・同一台平板輪流打：一局用 1 張券，不記戰績。
-   ・一起打王（state.mode＝'boss'，2026-11）：1～4 人一起打魔王（state.boss：rock 普通、thunder 困難）。魔王是最後一台（不在 order 裡）。
+   ・一起打王（state.mode＝'boss'，2026-11）：1～4 人一起打魔王（state.boss：rock 普通、thunder 困難、hell 地獄＝打贏過困難才解鎖）。魔王是最後一台（不在 order 裡）。
      輪到魔王時，房間裡第一個在線上、還活著的人用 TK.bossMove 算好魔王這一發、寫進棋譜（大家算出來都一樣）。
      每個人都用 1 張遊戲券（贏輸都扣）；打贏有金幣（P.bossReward，每天前 3 場）。戰績記成 pb 開頭。 */
 const $=s=>document.querySelector(s);
@@ -473,6 +473,11 @@ $('#bBack').onclick=()=>{G.ovHide=gameKey();$('#over').classList.remove('on');on
 $('#bAgain').onclick=()=>{$('#over').classList.remove('on');soloStart(G.solo.n,G.solo.m,G.solo.opt)};
 
 /* ═════════════ 房間（等人） ═════════════ */
+/* 一起打王：地獄魔王要先打贏過困難（看自己的戰績，雲端的也算；房主選得到就可以開）；測試帳號、不在平台裡不鎖 */
+const BOSS_LV={rock:'普通',thunder:'困難',hell:'地獄'};
+function bossLocked(k){const L=TK.BOSS[k]&&TK.BOSS[k].lock;if(!L||!inPlat()||isTestMe()||!P.bossBeat)return false;G.beat=G.beat||{};
+  if(G.beat[L]==null){G.beat[L]=false;Promise.resolve(P.bossBeat(L)).then(v=>{if(v){G.beat[L]=true;paintLobby()}}).catch(()=>{})}
+  return !G.beat[L]}
 function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode==='team'?'team':st.mode==='boss'&&BOSS_ON()?'boss':'ffa',col=PALETTE(mode);
   $('#pinBig').textContent=G.pin;
   paintFlavor();$('#modes').style.display=mode==='boss'?'none':'';$('#mBoss').hidden=true;   // 兩個分開：打王房間不能切回對戰，對戰房間也不能切成打王
@@ -480,9 +485,9 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
   /* 一起打王：選魔王 */
   $('#bossBox').hidden=mode!=='boss';
   if(mode==='boss'){const bk=TK.BOSS[st.boss]?st.boss:'rock';
-    $('#bosses').innerHTML=Object.entries(TK.BOSS).map(([k,B])=>`<button data-b="${k}" class="${k===bk?'on':''}" ${host?'':'disabled'}><img src="img/game/boss-${k}.webp" alt=""><span>${B.n}<small>${k==='rock'?'普通':'困難'}・贏了每人 +${B.coin} 金幣</small></span></button>`).join('');
-    $('#bosses').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!isHost())return;Net.update(`rooms/${G.pin}/state`,{boss:b.dataset.b,t:Date.now()}).catch(()=>{})});
-    $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！魔王每一回合都會移動，記得重新瞄準。隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。`}
+    $('#bosses').innerHTML=Object.entries(TK.BOSS).map(([k,B])=>{const lk=k!==bk&&bossLocked(k);return `<button data-b="${k}" class="${k===bk?'on':''}${lk?' lock':''}" ${host&&!lk?'':'disabled'}><img src="img/game/boss-${k}.webp" alt=""><span>${B.n}<small>${lk?`打贏${BOSS_LV[B.lock]}之後解鎖`:`${BOSS_LV[k]||''}・贏了每人 +${B.coin} 金幣`}</small></span></button>`}).join('');
+    $('#bosses').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!isHost()||bossLocked(b.dataset.b))return;Net.update(`rooms/${G.pin}/state`,{boss:b.dataset.b,t:Date.now()}).catch(()=>{})});
+    $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！魔王每一回合都會移動，記得重新瞄準。${bk==='hell'?'暗焰魔龍王會在一台坦克腳下畫紅圈，下一輪隕石就砸下來，看到紅圈趕快開走！':''}隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。`}
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
     const ci=i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?MPI('reconnecting')+'重新連線中':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">'+MPI('ready')+'準備好了</span>':MPI('waiting')+'還沒準備'}</small></div></div>`}).join('');
