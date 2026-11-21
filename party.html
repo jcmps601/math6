@@ -137,6 +137,15 @@ button{font-family:inherit;cursor:pointer}
 .tsel{font-size:1.1rem;font-weight:800;padding:.35rem .6rem;border-radius:12px;border:3px solid #e9d5ae;background:#fff;color:#7a5a32}
 .tsk{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem}.tsk label{display:flex;align-items:center;gap:.35rem;font-weight:900;color:#7a5a32}.tsk select{flex:1;min-width:0}
 @media (max-width:560px){.tsk{grid-template-columns:1fr}}
+/* 三步驟教學：桌機三欄、手機一欄 */
+.tutb{max-width:min(54rem,100%)!important}.tuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem}
+.tu{background:#fff;border-radius:18px;padding:.6rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;text-align:center}
+.tu img{width:min(10rem,100%);height:auto;aspect-ratio:1}.tu b{font-size:1.25rem;color:#c2410c;display:flex;align-items:center;gap:.35rem}
+.tu b i{font-style:normal;width:1.7rem;height:1.7rem;border-radius:50%;background:#e8590c;color:#fff;display:grid;place-items:center;font-size:1rem}
+.tu span{font-size:1rem;font-weight:800;color:#7a5a32;line-height:1.5}
+@media (max-width:640px){.tuts{grid-template-columns:1fr}.tu{flex-direction:row;text-align:left}.tu img{width:6.5rem;flex:none}.tu>b{display:none}.tu span::before{content:attr(data-t);display:block;font-size:1.15rem;color:#c2410c;font-weight:900}}
+@media (max-width:420px){.slot img.sk{display:none}.slot b{font-size:1.05rem}}   /* 手機：房間卡放不下坦克圖，名字會被擠成直的 */
+.mpi{width:1.45em;height:1.45em;vertical-align:-.4em;margin-right:.15em}#lwait{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:3.6rem}#lwait .mpi.big{width:3.2rem;height:3.2rem;margin:0;flex:none}
 </style></head><body>
 
 <section class="scr on" id="home">
@@ -148,6 +157,7 @@ button{font-family:inherit;cursor:pointer}
     <button class="btn" id="bNew"><img class="ti" src="img/ui/ic-room-create.webp" alt="" draggable="false">建立房間</button>
     <div class="join"><input id="pinIn" inputmode="numeric" maxlength="4" placeholder="房號"><button class="btn b" id="bJoin"><img class="ti" src="img/ui/ic-room-join.webp" alt="" draggable="false">加入</button></div>
     <button class="btn" id="bInv" hidden><img class="ti" src="img/ui/vs-inv.webp" alt="" draggable="false">邀請同學一起玩</button>
+    <button class="btn g" id="bTut"><img class="ti" src="img/ui/pr-hint.webp" alt="" draggable="false">怎麼玩？</button>
     <button class="btn g gar" id="bGarage" hidden><img class="ti" src="img/game/tank-ui-garage-v2.webp" alt="" draggable="false">坦克車庫<small id="mySkin"></small></button>
     <button class="btn g" id="bTest" hidden>🧪 測試模式：單機、自選造型（只有測試帳號看得到）</button>
     <button class="btn g" id="bSolo" hidden style="display:none">👥 同一台平板輪流打（2～4 人）</button><!-- 學生喜歡各自用自己的平板：拿掉同一台輪流打 -->
@@ -183,6 +193,13 @@ button{font-family:inherit;cursor:pointer}
 <div class="ov" id="over"><div class="box"><div id="ovT"></div><div class="s" id="ovS"></div><div id="ovList"></div><div id="ovSt"></div><div id="ovCoin"></div><div class="s" id="ovN"></div><div class="s" id="ovNext" aria-live="polite"></div>
   <div class="row"><button class="btn" id="bRe" hidden><img class="rmi" src="img/ui/ic-rematch.webp" alt=""><span>再玩一局</span></button><button class="btn g" id="bBack">回房間</button><button class="btn" id="bAgain" hidden>🔁 再玩一次</button><button class="btn g" id="bOut">回大廳</button></div></div></div>
 
+<div class="ov" id="tut"><div class="box tutb"><div class="t">大砲三步驟</div>
+  <div class="tuts">
+    <div class="tu"><img src="img/ui/tutorial-tank-angle.webp" alt=""><b><i>1</i>調角度</b><span>按 ▲▼（或在畫面上拖）調整砲管，決定往哪裡射。按 ⇄ 可以轉向。</span></div>
+    <div class="tu"><img src="img/ui/tutorial-tank-power.webp" alt=""><b><i>2</i>調力道</b><span>按 −／＋ 或拖力道條，調整力道，試試能打多遠。</span></div>
+    <div class="tu"><img src="img/ui/tutorial-tank-fire.webp" alt=""><b><i>3</i>發射</b><span>瞄準後按「發射」，看看落點再調整。記得看風向！</span></div>
+  </div>
+  <div class="row"><button class="btn" id="tutGo">開始玩</button><button class="btn g" id="tutLater">稍後再看</button></div></div></div>
 <div class="ov" id="pick"><div class="box"><div class="t" id="pickT"><img class="ti" src="img/ui/vs-inv.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.35em">邀請同學來玩大砲混戰</div>
   <div class="s">綠色的同學現在在平台上，按一下就會邀請他（可以邀請好幾個人）</div><div id="pickList"></div><button class="btn g" id="pickX">好了</button></div></div>
 
@@ -423,8 +440,12 @@ function watchOff(){const st=G.st,box=$('#offMsg');
   ord.forEach((k,i)=>{const p=G.players[k],gone=!p||p.off;
     if(!gone||!r.T[i]||r.T[i].out||i===myIdx()){delete G.offSince[i];return}
     const t0=G.offSince[i]||(G.offSince[i]=now),left=Math.ceil((OFF_MS-(now-t0))/1000);
-    if(left>0){if(TK.alive(r,i))lines.push(`📴 ${nm[i]} 離線了，<b>${left}</b> 秒內沒回來就出局`);return}
+    if(left>0){if(TK.alive(r,i))lines.push(`${MPI('reconnecting')}${nm[i]} 離線了，<b>${left}</b> 秒內沒回來就出局`);return}
     if(watcher||now-t0>OFF_MS+10000){G.offSince[i]=now+60000;markOut(i)}});
+  /* 主動離開（按離開、或離線太久被判出局）：顯示 6 秒「離開了」，跟「重新連線中」分開 */
+  if(G.outKey!==gameKey()){G.outKey=gameKey();G.outSeen={};Object.keys(st.out||{}).forEach(k=>G.outSeen[k]=0)}
+  Object.keys(st.out||{}).forEach(k=>{if(G.outSeen[k]==null)G.outSeen[k]=now});
+  Object.entries(G.outSeen).forEach(([k,t])=>{const i=+k.slice(1);if(t&&now-t<6000&&i!==myIdx())lines.push(`${MPI('teammate-left')}${nm[i]} 離開了這一局`)});
   box.innerHTML=lines.join('<br>');
   /* 輪到的人一直沒動（平板放著沒關）：時間過了 25 秒，幫他「時間到」 */
   if(watcher&&!TKV.busy()&&!r.over&&r.turn!==myIdx()&&TKV.turnAge()>TURN_MS+25000&&G.passFor!==tokCount()){G.passFor=tokCount();sendMove(TK.pass(r,r.turn,r.T[r.turn].x))}}
@@ -464,11 +485,11 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
     $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。`}
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
-    const ci=i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?'📴 離線':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">✅ 準備好了</span>':'⏳ 還沒準備'}</small></div></div>`}).join('');
+    const ci=i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?MPI('reconnecting')+'重新連線中':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">'+MPI('ready')+'準備好了</span>':MPI('waiting')+'還沒準備'}</small></div></div>`}).join('');
   const ready=SLOTS.filter(isRdy).length,why=startBlock(),mr=isRdy(G.slot);
   $('#bStart').hidden=!host;$('#bStart').disabled=!!why;
   const rb=$('#bReady');rb.textContent=mr?'取消準備':'✋ 我準備好了';rb.disabled=!mr&&(!hasTicket()||st.phase==='play');
-  $('#lwait').textContent=st.phase==='play'?'這一局已經開始了，等他們打完，下一局再一起玩':host?(why||`${ready} 個人都準備好了，按「開始！」`):mr?`等房主（${plName(pl[hs])}）按開始…`:'按「我準備好了」，等房主按開始';
+  $('#lwait').innerHTML=lobbyLine(st,host,mr,why,SLOTS.filter(k=>pl[k]).length,plName(pl[hs]));
   $('#bInv2').hidden=!(inPlat()&&P.invite)||n>=4;
   const siteList=mode==='boss'?TK.BOSS_SITES:TK.SITE_KEYS,site=st.site&&siteList.includes(st.site)?st.site:'random';
   $('#sites').innerHTML=['random',...siteList].map(k=>`<button data-s="${k}" class="${k===site?'on':''}" ${host?'':'disabled'}><i class="sw sw-${k}"></i>${k==='random'?'隨機':TK.SITES[k].n}</button>`).join('');
@@ -479,6 +500,17 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
    沒有遊戲券不能按準備；輸的人用 1 張券，贏的不用。準備記在 players/我/rdy＝下一局是第幾局，開新局就自動失效。 */
 const nextG=()=>((G.st&&G.st.g)||0)+1;
 const isRdy=k=>{const p=G.players[k];return !!p&&!p.off&&p.tk!==false&&p.rdy===nextG()};
+/* 房間的狀態：一行短句＋狀態圖（等人、準備好了、重新連線、同學離開）；可不可以開始照 startBlock() 的實際結果 */
+const MPI=(n,c)=>`<img class="mpi${c?' '+c:''}" src="img/ui/mp-${n}.webp" alt="" draggable="false">`;
+function lobbyLine(st,host,mr,why,n,hsName){let ic='waiting',t;
+  if(st.phase==='play')t='這一局已經開始了，等他們玩完，下一局再一起玩';
+  else if(!hasTicket()){ic='';t='🎟️ 遊戲券不足，先完成練習才能準備。'}
+  else if(!why){ic='ready';t=host?'大家都準備好了，按「開始！」':`大家都準備好了，等房主（${hsName}）開始。`}
+  else if(/至少/.test(why))t=`目前 ${n} 人，${why}，可以邀請同學。`;
+  else if(!mr)t=host?'按「我準備好了」，大家都準備好就可以開始':'按「我準備好了」，等房主按開始';
+  else if(!host){ic='ready';t=`你準備好了。${why}`}
+  else t=why;
+  return (ic?MPI(ic,'big'):'')+`<span>${t}</span>`}
 function startBlock(){const pl=G.players,mode=G.st&&G.st.mode==='team'?'team':G.st&&G.st.mode==='boss'?'boss':'ffa';if(G.st&&G.st.phase==='play')return '這一局還在打';
   const on=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false),rd=on.filter(isRdy);
   if(mode==='boss'&&BOSS_ON()){if(on.length<1)return '至少要 1 個人';if(on.length<2&&!isTestMe())return '至少要 2 個人（有遊戲券、在線上）才能一起打王'}
@@ -593,6 +625,13 @@ $('#bInv2').onclick=()=>openPick();
 $('#bInv').onclick=async()=>{if(await create()){onState();openPick()}};
 window.addEventListener('pagehide',()=>{if(G.inv.size&&inPlat()&&P.uninvite)G.inv.forEach(s=>P.uninvite(s))});
 
+/* ═════════════ 三步驟教學：第一次打開時跳出來（按「開始玩」才記住看過了）；隨時可以按「怎麼玩？」再看 ═════════════ */
+function tutShow(){$('#tut').classList.add('on')}
+$('#bTut').onclick=tutShow;
+$('#tutGo').onclick=()=>{LS.set('pm_tut',1);$('#tut').classList.remove('on')};
+$('#tutLater').onclick=()=>$('#tut').classList.remove('on');
+document.querySelectorAll('.tu').forEach(t=>{const sp=t.querySelector('span');sp.dataset.t=t.querySelector('b').textContent.replace(/^\d/,m=>m+'. ')});
+
 /* ═════════════ 開始 ═════════════ */
 paintSkin();if(inPlat()&&P.invite)$('#bInv').hidden=false;paintFlavor();
 $('#bGarage').onclick=openGarage;
@@ -600,7 +639,8 @@ addEventListener('resize',()=>{if($('#game').classList.contains('on'))TKV.fit()}
 (async()=>{await netReady;
   if(Net.mode==='local'){$('#mode').hidden=false;$('#mode').textContent='⚠ 連不上雲端：現在是本機模式，只能在同一台電腦的不同分頁之間一起玩。'}
   if(Q.get('join')){$('#pinIn').value=Q.get('join');join(Q.get('join'))}
-  else if(Q.has('pick')&&inPlat())$('#bInv').onclick()})();
+  else if(Q.has('pick')&&inPlat())$('#bInv').onclick();
+  else if(!LS.get('pm_tut',0)&&$('#home').classList.contains('on'))tutShow()})();   // 只在首頁（還沒進房間、沒在打）時跳出來
 window.__pm=G;
 </script>
 </body></html>
