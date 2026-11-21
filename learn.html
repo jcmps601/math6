@@ -258,13 +258,26 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:.6rem .
 /* 省電模式（比較舊的平板自動開、也可以在「更多」切換）：一直重複的裝飾動畫只跑一次就停 */
 body.lite *,body.lite *::before,body.lite *::after{animation-iteration-count:1!important}body.lite .farm .fcl,body.lite .farm .fduck,body.lite .farm .fbfly,body.lite .farm .fsmk circle{animation:none!important}
 #bkout .bkr{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;border-bottom:1px dashed #eee;padding:.4rem 0;font-size:.95rem}#bkout .bkr b{min-width:3.5rem}#bkout .bkr.now{background:#fff9db;border-radius:8px;padding:.4rem}#bkout .bkr button{margin-left:auto}
-@media (max-width:560px){#end .box{padding:1rem .9rem}#end h2{font-size:1.7rem}#end .big{font-size:3rem}#end .st{font-size:2rem}#end .sub{font-size:1.1rem;margin-bottom:.6rem}#end button{font-size:1.2rem;padding:.45rem .9rem}}
+@media (max-width:560px){#end .box{padding:1rem .9rem}#end h2{font-size:1.45rem}#end .big{font-size:3rem}#end .st{font-size:2rem}#end .sub{font-size:1.1rem;margin-bottom:.6rem}#end button{font-size:1.2rem;padding:.45rem .9rem}}
 #end.on{display:flex}
 #end .box{background:#fff;border-radius:28px;padding:1.4rem 2rem;text-align:center;min-width:min(26rem,100%);animation:fade .3s}
 #end h2{margin:.2rem 0 .5rem;font-size:2.3rem}
 #end .big{font-size:4rem;font-weight:900;color:var(--g)}
 #end .st{font-size:2.6rem;color:#f59f00;letter-spacing:.15em}
 #end .sub{font-size:1.35rem;color:#777;font-weight:800;margin:.3rem 0 1rem}
+/* 結算：先看成果（一次答對幾題）→ 這回合拿到的獎勵（一行小卡，0 的不顯示）→ 寵物、農場的細節收在「查看」裡 → 下一步 */
+#end .big small{display:block;font-size:.3em;color:#888;letter-spacing:.05em;margin-bottom:-.2em}
+#end .sub .enc{display:block;font-size:.9em;color:#1c7ed6;margin-top:.2rem}
+#endsum{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center;margin:.2rem 0 .3rem}
+#endsum .rw{display:inline-flex;align-items:center;gap:.25rem;background:#fff4e6;border:2px solid #ffd8a8;border-radius:999px;padding:.15rem .7rem;font-weight:900;font-size:1.15rem;color:#c2410c}
+#endsum .rw .ico{width:1.4em;height:1.4em}
+#endsum .tkp{flex-basis:100%;font-size:1rem;font-weight:800;color:#9a7a52}
+#endnote .tkget{font-size:1.05rem;margin-top:.35rem}
+#enddet{margin:.5rem auto 0;max-width:30rem;text-align:left}#enddet:not([data-on]){display:none}
+#enddet summary{cursor:pointer;font-weight:900;color:#7a5a32;font-size:1.05rem;text-align:center;list-style:none;padding:.35rem;border-radius:12px;background:#f8f1e3}
+#enddet summary::-webkit-details-marker{display:none}#enddet summary::after{content:' ▼';font-size:.8em}#enddet[open] summary::after{content:' ▲'}
+#enddetb .tkget{font-size:1.05rem;margin-top:.45rem}
+#endb{margin-top:.8rem}
 #end button{border:0;border-radius:18px;font:900 1.5rem 'PingFang TC','Microsoft JhengHei',sans-serif;padding:.5rem 1.2rem;margin:.3rem;background:#f1f3f5;color:#555}
 #end button.go{background:var(--o);color:#fff;box-shadow:0 4px 0 #e8590c}
 svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-linejoin:round}
@@ -773,6 +786,17 @@ html.rm *,html.rm *::before,html.rm *::after{animation-duration:.01ms!important;
 #garage .gcard.lock .gprev{filter:saturate(.55) brightness(.97)}
 #garage .gprev{width:100%;max-width:12rem;height:auto}
 #garage .gn{font-size:1.15rem;font-weight:900;color:#3b2a1a}
+/* 稀有度徽章（圖＋文字）、試穿預覽、按鈕狀態 */
+#garage .grar{display:inline-flex;align-items:center;gap:.2rem;font-size:.9rem;font-weight:900;color:#7a6a52}#garage .grar img{width:1.6rem;height:1.6rem}
+#garage .gtab img{width:1.5rem;height:1.5rem;vertical-align:-.35rem;margin-right:.15rem}
+#garage .gpw{width:100%;aspect-ratio:16/10;display:flex;align-items:flex-end;justify-content:center}#garage .gpw .gprev{max-height:100%;width:auto;max-width:100%}
+#garage .gtry{display:flex;align-items:center;gap:.8rem;margin-top:.7rem;background:#fff;border:3px dashed #e9d5ae;border-radius:18px;padding:.4rem .8rem}
+#garage .gtry img{width:7.5rem;height:auto}#garage .gtry b{font-size:1.15rem;color:#3b2a1a}#garage .gtry small{display:block;font-size:.9rem;color:#9a7a52;font-weight:800}
+#garage .gtry button{margin-left:auto;border:0;border-radius:12px;background:#f1f3f5;font:inherit;font-weight:900;padding:.45rem .8rem;color:#555;min-height:2.75rem}
+#garage .gbs{display:flex;gap:.35rem;width:100%}#garage .gbs .gb{flex:1}
+#garage .gb.try{background:#fff;color:#7a5a32;border:2px solid #e9d5ae;flex:0 0 4.2rem!important}
+#garage .gneed{font-size:.85rem;font-weight:900;color:#c92a2a}
+@media (max-width:560px){#garage .gbs{flex-direction:column}#garage .gb.try{flex:none!important;min-height:2.75rem}#garage .gtab img{display:none}#garage .gtry img{width:5rem}#garage .gtry button{white-space:nowrap;padding:.4rem .6rem}#garage .gtry small{display:none}}
 #garage .gb{display:flex;align-items:center;justify-content:center;gap:.3rem;width:100%;min-height:2.9rem;border:0;border-radius:14px;font-size:1.05rem;font-weight:900;font-family:inherit}
 #garage .gb .gi{width:1.5rem;height:1.5rem}#garage .gb small{font-size:.8rem;margin-left:.2rem}
 #garage .gb.use{background:#2e7554;color:#fff;box-shadow:0 4px 0 #1f5139}
@@ -1088,7 +1112,7 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
  <button id="tbtn">下一步 ▶</button>
 </div></div>
 <div id="toast"></div>
-<div id="end"><div class="box"><img id="endm" class="ico" alt="" draggable="false"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endb"></div></div></div>
+<div id="end"><div class="box"><img id="endm" class="ico" alt="" draggable="false"><h2 id="endt"></h2><div class="st" id="ends"></div><div class="big" id="endn"></div><div class="sub" id="endsub"></div><div id="endsum"></div><div id="endnote"></div><details id="enddet"><summary>查看寵物與農場收穫</summary><div id="enddetb"></div></details><div id="endb"></div></div></div>
 <!-- 國語、英語、自然、社會的題庫(數學的題目在下面的程式裡自動出題) -->
 <script>
 /* 時間用雲端的為準（防止改平板日期重領每日任務、重打魔王、讓作物提早成熟）：
@@ -2729,23 +2753,27 @@ function garage(){return new Promise(done=>{if(!user||!sum){done();return}
   const box=el('div');box.id='garage';document.body.appendChild(box);
   const close=()=>{box.remove();done()};
   const coins=()=>{try{const p=PET.P();return p?PET.coinOf(p):0}catch(e){return 0}};
-  let gt=TANK_SKINS[tankSkin()].t;
+  let gt=TANK_SKINS[tankSkin()].t,tryK='';   // tryK＝試穿中的造型（只改這裡的預覽，不扣錢、不記錄、不帶進對戰）
+  const RAR=['basic','advanced','epic','legendary'],rar=t=>`<span class="grar"><img src="img/ui/rarity-${RAR[t]}.webp" alt="">${TANK_TIER[t]}</span>`;
   function paint(){const use=tankSkin(),c=coins();
     const pv=(k,v)=>`img/game/tank-${k}-preview-${v.v?'v4':'v2'}.webp`;
-    box.innerHTML=`<div class="gbox"><div class="gtop">${gIco('garage')}<div><div class="gt">坦克車庫</div><div class="gs">換造型只改外觀，能力都一樣。對戰時同學看得到你的坦克！</div></div><div class="gcoin">${gIco('coin')}<b>${isTest(user.seat)?'∞':c}</b></div></div>
-      <div class="gtabs">${TANK_TIER.map((n,i)=>`<button class="gtab t${i}${gt===i?' on':''}" data-t="${i}">${n}<small>${i?TANK_SKINS[Object.keys(TANK_SKINS).find(k=>TANK_SKINS[k].t===i)].p:150} 金幣</small></button>`).join('')}</div>
+    box.innerHTML=`<div class="gbox"><div class="gtop">${gIco('garage')}<div><div class="gt">坦克車庫</div><div class="gs">造型只改變外觀，不影響攻擊力。對戰時同學看得到你的坦克！</div></div><div class="gcoin">${gIco('coin')}<b>${isTest(user.seat)?'∞':c}</b></div></div>
+      ${tryK?`<div class="gtry"><img src="${pv(tryK,TANK_SKINS[tryK])}" alt=""><div><b>試穿中：${TANK_SKINS[tryK].n}</b><small>只是看看，不會扣金幣、不會換掉你的坦克</small></div><button class="gtx">不試了</button></div>`:''}
+      <div class="gtabs">${TANK_TIER.map((n,i)=>`<button class="gtab t${i}${gt===i?' on':''}" data-t="${i}"><img src="img/ui/rarity-${RAR[i]}.webp" alt="">${n}<small>${i?TANK_SKINS[Object.keys(TANK_SKINS).find(k=>TANK_SKINS[k].t===i)].p:150} 金幣</small></button>`).join('')}</div>
       <div class="glist">${Object.entries(TANK_SKINS).filter(([,v])=>v.t===gt).map(([k,v])=>{const own=tkOwn(k),on=use===k;
-        return `<div class="gcard t${v.t}${on?' on':''}${own?'':' lock'}"><img class="gprev" src="${pv(k,v)}" alt=""><div class="gn">${v.n}</div>
-        ${on?`<button class="gb eq" disabled>${gIco('equipped')}使用中</button>`:own?`<button class="gb use" data-k="${k}">${gIco('unlock')}換上</button>`:
-          `<button class="gb buy" data-k="${k}" ${c<v.p?'disabled':''}>${gIco(c<v.p?'lock':'coin')}${v.p} 金幣${c<v.p?'<small>不夠</small>':''}</button>`}</div>`}).join('')}</div>
+        return `<div class="gcard t${v.t}${on?' on':''}${own?'':' lock'}"><div class="gpw"><img class="gprev" src="${pv(k,v)}" alt=""></div><div class="gn">${v.n}</div>${rar(v.t)}
+        ${on?`<button class="gb eq" disabled>${gIco('equipped')}使用中</button>`:own?`<button class="gb use" data-k="${k}">${gIco('unlock')}使用</button>`:
+          `<div class="gbs"><button class="gb try" data-k="${k}">試穿</button><button class="gb buy" data-k="${k}" ${c<v.p?'disabled':''}>${gIco(c<v.p?'lock':'coin')}${v.p} 金幣</button></div>${c<v.p?`<div class="gneed">還差 ${v.p-c} 金幣</div>`:''}`}</div>`}).join('')}</div>
       <div class="gfoot">金幣在練習、寵物、農場都拿得到　<button class="gx">${gIco('back')}好了</button></div></div>`;
     box.querySelectorAll('.gtab').forEach(b=>tap(b,()=>{gt=+b.dataset.t;paint()}));
+    box.querySelectorAll('.gb.try').forEach(b=>tap(b,()=>{tryK=b.dataset.k;try{sfx.ok()}catch(e){}paint();box.querySelector('.gbox').scrollTop=0}));
+    const gtx=box.querySelector('.gtx');if(gtx)tap(gtx,()=>{tryK='';paint()});
     tap(box.querySelector('.gx'),close);
     box.querySelectorAll('.gb.use').forEach(b=>tap(b,()=>{sum.tks=sum.tks||{own:{}};sum.tks.use=b.dataset.k;sum.tks.u=Date.now();saveSum(true);try{sfx.ok()}catch(e){}paint()}));
     box.querySelectorAll('.gb.buy').forEach(b=>tap(b,()=>{const k=b.dataset.k,v=TANK_SKINS[k];if(coins()<v.p)return;
       if(!confirm(`用 ${v.p} 金幣買「${v.n}」坦克嗎？`))return;
       const p=PET.P();if(!p||PET.coinOf(p)<v.p)return;PET.coinAdd(p,-v.p);
-      sum.tks=sum.tks||{own:{}};sum.tks.own=sum.tks.own||{};sum.tks.own[k]=1;if(TK_OLD[k]){sum.tks.rf=sum.tks.rf||{};sum.tks.rf[k]=sum.tks.rf[k]||2}sum.tks.use=k;sum.tks.u=Date.now();saveSum(true);
+      sum.tks=sum.tks||{own:{}};sum.tks.own=sum.tks.own||{};sum.tks.own[k]=1;if(TK_OLD[k]){sum.tks.rf=sum.tks.rf||{};sum.tks.rf[k]=sum.tks.rf[k]||2}sum.tks.use=k;sum.tks.u=Date.now();saveSum(true);if(tryK===k)tryK='';
       try{sfx.ok()}catch(e){}toast(`🎉 買到「${v.n}」坦克了！`);paintNavs&&paintNavs();paint()}))}
   box.addEventListener('pointerdown',e=>{if(e.target===box)close()});paint()})}
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */
@@ -3143,15 +3171,25 @@ function endRound(){try{STATC=null;statPush()}catch(e){}const r=round.res,first=
   if(pu==='am'&&round.amr!=null){sum.amr=Math.max(sum.amr||0,round.amr+1);saveSum(true)}   // 閱讀測驗下一次換下一篇
   const got=round.got||0;
   logRound(false);
-  const U=unitOf(pu);$('#endt').textContent=`這次練習完成了！`;
+  const U=unitOf(pu);$('#endt').textContent=`這次練習完成了！`;const low=first<Math.ceil(N/2);
   /* 我的進步：同一個單元、同樣題數的完整回合才記（錯題本不算） */
   if(pu!=='wb'){sum.rh=sum.rh||{};const a=(sum.rh[bk]=sum.rh[bk]||[]);a.push({t:Date.now(),f:first,n:N});sum.rh[bk]=a.slice(-5);sum.dn=sum.dn||{};sum.dn[bk]=(sum.dn[bk]||0)+1;saveSum(true)}$('#ends').textContent=stars(first)||'💪';
-  $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').textContent=`${first} / ${N}`;$('#endsub').innerHTML=`一次就答對 ${first} 題，全部答對 ${all} 題<div class="tkget">${got?`🎟️ 拿到 ${got} 張遊戲券！（共 ${sum.tk} 張）`:round.rushed?`有 ${RUSH_MAX} 題太快作答，這輪 10 題重新算；看清楚題目，得 ${TK_NEED} 分就有遊戲券`:round.miss?`這 10 題得 ${round.last10} 分，要 ${TK_NEED} 分才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，得 ${TK_NEED} 分就拿 1 張遊戲券`}</div>`+bossEndMsg()+PET.endMsg()+FARM.endRound(round.capped?(round.rf||0):first,N);
+  $('#endm').src=`img/ui/${first>=N&&N>=5?'st-perfect':first>=8?'st-done':first>=5?'mascot-good':'mascot-think'}.webp`;$('#endn').innerHTML=`<small>一次答對</small>${first} / ${N}`;
+  $('#endsub').innerHTML=`全部答對 ${all} 題`+(low?`<span class="enc">這次找到需要再練的地方${pu==='wb'?'，慢慢訂正就會越來越熟':'，答錯的題目放進錯題本了'}</span>`:'');
+  /* 這回合拿到的：遊戲券、金幣、水、打魔王的傷害（0 的不放）；沒拿到遊戲券就寫還差多少（條件照舊） */
+  const chip=(ic,t)=>`<span class="rw">${ic} ${t}</span>`,pc=round.pc||0,fw=round.fw||0,bd=round.bd||0;
+  const farmMsg=FARM.endRound(round.capped?(round.rf||0):first,N),petMsg=PET.endMsg(),bossMsg=bossEndMsg();   // 各算一次（農場這裡會發肥料，不能重複呼叫）
+  $('#endsum').innerHTML=(got?chip('🎟️',`+${got} 遊戲券`):'')+(pc?chip('🪙',`+${pc}`):'')+(fw?chip('💧',`+${fw}`):'')+(/肥料/.test(farmMsg)?chip('🧴','+1 肥料'):'')+(bd?chip('⚔️',`魔王 -${bd}`):'')
+    +`<span class="tkp">${got?`遊戲券共 ${sum.tk} 張`:round.rushed?`有 ${RUSH_MAX} 題太快作答，這輪 10 題重新算；看清楚題目，得 ${TK_NEED} 分就有遊戲券`:round.miss?`這 10 題得 ${round.last10} 分，要 ${TK_NEED} 分才有遊戲券，再挑戰一次！`:`再 ${tkLeft()} 題，得 ${TK_NEED} 分就拿 1 張遊戲券`}</span>`;
+  $('#endnote').innerHTML='';const det=bossMsg+petMsg+farmMsg,D=$('#enddet');$('#enddetb').innerHTML=det;D.open=false;if(det)D.dataset.on=1;else delete D.dataset.on;
   const Bx=$('#endb');Bx.innerHTML='';const mb=(t,fn,c)=>{const b=el('button',c||'',t);tap(b,()=>{$('#end').classList.remove('on');fn()});Bx.appendChild(b)};
-  mb('🏠 回首頁',()=>history.back());if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()});if(pu==='wb'){const n=wbLoad().length;$('#endn').textContent=`${first} / ${N}`;if(n)mb(`再練錯題（剩 ${n} 題）▶`,()=>newRound(),'go');else $('#endsub').innerHTML+='<div class="tkget">📕 錯題全部練完了！</div>'}
+  /* 下一步：主按鈕放第一個（一般回合「再練一回」；錯題回合還有題目「繼續訂正」、沒有了「回首頁」），回首頁、去玩遊戲是次要 */
+  const wbN=pu==='wb'?wbLoad().length:0,goHome=()=>history.back();
+  if(pu==='wb'){if(wbN)mb(`繼續訂正（剩 ${wbN} 題）▶`,()=>newRound(),'go');else{mb('🏠 回首頁',goHome,'go');$('#endnote').innerHTML+='<div class="tkget">📕 錯題全部訂正完了！</div>'}}
   else mb('再練一回 ▶',()=>capOf(pu)?capModal(pu,()=>newRound()):newRound(),'go');
-  if(round.rvd&&round.rvd.length){const ok=round.rvd.filter(Boolean).length;$('#endsub').innerHTML+=`<div class="tkget rvdone">🔁 今天的複習做完了${ok===round.rvd.length?'，記得很牢！':'，過幾天再複習一次會更熟'}</div>`}
-  if(round.capped)$('#endsub').innerHTML+=`<div class="tkget capn">今天「${unitName(pu)}」的獎勵拿滿了，換個單元繼續拿獎勵！</div>`;
+  if(!(pu==='wb'&&!wbN))mb('🏠 回首頁',goHome,'gray');if((sum.tk||0)>0||isTest(user.seat))mb('🎮 去玩遊戲',()=>{view='game';history.back()},'gray');
+  if(round.rvd&&round.rvd.length){const ok=round.rvd.filter(Boolean).length;$('#endnote').innerHTML+=`<div class="tkget rvdone">🔁 今天的複習做完了${ok===round.rvd.length?'，記得很牢！':'，過幾天再複習一次會更熟'}</div>`}
+  if(round.capped)$('#endnote').innerHTML+=`<div class="tkget capn">今天「${unitName(pu)}」的獎勵拿滿了，換個單元繼續拿獎勵！</div>`;
   $('#end').classList.add('on');if(first>=8){sfx.win();confetti(70)}else sfx.done()}
 
 /* ===================== 全班打魔王 =====================
@@ -3599,7 +3637,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v159';let verNew=false,verBusy=false;
+const APP_VER='learn601-v160';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
