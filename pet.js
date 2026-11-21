@@ -65,6 +65,15 @@
   const HK = { cap: [1, .22], party: [.64, .1], beret: [.98, .22], tophat: [.74, .14], magic: [1.02, .18], chef: [.82, .18], crown: [.7, .12], grad: [1.06, .26] };
   /* 眼鏡拆成左右兩半，各自對準一隻眼睛（鏡片中心在圖寬的 26.5%／73.5%、半徑約圖寬 21%）；潛水鏡是一整片 */
   const GL = { round: '#83392a', heart: '#da4578', sun: '#2f2d30', star: '#d9a010' };
+  /* 2026-11 第 9 批：帽子、眼鏡依頭型各有三款（圖：img/pet/acc-代號-款式.webp）
+     帽子款式 a 正戴（頭頂圓）、b 耳間（頭頂兩側有耳朵或角，帽子窄一點）、c 斜戴（頭頂中間有角、羽毛、冰冠、天線、水柱，帽子往右斜戴）
+     眼鏡款式 wide 寬臉、round 圓臉、beak 鳥嘴（跟潛水鏡同一套分法 gogType）
+     VM['代號-款式']：帽子＝[圖寬, 圖高, 接觸點 x（圖寬比例）, 接觸點 y（圖高比例）, c 款畫好的傾斜角度]；頭盔的接觸點＝臉的開口中心
+                     眼鏡＝[圖寬, 圖高, 左鏡片中心 x, y, 右鏡片中心 x, y, 鏡片半高]（px）。同一頂帽子三款用同一個比例縮放，b 款本來就比較窄 */
+  const VM = {"cap-a":[256,192,0.5,1.0],"cap-b":[206,185,0.5,1.0],"cap-c":[252,209,0.447,0.884,17],"lcap-a":[257,192,0.5,1.0],"lcap-b":[206,182,0.5,1.0],"lcap-c":[252,208,0.449,0.876,17],"beret-a":[256,176,0.5,1.0],"beret-b":[202,165,0.5,1.0],"beret-c":[240,186,0.432,0.888,16],"lberet-a":[256,178,0.5,1.0],"lberet-b":[202,166,0.5,1.0],"lberet-c":[240,187,0.433,0.889,16],"tophat-a":[256,196,0.5,1.0],"tophat-b":[181,195,0.5,1.0],"tophat-c":[237,217,0.445,0.9,16],"ltophat-a":[256,197,0.5,1.0],"ltophat-b":[181,197,0.5,1.0],"ltophat-c":[238,219,0.443,0.904,16],"crown-a":[256,199,0.5,1.0],"crown-b":[203,185,0.5,1.0],"crown-c":[247,209,0.368,0.908,18],"lcrown-a":[257,198,0.5,1.0],"lcrown-b":[203,186,0.5,1.0],"lcrown-c":[248,209,0.367,0.914,18],"magic-a":[256,229,0.5,1.0],"magic-b":[201,225,0.5,1.0],"magic-c":[269,235,0.402,0.925,17],"chef-a":[256,223,0.5,1.0],"chef-b":[207,222,0.5,1.0],"chef-c":[247,223,0.349,0.95,18],"grad-a":[256,190,0.5,1.0],"grad-b":[201,187,0.5,1.0],"grad-c":[234,198,0.395,0.884,14],"helmet-a":[256,217,0.499,0.511],"helmet-b":[257,219,0.499,0.516],"helmet-c":[258,273,0.496,0.612],"round-wide":[256,92,61.6,45.2,193.9,45.1,35.0],"round-round":[253,115,70.1,58.5,181.8,58.6,37.9],"round-beak":[265,99,61.5,50.0,202.1,50.1,35.3],"heart-wide":[256,91,66.3,42.4,191.1,42.4,29.9],"heart-round":[235,103,67.3,48.7,167.1,48.8,29.4],"heart-beak":[257,95,62.5,44.4,194.0,44.7,29.1],"sun-wide":[256,71,65.0,34.3,190.4,34.4,24.7],"sun-round":[229,96,63.5,48.1,165.5,48.2,31.9],"sun-beak":[256,89,58.5,49.2,196.9,49.0,26.7],"star-wide":[256,96,63.8,52.2,193.5,52.3,31.8],"star-round":[232,108,67.4,58.5,167.0,58.6,31.6],"star-beak":[257,99,62.1,53.4,194.2,53.4,30.1],"party-a":[256,295,0.5,1.0],"party-b":[200,293,0.5,1.0],"party-c":[240,297,0.45,0.975,14],"lparty-a":[256,297,0.5,1.0],"lparty-b":[201,293,0.5,1.0],"lparty-c":[244,299,0.451,0.978,14]};
+  const HG = { cat: 'b', fox: 'b', bunny: 'b', dragon: 'b', deer: 'b', dog: ['a', 'b', 'b'], unicorn: 'c', chick: 'c', robot: 'c', whale: 'c', penguin: ['a', 'c', 'c'] };   // 沒寫的都是 a 正戴
+  const C_ANG = 34, C_K = .88, B_K = .9;   // 斜戴款：戴在頭頂往右 34 度的地方、縮小到 88%（讓中間的角、羽毛、冰冠露出來）；耳間款縮小到 90%（耳朵比較露得出來）
+  const hgOf = (sp, st) => { const v = HG[sp] || 'a'; return Array.isArray(v) ? v[st | 0] : v; };
   const UP = (g, f) => [g.mx + g.ux * g.tl * f, g.my + g.uy * g.tl * f];   // 從眼睛往頭頂走 f 倍
   const hat = (k, f, side) => g => { let [x, y] = UP(g, f); if (side) { x += g.ex * g.hw * side; y += g.ey * g.hw * side; } return { w: g.hw * k, x, y, al: 'b', r: g.a }; };
   const glass = k => g => ({ w: (g.d + g.es * 1.15) * k, x: g.mx, y: g.my, al: 'c', r: g.a });
@@ -134,7 +143,6 @@
     'robot-0': {halo: [0, -23]}, 'robot-1': {halo: [0, -21]}, 'robot-2': {halo: [0, -8]},   // 天線、齒輪
     'turtle-1': {bow: [0, 9], flower: [0, 9]},
     'turtle-2': {b: {x: 181, y: 120}},   // 上面有浮空寶石
-    'unicorn-0': allHats([18, 4, .88, 16]), 'unicorn-1': allHats([28, 6, .85, 18]), 'unicorn-2': allHats([24, 6, .85, 16]),
     'whale-0': {halo: [0, -28], b: {x: 140, y: 88}},   // 噴水的星星；小夥伴離開尾巴
     'whale-1': {halo: [-16, -22], b: {x: 166, y: 70}},
     'whale-2': {halo: [0, -24], b: {x: 34, y: 62}},   // 自己就有一圈光環
@@ -174,6 +182,12 @@
     const s = Math.max(g.d / (G[2] - G[0]) * 1.06, g.es * .62 / GOG.round[4]) * k, S = 512 * s;   // 鏡片中心距跟眼距一樣；眼睛特別大時才放大（三款都用圓款的鏡片高度算，換款不會忽大忽小）
     return `<g transform="translate(${F1(g.mx + dx)} ${F1(g.my + dy)}) rotate(${F1(g.a)})"><image href="${IMG}acc-goggle-${t}.webp" x="${F1(-cx * s)}" y="${F1(-cy * s)}" width="${F1(S)}" height="${F1(S)}"/></g>`;
   }
+  /* 新眼鏡：兩個鏡片中心的中點對到兩眼中點，鏡片中心距＝兩眼距離（眼睛特別大時放大到眼睛裝得進鏡片），跟著頭歪 */
+  function glassNew(id, g, sp, st) {
+    const t = gogType(sp, st), M = VM[id + '-' + t], cx = (M[2] + M[4]) / 2, cy = (M[3] + M[5]) / 2, [dx, dy, k] = GOGA[sp + '-' + st] || [0, 0, 1];
+    const s = Math.max(g.d / (M[4] - M[2]), g.es * .62 / M[6]) * k;
+    return `<g transform="translate(${F1(g.mx + dx)} ${F1(g.my + dy)}) rotate(${F1(g.a)})"><image href="${IMG}acc-${id}-${t}.webp" x="${F1(-cx * s)}" y="${F1(-cy * s)}" width="${F1(M[0] * s)}" height="${F1(M[1] * s)}"/></g>`;
+  }
   let rbwN = 0; const RBC = 1.3;   // 彩虹雲的雲底寬＝身體寬 × 1.3
   function rainbowArc(g) {
     const cw = Math.min(196, g.bw * RBC), ch = cw * .522, top = Math.min(g.bot + 6 - ch * .72, 199 - ch), land = top + ch * .42;   // 雲圖的上緣、彩虹兩腳落在雲上的高度
@@ -202,6 +216,19 @@
     const [hx, hy, hw] = ht, ux = g.ey, uy = -g.ex, rot = g.a, AR1 = AR[id] || 1;
     const at = (w, x, y, al, r) => { g.pv = [x, y]; const h = w * AR1, yy = al === 'b' ? y - h : y - h / 2, rr = r ? ` transform="rotate(${F1(r)} ${F1(x)} ${F1(y)})"` : '';
       return `<g><g${rr}><image href="${IMG}acc-${id}.webp" x="${F1(x - w / 2)}" y="${F1(yy)}" width="${F1(w)}" height="${F1(h)}"/></g></g>`; };
+    const b0 = (ITEMS[id] && ITEMS[id].base) || id, v = hgOf(g.sp, g.st);
+    if (VM[id + '-a'] && (HK[b0] || b0 === 'helmet')) {   // 新的三款帽子
+      const M = VM[id + '-' + v], MA = VM[id + '-a'], ex = g.ex, ey = g.ey;
+      const place = (px, py, u, r2 = 0) => { g.pv = [px, py]; const w = M[0] * u, h = M[1] * u;
+        return `<g><g transform="translate(${F1(px)} ${F1(py)}) rotate(${F1(rot + r2)})"><image href="${IMG}acc-${id}-${v}.webp" x="${F1(-M[2] * w)}" y="${F1(-M[3] * h)}" width="${F1(w)}" height="${F1(h)}"/></g></g>`; };
+      if (b0 === 'helmet') { const u = hw * 1.42 / MA[0], cx = (hx + g.mx) / 2 + (g.mx - hx) * .35, cy = (hy + g.my) / 2 + (g.my - hy) * .35; return place(cx, cy, u); }
+      const [k, sink] = HK[b0], u0 = hw * k / MA[0];
+      if (v !== 'c') { const u = u0 * (v === 'b' ? B_K : 1), hA = MA[1] * u; return place(hx - ux * hA * sink, hy - uy * hA * sink, u); }
+      /* 斜戴：小一點（C_K）；接觸點沿著頭頂的圓往右轉 C_ANG 度（頭半徑＝頭寬一半），帽子再多轉一點貼著頭（圖本身已經斜 M[4] 度），沿著帽子斜的方向戴進去 */
+      const u = u0 * C_K, hA = MA[1] * u, t = C_ANG * Math.PI / 180, R = hw / 2, sx = Math.sin(t), cy0 = Math.cos(t), dr = R * sx, dd = R * (1 - cy0);
+      const px = hx + ex * dr - ux * dd - (ex * sx + ux * cy0) * hA * sink, py = hy + ey * dr - uy * dd - (ey * sx + uy * cy0) * hA * sink;
+      return place(px, py, u, (C_ANG - M[4]) * .6);
+    }
     if (HK[id]) { const [k, sink] = HK[id], w = hw * k, h = w * AR1; return at(w, hx - ux * h * sink, hy - uy * h * sink, 'b', rot); }
     if (id === 'halo') { const w = hw * .66, up = w * .42 + (HALO_UP[g.sp] || 0); return at(w, hx + ux * up, hy + uy * up, 'c', rot); }
     if (id === 'helmet') { const w = hw * 1.42, cx = (hx + g.mx) / 2 + (g.mx - hx) * .35, cy = (hy + g.my) / 2 + (g.my - hy) * .35; return at(w, cx, cy, 'c', rot); }
@@ -210,15 +237,17 @@
     return '';
   }
   function accImg(id, q, ht, sp, st) {
-    if (ITEMS[id] && ITEMS[id].base) { const B = ITEMS[id].base; return accImg(B, q, ht, sp, st).split(`acc-${B}.webp`).join(`acc-${id}.webp`); }
+    if (ITEMS[id] && ITEMS[id].base && !VM[id + '-a']) { const B = ITEMS[id].base; return accImg(B, q, ht, sp, st).split(`acc-${B}.webp`).join(`acc-${id}.webp`); }
+    if (ITEMS[id] && ITEMS[id].base) { const A = adjOf(sp, st, ITEMS[id].base); if (A && !Array.isArray(A) && A.w) return absAcc(id, A); const out = accImg0(id, q, ht, sp, st); return wrapAdj(out.s, out.g.pv[0], out.g.pv[1], A); }   // 限定帽有自己的三款圖：位置照原本那頂帽子
     const A = adjOf(sp, st, id); if (A && !Array.isArray(A) && A.w) return absAcc(id, A);
     const out = accImg0(id, q, ht, sp, st), g = out.g;
     return wrapAdj(out.s, g.pv[0], g.pv[1], A);
   }
   function accImg0(id, q, ht, sp, st) {
-    const f = AP[id]; if (!f) return { s: '', g: { pv: [100, 100] } };
-    const a = q[3] * Math.PI / 180, g = { sp, mx: q[0], my: q[1], d: q[2], a: q[3], es: q[4], tx: q[5], ty: q[6], hw: q[7], chin: q[8], bot: q[9], bx0: q[10], bx1: q[11], ex: Math.cos(a), ey: Math.sin(a) };
+    const f = AP[id] || AP[ITEMS[id] && ITEMS[id].base]; if (!f) return { s: '', g: { pv: [100, 100] } };
+    const a = q[3] * Math.PI / 180, g = { sp, st: st | 0, mx: q[0], my: q[1], d: q[2], a: q[3], es: q[4], tx: q[5], ty: q[6], hw: q[7], chin: q[8], bot: q[9], bx0: q[10], bx1: q[11], ex: Math.cos(a), ey: Math.sin(a) };
     if (id === 'goggle') { g.pv = [g.mx, g.my]; return { s: gogNew(g, sp, st | 0), g }; }   // 潛水鏡：寵物專用三款
+    if (GL[id] && VM[id + '-wide']) { g.pv = [g.mx, g.my]; return { s: glassNew(id, g, sp, st | 0), g }; }   // 新的三款眼鏡
     if (GL[id]) { g.pv = [g.mx, g.my]; return { s: glassPair(id, g), g }; }
     if (ht) { const P = headAcc(id, g, ht); if (P) return { s: P, g }; }
     g.tl = Math.hypot(g.tx - g.mx, g.ty - g.my); g.ux = (g.tx - g.mx) / (g.tl || 1); g.uy = (g.ty - g.my) / (g.tl || 1);
@@ -471,6 +500,7 @@
   /* 一個配件單獨畫在小框框裡（商店用） */
   function itemSVG(k) {
     if (k === 'goggle') return `<img class="isvg" src="${IMG}acc-goggle-round.webp" alt="" draggable="false">`;   // 潛水鏡：商店圖示用新的圓臉款
+    if (VM[k + '-a'] || VM[k + '-wide']) return `<img class="isvg" src="${IMG}acc-${k}-${VM[k + '-a'] ? 'a' : 'wide'}.webp" alt="" draggable="false">`;   // 新的三款：商店用正戴款、寬臉款
     if (AR[k]) return `<img class="isvg" src="${IMG}acc-${k}.webp" alt="" draggable="false">`;
     if (PH[k]) return `<svg class="isvg" viewBox="-4 -4 108 ${(100 * PH[k][0] + 8).toFixed(0)}">${PH[k][1]}</svg>`;
     const I = ITEMS[k], VB = { bow: '100 50 56 48', flower: '106 52 48 48', bowtie: '72 134 56 40', helmet: '30 16 140 168', halo: '60 20 80 36', lei: '46 132 108 40', balloon: '116 30 84 110', grad: '40 24 120 72', cape: '24 112 152 90' };
