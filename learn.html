@@ -1595,6 +1595,9 @@ const mixByKey=k=>MIXES.find(m=>m.key===k);
 /* 單元的「編號」（UN 裡排第幾個）會因為新增科目、單元而改變（例如加了國語，英語就往後移），
    所以作答紀錄、錯題本另外記單元代號 uk（en1、zh3…）。以前的紀錄只有編號：用這一輪的單元代號、題型名稱找回正確的單元 */
 const ukIdx=k=>UN.findIndex(u=>u.key===k);
+/* 2026-11-22 巡檢：這幾個教具檔案不在網站上（點了會 404），先不列出；題目旁的「看教具」也不連過去。檔案放回 t/ 之後把名字從這裡拿掉就會出現 */
+const TOOL_GONE=new Set(['t/1-all.html','t/1-4.html','t/1-4b.html','t/1-5.html','t/1-5b.html','t/2-2.html','t/4-1.html','t/4-1b.html','t/4-3.html']);
+UN.forEach(u=>{if(!u.tools)return;const gone=new Set(u.tools.filter(t=>TOOL_GONE.has(t.f)).map(t=>t.id));if(!gone.size)return;u.tools=u.tools.filter(t=>!gone.has(t.id));if(u.tt)for(const k in u.tt)if(gone.has(u.tt[k]))delete u.tt[k]});
 const hasT=(U,t)=>!!U&&((U.types||[]).includes(t)||(U.tools||[]).some(x=>x.id===t));
 function fixU(q,unitKey){
   if(q.uk){const j=ukIdx(q.uk);if(j>=0)return j}
@@ -1737,6 +1740,8 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.rv){sum.rv=sum.rv||{};for(const k in r.rv){const a=sum.rv[k],b=r.rv[k];if(b&&(!a||(b.m||0)>(a.m||0)))sum.rv[k]=b}}   // 延後複習：每一筆看比較新的
   if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
+  /* 方塊對戰：段位會升也會降 → 看最後更新的那台；這台還沒有就用雲端的。40 排競速：留最快的（2026-11-22：以前沒合併，換平板段位會不見） */
+  if(r.bks!=null&&(sum.bks==null||(r.last||0)>(sum.last||0)))sum.bks=r.bks;if(r.bksp>0)sum.bksp=sum.bksp>0?Math.min(sum.bksp,r.bksp):r.bksp;
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
 /* 老師在雲端清除紀錄後,平板上留下的舊進度也要歸零(還有沒上傳的資料就不動) */
 function resetIfCleared(remote){if(remote!=null||!user||!sum)return false;
@@ -1877,7 +1882,7 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
-function enterHome(){cfgApply();show$('home');presence();listenInv();listenSum();amLoad();wfLoad();setTimeout(resolveXqPending,1500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
+function enterHome(){cfgApply();show$('home');presence();listenInv();listenSum();amLoad();wfLoad();setTimeout(resolveXqPending,1500);setTimeout(bkResync,5000);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);wbPull();paintMeLook();render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
@@ -2585,6 +2590,12 @@ const BK_TIER=[[1,'新手','🌱'],[3,'銅牌','🥉'],[5,'銀牌','🥈'],[7,'�
 function bkTier(hs){hs=Math.max(0,+hs||0);const rank=1+Math.floor(hs/10),i=BK_TIER.reduce((a,t,j)=>rank>=t[0]?j:a,0);return {hs,rank,tier:i+1,name:BK_TIER[i][1],icon:BK_TIER[i][2],stars:(hs%10)/2}}
 const bkStarTxt=st=>'★'.repeat(Math.floor(st))+(st%1?'⯪':'')+'☆'.repeat(5-Math.ceil(st));
 const bkMs=ms=>{const s=ms/1000;return s>=60?`${Math.floor(s/60)}:${(s%60).toFixed(2).padStart(5,'0')}`:s.toFixed(2)+' 秒'};
+/* 2026-11-22：Firebase 規則以前沒有 lb/bkrank、lb/bksprint，段位和 40 排成績一直傳不上去。
+   登入後檢查雲端：自己的段位或最佳秒數不在（或不一樣），就用自己紀錄裡的重傳一次（每次打開平台檢查一次） */
+let bkSynced=0;async function bkResync(){if(bkSynced||!user||!sum||isTest(user.seat))return;bkSynced=1;try{await fbReady;if(!db||!online)return;
+  const g=async k=>{try{return (await timeout(db.ref(`${ROOT}/lb/${k}/${user.seat}`).get(),8000)).val()}catch(e){return undefined}};const [a,b]=await Promise.all([g('bkrank'),g('bksprint')]);
+  if(sum.bks>0&&a!==undefined&&(!a||a.s!==sum.bks))enqueue(`${ROOT}/lb/bkrank/${user.seat}`,{d:0,s:sum.bks,t:Date.now()},true);
+  if(sum.bksp>0&&b!==undefined&&(!b||b.s!==sum.bksp))enqueue(`${ROOT}/lb/bksprint/${user.seat}`,{d:0,s:sum.bksp,t:Date.now()},true)}catch(e){}}
 async function bkBoards(){const g=async k=>{try{return (await timeout(db.ref(`${ROOT}/lb/${k}`).get(),8000)).val()||{}}catch(e){return {}}};
   const [a,b]=await Promise.all([g('bkrank'),g('bksprint')]);
   const L=(v,f)=>Object.entries(v).map(([st,o])=>({seat:+st,s:o&&+o.s||0})).filter(r=>!isTest(r.seat)&&f(r));
@@ -3777,7 +3788,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v171';let verNew=false,verBusy=false;
+const APP_VER='learn601-v172';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
