@@ -433,7 +433,7 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 #seats .sg button{display:grid;grid-template-rows:auto auto;align-content:center;justify-items:center;align-items:center;row-gap:.35rem;padding:.3rem .2rem .4rem;overflow:visible}
 #seats .sg button .sn{display:grid;place-items:center;line-height:1;min-height:0}
 #seats .sg button .lkt.e{visibility:hidden;border-color:transparent;background:none}
-#seats .lkav.seat{width:2.3rem;height:2.3rem;margin:0}#seats .lkav.seat>i{background:none;color:inherit;font-size:1.45rem}#seats .lkav.seat .lkn{font-size:.9em}
+#seats .lkav.seat{width:2.3rem;height:2.3rem;margin:0}#seats .lkav.seat>i{background:none;color:inherit;font-size:1.45rem}#seats .lkav.seat>i>.lkn{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;padding:0;line-height:1;font-size:1em}   /* 頭像框裡的名牌：整個圓填滿名牌顏色（原本是一條橫的膠囊，左右不對稱） */
 @media (max-width:560px){#seats .sg button{padding:.25rem .1rem .3rem;row-gap:.2rem}#seats .lkav.seat{width:1.55rem;height:1.55rem}#seats .lkav.seat>i{font-size:1rem}#seats .lkt{font-size:.5rem;padding:0 .2em;border-width:1px}}
 #seats .sg button:active{transform:translateY(4px) scale(.96);box-shadow:0 1px 0 #a5d8ff}
 #seats .girl button:active{box-shadow:0 1px 0 #fcc2d7}
@@ -3712,7 +3712,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v169';let verNew=false,verBusy=false;
+const APP_VER='learn601-v170';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
