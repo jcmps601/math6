@@ -62,10 +62,21 @@ button{font-family:inherit;cursor:pointer}
 #wkc .wkbar{display:block;width:85%;height:.45rem;border-radius:9px;background:#efe3cc;overflow:hidden}#wkc .wkbar u{display:block;height:100%;background:var(--c);border-radius:9px}
 #wkc .wksb.ok{border-color:var(--c);background:#fff}#wkc .wksb.ok small{color:var(--c)}
 #wkc .wksb.f{border-color:#ff922b;box-shadow:0 0 0 3px #ffe8cc}#wkc .wksb em{position:absolute;top:-.75rem;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.1rem;white-space:nowrap;font-style:normal;font-size:.75rem;background:#ff922b;color:#fff;border-radius:999px;padding:.05rem .45rem .05rem .2rem}#wkc .wksb em img{width:1rem;height:1rem}
-#wkc .wkr{display:flex;flex-wrap:wrap;gap:.4rem .8rem;margin-top:.7rem;font-weight:800;font-size:.95rem;color:#8a6d3b}#wkc .wkr span{display:flex;align-items:center;gap:.25rem}#wkc .wkr span.on{color:#2b8a3e}#wkc .wkr b{display:inline-flex;align-items:center;gap:.1rem;color:#e67700}
+#wkc .wklw{color:#2b8a3e!important}
+#wkc .wkgo{display:flex;align-items:center;gap:.6rem;margin-top:.7rem;padding:.55rem .7rem;border-radius:16px;background:#fff4e6;border:2px solid #ffd8a8;font-weight:900;color:#5c3d0c;font-size:1.05rem}
+#wkc .wkgo>span{flex:1;min-width:0;display:flex;align-items:center;gap:.4rem}#wkc .wkgt{flex:1;min-width:0}#wkc .wkgo span b{color:#e8590c;font-size:1.2em}#wkc .wkgi{width:1.8rem;height:1.8rem;flex:none}
+#wkc .wkgob{flex:none;min-height:44px;padding:.4rem 1.1rem;font-size:1.05rem;white-space:nowrap}
+#wkc .wkgo.done{background:#ebfbee;border-color:#b2f2bb;color:#2b8a3e}#wkc .wkgo.done img{width:2.6rem;height:2.6rem;flex:none;object-fit:contain}#wkc .wkgo.done span{display:block}#wkc .wkgo.done span b{display:block;color:#2b8a3e;font-size:1.1rem}
+#wkc .wkr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-top:.7rem}
+#wkc .wkm1{display:flex;align-items:center;gap:.45rem;padding:.4rem .55rem;border-radius:14px;background:#faf6ef;border:2px solid #efe3cc;min-width:0}
+#wkc .wkmi2{width:2.4rem;height:2.4rem;object-fit:contain;flex:none}#wkc .wkm1.no .wkmi2{opacity:.55;filter:grayscale(.6)}
+#wkc .wkml2{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}#wkc .wkml2 b{font-size:.95rem;color:#5c3d0c}#wkc .wkml2 i{font-style:normal;display:flex;align-items:center;flex-wrap:wrap;gap:.1rem;font-size:.85rem;font-weight:800;color:#e67700}
+#wkc .wkm1 em{flex:none;font-style:normal;font-size:.8rem;font-weight:900;border-radius:999px;padding:.15rem .5rem;background:#e9ecef;color:#868e96;white-space:nowrap}
+#wkc .wkm1.ok{border-color:#b2f2bb;background:#f4fdf5}#wkc .wkm1.ok em{background:#2b8a3e;color:#fff}#wkc .wkm1.sy em{background:#fff3bf;color:#e67700}
 #wkc .wkst{width:1.25rem;height:1.25rem}#wkc .ii{width:1.1rem;height:1.1rem}
 .wkm{text-align:center}.wkm .wkmi{width:8rem;height:8rem;object-fit:contain;margin:0 auto .3rem;display:block}.wkm .wkml{font-weight:900;font-size:1.15rem;color:#5c3d0c;margin:.35rem 0;display:flex;align-items:center;justify-content:center;gap:.2rem;flex-wrap:wrap}.wkm .wkml .ii{width:1.3rem;height:1.3rem}.wkm .go{margin-top:.6rem}
-@media (max-width:560px){#wkc .wks{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:.9rem}#wkc .wkhi{width:3rem;height:3rem}#wkc .wkt b{font-size:1.15rem}}
+@media (max-width:900px){#wkc .wkr{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){#wkc .wkgo{flex-wrap:wrap}#wkc .wkgob{width:100%}#wkc .wks{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:.9rem}#wkc .wkhi{width:3rem;height:3rem}#wkc .wkt b{font-size:1.15rem}}
 #ring{flex:none;width:9rem;height:9rem}
 #today .t1{font-size:1.4rem;font-weight:900;color:#888}
 #today .t2{font-size:2.6rem;font-weight:900;color:#333;line-height:1.2}#today .t2 small{font-size:1.4rem;color:#999}
@@ -1671,7 +1682,7 @@ async function flush(){repFlush().catch(()=>{});if(!db||!online||flushing||!Q.le
     /* 進度（sum）上傳前先讀雲端合併：別台平板做的（例如週末在家）不會被這台舊的紀錄蓋掉 */
     if(user&&sum&&it.p===base()+'/sum'){try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum));it.v.sy=Date.now()}catch(e){break}}   // sy：這台平板最後一次把進度傳上雲端的時間（老師頁看誰很久沒同步）
     if(user&&it.p===base()+'/wbq'){try{const cm=(await timeout(db.ref(it.p).get(),10000)).val();if(cm)wbMerge(cm);it.v=wbMap(wbLoad(),wbTomb())}catch(e){break}}   // 錯題本：先合併別台的再上傳
-    try{await timeout(db.ref(it.p).set(it.v),12000);drop();if(it.p===base()+'/sum')bkDaily(it.v)}
+    try{await timeout(db.ref(it.p).set(it.v),12000);drop();if(it.p===base()+'/sum'){bkDaily(it.v);try{wkConfirm(it.v)}catch(e){}}}
     catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
   flushing=false;paintSync()}
 /* 每天自動備份一次（那天第一次上傳時）：u/座號/密碼/bk/日期，留 14 天；萬一進度被蓋掉，老師頁可以還原 */
@@ -1697,7 +1708,10 @@ function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();dvPrune();rvP
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
-  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0}   // 遊戲券以最後更新的那台為準
+  {const g0=sum.tkg||{},g1=r.tkg||{};   // sum.tkg：發過的獎勵券（每週任務）。兩台各自發的券，蓋過來時不會不見，也不會多算
+  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0;for(const k in g0)if(!g1[k])sum.tk++}   // 遊戲券以最後更新的那台為準
+  else for(const k in g1)if(!g0[k])sum.tk=(sum.tk||0)+1;
+  if(Object.keys(g1).length)sum.tkg=Object.assign({},g1,g0)}
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   /* 農場：同一個農場（b 一樣）看誰比較新；不是同一個（新平板先開了一份空的）就留經驗比較多的，免得高等農場被空的蓋掉 */
@@ -1713,7 +1727,11 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.rh&&typeof r.rh==='object'){sum.rh=sum.rh||{};for(const k in r.rh){if(!Array.isArray(r.rh[k]))continue;const M=new Map();[...(sum.rh[k]||[]),...r.rh[k]].forEach(x=>{if(x&&x.t)M.set(x.t,x)});sum.rh[k]=[...M.values()].sort((a,b)=>a.t-b.t).slice(-5)}}   // 每個單元最近 5 回（我的進步）：兩台合起來，同一回不重複
   if(r.dn&&typeof r.dn==='object'){sum.dn=sum.dn||{};for(const k in r.dn)sum.dn[k]=mx(sum.dn[k],r.dn[k])}
   if(Array.isArray(r.wf)){const M=new Map();[...(sum.wf||[]),...r.wf].forEach(x=>{if(Array.isArray(x))M.set(x[0]+'|'+x[1],x)});sum.wf=[...M.values()].filter(x=>x[0]>Date.now()-35*864e5).sort((a,b)=>a[0]-b[0])}   // 錯題本訂正紀錄：兩台合起來、同一筆不重複
-  if(r.wk&&r.wk.w){const a=sum.wk,b=r.wk;if(!a||a.w<b.w)sum.wk=JSON.parse(JSON.stringify(b));else if(a.w===b.w){a.c=a.c||{};for(const k in b.c||{})a.c[k]=mx(a.c[k],b.c[k]);a.r=Object.assign({},b.r||{},a.r||{});if(b.ft&&!a.ft){a.f=b.f;a.ft=1}}}   // 每週任務：同一週各科取大的、領過的獎勵合在一起
+  if((r.wk&&r.wk.w)||r.wkl){const A0=sum.wk,B0=r.wk&&r.wk.w?wkCopy(r.wk):null,cand=[sum.wkl,wkCopy(r.wkl)];   // 每週任務：同一週合併（各裝置的格子取大的、領過的獎勵合在一起）
+    if(B0){if(!A0||!A0.w||A0.w<B0.w){if(A0&&A0.w)cand.push(A0);sum.wk=B0}else if(A0.w===B0.w)wkMerge(A0,B0);else cand.push(B0)}
+    const pw=sum.wk&&sum.wk.w?wkPrev(sum.wk.w):'';let PL=null;cand.forEach(x=>{if(!x||x.w!==pw)return;if(!PL)PL=x;else if(PL!==x)wkMerge(PL,x)});   // 上一週：晚到的另一台資料也合進去
+    if(PL){sum.wkl=PL;sum.wkp=Object.fromEntries(Object.keys(PL.c||{}).map(k=>[k,wkTot(PL,k)]))}
+    if(r.wk)wkConfirm(r)}
   if(r.wkp&&!sum.wkp)sum.wkp=r.wkp;if(r.wkb)sum.wkb=mx(sum.wkb,r.wkb);
   if(r.bsr&&r.bsr.d===dkey()&&(!sum.bsr||sum.bsr.d!==r.bsr.d||(r.bsr.n||0)>(sum.bsr.n||0)))sum.bsr={d:r.bsr.d,n:r.bsr.n||0};   // 今天打王拿過幾次金幣
   if(r.rv){sum.rv=sum.rv||{};for(const k in r.rv){const a=sum.rv[k],b=r.rv[k];if(b&&(!a||(b.m||0)>(a.m||0)))sum.rv[k]=b}}   // 延後複習：每一筆看比較新的
@@ -2238,32 +2256,79 @@ const WK_NEED=10,WK_R3=30,WK_RALL=100,WK_RF=20;let WF=null;
 const wkSubs=()=>SUBJ.filter(S=>UN.some(u=>u.g&&!u.hid&&u.s===S.k)).map(S=>S.k);
 function wkPick(){const L=wkSubs();if(!L.length)return 'math';const p=sum.wkp||{},avg=k=>{const U=UN.filter(u=>u.g&&!u.hid&&u.s===k);return U.length?U.reduce((a,u)=>a+((sum.best||{})[u.key]||0),0)/U.length:0};
   return L.slice().sort((a,b)=>(p[a]||0)-(p[b]||0)||avg(a)-avg(b))[0]}
+/* 各科答對題數：每台裝置各記一格（W.g[裝置]），合起來＝起始 W.b＋各台加總。
+   兩台斷線各做各的，合併時同一格取大的、不同格加起來：兩邊的題都算到，同一份資料重送幾次也一樣。
+   W.c 跟著存「合起來的數字」（老師頁、舊版看的）；舊資料沒有 W.g 時，第一次加題前把當時的 W.c 當起始。 */
+const wkDev=()=>{let d=LS.get('learn601_dev','');if(!d){d='d'+Math.random().toString(36).slice(2,9);LS.set('learn601_dev',d)}return d};
+const wkG=(W,k)=>{let s=0;for(const d in W.g||{})s+=(W.g[d]||{})[k]||0;return s};
+function wkTot(W,k){return W.g?((W.b||{})[k]||0)+wkG(W,k):((W.c||{})[k]||0)}
+/* 合併同一週：裝置格子取大的；舊版只有 c（合起來的數字）的那份，扣掉已經在格子裡的，剩下的當起始 b */
+function wkMerge(a,b){if(!b)return a;a.c=a.c||{};a.r=a.r||{};const mx=(x,y)=>Math.max(x||0,y||0),c0=Object.assign({},a.c),hadG=!!a.g;
+  if(!a.g){a.g={};a.b=Object.assign({},a.c)}a.b=a.b||{};
+  if(b.g){for(const k in b.b||{})a.b[k]=mx(a.b[k],b.b[k]);for(const d in b.g){const o=a.g[d]=a.g[d]||{};for(const k in b.g[d]||{})o[k]=mx(o[k],b.g[d][k])}}
+  const ks=new Set(Object.keys(c0).concat(Object.keys(b.c||{}),Object.keys(a.b),...Object.values(a.g).map(o=>Object.keys(o||{}))));
+  ks.forEach(k=>{const g=wkG(a,k);a.b[k]=Math.max(a.b[k]||0,(c0[k]||0)-g,((b.c||{})[k]||0)-g);a.c[k]=a.b[k]+g});
+  if(!hadG&&!b.g&&!Object.keys(a.g).length){delete a.g;delete a.b}   // 兩份都是舊資料：維持舊的樣子（各科取大的）
+  a.r=Object.assign({},b.r||{},a.r);
+  if(b.ft&&!a.ft){a.f=b.f;a.ft=1}else if(!a.ft&&!b.ft&&b.f&&(b.t||0)<(a.t||Infinity)){a.f=b.f;a.t=b.t}   // 系統挑的加油科：用比較早開這一週的那台（新平板先開了一份，不會換掉原本的加油科）
+  if(Array.isArray(b.L)&&(!Array.isArray(a.L)||b.L.length>a.L.length))a.L=b.L.slice();return a}
+const wkCopy=x=>x?JSON.parse(JSON.stringify(x)):null;
+const wkPrev=w=>{const d=new Date(w+'T12:00:00');d.setDate(d.getDate()-7);return dkey(d)};
+const wkDoneOf=W=>{const L=Array.isArray(W.L)&&W.L.length?W.L:wkSubs();return {d:L.filter(k=>wkTot(W,k)>=WK_NEED).length,n:L.length}};
 function wkCur(){const w=bossWk();let W=sum.wk;
-  if(!W||W.w!==w){if(W&&W.w)sum.wkp=W.w===bossWk(1)?Object.assign({},W.c||{}):{};W=sum.wk={w,c:{},f:wkPick(),r:{}}}   // 換週：上一週的成績留在 wkp（隔太久就清空）
-  W.c=W.c||{};W.r=W.r||{};if(WF&&WF.w===w&&SUBJ.some(S=>S.k===WF.s)&&!W.r.f&&(W.f!==WF.s||!W.ft)){W.f=WF.s;W.ft=1}return W}
+  if(!W||W.w!==w){   // 換週：上一週整份留在 wkl（顯示「上週完成幾科」、合併晚到的資料），各科數字留在 wkp（系統挑加油科用）
+    if(W&&W.w===bossWk(1)){if(!Array.isArray(W.L)||!W.L.length)W.L=wkSubs();sum.wkl=W;sum.wkp=Object.fromEntries(Object.keys(W.c||{}).map(k=>[k,wkTot(W,k)]))}else if(W&&W.w){sum.wkp={};sum.wkl=null}
+    W=sum.wk={w,c:{},g:{},b:{},f:wkPick(),r:{},t:Date.now()}}
+  W.c=W.c||{};W.r=W.r||{};const L=wkSubs();if(L.length)W.L=L;   // W.L：這週算進「全部」的科目
+  if(WF&&WF.w===w&&SUBJ.some(S=>S.k===WF.s)&&!W.r.f&&(W.f!==WF.s||!W.ft)){W.f=WF.s;W.ft=1}return W}
 /* 這一題是哪一科：題目自己的單元 → 這一輪的單元 → 綜合複習 */
 function wkSubjOf(q){const U=(q&&q.uk&&UN.find(u=>u.key===q.uk))||(q&&q.u!=null&&UN[q.u])||(typeof pu==='number'?UN[pu]:null)||(typeof pu==='string'?mixByKey(pu):null);return (U&&U.s)||null}
-function wkAdd(q,res){if(res!=='ok'&&res!=='ok2')return;const k=wkSubjOf(q);if(!k||!SUBJ.some(S=>S.k===k))return;const W=wkCur();W.c[k]=(W.c[k]||0)+1;
-  if(W.c[k]===WK_NEED&&wkSubs().includes(k))setTimeout(()=>toast(`本週任務：${subjOf(k).n}完成了！`),900);wkReward()}
-function wkReward(){if(!user||!sum)return;const W=wkCur(),L=wkSubs(),done=L.filter(k=>(W.c[k]||0)>=WK_NEED),p=PET.P();if(!p)return;const give=[];
+function wkAdd(q,res){if(res!=='ok'&&res!=='ok2')return;const k=wkSubjOf(q);if(!k||!SUBJ.some(S=>S.k===k))return;const W=wkCur();
+  if(!W.g){W.g={};W.b=Object.assign({},W.c)}W.b=W.b||{};const d=wkDev(),o=W.g[d]=W.g[d]||{};const n0=wkTot(W,k);o[k]=(o[k]||0)+1;W.c[k]=wkTot(W,k);
+  if(n0<WK_NEED&&W.c[k]>=WK_NEED&&wkSubs().includes(k))setTimeout(()=>toast(`本週任務：${subjOf(k).n}完成了！`),900);wkReward()}
+/* 自動發獎：金幣記在「這個獎勵」自己的帳本格（wk週_3 等），遊戲券記在 sum.tkg；兩台裝置都發了也只算一次 */
+function wkReward(){if(!user||!sum)return;const W=wkCur(),L=wkSubs(),done=L.filter(k=>wkTot(W,k)>=WK_NEED),p=PET.P();if(!p)return;const give=[];
   if(L.length&&done.length>=Math.min(3,L.length)&&!W.r[3]){W.r[3]=1;give.push(['3',WK_R3])}
-  if(L.length&&done.length===L.length&&!W.r.a){W.r.a=1;give.push(['a',WK_RALL]);sum.tk=(sum.tk||0)+1;sum.wkb=(sum.wkb||0)+1}
-  if(W.f&&(W.c[W.f]||0)>=WK_NEED&&!W.r.f){W.r.f=1;give.push(['f',WK_RF])}
-  if(!give.length)return;const c=give.reduce((a,x)=>a+x[1],0);PET.coinAdd(p,c);saveSum(true);logPush({k:'wk',r:give.map(x=>x[0]).join(''),c});paintNavs();setTimeout(()=>wkChest(give),1700)}
+  if(L.length&&done.length===L.length&&!W.r.a){W.r.a=1;give.push(['a',WK_RALL]);const id=`wk${W.w}a`;sum.tkg=sum.tkg||{};if(!sum.tkg[id]){sum.tkg[id]=1;sum.tk=(sum.tk||0)+1}sum.wkb=(sum.wkb||0)+1}
+  if(W.f&&wkTot(W,W.f)>=WK_NEED&&!W.r.f){W.r.f=1;give.push(['f',WK_RF])}
+  if(!give.length)return;let c=0;give.forEach(([r,n])=>{if(PET.coinOnce(p,`wk${W.w}_${r}`,n))c+=n});saveSum(true);logPush({k:'wk',r:give.map(x=>x[0]).join(''),c});paintNavs();setTimeout(()=>wkChest(give),1700)}
+/* 已經確認寫進雲端的獎勵（上傳成功、或從雲端讀回來就有）：沒確認的顯示「同步中」 */
+const wkOkKey=()=>'learn601_wkok_'+(user&&user.seat);
+function wkConfirm(v){const W=v&&v.wk;if(!user||!W||!W.w||!W.r)return;const o=LS.get(wkOkKey(),{});let ch=0;
+  for(const r in W.r)if(W.r[r]&&!o[W.w+'_'+r]){o[W.w+'_'+r]=1;ch=1}
+  if(!ch)return;for(const k in o)if(k.slice(0,10)<bossWk(2))delete o[k];LS.set(wkOkKey(),o);const c=document.getElementById('wkc');if(c&&c.isConnected)c.replaceWith(wkCard())}
+const wkState=(W,r)=>!W.r[r]?'no':LS.get(wkOkKey(),{})[W.w+'_'+r]?'ok':'sy';
 /* 拿到週任務獎勵：打開的寶箱＋這次拿到什麼 */
 function wkChest(give){const W=wkCur(),m=el('div','pmod','');const t={3:`完成 3 科・${ico('rw-coin','ii')} +${WK_R3}`,a:`五科全部完成・${ico('rw-coin','ii')} +${WK_RALL}・${ico('rw-ticket','ii')} +1・全勤章`,f:`加油科${subjOf(W.f).n}完成・${ico('rw-coin','ii')} +${WK_RF}`};
   m.innerHTML=`<div class="pmc wkm"><img class="wkmi" src="img/ui/${give.some(x=>x[0]==='a')?'wk-badge':'wk-chest-open'}.webp" alt=""><div class="pmh">本週任務獎勵</div>${give.map(x=>`<div class="wkml">${t[x[0]]}</div>`).join('')}<button class="go wkok">太棒了！</button></div>`;
   document.body.appendChild(m);try{sfx.win();confetti(70)}catch(e){}const close=()=>m.remove();tap(m.querySelector('.wkok'),close);tap(m,e=>{if(e.target===m)close()})}
 async function wfLoad(){if(!user)return;const s0=user.seat;try{await fbReady;if(!db)return;const v=(await timeout(db.ref(`${ROOT}/u/${user.seat}/${user.pin}/wf`).get(),8000)).val();if(!user||user.seat!==s0)return;
   WF=v&&v.w&&v.s?v:null;const W=sum.wk,f0=W&&W.f;wkCur();if(sum.wk.f!==f0){saveSum(false);if(view==='home'&&$('#home').classList.contains('on'))render()}}catch(e){}}
+/* 建議下一科：還沒完成、今天還能拿獎勵的科目裡挑
+   1. 再完成一科就拿「完成 3 科」→ 差最少的那科；2. 加油科還沒完成 → 加油科；3. 差最少的那科。一樣多看頁面上的順序 */
+function wkSug(W,L){const need=k=>WK_NEED-Math.min(wkTot(W,k),WK_NEED),left=L.filter(k=>need(k)>0);if(!left.length)return {all:1};
+  const can=left.filter(k=>UN.some(u=>u.g&&!u.hid&&u.s===k&&uqN(u.key)<UNIT_CAP));if(!can.length)return {rest:1};
+  const best=()=>can.slice().sort((a,b)=>need(a)-need(b)||L.indexOf(a)-L.indexOf(b))[0],g3=Math.min(3,L.length),nm=k=>subjOf(k).n;
+  if(!W.r[3]&&L.length-left.length===g3-1){const k=best();return {k,t:`${nm(k)}還差 <b>${need(k)}</b> 題，完成就達到 ${g3} 科`}}
+  if(W.f&&can.includes(W.f)&&!W.r.f)return {k:W.f,t:`本週加油科是${nm(W.f)}，還差 <b>${need(W.f)}</b> 題`};
+  const k=best();return {k,t:`${nm(k)}還差 <b>${need(k)}</b> 題`}}
+const WD='日一二三四五六';
+const wkDay=s=>{const d=new Date(s+'T12:00:00');return `${d.getMonth()+1}/${d.getDate()}（${WD[d.getDay()]}）`};
+function wkGo(k){subj=k;LS.set('learn601_subj',subj);view='learn';paintNavs();render()}
 /* 首頁：本週任務卡（五科各一格，點了直接去那一科） */
 function wkCard(){const W=wkCur(),L=wkSubs(),c=el('div','cd');c.id='wkc';if(!L.length)return c;
-  const done=L.filter(k=>(W.c[k]||0)>=WK_NEED).length,all=done===L.length,dl=7-((new Date().getDay()+6)%7),st=on=>`<img class="wkst" src="img/ui/ui-task-${on?'complete':'pending'}.webp" alt="${on?'已完成':'未完成'}">`;
-  c.innerHTML=`<div class="wkh"><img class="wkhi" src="img/ui/${all?'wk-badge':'wk-chest'}.webp" alt=""><div class="wkt"><b>本週任務：五科走透透</b><small>每科答對 ${WK_NEED} 題・${dl>1?`還有 ${dl} 天`:'今天是最後一天'}${sum.wkb?`・已拿 ${sum.wkb} 枚全勤章`:''}</small></div><span class="wkn">${done}<small>/${L.length}</small></span></div>
-    <div class="wks">${L.map(k=>{const S=subjOf(k),n=Math.min(W.c[k]||0,WK_NEED),ok=n>=WK_NEED,f=W.f===k;
-      return `<button class="wksb${ok?' ok':''}${f?' f':''}" data-s="${k}" style="--c:${S.c}">${f?`<em><img src="img/ui/wk-focus.webp" alt="">加油科</em>`:''}${ico(S.img,'wki')}<b>${S.n}</b><i class="wkbar"><u style="width:${n/WK_NEED*100}%"></u></i><small>${ok?'完成':`${n}/${WK_NEED}`}</small></button>`}).join('')}</div>
-    <div class="wkr"><span class="${W.r[3]?'on':''}">${st(W.r[3])}完成 ${Math.min(3,L.length)} 科 <b>${ico('rw-coin','ii')}${WK_R3}</b></span><span class="${W.r.a?'on':''}">${st(W.r.a)}全部完成 <b>${ico('rw-coin','ii')}${WK_RALL}・${ico('rw-ticket','ii')}1・全勤章</b></span><span class="${W.r.f?'on':''}">${st(W.r.f)}加油科${subjOf(W.f).n} <b>${ico('rw-coin','ii')}${WK_RF}</b></span></div>`;
-  c.querySelectorAll('[data-s]').forEach(b=>tap(b,()=>{subj=b.dataset.s;LS.set('learn601_subj',subj);view='learn';paintNavs();render()}));return c}
+  const done=L.filter(k=>wkTot(W,k)>=WK_NEED).length,all=done===L.length,end=weekKeys(0)[6],last=end===dkey(),S=wkSug(W,L),got=W.r[3]||W.r.f;
+  const P=sum.wkl&&sum.wkl.w===bossWk(1)?wkDoneOf(sum.wkl):null;
+  const stx={no:'尚未達成',ok:'已入帳',sy:'同步中'};
+  const ms=(r,img,lbl,rw)=>{const s=wkState(W,r);return `<div class="wkm1 ${s}"><img class="wkmi2" src="img/ui/${img}.webp" alt=""><span class="wkml2"><b>${lbl}</b><i>${rw}</i></span><em>${stx[s]}</em></div>`};
+  c.innerHTML=`<div class="wkh"><img class="wkhi" src="img/ui/${all?'wk-badge':got?'wk-chest-open':'wk-chest'}.webp" alt=""><div class="wkt"><b>本週任務：五科走透透</b><small>本週到 ${wkDay(end)}${last?'・今天截止':''}・每科答對 ${WK_NEED} 題${sum.wkb?`・已拿 ${sum.wkb} 枚全勤章`:''}</small>${P?`<small class="wklw">上週完成 ${P.d}／${P.n} 科</small>`:''}</div><span class="wkn">${done}<small>/${L.length}</small></span></div>
+    ${S.all?`<div class="wkgo done"><img src="img/ui/wk-badge.webp" alt=""><span><b>本週${'零一兩三四五六七'[L.length]||L.length}科都完成了！</b>下週一開始新的任務</span></div>`
+      :S.rest?`<div class="wkgo"><span>今天能拿獎勵的題都練完了，明天再繼續</span></div>`
+      :`<div class="wkgo"><span>${ico(subjOf(S.k).img,'wkgi')}<span class="wkgt">${S.t}</span></span><button class="go wkgob" data-g="${S.k}">繼續練習</button></div>`}
+    <div class="wks">${L.map(k=>{const S0=subjOf(k),n=Math.min(wkTot(W,k),WK_NEED),ok=n>=WK_NEED,f=W.f===k;
+      return `<button class="wksb${ok?' ok':''}${f?' f':''}" data-s="${k}" style="--c:${S0.c}">${f?`<em><img src="img/ui/wk-focus.webp" alt="">加油科</em>`:''}${ico(S0.img,'wki')}<b>${S0.n}</b><i class="wkbar"><u style="width:${n/WK_NEED*100}%"></u></i><small>${ok?'完成':`${n}/${WK_NEED}`}</small></button>`}).join('')}</div>
+    <div class="wkr">${ms('3',W.r[3]?'wk-chest-open':'wk-chest',`完成 ${Math.min(3,L.length)} 科`,`${ico('rw-coin','ii')}${WK_R3}`)}${ms('a','wk-badge',`${'零一兩三四五六七'[L.length]||L.length}科全部完成`,`${ico('rw-coin','ii')}${WK_RALL}・${ico('rw-ticket','ii')}1・全勤章`)}${ms('f','wk-focus',`加油科：${subjOf(W.f).n}`,`${ico('rw-coin','ii')}${WK_RF}`)}</div>`;
+  c.querySelectorAll('[data-s],[data-g]').forEach(b=>tap(b,()=>wkGo(b.dataset.s||b.dataset.g)));return c}
 
 /* ===================== 學習排行榜 =====================
    每個人把自己的學習數字放在 learn/stat/座號 = {w:本週星期一, tw:本週練習題數, n:累計題數, f:累計一次就答對題數, st:連續完成天數, t:時間}
@@ -3712,7 +3777,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v170';let verNew=false,verBusy=false;
+const APP_VER='learn601-v171';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}

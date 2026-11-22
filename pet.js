@@ -545,6 +545,15 @@
     p.coin = coinOf(p); p.u = Date.now();
     if (typeof window.paintRes === 'function') setTimeout(() => { try { window.paintRes(); } catch (e) { } }, 0);   // 上面的金幣跟著變
   }
+  /* 一次性的獎勵（例如每週任務）：帳本記在「這個獎勵」自己的那一格，不記在裝置那格。
+     兩台裝置斷線時都發了同一個獎勵，合併時同一格取大的，只算一次。 */
+  function coinOnce(p, key, n) {
+    if (!p.cl) p.cl = { b: p.coin || 0, e: {}, s: {} };
+    p.cl.e = p.cl.e || {}; p.cl.s = p.cl.s || {}; if ((p.cl.e[key] || 0) >= n) return false;
+    p.cl.e[key] = n; p.coin = coinOf(p); p.u = Date.now();
+    if (typeof window.paintRes === 'function') setTimeout(() => { try { window.paintRes(); } catch (e) { } }, 0);
+    return true;
+  }
   /* 平板上的和雲端的寵物資料合在一起：其他東西用比較新的那一份，金幣帳本兩邊合起來 */
   const LOOK = ['h', 'g', 'k', 'b', 'x', 'room', 'nm'];   // 外觀：換的時候記 p.lu（最後換造型的時間）
   function mergePet(a, b) {
@@ -1372,5 +1381,5 @@
   const S = document.createElement('style'); S.textContent = css + `
   @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
-  window.PET = { wishCard, _ADJ: ADJ, _GOGT: GOGT, _GOGA: GOGA, coinAdd, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { wishCard, _ADJ: ADJ, _GOGT: GOGT, _GOGA: GOGA, coinAdd, coinOnce, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();
