@@ -486,7 +486,7 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 @keyframes cffall{to{transform:translateY(105vh) rotate(720deg)}}
 .bs{position:fixed;width:9px;height:9px;border-radius:50%;z-index:20;pointer-events:none;animation:bsfly .7s ease-out forwards}
 @keyframes bsfly{from{transform:translate(-50%,-50%)}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3);opacity:0}}
-#toast{top:3vh;z-index:30}#toast{width:max-content;max-width:min(92vw,40rem);text-align:center;box-sizing:border-box}
+#toast{top:3vh;z-index:30}#giftm{position:fixed;inset:0;z-index:60;background:rgba(40,20,60,.5);display:flex;align-items:center;justify-content:center;padding:1rem}#giftm .gbox{background:#fff;border-radius:28px;padding:1.4rem 1.6rem;max-width:24rem;width:100%;text-align:center;border:5px solid #ffd8a8;box-shadow:0 10px 40px rgba(0,0,0,.25)}#giftm .gico{font-size:4rem;line-height:1;animation:pbob 1.6s ease-in-out infinite}#giftm .gh{font-size:1.6rem;font-weight:900;color:#e8590c;margin:.4rem 0}#giftm .gnote{font-size:1.15rem;font-weight:800;color:#5c3d0c;margin:.3rem 0}#giftm .gamt{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;font-size:1.7rem;font-weight:900;color:#e67700;margin:.6rem 0 1rem}#giftm .gamt span{display:inline-flex;align-items:center;gap:.3rem}#giftm .gi{width:2rem;height:2rem}#giftm .gget{min-height:52px;font-size:1.3rem;width:100%}#toast{width:max-content;max-width:min(92vw,40rem);text-align:center;box-sizing:border-box}
 .tkc small{display:block;margin-top:.1rem}
 @media (max-width:900px),(orientation:portrait){.mascot.big{font-size:3rem}.hello .hi{font-size:1.4rem}.bubble{font-size:.95rem}#login .fsb{top:.4rem;right:.4rem;font-size:.9rem}.uc .ui{font-size:2.6rem}.sidebtns{flex:none;flex-direction:column;gap:.2rem}.sidebtns button{font-size:.75rem;padding:.15rem .35rem}}
 
@@ -1076,14 +1076,13 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
   <div id="pwout" class="chips"></div>
  </div>
  <div class="cd" id="gift">
-  <div class="dhead"><b>🪙 補發金幣</b></div>
-  <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="gseat" style="font-size:1.1rem"></select> 金幣 <input id="gamt" type="number" value="500" min="1" max="3000" style="width:6rem;font-size:1.1rem"><button id="gbtn">發給他</button><span id="gmsg"></span></div>
-  <div class="amnote">直接加進這位同學的金幣帳本（換平板、同步都不會不見）。要先在 ① 選過 pins.json，按下去前會再問一次。</div>
- </div>
- <div class="cd" id="tgift">
-  <div class="dhead"><b>🎟️ 補發遊戲券</b></div>
-  <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="tseat" style="font-size:1.1rem"></select> 遊戲券 <input id="tamt" type="number" value="1" min="1" max="50" style="width:5rem;font-size:1.1rem"> 張<button id="tbtn">發給他</button><span id="tmsg"></span></div>
-  <div class="amnote">直接加進這位同學的遊戲券（換平板、同步都不會不見）。要先在 ① 選過 pins.json，按下去前會再問一次。</div>
+  <div class="dhead"><b>🎁 發禮物給學生</b><button id="glist">看發送紀錄</button><span id="gmsg2"></span></div>
+  <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="gseat" style="font-size:1.1rem"></select>
+   🪙 金幣 <input id="gamt" type="number" value="0" min="0" max="3000" style="width:6rem;font-size:1.1rem">
+   🎟️ 遊戲券 <input id="tamt" type="number" value="0" min="0" max="50" style="width:4.5rem;font-size:1.1rem"> 張
+   留言 <input id="gnote" maxlength="30" placeholder="可以不寫，例如：謝謝你幫忙！" style="width:14rem;font-size:1.05rem"><button id="gbtn">送出</button><span id="gmsg"></span></div>
+  <div class="amnote">送出後，學生打開平台會跳出「老師送你禮物」，按「領取」才會收到（換平板、同步都不會不見，也不會領到兩次）。選「全班」會每個人各送一份。學生還沒領之前，可以在「看發送紀錄」收回。要先在 ① 選過 pins.json。</div>
+  <div id="gout"></div>
  </div>
  <div class="cd" id="wktc">
   <div class="dhead"><b>每週任務：五科走透透</b><button id="wkload">讀取全班</button><span id="wkmsg"></span></div>
@@ -1889,7 +1888,31 @@ function burst(el,n){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r
 
 /* ===================== 首頁 ===================== */
 let view='home',subj=LS.get('learn601_subj','math');if(!SUBJ.some(S=>S.k===subj))subj='math';
-function enterHome(){cfgApply();show$('home');presence();listenInv();listenSum();amLoad();wfLoad();setTimeout(resolveXqPending,1500);setTimeout(bkResync,5000);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
+/* 老師送的禮物：學生按「領取」才入帳。金幣記在帳本 gf_編號、遊戲券記在 sum.tkg 的 gf_編號：同一份禮物在哪台領、領幾次都只算一次 */
+const giftHad=id=>{const p=PET.P(),k='gf_'+id;return (sum&&sum.tkg&&sum.tkg[k]!=null)||!!(p&&p.cl&&p.cl.e&&p.cl.e[k]!=null)};
+let giftBusy=0;
+async function giftCheck(){if(!user||!sum||giftBusy||document.getElementById('giftm'))return;giftBusy=1;try{await fbReady;if(!db||!online)return;const s0=user.seat;
+  const v=(await timeout(db.ref(base()+'/gift').get(),8000)).val()||{};if(!user||user.seat!==s0)return;
+  const L=Object.entries(v).filter(([id,g])=>g&&typeof g==='object'&&!g.got&&((+g.c||0)>0||(+g.t||0)>0));
+  L.filter(([id])=>giftHad(id)).forEach(([id])=>enqueue(base()+`/gift/${id}/got`,Date.now()));   // 領過了、只是「領了」沒寫上雲端：補寫
+  const N=L.filter(([id])=>!giftHad(id));if(N.length)giftShow(N)}catch(e){}finally{giftBusy=0}}
+function giftShow(L){if(document.getElementById('giftm'))return;const tc=L.reduce((a,[,g])=>a+(+g.c||0),0),tt=L.reduce((a,[,g])=>a+(+g.t||0),0),esc2=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const m=document.createElement('div');m.id='giftm';m.className='gmod';
+  m.innerHTML=`<div class="gbox" role="dialog" aria-label="老師送你禮物"><div class="gico">🎁</div><div class="gh">老師送你禮物！</div>
+    ${L.map(([,g])=>g.m?`<div class="gnote">「${esc2(g.m)}」</div>`:'').join('')}
+    <div class="gamt">${tc?`<span>${ico('rw-coin','gi')} ${tc}</span>`:''}${tt?`<span>${ico('rw-ticket','gi')} ${tt} 張</span>`:''}</div>
+    <button class="go gget">領取</button></div>`;
+  document.body.appendChild(m);try{sfx.win()}catch(e){}
+  tap(m.querySelector('.gget'),()=>{const p=PET.P();let c=0,t=0;
+    for(const [id,g] of L){const k='gf_'+id,gc=+g.c||0,gt=+g.t||0;
+      if(gc>0&&p&&PET.coinOnce(p,k,gc))c+=gc;
+      if(gt>0){sum.tkg=sum.tkg||{};if(sum.tkg[k]==null){sum.tkg[k]=gt;sum.tk=(sum.tk||0)+gt;t+=gt}}
+      enqueue(base()+`/gift/${id}/got`,Date.now())}
+    saveSum(true);m.remove();try{paintRes();paintNavs()}catch(e){}try{confetti(80)}catch(e){}
+    toast(c||t?`🎁 收到了！${c?`🪙+${c}`:''}${c&&t?'、':''}${t?`🎟️+${t}`:''}`:'🎁 這份禮物已經領過了')})}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(giftCheck,1200)});
+setInterval(()=>{if(document.visibilityState==='visible')giftCheck()},120000);
+function enterHome(){cfgApply();show$('home');presence();listenInv();listenSum();amLoad();wfLoad();setTimeout(resolveXqPending,1500);setTimeout(bkResync,5000);setTimeout(giftCheck,2500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);wbPull();paintMeLook();render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
@@ -3454,6 +3477,9 @@ tap($('#pinwrite'),async()=>{const o=pinData||LS.get('learn601_pins',null);if(!o
   try{await timeout(db.ref(`${ROOT}/pins`).set(o),12000);$('#setmsg').textContent='✅ 開通完成！學生可以登入了'}
   catch(e){if(!/permission/i.test(String(e&&(e.code||e.message)))){$('#setmsg').textContent='寫入失敗：'+(e.message||e);return}
     $('#setmsg').textContent=(await rulesOK())===false?'❗ 寫不進去：Firebase 規則還沒更新（看最上面的說明）':'已經開通過了（要改密碼請到 Firebase 主控台）'}});
+/* 讀每個人 learn/u/座號/密碼/某個路徑（老師頁用）→ [[座號, 值]] */
+async function fetchAllPath(msgEl,path){const pins=LS.get('learn601_pins',null);if(!pins){msgEl.textContent='請先在 ① 選擇 pins.json';return null}msgEl.textContent='讀取中…';await fbReady;if(!db){msgEl.textContent='連不上 Firebase';return null}
+  const S=Object.keys(pins);try{return await Promise.all(S.map(async s=>[s,(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/${path}`).get(),15000)).val()]))}catch(e){msgEl.textContent='讀取失敗，再按一次';return null}}
 async function fetchAll(msgEl){const pins=LS.get('learn601_pins',null);if(!pins){msgEl.textContent='請先在 ① 選擇 pins.json';return null}
   msgEl.textContent='讀取中…';await fbReady;if(!db){msgEl.textContent='連不上 Firebase';return null}
   return Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),10000)).val();return [s,v]}catch(e){return [s,'err']}}))}
@@ -3625,7 +3651,7 @@ tap($('#amrload'),()=>amrLoad());
 document.querySelectorAll('#amwk button').forEach(b=>b.addEventListener('click',()=>{amrW=+b.dataset.w;amrDay=null;amrSel=null;document.querySelectorAll('#amwk button').forEach(x=>x.classList.toggle('on',x===b));amrRender()}));
 /* 老師頁：補發金幣。寫在雲端 u/座號/密碼/sum/pet/cl/e/gift_時間（金幣帳本的一筆收入）；
    學生的平板同步時，帳本是兩邊合起來（每筆取大的），所以不會被學生那台舊的資料蓋掉 */
-$('#gseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');$('#tseat').innerHTML=$('#gseat').innerHTML;
+$('#gseat').innerHTML='<option value="all">全班</option>'+SEATS.flat().concat([98,99]).map(s=>`<option value="${s}">${s} 號${isTest(s)?'（測試）':''}</option>`).join('');
 $('#bkseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');
 tap($('#bkload'),()=>bkLoad());
 /* 你畫我猜：作廢的題目（畫的人、檢舉的人各記一筆 k:'dv'，用 rk 合併） */
@@ -3662,25 +3688,27 @@ async function bkLoad(){const pins=LS.get('learn601_pins',null),M=$('#bkmsg'),O=
       np.cl=cp.cl||np.cl;np.coin=cp.coin;np.own=Object.assign({},np.own||{},cp.own||{});np.rooms=Object.assign({},np.rooms||{},cp.rooms||{});np.dex=Object.assign({},np.dex||{},cp.dex||{});np.pb=now;np.u=now;np.lu=now;   // 金幣帳本、買過的東西、圖鑑用現在的
       const nf=Object.assign({},v.farm||{},{water:(c.farm&&c.farm.water)||((v.farm||{}).water)||0,b:now,u:now});nf.log=[{t:now,m:`✨ 老師幫你把農場恢復到 ${d.slice(5).replace('-','/')} 的樣子了`}].concat(nf.log||[]);
       await timeout(db.ref(B+'/sum/pet').set(np),10000);await timeout(db.ref(B+'/sum/farm').set(nf),10000);await bkLoad();M.textContent=`✅ 已還原 ${s} 號（${d}）：請他重新整理平台`}catch(e){M.textContent='還原失敗：'+(e.message||e)}})}
-tap($('#gbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#gmsg'),s=$('#gseat').value,n=Math.round(+$('#gamt').value);
-  if(!pins||!pins[s]){M.textContent='請先在 ① 選擇 pins.json';return}if(!(n>0&&n<=3000)){M.textContent='金幣請填 1～3000';return}
-  if(!confirm(`要發 🪙${n} 給 ${s} 號嗎？`))return;M.textContent='處理中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
-  const b=`${ROOT}/u/${s}/${pins[s]}/sum/pet`;
-  try{const p=(await timeout(db.ref(b).get(),10000)).val();if(!p||!p.cl){M.textContent=`${s} 號還沒有寵物資料（要先登入過一次），沒有發`;return}
-    await timeout(db.ref(`${b}/cl/e/gift_${Date.now().toString(36)}`).set(n),10000);
-    const q=(await timeout(db.ref(b).get(),10000)).val();M.textContent=`✅ 發好了：${s} 號 🪙+${n}，現在共 🪙${PET.coinOf(q)}（他下次打開平台就會看到）`}
-  catch(e){M.textContent='發送失敗，再按一次'}});
-/* 老師頁：補發遊戲券。雲端 sum.tk 加上去，同時在 sum.tkg 記一筆「gift_時間：張數」；
-   學生的平板比雲端新、合併時會把雲端多出來的這筆補進去，比雲端舊就直接用雲端的張數（都只算一次） */
-tap($('#tbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#tmsg'),s=$('#tseat').value,n=Math.round(+$('#tamt').value);
-  if(!pins||!pins[s]){M.textContent='請先在 ① 選擇 pins.json';return}if(!(n>0&&n<=50)){M.textContent='遊戲券請填 1～50 張';return}
-  if(!confirm(`要發 🎟️${n} 張遊戲券給 ${s} 號嗎？`))return;M.textContent='處理中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
-  const b=`${ROOT}/u/${s}/${pins[s]}/sum`;
-  try{const v=(await timeout(db.ref(b).get(),10000)).val();if(!v){M.textContent=`${s} 號還沒有資料（要先登入過一次），沒有發`;return}
-    const id='gift_'+Date.now().toString(36);await timeout(db.ref(`${b}/tkg/${id}`).set(n),10000);
-    const r=await timeout(db.ref(`${b}/tk`).transaction(x=>(+x||0)+n),10000);const now=r&&r.snapshot?r.snapshot.val():null;
-    M.textContent=`✅ 發好了：${s} 號 🎟️+${n}${now!=null?`，現在共 ${now} 張`:''}（他下次打開平台就會看到）`}
-  catch(e){M.textContent='發送失敗，再按一次'}});
+/* 老師頁：發禮物（金幣、遊戲券、留言）。寫在 learn/u/座號/密碼/gift/編號 = {c 金幣, t 遊戲券, m 留言, ts 時間}；
+   學生按「領取」才入帳（got＝領取時間）。還沒領的可以收回（整筆刪掉） */
+const gEsc=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+tap($('#gbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#gmsg'),sv=$('#gseat').value,c=Math.round(+$('#gamt').value||0),t=Math.round(+$('#tamt').value||0),m=$('#gnote').value.trim().slice(0,30);
+  if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+  if(!(c>=0&&c<=3000&&t>=0&&t<=50)||c+t<=0){M.textContent='金幣 0～3000、遊戲券 0～50，至少要送一樣';return}
+  const S=sv==='all'?Object.keys(pins).filter(s=>!isTest(+s)):[sv];if(!S.every(s=>pins[s])){M.textContent=`${sv} 號不在 pins.json 裡`;return}
+  const what=[c?`🪙${c}`:'',t?`🎟️${t} 張`:''].filter(Boolean).join('＋');
+  if(!confirm(`要送 ${what} 給${sv==='all'?`全班（${S.length} 人，每人一份）`:` ${sv} 號`}嗎？${m?`\n留言：${m}`:''}\n學生按「領取」才會收到。`))return;
+  M.textContent='送出中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
+  const id='g'+Date.now().toString(36),G={c,t,ts:Date.now()};if(m)G.m=m;let ok=0;
+  await Promise.all(S.map(async s=>{try{await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/gift/${id}`).set(G),10000);ok++}catch(e){}}));
+  M.textContent=ok===S.length?`✅ 送出了（${ok} 人）：${what}，學生打開平台按「領取」就會收到`:`送出 ${ok} 人，${S.length-ok} 人失敗，請再按一次`;if($('#gout').innerHTML)giftList()});
+async function giftList(){const M=$('#gmsg2'),O=$('#gout');O.innerHTML='';const all=await fetchAllPath(M,'gift');if(!all)return;M.textContent='';
+  const rows=[];all.forEach(([s,v])=>Object.entries(v||{}).forEach(([id,g])=>{if(g&&typeof g==='object')rows.push({s,id,g})}));rows.sort((a,b)=>(b.g.ts||0)-(a.g.ts||0));
+  if(!rows.length){O.innerHTML='<div class="amnote">還沒有送過禮物</div>';return}
+  const d=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`};
+  O.innerHTML=`<table class="amtb" style="width:100%;font-weight:800"><tr><th>送出</th><th>座號</th><th>內容</th><th>留言</th><th>狀態</th></tr>${rows.slice(0,120).map(r=>`<tr><td>${d(r.g.ts||0)}</td><td>${r.s} 號</td><td>${[r.g.c?`🪙${r.g.c}`:'',r.g.t?`🎟️${r.g.t}`:''].filter(Boolean).join(' ')}</td><td>${gEsc(r.g.m)}</td><td>${r.g.got?`<span style="color:#2b8a3e">✅ ${d(r.g.got)} 領了</span>`:`<span style="color:#e67700">還沒領</span> <button data-s="${r.s}" data-id="${r.id}">收回</button>`}</td></tr>`).join('')}</table>`;
+  O.querySelectorAll('[data-id]').forEach(b=>b.onclick=async()=>{const pins=LS.get('learn601_pins',{}),s=b.dataset.s;if(!confirm(`收回送給 ${s} 號、還沒領的這份禮物？`))return;
+    try{const ref=db.ref(`${ROOT}/u/${s}/${pins[s]}/gift/${b.dataset.id}`),g=(await timeout(ref.get(),10000)).val();if(g&&g.got){alert('他剛剛已經領了，收不回來');return giftList()}await timeout(ref.remove(),10000);giftList()}catch(e){alert('收回失敗，再按一次')}})}
+tap($('#glist'),()=>giftList());
 /* ===================== 老師頁：班級儀表板 =====================
    打開老師頁就自動讀全班的「摘要」和「作答紀錄」，一眼看到：
    ・今天、這段時間的練習狀況（四個大數字）
@@ -3806,7 +3834,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v177';let verNew=false,verBusy=false;
+const APP_VER='learn601-v178';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
