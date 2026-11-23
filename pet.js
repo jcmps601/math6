@@ -1,6 +1,6 @@
 /* 601 電子寵物（新版）
    ・練習答對 → 寵物拿經驗、金幣。每天前 20 題答對拿全額，之後減半；完成每日任務 +30 經驗、+10 金幣；吃飽又開心經驗 ×1.2
-   ・練習就是餵養：答對題目寵物會吃飽、開心；飽足和開心只有上學日才會下降（週末、不會歸零）
+   ・練習就是餵養：答對題目寵物會吃飽、開心（每天練習最多各加 30）；飽足和開心在白天每小時慢慢下降（晚上睡覺不降，週末也會降，最低 20）
    ・今日願望：① 練 10 題 ② 學習願望（訂正錯題、練沒開始或星星少的單元、這週沒碰的科目）③ 陪寵物；三個都完成得 1 顆愛心，一週集滿 5 顆送限定配件
    ・等級最高 Lv.30：Lv.7 第一次進化、Lv.18 最終進化。Lv.18 送普通蛋、Lv.30 送稀有蛋；達成學習成就送稀有／傳說蛋
    ・20 種寵物（初始 8、稀有 8、傳說 4），全部住在「寵物屋」，一次帶一隻在身邊；圖鑑記錄拿過的寵物
@@ -608,9 +608,14 @@
     delete p.c; p.x = 0; p.xo = {}; p.v = 2; p.u = Date.now();
   }
   /* 飽足、開心只有上學日才下降：從上次變動那天到今天，過了幾個星期一～五（再多也一樣，最低停在 FLOOR） */
-  const schoolDays = t => { if (!t) return 0; const d = new Date(t), b = new Date(); d.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0); let n = 0; while (d < b && n < 8) { d.setDate(d.getDate() + 1); if (d.getDay() % 6) n++; } return n; };
-  const fullNow = p => Math.max(FLOOR, Math.round((p.full ?? 80) - schoolDays(p.ft) * DAY_FALL));
-  const joyNow = p => Math.max(FLOOR, Math.round((p.joy ?? 80) - schoolDays(p.jt) * DAY_FALL));
+  /* 2026-11-23 學生說「飽足、開心都不會掉，沒感覺」→ 改成每天白天（6～22 點）每小時慢慢降，週末也一樣：
+     飽足每小時 -3、開心每小時 -2（一整天約 -48、-32），晚上睡覺不降。練習答對每天最多各加 30，想一直保持就要餵食、陪牠玩 */
+  const RATE_F = 3, RATE_J = 2, PRAC_CAP = 30, H = 3600000;
+  const awakeH = t => { if (!t) return 0; const now = Date.now(); if (t >= now) return 0; const d = new Date(t); d.setHours(0, 0, 0, 0); let s = 0;
+    for (let i = 0; i < 10 && d.getTime() < now; i++) { { const a = Math.max(t, d.getTime() + 6 * H), b = Math.min(now, d.getTime() + 22 * H); if (b > a) s += b - a; } d.setDate(d.getDate() + 1); }
+    return s / H; };
+  const fullNow = p => Math.max(FLOOR, Math.min(100, Math.round((p.full ?? 80) - awakeH(p.ft) * RATE_F)));
+  const joyNow = p => Math.max(FLOOR, Math.min(100, Math.round((p.joy ?? 80) - awakeH(p.jt) * RATE_J)));
   const setFull = (p, v) => { p.full = Math.max(0, Math.min(100, v)); p.ft = Date.now(); };
   const setJoy = (p, v) => { p.joy = Math.max(0, Math.min(100, v)); p.jt = Date.now(); };
   const cared = p => p.st === 'pet' && fullNow(p) >= 50 && joyNow(p) >= 50;
@@ -641,7 +646,9 @@
     const right = !!GAIN[res]; let coin = 0, xp = 0, G = null;
     if (right) { p.dn = (p.dn || 0) + 1; G = p.dn <= BOOST_N ? GAIN[res] : LATE[res]; coin = G[0]; xp = G[1]; }
     /* 練習就是餵養：答對寵物就吃飽、開心；做滿每日任務再補一點 */
-    if (right && p.st === 'pet') { setFull(p, fullNow(p) + (res === 'ok' ? 2 : 1)); setJoy(p, joyNow(p) + 1); }
+    if (right && p.st === 'pet') { if (!p.pg || p.pg.d !== today) p.pg = { d: today, f: 0, j: 0 };   // 練習加的飽足、開心：每天最多各 30
+      const df = Math.min(res === 'ok' ? 2 : 1, PRAC_CAP - p.pg.f), dj = Math.min(1, PRAC_CAP - p.pg.j);
+      if (df > 0) { p.pg.f += df; setFull(p, fullNow(p) + df); } if (dj > 0) { p.pg.j += dj; setJoy(p, joyNow(p) + dj); } }
     /* 每日任務獎勵：第 10 題答錯也要給，所以放在「答對才有」的外面 */
     if (((sum.days || {})[today] || 0) >= GOAL && p.gd !== today) { p.gd = today; xp += DAY_XP; coin += DAY_COIN; if (round) round.pday = 1; if (p.st === 'pet') { setFull(p, fullNow(p) + DAY_FILL); setJoy(p, joyNow(p) + DAY_FILL); } }
     if (right) { try { const wk = bossWk(); if (p.ach.bk !== wk) { p.ach.bk = wk; p.ach.bw = (p.ach.bw || 0) + 1; } } catch (e) { } wishHit(p); }
@@ -819,6 +826,7 @@
       <div class="prow"><span class="pl">🍙 飽足</span><div class="pbar"><i class="f" id="pbf" style="width:${fullNow(p)}%"></i><b id="pbft">${fullNow(p)}</b></div></div>
       <div class="prow"><span class="pl">💖 開心</span><div class="pbar"><i class="j" id="pbj" style="width:${joyNow(p)}%"></i><b id="pbjt">${joyNow(p)}</b></div></div>
       <div class="pcare" id="pcare">${careLine(p)}</div>
+      <div class="pdec">白天每小時：🍙 -3、💖 -2（晚上睡覺不會變少）</div>
       <div class="pday"><span>⚡ 今日全額經驗 <b>${Math.min(dn, BOOST_N)}</b> / ${BOOST_N}</span></div>`;
     R.appendChild(B);
     const A = el('div', 'pacts');
@@ -1297,7 +1305,7 @@
   .prow{display:flex;align-items:center;gap:.6rem}.prow .pl{width:5rem;flex:none;font-size:1.15rem;font-weight:900;color:#555}
   .pevo1{font-size:1.05rem;font-weight:900;color:#7048e8;text-align:center}.pevo1 b{font-size:1.25rem}
   .pcare{font-size:1.05rem;font-weight:900;color:#f08c00;text-align:center}
-  .pday{display:flex;justify-content:center;gap:.5rem 1.2rem;flex-wrap:wrap;font-size:1rem;font-weight:900;color:#666}.pday b{color:#e67700}
+  .pdec{font-size:.85rem;color:#868e96;font-weight:700;margin:.15rem 0 .3rem}.pday{display:flex;justify-content:center;gap:.5rem 1.2rem;flex-wrap:wrap;font-size:1rem;font-weight:900;color:#666}.pday b{color:#e67700}
   .ptest{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;background:#fff9db;border:3px dashed #fcc419;padding:.6rem .8rem;margin-bottom:.8rem}
   .ptest b{color:#e67700;margin-right:.3rem}.ptest span{font-weight:900;color:#555;margin-right:.2rem}
   .ptest button,.ptest select{border:2px solid #ffe066;background:#fff;border-radius:10px;padding:.25rem .6rem;font:inherit;font-weight:800;color:#555}.ptest button.on{background:#ffe066}
