@@ -975,7 +975,7 @@
       C.querySelectorAll('[data-f]').forEach(b => tap(b, () => feed(FOODS[+b.dataset.f])));
       C.querySelectorAll('[data-c]').forEach(b => tap(b, () => { const id = b.dataset.c, t = feedCrop(id); if (t.startsWith('😋')) { eatFx(`<img src="img/farm/pr-${id}.webp" alt="">`, FARM.CROPS[id].n); refresh(); paintTab(); } else say(t, 2200); }));
     } else if (tab === 'wear') {
-      const own = p.own, ML = maxLv(p), L = lvOf(p.xp || 0).lv; let h = '';
+      const own = p.own, ML = maxLv(p), L = lvOf(p.xp || 0).lv; let h = '<div class="ptryh">👀 還沒買的點一下，可以先試穿看看</div>';
       SLOTS.forEach(([k, n]) => {
         h += `<div class="psec">${n}</div><div class="pgrid">`;
         Object.entries(ITEMS).filter(([id, I]) => I.k === k && (!I.lim || own[id] || TST())).forEach(([id, I]) => {
@@ -996,25 +996,41 @@
     else if (tab === 'house') house(C);
     else classPets(C);
   }
+  /* 試穿：還沒買的配件、異色、房間，先看寵物換上的樣子再決定要不要買（2026-11-23 學生說看不到不知道要買哪個）
+     kind：'i' 配件、'x' 異色、'r' 房間。按「買下」才會回傳 true；等級不夠、金幣不夠的也能看，只是不能買 */
+  function tryOn(kind, id) {
+    const p = P(), L = lvOf(p.xp || 0).lv, ML = maxLv(p), c = p.coin || 0; let ex = {}, rid = p.room || 'home', nm, price, need, note, verb;
+    if (kind === 'i') { const I = ITEMS[id]; ex = { [I.k]: id }; nm = I.n; price = I.p; need = !TST() && ML < I.lv ? I.lv : 0; note = '買了以後，每一隻寵物都可以戴'; verb = '買下並換上'; }
+    else if (kind === 'x') { const x = XS[id]; ex = { x: id }; nm = `${x.n}異色`; price = x.p; need = !TST() && L < x.lv ? x.lv : 0; note = `只有${nameOf(p)}會變色，別隻寵物要另外買`; verb = '買下並變身'; }
+    else { const r = ROOMS.find(x => x.id === id); rid = id; nm = r.n; price = r.p; need = !TST() && ML < r.lv ? r.lv : 0; note = '買了以後，隨時可以換回來'; verb = '買下並搬進去'; }
+    const lack = !need && !TST() && c < price ? price - c : 0, ok = !need && !lack;
+    const btn = need ? `🔒 寵物升到 Lv.${need} 才能買` : lack ? `金幣不夠，還差 🪙${lack}` : `🪙 ${price} ${verb}`;
+    return new Promise(res => {
+      const m = el('div', 'pmod pask ptrym', `<div class="pmc"><div class="pmh2">👀 試穿看看：${nm}</div>
+        <div class="pstage ptry${night() ? ' night' : ''}">${roomArt(rid)}${furLayer(p, rid)}<div class="ppet">${petArt(look(p, Object.assign({ mood: 'happy', cls: 'big' }, ex)))}</div></div>
+        <div class="ptryi">${note}${ok ? '' : `<br><b>${need ? `現在 Lv.${kind === 'x' ? L : ML}，還要再升 ${need - (kind === 'x' ? L : ML)} 級` : `你現在有 🪙${c}`}</b>`}</div>
+        <div class="pbtns"><button class="go" data-a="1"${ok ? '' : ' disabled'}>${btn}</button><button class="gray pmx" data-a="0">先不要</button></div></div>`);
+      document.body.appendChild(m);
+      m.querySelectorAll('[data-a]').forEach(b => tap(b, () => { if (b.disabled) return; m.remove(); res(b.dataset.a === '1'); }));
+      tap(m, e => { if (e.target === m) { m.remove(); res(false); } });
+    });
+  }
   async function wear(id) {
     const p = P(), I = ITEMS[id];
-    p.lu = Date.now();
-    if (p[I.k] === id) { p[I.k] = ''; save(p); refresh(); paintTab(); return; }   // 再點一次＝脫下來
+    if (p[I.k] === id) { p[I.k] = ''; p.lu = Date.now(); save(p); refresh(); paintTab(); return; }   // 再點一次＝脫下來
     if (!p.own[id]) {
-      if (!TST() && maxLv(p) < I.lv) { say(`寵物升到 Lv.${I.lv} 才能買${I.n}喔！`, 2200); return; }
-      if ((p.coin || 0) < I.p) { say(`金幣不夠…還差 ${I.p - (p.coin || 0)} 枚`, 2200); return; }
-      if (!(await ask(`<div class="paski">${itemSVG(id)}</div>用 🪙${I.p} 買「${I.n}」嗎？<small>買了以後每一隻寵物都可以戴</small>`, '買！'))) return;
+      if (!(await tryOn('i', id))) return;   // 先試穿，按「買下」才買
+      if (!TST() && maxLv(p) < I.lv || (p.coin || 0) < I.p && !TST()) return;
       coinAdd(p, -I.p); p.own[id] = 1; try { sfx.ticket(); } catch (e) { }
     }
-    p[I.k] = id; save(p); refresh(); paintTab(); bounce('spin', 'happy', 1000); fx('✨', 'star', 4); say(pick2(['好看嗎？', '我變漂亮了！', '酷吧！']), 2200);
+    p[I.k] = id; p.lu = Date.now(); save(p); refresh(); paintTab(); bounce('spin', 'happy', 1000); fx('✨', 'star', 4); say(pick2(['好看嗎？', '我變漂亮了！', '酷吧！']), 2200);
   }
   async function shiny(i) {
     const p = P(), x = XS[i], L = lvOf(p.xp || 0).lv; p.xo = p.xo || {};
     if ((p.x | 0) === i) return;
     if (i && !p.xo[i]) {
-      if (!TST() && L < x.lv) { say(`${nameOf(p)}升到 Lv.${x.lv} 才能變成${x.n}色喔！`, 2200); return; }
-      if ((p.coin || 0) < x.p) { say(`金幣不夠…還差 ${x.p - (p.coin || 0)} 枚`, 2200); return; }
-      if (!(await ask(`<div class="paskp">${petArt(look(p, { x: i, mood: 'happy' }))}</div>用 🪙${x.p} 讓${nameOf(p)}變成「${x.n}」異色嗎？`, '變身！'))) return;
+      if (!(await tryOn('x', i))) return;
+      if (!TST() && (L < x.lv || (p.coin || 0) < x.p)) return;
       coinAdd(p, -x.p); p.xo[i] = 1;
     }
     p.x = i; p.lu = Date.now(); save(p); refresh(); paintTab(); bounce('spin', 'happy', 1000); fx(i === 4 ? '✨' : '🎨', 'star', 4);
@@ -1022,9 +1038,8 @@
   async function room(id) {
     const p = P(), r = ROOMS.find(x => x.id === id); if ((p.room || 'home') === id) return;
     if (r.p && !p.rooms[id]) {
-      if (!TST() && maxLv(p) < r.lv) { say(`寵物升到 Lv.${r.lv} 才能搬到${r.n}喔！`, 2200); return; }
-      if ((p.coin || 0) < r.p) { say(`金幣不夠…還差 ${r.p - (p.coin || 0)} 枚`, 2200); return; }
-      if (!(await ask(`用 🪙${r.p} 買「${r.n}」房間嗎？`, '買！'))) return;
+      if (!(await tryOn('r', id))) return;
+      if (!TST() && (maxLv(p) < r.lv || (p.coin || 0) < r.p)) return;
       coinAdd(p, -r.p); p.rooms[id] = 1;
     }
     p.room = id; p.lu = Date.now(); save(p); render();
@@ -1351,7 +1366,7 @@
   .pmod{position:fixed;inset:0;background:rgba(40,20,60,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem;animation:fade .25s}
   .pmod.pask{z-index:55}
   .pmc{background:#fff;border-radius:28px;padding:1.2rem;max-width:42rem;width:100%;max-height:92vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);text-align:center}
-  .pask .pmc{max-width:26rem}.pmh2{font-size:1.3rem;font-weight:900;color:#444;margin-bottom:.8rem}.pmh2 small{display:block;font-size:.95rem;color:#888;margin-top:.3rem}
+  .pask .pmc{max-width:26rem}.ptrym .pmc{max-width:30rem}.pmod .pstage.ptry{height:min(18rem,46vh);margin:0 auto .7rem;border-radius:22px}.ptry .ppet{cursor:default;height:calc(100% - 2rem)}.ptryi{color:#666;font-weight:700;margin-bottom:.8rem;line-height:1.5}.ptryi b{color:#e8590c}.ptrym .go[disabled]{background:#ced4da;border-color:#ced4da;box-shadow:none;color:#fff}.ptrym .pmx{white-space:nowrap;flex:none}.ptryh{background:#fff4e6;color:#d9480f;font-weight:900;border-radius:14px;padding:.45rem .8rem;margin-bottom:.4rem}.pmh2{font-size:1.3rem;font-weight:900;color:#444;margin-bottom:.8rem}.pmh2 small{display:block;font-size:.95rem;color:#888;margin-top:.3rem}
   .paski .isvg{width:7rem;height:5rem;object-fit:contain}.paskp{width:8rem;height:8rem;margin:0 auto .4rem}
   .pbtns{display:flex;gap:.6rem;justify-content:center}.pbtns .go{margin:0;font-size:1.3rem}.pbtns .pmx{margin:0}
   .pmh{font-size:1.6rem;font-weight:900;color:#d6336c;margin-bottom:.8rem;line-height:1.3}.pmh small{font-size:1rem;color:#999}
