@@ -2791,7 +2791,8 @@ function acceptInv(){const x=invNow;if(!x)return;
 const TANK_SKINS={forest:{n:'森林嫩葉',p:0,t:0},desert:{n:'暖金沙丘',p:150,t:0},glacier:{n:'冰藍山嶺',p:150,t:0},ember:{n:'珊瑚烈焰',p:150,t:0},volt:{n:'青綠閃電',p:150,t:0},nebula:{n:'紫夜星辰',p:150,t:0},
   rhino:{n:'鐵角犀衛',p:600,t:1,v:4},falcon:{n:'疾風獵鷹',p:600,t:1,v:4},tortoise:{n:'森甲巨龜',p:600,t:1,v:4},
   stormwolf:{n:'雷霆天狼',p:1500,t:2,v:4},auroracorn:{n:'極光獨角獸',p:1500,t:2,v:4},abyssshark:{n:'深海巨鯊',p:1500,t:2,v:4},
-  solardragon:{n:'曜日龍皇',p:3500,t:3,v:4},phoenix:{n:'熾天鳳凰',p:3500,t:3,v:4},astraltemple:{n:'星穹聖殿',p:3500,t:3,v:4}};
+  solardragon:{n:'曜日龍皇',p:3500,t:3,v:4},phoenix:{n:'熾天鳳凰',p:3500,t:3,v:4},astraltemple:{n:'星穹聖殿',p:3500,t:3,v:4},
+  copperstag:{n:'赤銅雄鹿',p:600,t:1,v:5},cobaltbeetle:{n:'鈷藍甲蟲',p:600,t:1,v:5},sandscorpion:{n:'沙鋼蠍衛',p:600,t:1,v:5},frostsaber:{n:'霜刃劍虎',p:1500,t:2,v:6},jademantis:{n:'翡翠刃螳',p:1500,t:2,v:5},amethystspider:{n:'紫晶幻蛛',p:1500,t:2,v:5},chronogryphon:{n:'時序獅鷲',p:3500,t:3,v:5},astralwhale:{n:'星淵鯨皇',p:3500,t:3,v:5},thundermammoth:{n:'雷霆神象',p:3500,t:3,v:5}};   // 2026-11-23 新增九款（每級各 3 款，價錢跟同級一樣）
 const TANK_TIER=['基本','進階','史詩','傳說'],TK_OLD={ember:300,volt:300,nebula:500};
 /* 調價退差額：以前用較高價買的，坦克保留、差額退回金幣。
    退的總額直接寫成帳本裡固定的一格（cl.e.tkrf），兩台平板各算一次也只會是同一個數字，不會重複退。 */
@@ -2924,7 +2925,7 @@ function garage(){return new Promise(done=>{if(!user||!sum){done();return}
   let gt=TANK_SKINS[tankSkin()].t,tryK='';   // tryK＝試穿中的造型（只改這裡的預覽，不扣錢、不記錄、不帶進對戰）
   const RAR=['basic','advanced','epic','legendary'],rar=t=>`<span class="grar"><img src="img/ui/rarity-${RAR[t]}.webp" alt="">${TANK_TIER[t]}</span>`;
   function paint(){const use=tankSkin(),c=coins();
-    const pv=(k,v)=>`img/game/tank-${k}-preview-${v.v?'v4':'v2'}.webp`;
+    const pv=(k,v)=>`img/game/tank-${k}-preview-v${v.v||2}.webp`;
     box.innerHTML=`<div class="gbox"><div class="gtop">${gIco('garage')}<div><div class="gt">坦克車庫</div><div class="gs">造型只改變外觀，不影響攻擊力。對戰時同學看得到你的坦克！</div></div><div class="gcoin">${gIco('coin')}<b>${isTest(user.seat)?'∞':c}</b></div></div>
       ${tryK?`<div class="gtry"><img src="${pv(tryK,TANK_SKINS[tryK])}" alt=""><div><b>試穿中：${TANK_SKINS[tryK].n}</b><small>只是看看，不會扣金幣、不會換掉你的坦克</small></div><button class="gtx">不試了</button></div>`:''}
       <div class="gtabs">${TANK_TIER.map((n,i)=>`<button class="gtab t${i}${gt===i?' on':''}" data-t="${i}"><img src="img/ui/rarity-${RAR[i]}.webp" alt="">${n}<small>${i?TANK_SKINS[Object.keys(TANK_SKINS).find(k=>TANK_SKINS[k].t===i)].p:150} 金幣</small></button>`).join('')}</div>
@@ -3834,7 +3835,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v178';let verNew=false,verBusy=false;
+const APP_VER='learn601-v179';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
