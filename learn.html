@@ -1742,7 +1742,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
     if(PL){sum.wkl=PL;sum.wkp=Object.fromEntries(Object.keys(PL.c||{}).map(k=>[k,wkTot(PL,k)]))}
     if(r.wk)wkConfirm(r)}
   if(r.wkp&&!sum.wkp)sum.wkp=r.wkp;if(r.wkb)sum.wkb=mx(sum.wkb,r.wkb);
-  if(r.bsr&&r.bsr.d===dkey()&&(!sum.bsr||sum.bsr.d!==r.bsr.d||(r.bsr.n||0)>(sum.bsr.n||0)))sum.bsr={d:r.bsr.d,n:r.bsr.n||0};   // 今天打王拿過幾次金幣
+  for(const q of ['bsr','bss','bsr1'])if(r[q]&&r[q].d===dkey()&&(!sum[q]||sum[q].d!==r[q].d||(r[q].n||0)>(sum[q].n||0)))sum[q]={d:r[q].d,n:r[q].n||0};   // 今天打王拿過幾次金幣（bsr 多人、bsr1 一個人）、一個人打王開了幾場（bss）
   if(r.rv){sum.rv=sum.rv||{};for(const k in r.rv){const a=sum.rv[k],b=r.rv[k];if(b&&(!a||(b.m||0)>(a.m||0)))sum.rv[k]=b}}   // 延後複習：每一筆看比較新的
   if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
@@ -2543,7 +2543,8 @@ const gFmt=(g,v)=>{const G=gOf(g);if(g==='num')return `${(+v).toFixed(1)} 秒`;i
 const dTxt=d=>`${GDIFF[d][1]} ${GDIFF[d][2]}`;
 /* 雙人合作過關：2026-11-16 老師覺得關卡 bug 太多，從平台拿掉（coop.html 還在，排行榜也不顯示） */
 const BOSS_OPEN=true;   // 大砲混戰「一起打王」開放了沒（2026-11-20 開放）
-const BOSS_COIN_DAY=3;   // 一天前幾場打贏魔王有金幣
+const BOSS_COIN_DAY=3;   // 一天前幾場打贏魔王有金幣（2～4 人）
+const BOSS_SOLO_DAY=2;   // 2026-11-23：一個人打王一天最多 2 場；打贏的金幣減半，跟多人的 3 場分開算
 const DR_OPEN=true;      // 你畫我猜開放了沒（2026-11-20 開放）
 const BK_OPEN=true;      // 方塊對戰開放了沒（2026-11-15 開放）
 /* 寵物彈射對戰：2026-11-15 老師覺得不好玩，從平台拿掉（sling.html 還在，以前的戰績照樣保留） */
@@ -2978,9 +2979,11 @@ window.__learn601={
   /* 打贏過這隻魔王沒（地獄魔王要先打贏困難）：看戰績裡 pb 開頭、贏了、寫著「打倒＜魔王名字＞」的；測試帳號一律可以 */
   async bossBeat(kind){if(!user)return false;if(isTest(user.seat))return true;const nm={rock:'岩甲巨獸',thunder:'雷霆機甲龍',hell:'暗焰魔龍王'}[kind];if(!nm)return false;
     try{return (await xqHist()).some(x=>xqG(x)==='pb'&&x.w===1&&String(x.r||'').includes(nm))}catch(e){return false}},
-  bossReward(kind){if(!user||!sum)return null;if(isTest(user.seat))return {c:0,n:0};const d=dkey(),r=sum.bsr&&sum.bsr.d===d?sum.bsr:{d,n:0};
-    if(r.n>=BOSS_COIN_DAY)return {c:0,n:r.n,full:1};const c=kind==='hell'?100:kind==='thunder'?60:30,p=PET.P();if(!p)return null;
-    r.n++;sum.bsr=r;PET.coinAdd(p,c);saveSum(true);logPush({k:'boss',b:kind,c});paintNavs();return {c,n:r.n}},
+  bossReward(kind,solo){if(!user||!sum)return null;if(isTest(user.seat))return {c:0,n:0,solo:!!solo};const d=dkey(),q=solo?'bsr1':'bsr',r=sum[q]&&sum[q].d===d?sum[q]:{d,n:0};
+    if(r.n>=(solo?BOSS_SOLO_DAY:BOSS_COIN_DAY))return {c:0,n:r.n,full:1,solo:!!solo};const c0=kind==='hell'?100:kind==='thunder'?60:30,c=solo?Math.round(c0/2):c0,p=PET.P();if(!p)return null;
+    r.n++;sum[q]=r;PET.coinAdd(p,c);saveSum(true);logPush({k:'boss',b:kind,c,...(solo?{s:1}:{})});paintNavs();return {c,n:r.n,solo:!!solo}},
+  bossSoloLeft(){if(!user||!sum)return 0;if(isTest(user.seat))return 99;const r=sum.bss&&sum.bss.d===dkey()?sum.bss:null;return Math.max(0,BOSS_SOLO_DAY-(r?r.n||0:0))},
+  bossSoloUse(){if(!user||!sum||isTest(user.seat))return;const d=dkey(),r=sum.bss&&sum.bss.d===d?sum.bss:{d,n:0};r.n++;sum.bss=r;saveSum(true)},
   drLog(v){if(!user||!v)return;logPush({k:'dv',rk:String(v.rk||'').slice(0,60),dr:+v.dr||0,w:String(v.w||'').slice(0,20),by:String(v.by||'').slice(0,40),gn:+v.gn||0,me:v.me==='dr'?'dr':'rp'})},
   useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
     sum.tk--;saveSum(true);logPush({k:'g',game:g});return true},
@@ -3835,7 +3838,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v179';let verNew=false,verBusy=false;
+const APP_VER='learn601-v180';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}

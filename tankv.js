@@ -161,6 +161,10 @@
     tele() { [660, 880, 1175, 1568].forEach((f, k) => tone(f, .12, 'sine', .06, k * .06)); },
     gift() { [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, .18, 'triangle', .07, k * .07)); },
     sizzle() { noise(.5, .2, 3000); },
+    quake() { noise(1.4, .7, 260); tone(55, 1.2, 'sine', .3, 0, 28); },
+    zap() { noise(.25, .35, 5000); tone(1800, .18, 'sawtooth', .05, 0, 300); },
+    roar() { tone(110, .9, 'sawtooth', .08, 0, 70); noise(.8, .25, 400); },
+    flame() { noise(1, .3, 1600); },
     turn() { tone(660, .12, 'triangle', .07); tone(990, .18, 'triangle', .07, .1); },
     tick() { tone(1200, .05, 'square', .03); },
     click() { tone(520, .04, 'triangle', .04); },
@@ -292,6 +296,8 @@
       else if (e.k === 'void') texts.push({ x: t.x, y: H - 140, t: `${nm(e.i)} 掉下去了！`, c: '#7c2d12', life: 120, s: 38, vy: -.3 });
       else if (e.k === 'slide') texts.push({ x: t.tx, y: groundY(t.tx) - 110, t: '溜～', c: '#1c7ed6', life: 60, s: 28 });
       else if (e.k === 'drop') { const c = V.crates.find(z => z.id === e.id); if (c) c.fall = 1; }
+      else if (e.k === 'burn') { snd.sizzle(); texts.push({ x: t.x, y: t.y - 120, t: `-${e.d} 燒到了！`, c: '#ea580c', life: 90, s: 34, vy: -.5 }); }
+      else if (e.k === 'warn') warnFx(e);
       else if (e.k === 'mark') texts.push({ x: Math.max(240, Math.min(W - 240, e.x)), y: groundY(e.x) - 215, t: '被鎖定了！下一輪隕石砸這裡', c: '#a21caf', life: 150, s: 30 });
     }
     if (shown.ev.some(e => e.k === 'void')) setTimeout(() => shown.ev.filter(e => e.k === 'void').forEach(e => bigBoom(e.i, true)), 50);
@@ -312,7 +318,9 @@
       shells = A.F.sh; { const B = barrelAt(A.side, T.x, A.m.a), r = A.m.a * Math.PI / 180, dx = B.mx - (T.x + 26 * Math.cos(r)), dy = B.my - (groundY(T.x) - 16 - 26 * Math.sin(r)); const bs = isBoss(A.side); shells.forEach(s => { s.trail = []; s.mzx = bs ? 0 : dx; s.mzy = bs ? 0 : dy; });
       if (A.m.w === 'G') { snd.tele(); texts.push({ x: TK.bossBody(shown).cx, y: TK.bossBody(shown).cy - 140, t: '護盾！這一輪傷害減半', c: '#1c7ed6', life: 110, s: 36 }); }
       if (A.m.w === 'Y') texts.push({ x: W / 2 - 200, y: 200, t: '砲彈雨！', c: '#7c3aed', life: 90, s: 46 });
-      if (A.m.w === 'F') texts.push({ x: W / 2 - 200, y: 200, t: '暗焰隕石！', c: '#a21caf', life: 100, s: 50 }); }
+      if (A.m.w === 'F') texts.push({ x: W / 2 - 200, y: 200, t: '暗焰隕石！', c: '#a21caf', life: 100, s: 50 });
+      const SK = { E: ['地震重踏！', '#92400e'], W: ['岩牆！', '#78350f'], L: ['連鎖閃電！', '#ca8a04'], V: ['雷暴！', '#ca8a04'], B: ['火焰吐息！', '#ea580c'], O: ['末日隕石！', '#9f1239'] }[A.m.w];
+      if (SK && isBoss(A.side)) { texts.push({ x: W / 2 - 200, y: 200, t: SK[0], c: SK[1], life: 110, s: 56 }); if (A.m.w === 'E') { snd.quake(); shake = 34; quakeWave(); } else if (A.m.w === 'V') { snd.zap(); flashSky = 18; } else if (A.m.w === 'B') snd.flame(); else if (A.m.w === 'O') snd.roar(); } }
       lastShot[A.side] = { x: T.x, a: A.m.a, p: A.m.p };
       snd.fire(); const Bf = barrelAt(A.side, T.x, A.m.a), ang = A.m.a * Math.PI / 180;
       fxAdd(A.sk, 'muzzle', Bf.mx, Bf.my, -ang, .6, 9);   // 三連發也只有一次（發射只走這裡一次）
@@ -342,13 +350,16 @@
   function boom(e, w, sub, A) {
     const W0 = TK.WEAP[w];
     for (const c of [...(A && A.F ? A.F.crates : [])]) if (TK.crateNear(shown, V.g, c, e.x, e.y)) { A.F.crates = A.F.crates.filter(z => z !== c); V.crates = V.crates.filter(z => z.id !== c.id); }
-    if (W0.wall) { TK.mound(shown, V.g, e.x, e.y); V.gv++; snd.wall(); shake = Math.max(shake, 8); dust(e.x, e.y, 26); texts.push({ x: e.x, y: e.y - 90, t: '築牆！', c: '#8b5a2b', life: 70, s: 30 }); return; }
+    if (W0.wall) { TK.mound(shown, V.g, e.x, e.y, W0.ww, W0.wh); V.gv++; snd.wall(); shake = Math.max(shake, W0.wh ? 20 : 8); dust(e.x, e.y, W0.wh ? 60 : 26); texts.push({ x: e.x, y: e.y - (W0.wh ? 160 : 90), t: W0.wh ? '岩牆擋住了！' : '築牆！', c: '#8b5a2b', life: 90, s: W0.wh ? 36 : 30 }); return; }
+    if (W0.quake) { dust(e.x, e.y, 34); for (let k = 0; k < 6; k++) parts.push({ x: e.x + (Math.random() - .5) * 60, y: e.y - 4, vx: (Math.random() - .5) * 2, vy: -1 - Math.random() * 3, g: .2, life: 40, max: 40, r: 6 + Math.random() * 6, c: 'dirt' }); }
+    else if (W0.storm) { bolt(e.x, -20, e.x, e.y, 26); parts.push({ x: e.x, y: e.y, r: 90, life: 14, max: 14, c: 'flash' }); snd.zap(); }
     if (W0.tele) {
       const t = V.T[A ? A.side : 0]; snd.tele();
       const spark = (x, y) => { for (let k = 0; k < 26; k++) { const a = Math.random() * 6.3, v = 1 + Math.random() * 4; parts.push({ x, y: y - 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 45, max: 45, r: 3 + Math.random() * 3, c: 'star' }); } };
       spark(t.x, t.y); t.x = t.tx = e.x; t.y = groundY(e.x) - 2; spark(t.x, t.y); texts.push({ x: e.x, y: t.y - 110, t: '傳送！', c: '#7048e8', life: 70, s: 32 }); return;
     }
-    if (W0.heal) {   // 補血彈：不炸地，冒綠色星星
+    if (W0.quake) { }
+    else if (W0.heal) {   // 補血彈：不炸地，冒綠色星星
       snd.gift(); for (let k = 0; k < 22; k++) { const a = Math.random() * 6.3, v = 1 + Math.random() * 3; parts.push({ x: e.x, y: e.y - 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, life: 45, max: 45, r: 3 + Math.random() * 4, c: 'star' }); }
       parts.push({ x: e.x, y: e.y, r: 50, life: 12, max: 12, c: 'flash' });
     } else {
@@ -362,10 +373,14 @@
     dust(e.x, e.y, Math.round(n * .8));
     for (let i = 0; i < (bg ? 10 : 4); i++)parts.push({ x: e.x + (Math.random() - .5) * 30, y: e.y - Math.random() * 20, vx: (Math.random() - .5) * .8 + V.wind * .05, vy: -.4 - Math.random() * .6, life: 80 + Math.random() * 40, max: 120, r: 12 + Math.random() * 14, c: 'smoke' });
     }
-    V.T.forEach((t, j) => {
+    let chainFrom = W0.chain ? [e.x, e.y] : null, chainN = 0;
+    const order = W0.chain ? V.T.map((_, j) => j).filter(j => e.d[j] > 0).sort((a, b) => e.d[b] - e.d[a]) : null;
+    if (order) { const first = order[0], rest = order.slice(1), seq = [first]; let cur = first; while (rest.length) { rest.sort((a, b) => Math.abs(V.T[a].x - V.T[cur].x) - Math.abs(V.T[b].x - V.T[cur].x)); cur = rest.shift(); seq.push(cur); } order.splice(0, order.length, ...seq); }
+    (order || V.T.map((_, j) => j)).forEach(j => { const t = V.T[j];
       const d = e.d[j]; if (!d || t.dead || t.out) return;
       const bb = isBoss(j), tyy = bb ? TK.bossBody(shown).cy - TK.bossBody(shown).ry - 30 : t.y - 116;
       if (d < 0) { const add = Math.min(-d, (t.max || TK.HP) - t.hp); t.hp += add; texts.push({ x: t.x, y: tyy, t: '+' + add + ' 補血', c: '#2f9e44', life: 90, s: 40, vy: -.6 }); return; }
+      if (W0.chain && !bb) { const c1 = tankCenter(j); if (chainN++ > 0) { bolt(chainFrom[0], chainFrom[1], c1[0], c1[1], 30); snd.zap(); texts.push({ x: t.x, y: tyy - 40, t: '⚡ 電流跳過來了！', c: '#ca8a04', life: 90, s: 28, vy: -.5 }); } chainFrom = c1; }   // 連鎖閃電：電流一台跳一台
       t.hp = Math.max(0, t.hp - d); t.flash = 14; t.shakeT = 12;
       texts.push({ x: bb ? TK.bossBody(shown).cx : t.x, y: tyy, t: '-' + d + (bb && shown.shield ? ' 護盾' : ''), c: '#dc2626', life: 80, s: d >= 25 || bb ? 50 : 40, vy: -.6 });
       if (bb && TK.bossWeak && TK.bossWeak(shown, e.x, e.y)) { texts.push({ x: TK.bossBody(shown).cx, y: tyy + 46, t: `打中弱點！×${TK.WEAK}`, c: '#e8590c', life: 90, s: 36, vy: -.6 }); snd.clang(); }   // 打中魔王的頭
@@ -523,6 +538,79 @@
     }
     if (!anim && !shown.over && V.turn === i && !t.dead) { const ax = b.cx, ay = b.cy - b.ry - 40 + 5 * Math.sin(now / 180); c.fillStyle = BOSSC.main; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(ax - 15, ay); c.lineTo(ax + 15, ay); c.lineTo(ax, ay + 17); c.closePath(); c.stroke(); c.fill(); }
   }
+  /* ───────── b5 魔王技能的畫面（2026-11-23） ───────── */
+  let flashSky = 0;
+  /* 閃電：一條鋸齒狀的線，外面一圈黃光（存在 parts，跟火花一起淡出） */
+  function bolt(x0, y0, x1, y1, life) { const pts = [[x0, y0]], n = Math.max(4, Math.round(Math.hypot(x1 - x0, y1 - y0) / 34)); for (let k = 1; k < n; k++) { const f = k / n; pts.push([x0 + (x1 - x0) * f + (Math.random() - .5) * 34, y0 + (y1 - y0) * f + (Math.random() - .5) * 34]); } pts.push([x1, y1]); parts.push({ x: x1, y: y1, pts, life, max: life, c: 'bolt' }); }
+  /* 地震：從魔王腳下往左一路揚起塵土 */
+  function quakeWave() { const bx = TK.bossBody(shown).cx - 120; for (let x = bx; x > 0; x -= 26) { const d = (bx - x) / 26; parts.push({ x, y: groundY(x), vx: (Math.random() - .5) * 2, vy: -2 - Math.random() * 3, g: .2, life: 30 + d * 1.6, max: 30 + d * 1.6, r: 4 + Math.random() * 6, c: 'dirt' }); } }
+  /* 預告：大字＋音效（真正的範圍由 drawPend 一直畫到大招放完） */
+  function warnFx(e) {
+    const T = { E: ['⚠ 岩甲巨獸在蓄力！', '下一輪「地震重踏」：離魔王越近越痛，往左邊開！'], V: ['⚠ 雷暴要來了！', '下一輪黃色區會落雷，快開出黃色區！'], O: ['⚠ 末日隕石！', '下一輪隕石砸紅圈，找安全的空位，先補血！'] }[e.w];
+    if (!T) return; snd.roar(); shake = Math.max(shake, 12);
+    big = { t: T[0], s: T[1], c: e.w === 'O' ? '#9f1239' : e.w === 'V' ? '#a16207' : '#92400e', life: 170 };
+  }
+  /* 預告範圍、燒著的地面；自己的坦克在危險的地方，標籤換成提醒 */
+  function drawPend(c, now) {
+    if (!shown.boss || shown.over) return;
+    const p = .5 + .5 * Math.sin(now / 140), me = host.me(), myT = me >= 0 && me !== shown.bi && V.T[me] && !V.T[me].dead && TK.alive(shown, me) ? V.T[me] : null;
+    const pd = shown.pend;
+    if (pd && pd.k === 'E') {   // 地震：地面一條會跳動的警告帶，離魔王越近越紅
+      const bx = TK.bossBody(shown).cx - 110;
+      c.save(); for (let x = 0; x < bx; x += 6) { const k = Math.max(0, Math.min(1, 1 - (bx - x - 200) / 800)), y = groundY(x); if (y > H) continue; const hh = 10 + 26 * k * (.6 + .4 * Math.abs(Math.sin(now / 90 + x / 40))); const gr = c.createLinearGradient(0, y - hh, 0, y + 4); gr.addColorStop(0, 'rgba(255,120,20,0)'); gr.addColorStop(1, `rgba(${200 + 55 * k},${130 - 100 * k},20,${(.25 + .5 * k) * (.6 + .4 * p)})`); c.fillStyle = gr; c.fillRect(x, y - hh, 6, hh + 4); }
+      const tx = myT ? '快往左開！' : '地震範圍', lx = myT ? myT.x : bx / 2, ly = (myT ? myT.y : groundY(lx)) - 140 + 4 * Math.sin(now / 120);
+      c.font = `900 26px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; c.strokeText(tx, lx, ly); c.fillStyle = '#b45309'; c.fillText(tx, lx, ly); c.restore();
+    }
+    if (pd && pd.xs) {   // 雷暴（黃色）、末日隕石（紅色）的落點
+      const yl = pd.k === 'V', R = (pd.r || 75) + 8;
+      c.save();
+      for (const x of pd.xs) {
+        const y = groundY(x); c.fillStyle = yl ? `rgba(250,204,21,${.16 + .16 * p})` : `rgba(220,38,38,${.16 + .14 * p})`; c.strokeStyle = yl ? `rgba(202,138,4,${.6 + .4 * p})` : `rgba(159,18,57,${.6 + .4 * p})`;
+        c.lineWidth = 4; c.setLineDash([12, 8]); c.beginPath(); c.ellipse(x, y - 4, R, 22, 0, 0, 7); c.fill(); c.stroke(); c.setLineDash([]);
+        if (yl && Math.random() < .08) bolt(x + (Math.random() - .5) * R, y - 190, x + (Math.random() - .5) * R, y - 30, 6);   // 黃色區偶爾閃一下小電光
+        const inMe = myT && Math.abs(myT.x - x) < R, tx = inMe ? (yl ? '快開出黃色區！' : '快開出紅圈！') : yl ? '落雷區' : '隕石落點';
+        c.globalAlpha = .55 + .45 * p; c.lineWidth = 3; c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x, y - 150); c.stroke(); c.globalAlpha = 1;
+        const lx = Math.max(90, Math.min(W - 90, x)), ly = y - 160 + (inMe ? 4 * Math.sin(now / 120) : 0);
+        c.font = `900 ${inMe ? 28 : 24}px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; c.strokeText(tx, lx, ly); c.fillStyle = inMe ? '#dc2626' : yl ? '#a16207' : '#9f1239'; c.fillText(tx, lx, ly);
+      }
+      c.restore();
+    }
+    if (shown.burn && !(anim && anim.side === shown.bi && anim.ph !== 'drive')) {   // 燒著的地面：橘色光＋一直冒火
+      c.save();
+      for (const x of shown.burn) {
+        const y = groundY(x), gr = c.createRadialGradient(x, y, 4, x, y, 56); gr.addColorStop(0, `rgba(255,120,20,${.45 + .2 * p})`); gr.addColorStop(1, 'rgba(255,80,0,0)'); c.fillStyle = gr; c.beginPath(); c.ellipse(x, y - 6, 56, 26, 0, 0, 7); c.fill();
+        if (Math.random() < .5) parts.push({ x: x + (Math.random() - .5) * 60, y: y - 2, vx: (Math.random() - .5) * .6, vy: -1 - Math.random() * 1.6, life: 26, max: 26, r: 5 + Math.random() * 6, c: 'fire' });
+        if (myT && Math.abs(myT.x - x) < 42) { const ly = y - 140 + 4 * Math.sin(now / 120); c.font = `900 26px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; c.strokeText('地面在燒，快開走！', x, ly); c.fillStyle = '#ea580c'; c.fillText('地面在燒，快開走！', x, ly); }
+      }
+      c.restore();
+    }
+  }
+  /* 岩牆：地面比原本高出來的部分畫成石頭（被炸掉的地方就不見了） */
+  let stonePat = null;
+  function drawWalls(c) {
+    const ws = shown.walls; if (!ws || !ws.length) return;
+    if (!stonePat) { const o = document.createElement('canvas'); o.width = 96; o.height = 72; const b = o.getContext('2d'); b.fillStyle = '#8b8178'; b.fillRect(0, 0, 96, 72);
+      const rows = [[0, 24, [0, 40, 70]], [24, 24, [20, 58]], [48, 24, [0, 34, 76]]];
+      for (const [y, h, xs] of rows) { const ed = [...xs, 96]; for (let k = 0; k + 1 < ed.length; k++) { const x = ed[k], w = ed[k + 1] - x; const gr = b.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, '#a39a90'); gr.addColorStop(1, '#7a7168'); b.fillStyle = gr; b.fillRect(x + 2, y + 2, w - 4, h - 4); b.fillStyle = 'rgba(255,255,255,.18)'; b.fillRect(x + 3, y + 3, w - 6, 3); } }
+      b.strokeStyle = '#4a433d'; b.lineWidth = 2.5; for (const [y, h, xs] of rows) { b.beginPath(); b.moveTo(0, y + 1); b.lineTo(96, y + 1); for (const x of xs) { b.moveTo(x + 1, y); b.lineTo(x + 1, y + h); } b.stroke(); }
+      stonePat = c.createPattern(o, 'repeat'); }
+    c.save();
+    for (const w of ws) {
+      let on = false; c.beginPath();
+      const seg = [];
+      for (let k = 0; k < w.b.length; k++) { const x = w.x0 + k, top = V.g[x]; if (top < w.b[k] - 2) seg.push([x, top, w.b[k]]); }
+      if (seg.length < 3) continue;
+      c.moveTo(seg[0][0], seg[0][2]); for (const [x, t] of seg) c.lineTo(x, t); for (let k = seg.length - 1; k >= 0; k--) c.lineTo(seg[k][0], seg[k][2]); c.closePath();
+      c.fillStyle = stonePat; c.fill(); c.strokeStyle = '#3f3a35'; c.lineWidth = 3; c.beginPath(); seg.forEach(([x, t], k) => k ? c.lineTo(x, t) : c.moveTo(x, t)); c.stroke(); on = true;
+    }
+    c.restore();
+  }
+  /* 末日隕石預告／落下的時候天色變暗；落雷時天空閃白 */
+  function drawSky(c) {
+    const dark = shown.boss && !shown.over && ((shown.pend && shown.pend.k === 'O') || (anim && anim.m.w === 'O' && isBoss(anim.side)));
+    if (dark) { c.fillStyle = 'rgba(40,0,20,.32)'; c.fillRect(0, 0, W, H); }
+    if (flashSky > 0) { c.fillStyle = `rgba(255,255,230,${flashSky / 18 * .5})`; c.fillRect(0, 0, W, H); flashSky--; }
+  }
   /* 地獄魔王的紅圈：下一次輪到魔王，隕石砸在這裡；自己的坦克在圈裡就提醒快開走 */
   function drawMark(c, now) {
     const m = shown.boss && !shown.over && shown.mark; if (!m) return;
@@ -604,6 +692,10 @@
       const w = anim && anim.m.w, bg = w === 's', r = bg ? 9 : (w === 't' || s.sub) ? 5 : 7;
       if (bg) { const gl = c.createRadialGradient(X, Y, 0, X, Y, 26); gl.addColorStop(0, 'rgba(255,200,80,.9)'); gl.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 26, 0, 7); c.fill(); }
       const bossW = anim && isBoss(anim.side);
+      if (bossW && w === 'O') { const mi = img('boss-hell-meteor'); if (ok(mi)) { const L = 110; c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 0) - Math.PI * .75); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(mi, -L * .3, -L * .7, L, L); c.restore(); continue; } }
+      if (bossW && w === 'V') { if (s.t % 2 === 0) bolt(X + (Math.random() - .5) * 20, Y - 120, X, Y, 4); continue; }   // 落雷：一道一道往下的電光
+      if (bossW && w === 'B') { const gl = c.createRadialGradient(X, Y, 0, X, Y, 22); gl.addColorStop(0, 'rgba(255,245,180,.95)'); gl.addColorStop(.45, 'rgba(255,140,20,.85)'); gl.addColorStop(1, 'rgba(220,38,38,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 22, 0, 7); c.fill(); if (Math.random() < .6) parts.push({ x: X, y: Y, vx: (Math.random() - .5), vy: -.5 - Math.random(), life: 18, max: 18, r: 4 + Math.random() * 5, c: 'fire' }); continue; }
+      if (bossW && w === 'W') { const ri = img('boss-rock-shot'); if (ok(ri)) { const L = 64; c.save(); c.translate(X, Y); c.rotate(s.t / 14); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(ri, -L / 2, -L / 2, L, L); c.restore(); continue; } }
       if (bossW && w === 'F') { const mi = img('boss-hell-meteor'); if (ok(mi)) { const L = 124; c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 0) - Math.PI * .75); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(mi, -L * .3, -L * .7, L, L); c.restore(); continue; } }   // 隕石：圖的石頭在左下、火焰尾巴往右上，轉到跟飛的方向一樣
       const oi = bossW ? img('boss-' + shown.boss + '-shot') : w === 'h' ? img('ammo-heal') : null;
       if (oi && ok(oi)) { const L2 = bossW ? (w === 'Q' || w === 'X' || w === 'Y' ? 30 : 38) : 30; c.save(); c.translate(X, Y); if (bossW) c.rotate(s.t / 12); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 5; c.drawImage(oi, -L2 / 2, -L2 / 2, L2, L2); c.restore(); continue; }
@@ -633,6 +725,7 @@
       if (p.c === 'flash') { const r = Math.max(.1, p.r * (1.2 - k * .6)); const gr = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, r); gr.addColorStop(0, `rgba(255,255,230,${k})`); gr.addColorStop(.4, `rgba(255,200,60,${k * .8})`); gr.addColorStop(1, 'rgba(255,120,0,0)'); c.fillStyle = gr; c.beginPath(); c.arc(p.x, p.y, r, 0, 7); c.fill(); }
       else if (p.c === 'fire') { c.fillStyle = k > .6 ? `rgba(255,240,150,${k})` : k > .3 ? `rgba(255,150,40,${k})` : `rgba(120,60,30,${k})`; c.beginPath(); c.arc(p.x, p.y, p.r * (.4 + k * .6), 0, 7); c.fill(); }
       else if (p.c === 'dirt') { c.fillStyle = shown && shown.site === 'snow' ? `rgba(240,248,255,${Math.min(1, k * 2)})` : `rgba(110,70,35,${Math.min(1, k * 2)})`; c.fillRect(p.x - p.r / 2, p.y - p.r / 2, p.r, p.r); }
+      else if (p.c === 'bolt') { c.save(); c.lineJoin = 'round'; for (const [w, col] of [[14, `rgba(250,204,21,${k * .35})`], [6, `rgba(255,236,120,${k * .9})`], [2.5, `rgba(255,255,255,${k})`]]) { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); p.pts.forEach(([x, y], q) => q ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); } c.restore(); }
       else if (p.c === 'star') { c.fillStyle = `rgba(255,224,102,${k})`; c.beginPath(); for (let q = 0; q < 10; q++) { const a = q * Math.PI / 5, rr2 = q % 2 ? p.r * .45 : p.r; c.lineTo(p.x + rr2 * Math.cos(a), p.y + rr2 * Math.sin(a)); } c.fill(); }
       else { c.fillStyle = `rgba(110,110,120,${k * .45})`; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); }
     }
@@ -742,11 +835,11 @@
     const c = ctx; c.setTransform(K, 0, 0, K, 0, 0);
     let sx = 0, sy = 0; if (shake > .3) { sx = (Math.random() - .5) * shake; sy = (Math.random() - .5) * shake; shake *= .9; } else shake = 0;
     drawBG(c); c.setTransform(K, 0, 0, K, sx * K, sy * K);
-    drawClouds(c, dt); drawTerrain(c, now); drawCrates(c, now, dt); drawMark(c, now);
+    drawClouds(c, dt); drawTerrain(c, now); drawCrates(c, now, dt); drawWalls(c); drawMark(c, now); drawPend(c, now);
     drawAim(c);
     for (let i = 0; i < V.T.length; i++) drawTank(c, i, now);
     drawShells(c); drawParts(c, dt);
-    c.setTransform(K, 0, 0, K, 0, 0); drawHUD(c, dt);
+    c.setTransform(K, 0, 0, K, 0, 0); drawSky(c); drawHUD(c, dt);
     if (hold) holdTick(now);
   }
   function timer() {

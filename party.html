@@ -377,7 +377,7 @@ function paintOverBoss(r){const st=G.st,me=myIdx(),nm=names(),B=TK.BOSS[r.boss],
   $('#ovS').textContent=win?`第 ${Math.min(r.per,r.bt+1)} 輪就打倒了，大家合作得很好！`:st.reason||'';
   $('#ovList').innerHTML=nm.map((n,i)=>`<div class="rk${i===me?' me':''}"><em></em><i style="background:${col[i]}"></i><span>${n}${i===me?'（我）':''}</span><small>${r.T[i].out?'離開了':r.T[i].hp>0?'剩 '+r.T[i].hp+' 血':'被打倒'}</small></div>`).join('');
   $('#ovSt').innerHTML=TKV.statsHTML(r,nm);
-  const c=G.coin;$('#ovCoin').innerHTML=me>=0&&win&&inPlat()?(c&&c.c?`🪙 每人 +${c.c} 金幣（今天第 ${c.n} 場）`:c&&c.full?'今天打王的金幣已經拿滿 3 場了（明天再來）':isTestMe()?'🪙 測試帳號不發金幣':''):'';
+  const c=G.coin;$('#ovCoin').innerHTML=me>=0&&win&&inPlat()?(c&&c.c?(c.solo?`🪙 +${c.c} 金幣（1 個人打王金幣減半，今天第 ${c.n} 場）`:`🪙 每人 +${c.c} 金幣（今天第 ${c.n} 場）`):c&&c.full?(c.solo?'今天 1 個人打王的金幣已經拿滿了（明天再來）':'今天打王的金幣已經拿滿 3 場了（明天再來）'):isTestMe()?'🪙 測試帳號不發金幣':''):'';
   $('#ovN').textContent=G.mode==='net'&&me>=0&&inPlat()&&!isTestMe()?'🎟️ 用掉 1 張遊戲券':'';
   $('#bBack').hidden=G.mode!=='net';$('#bAgain').hidden=true;paintNext();
   if(!$('#over').classList.contains('on')){$('#over').classList.add('on');if(win)sfx.win()}}
@@ -411,7 +411,7 @@ function recordBoss(force){const st=G.st,me=myIdx(),k=gameKey();let w=force!=nul
   const r=R(),B=r&&r.boss?TK.BOSS[r.boss]:TK.BOSS.rock,seats=String(st.seats||'').split(',').map(Number),o=seats.find((s,i)=>i!==me&&s)||0;
   P.xqResult({k,o,w:w===1?1:0,r:(force===0?'中途離開':w===1?`打倒${B.n}`:`輸給${B.n}`).slice(0,20),n:r?r.bt:0,g:'pb'});
   if(!isTestMe())payTicket();
-  G.coin=null;if(w===1&&force==null&&P.bossReward){try{G.coin=P.bossReward(r.boss)}catch(e){}}
+  G.coin=null;if(w===1&&force==null&&P.bossReward){try{G.coin=P.bossReward(r.boss,r.n===2)}catch(e){}}
   if(P.xqPending)P.xqPending(null);sendTk();paintRec()}
 /* 輪到魔王：第一個在線上、還活著的人幫魔王打（等動畫播完 1.2 秒；那個人斷線的話，其他人 8 秒後接手） */
 setInterval(()=>{const st=G.st;if(G.mode!=='net'||!st||st.phase!=='play'||st.mode!=='boss')return;const me=myIdx();if(me<0)return;
@@ -475,6 +475,7 @@ $('#bAgain').onclick=()=>{$('#over').classList.remove('on');soloStart(G.solo.n,G
 /* ═════════════ 房間（等人） ═════════════ */
 /* 一起打王：地獄魔王要先打贏過困難（看自己的戰績，雲端的也算；房主選得到就可以開）；測試帳號、不在平台裡不鎖 */
 const BOSS_LV={rock:'普通',thunder:'困難',hell:'地獄'};
+const BOSS_SK={rock:'岩甲巨獸會丟石頭在前面變成石牆（用高拋或炸掉它），蓄力之後會「地震重踏」：離魔王越近越痛。',thunder:'雷霆機甲龍的「連鎖閃電」會跳到旁邊的坦克，大家不要擠在一起；地上出現黃色區，下一輪就會落雷。',hell:'暗焰魔龍王會噴「火焰吐息」，燒過的地面站著會扣血；紅圈是隕石落點；血剩 30% 會放「末日隕石」，全場好幾個紅圈！'};
 function bossLocked(k){const L=TK.BOSS[k]&&TK.BOSS[k].lock;if(!L||!inPlat()||isTestMe()||!P.bossBeat)return false;G.beat=G.beat||{};
   if(G.beat[L]==null){G.beat[L]=false;Promise.resolve(P.bossBeat(L)).then(v=>{if(v){G.beat[L]=true;paintLobby()}}).catch(()=>{})}
   return !G.beat[L]}
@@ -487,7 +488,7 @@ function paintLobby(){const pl=G.players,st=G.st||{},host=isHost(),mode=st.mode=
   if(mode==='boss'){const bk=TK.BOSS[st.boss]?st.boss:'rock';
     $('#bosses').innerHTML=Object.entries(TK.BOSS).map(([k,B])=>{const lk=k!==bk&&bossLocked(k);return `<button data-b="${k}" class="${k===bk?'on':''}${lk?' lock':''}" ${host&&!lk?'':'disabled'}><img src="img/game/boss-${k}.webp" alt=""><span>${B.n}<small>${lk?`打贏${BOSS_LV[B.lock]}之後解鎖`:`${BOSS_LV[k]||''}・贏了每人 +${B.coin} 金幣`}</small></span></button>`}).join('');
     $('#bosses').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!isHost()||bossLocked(b.dataset.b))return;Net.update(`rooms/${G.pin}/state`,{boss:b.dataset.b,t:Date.now()}).catch(()=>{})});
-    $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！魔王每一回合都會移動，記得重新瞄準。打中魔王的頭（黃色準星）是弱點，傷害比較高。${bk==='hell'?'暗焰魔龍王會在一台坦克腳下畫紅圈，下一輪隕石就砸下來，看到紅圈趕快開走！':''}隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。`}
+    $('#bossTip').textContent=`大家一起打${TK.BOSS[bk].n}，${TK.BOSS[bk].rounds} 輪內打倒就贏！魔王每一回合都會移動，記得重新瞄準。打中魔王的頭（黃色準星）是弱點，傷害比較高。${BOSS_SK[bk]||''}看到地上出現警告範圍，就是下一輪的大招，趕快開走！隊友不會打到彼此，補血彈可以幫隊友補血。每人用 1 張遊戲券，打贏有金幣（每天前 3 場）。1 個人也能打（每天 ${SOLO_DAY} 場，金幣減半${inPlat()&&!isTestMe()?`，今天還有 ${soloLeft()} 場`:''}）。`}
   const hs=hostSlot(),n=SLOTS.filter(k=>pl[k]).length;
   $('#slots').innerHTML=SLOTS.map((k,i)=>{const p=pl[k];if(!p)return `<div class="slot empty">等同學加入…</div>`;
     const ci=i,rd=isRdy(k);return `<div class="slot${k===G.slot?' me':''}${p.off?' off':''}${rd?' ok':''}"><i style="background:${col[ci]}">${mode==='team'?(i%2?'藍':'紅'):i+1}</i><img class="sk" src="img/game/${TKV.bodyName(TKV.SKINS.includes(p.skin)?p.skin:'forest').replace('-body-','-preview-')}.webp" alt=""><div><b>${plName(p)}${k===G.slot?'（我）':''}</b><small>${k===hs?'👑 房主 ':''}${p.off?MPI('reconnecting')+'重新連線中':p.tk===false?'🎟️ 沒有遊戲券':rd?'<span class="rd">'+MPI('ready')+'準備好了</span>':MPI('waiting')+'還沒準備'}</small></div></div>`}).join('');
@@ -516,9 +517,11 @@ function lobbyLine(st,host,mr,why,n,hsName){let ic='waiting',t;
   else if(!host){ic='ready';t=`你準備好了。${why}`}
   else t=why;
   return (ic?MPI(ic,'big'):'')+`<span>${t}</span>`}
+/* 2026-11-23：1 個人也可以打王，一天最多 2 場（平台記，跟多人分開）；打贏的金幣減半 */
+const SOLO_DAY=2,soloLeft=()=>!inPlat()||isTestMe()?99:P.bossSoloLeft?P.bossSoloLeft():0;
 function startBlock(){const pl=G.players,mode=G.st&&G.st.mode==='team'?'team':G.st&&G.st.mode==='boss'?'boss':'ffa';if(G.st&&G.st.phase==='play')return '這一局還在打';
   const on=SLOTS.filter(k=>pl[k]&&!pl[k].off&&pl[k].tk!==false),rd=on.filter(isRdy);
-  if(mode==='boss'&&BOSS_ON()){if(on.length<1)return '至少要 1 個人';if(on.length<2&&!isTestMe())return '至少要 2 個人（有遊戲券、在線上）才能一起打王'}
+  if(mode==='boss'&&BOSS_ON()){if(on.length<1)return '至少要 1 個人';if(on.length<2&&soloLeft()<=0)return `今天 1 個人打王的 ${SOLO_DAY} 場打完了，找同學一起打吧！`}
   else if(on.length<2)return '至少要 2 個人（有遊戲券、在線上）才能開始';
   if(rd.length<on.length){const w=on.filter(k=>!isRdy(k)).map(k=>plName(pl[k]));return `等 ${w.join('、')} 按「我準備好了」…`}
   if(mode==='team'&&rd.length!==4)return '2 對 2 要剛好 4 個人（有遊戲券、在線上）';return ''}
@@ -534,7 +537,7 @@ $('#bStart').onclick=async()=>{if(!isHost())return;let pl;try{pl=await Net.get(`
   if(G.starting)return;G.starting=1;$('#bStart').disabled=true;const g0=(G.st&&G.st.g)||0;
   /* 只有房間還沒開打、局數還是剛剛看到的那一局才開：連點、兩台同時按都只會開一局 */
   try{const ok=await Net.tx(`rooms/${G.pin}/state`,cur=>{if(!cur||cur.phase==='play'||(cur.g||0)!==g0)return;const n={...cur,...upd};for(const k in n)if(n[k]===null)delete n[k];return n});
-    if(ok)Net.remove(`rooms/${G.pin}/live`).catch(()=>{});else lmsg('這一局已經開始了')}
+    if(ok){Net.remove(`rooms/${G.pin}/live`).catch(()=>{});if(mode==='boss'&&ks.length===1&&inPlat()&&P.bossSoloUse)P.bossSoloUse()}else lmsg('這一局已經開始了')}
   catch(e){lmsg('連線失敗，請再按一次')}finally{G.starting=0;paintLobby()}};
 const lmsg=t=>{$('#lmsg').textContent=t||''};
 
