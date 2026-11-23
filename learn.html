@@ -1080,6 +1080,11 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
   <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="gseat" style="font-size:1.1rem"></select> 金幣 <input id="gamt" type="number" value="500" min="1" max="3000" style="width:6rem;font-size:1.1rem"><button id="gbtn">發給他</button><span id="gmsg"></span></div>
   <div class="amnote">直接加進這位同學的金幣帳本（換平板、同步都不會不見）。要先在 ① 選過 pins.json，按下去前會再問一次。</div>
  </div>
+ <div class="cd" id="tgift">
+  <div class="dhead"><b>🎟️ 補發遊戲券</b></div>
+  <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="tseat" style="font-size:1.1rem"></select> 遊戲券 <input id="tamt" type="number" value="1" min="1" max="50" style="width:5rem;font-size:1.1rem"> 張<button id="tbtn">發給他</button><span id="tmsg"></span></div>
+  <div class="amnote">直接加進這位同學的遊戲券（換平板、同步都不會不見）。要先在 ① 選過 pins.json，按下去前會再問一次。</div>
+ </div>
  <div class="cd" id="wktc">
   <div class="dhead"><b>每週任務：五科走透透</b><button id="wkload">讀取全班</button><span id="wkmsg"></span></div>
   <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">本週加油科 <select id="wkfs" style="font-size:1.1rem"><option value="">系統幫每個人挑（他最弱的科目）</option><option value="math">全班：數學</option><option value="zh">全班：國語</option><option value="en">全班：英語</option><option value="sci">全班：自然</option><option value="soc">全班：社會</option></select><button id="wkfset">套用到全班</button></div>
@@ -1708,13 +1713,14 @@ const base=()=>`${ROOT}/u/${user.seat}/${user.pin}`;
 const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tc:0,tco:0,gb2:{}});
 function loadSum(){const L=LS.get('learn601_sum_'+user.seat,null);sum=Object.assign(blankSum(),L||{});if(!L)sum.fresh=1}   // fresh：這台第一次登入、還沒讀過雲端（2026-11-23：以前新平板一登入，遊戲券會被這台的 0 蓋掉）
 function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();dvPrune();rvPrune();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
+const tkgN=v=>v===true?1:Math.max(0,Math.round(+v||0));   // sum.tkg 每一筆是幾張券（每週任務 1、老師補發可以多張）
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
   const myLast=sum.fresh?0:(sum.last||0);delete sum.fresh;   // 還沒讀過雲端的新平板：雲端的一律比較新
   {const g0=sum.tkg||{},g1=r.tkg||{};   // sum.tkg：發過的獎勵券（每週任務）。兩台各自發的券，蓋過來時不會不見，也不會多算
-  if((r.last||0)>myLast){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0;for(const k in g0)if(!g1[k])sum.tk++}   // 遊戲券以最後更新的那台為準
-  else for(const k in g1)if(!g0[k])sum.tk=(sum.tk||0)+1;
+  if((r.last||0)>myLast){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0;for(const k in g0)if(!g1[k])sum.tk+=tkgN(g0[k])}   // 遊戲券以最後更新的那台為準
+  else for(const k in g1)if(!g0[k])sum.tk=(sum.tk||0)+tkgN(g1[k]);
   if(Object.keys(g1).length)sum.tkg=Object.assign({},g1,g0)}
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
@@ -3619,7 +3625,7 @@ tap($('#amrload'),()=>amrLoad());
 document.querySelectorAll('#amwk button').forEach(b=>b.addEventListener('click',()=>{amrW=+b.dataset.w;amrDay=null;amrSel=null;document.querySelectorAll('#amwk button').forEach(x=>x.classList.toggle('on',x===b));amrRender()}));
 /* 老師頁：補發金幣。寫在雲端 u/座號/密碼/sum/pet/cl/e/gift_時間（金幣帳本的一筆收入）；
    學生的平板同步時，帳本是兩邊合起來（每筆取大的），所以不會被學生那台舊的資料蓋掉 */
-$('#gseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');
+$('#gseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');$('#tseat').innerHTML=$('#gseat').innerHTML;
 $('#bkseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');
 tap($('#bkload'),()=>bkLoad());
 /* 你畫我猜：作廢的題目（畫的人、檢舉的人各記一筆 k:'dv'，用 rk 合併） */
@@ -3663,6 +3669,17 @@ tap($('#gbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#gmsg'),s=
   try{const p=(await timeout(db.ref(b).get(),10000)).val();if(!p||!p.cl){M.textContent=`${s} 號還沒有寵物資料（要先登入過一次），沒有發`;return}
     await timeout(db.ref(`${b}/cl/e/gift_${Date.now().toString(36)}`).set(n),10000);
     const q=(await timeout(db.ref(b).get(),10000)).val();M.textContent=`✅ 發好了：${s} 號 🪙+${n}，現在共 🪙${PET.coinOf(q)}（他下次打開平台就會看到）`}
+  catch(e){M.textContent='發送失敗，再按一次'}});
+/* 老師頁：補發遊戲券。雲端 sum.tk 加上去，同時在 sum.tkg 記一筆「gift_時間：張數」；
+   學生的平板比雲端新、合併時會把雲端多出來的這筆補進去，比雲端舊就直接用雲端的張數（都只算一次） */
+tap($('#tbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#tmsg'),s=$('#tseat').value,n=Math.round(+$('#tamt').value);
+  if(!pins||!pins[s]){M.textContent='請先在 ① 選擇 pins.json';return}if(!(n>0&&n<=50)){M.textContent='遊戲券請填 1～50 張';return}
+  if(!confirm(`要發 🎟️${n} 張遊戲券給 ${s} 號嗎？`))return;M.textContent='處理中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
+  const b=`${ROOT}/u/${s}/${pins[s]}/sum`;
+  try{const v=(await timeout(db.ref(b).get(),10000)).val();if(!v){M.textContent=`${s} 號還沒有資料（要先登入過一次），沒有發`;return}
+    const id='gift_'+Date.now().toString(36);await timeout(db.ref(`${b}/tkg/${id}`).set(n),10000);
+    const r=await timeout(db.ref(`${b}/tk`).transaction(x=>(+x||0)+n),10000);const now=r&&r.snapshot?r.snapshot.val():null;
+    M.textContent=`✅ 發好了：${s} 號 🎟️+${n}${now!=null?`，現在共 ${now} 張`:''}（他下次打開平台就會看到）`}
   catch(e){M.textContent='發送失敗，再按一次'}});
 /* ===================== 老師頁：班級儀表板 =====================
    打開老師頁就自動讀全班的「摘要」和「作答紀錄」，一眼看到：
@@ -3789,7 +3806,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v176';let verNew=false,verBusy=false;
+const APP_VER='learn601-v177';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
