@@ -263,7 +263,8 @@
     if (S.crates.length >= 2) return;
     const r = rng(((S.seed ^ 0x5bd1e995) >>> 0) + S.a * 7919);
     for (let t = 0; t < 14; t++) {
-      const CW = S.mv === 'v2' ? CRATE_V2 : CRATE_W, x = Math.round(80 + r() * (S.W - 160)), w = CW[Math.floor(r() * CW.length)];
+      /* 一起打魔王沒有傳送彈：補給箱只掉魔王模式用得到的砲彈（2026-11-23：以前會掉傳送彈，撿到也不能用） */
+      const CW = (S.mv === 'v2' ? CRATE_V2 : CRATE_W).filter(k => !S.boss || BOSS_W.includes(k)), x = Math.round(80 + r() * (S.W - 160)), w = CW[Math.floor(r() * CW.length)];
       if (isVoid(S.g, x) || (S.sp.lava && gAt(S.g, x) > S.sp.lava - 4)) continue;
       if (S.bm && x > BOSS_P0 - 60) continue;   // b4：補給箱不掉在魔王的平台上
       if (S.T.some((t, q) => !t.out && Math.abs(t.x - x) < (S.boss && q === S.bi ? BOSS_FLAT + 40 : 60)) || S.crates.some(c => Math.abs(c.x - x) < 90)) continue;

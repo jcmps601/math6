@@ -27,7 +27,7 @@
   };
   const seedN = C => C.sd || '種子', TOP_LV = Math.max(...Object.values(CROPS).map(C => C.lv));
   const CK = Object.keys(CROPS);
-  const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = 50, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 3, STEAL_PER_PLOT = 1, STEAL_WAIT = 60 * 60000;
+  const COLS = 4, ROWS = 3, MAXP = COLS * ROWS, WATER_MAX = Infinity, START_WATER = 8, HELP_COIN_MAX = 10, TAKE_MAX = 3, STEAL_PER_PLOT = 1, STEAL_WAIT = 60 * 60000;
   /* 偷菜模式（自己選要不要參加）：兩個人都開才能互偷；一天只能切換一次；成熟 1 小時後才能被偷；每塊田最多被偷 1 個；每天最多偷 3 個；被偷的人拿到 🪙1 回禮 */
   const plotsFor = lv => lv >= 7 ? 12 : lv >= 5 ? 10 : lv >= 3 ? 8 : 6;
   const xpNeed = lv => 15 + 10 * (lv - 1);
@@ -193,7 +193,7 @@
   /* 練習答對：💧 +1（learn.html 的 finish 會呼叫） */
   function gain(res) {
     if (res !== 'ok' && res !== 'ok2') return 0; const f = F(); if (!f) return 0;
-    if ((f.water || 0) >= WATER_MAX) return 0;
+    if ((f.water || 0) >= WATER_MAX) return 0;   // 2026-11-23 起水滴沒有上限（WATER_MAX＝Infinity）
     f.water = (f.water || 0) + 1; if (round) round.fw = (round.fw || 0) + 1; return 1;
   }
   /* 一輪練完：10 題答對 8 題送肥料 */
@@ -268,7 +268,7 @@
   }
   function paintBar() {
     const B = document.getElementById('fbar'); if (!B) return; B.innerHTML = '';
-    [['all', '<img class="fbim" src="img/ui/ic-harvest-all.webp" alt="">', '全部收成'], ['water', '💧', '全部澆水'], ['store', '📦', '倉庫'], ['seed', '🌱', '種子一覽'], ['deco', '🏡', '農場裝飾']].forEach(([k, i, n]) => { const b = el('button', 'fbtn big', `<span class="fbi">${i}</span>${n}${k === 'all' ? '<small></small>' : ''}`); b.dataset.k = k; tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'store' ? storeModal() : k === 'deco' ? decoModal() : seedModal(-1)); B.appendChild(b); });
+    [['all', '<img class="fbim" src="img/ui/ic-harvest-all.webp" alt="">', '全部收成'], ['water', '💧', '全部澆水'], ['fert', '🧴', '全部施肥'], ['store', '📦', '倉庫'], ['seed', '🌱', '種子一覽'], ['deco', '🏡', '農場裝飾']].forEach(([k, i, n]) => { const b = el('button', 'fbtn big', `<span class="fbi">${i}</span>${n}${k === 'all' ? '<small></small>' : ''}`); b.dataset.k = k; tap(b, () => k === 'all' ? harvestAll() : k === 'water' ? waterAll() : k === 'fert' ? fertAll() : k === 'store' ? storeModal() : k === 'deco' ? decoModal() : seedModal(-1)); B.appendChild(b); });
    paintBarState();
   }
   function paintZoom() { const b = document.getElementById('fzoom'); if (b) b.innerHTML = zoomOn() ? '🔎 看全景' : '🔍 放大田地'; }
@@ -333,6 +333,17 @@
     const off = !navigator.onLine ? '<br><small>📴 現在沒有網路：先存在這台平板，連上網路後會自動上傳</small>' : '';
     if (e) e.innerHTML = done ? `<img class="fbim" src="img/ui/ic-harvest-all.webp" alt=""> 已收成 ${done} 塊${miss ? `，${miss} 塊尚未完成（再按一次會只收剩下的）` : ''}：${list}，都放進倉庫了！${off}` : '這些作物已經收過了';
     paintBarState();
+  }
+  /* 全部施肥：還沒施過、還沒成熟的田都施一次；肥料不夠時先施「還要等最久」的（省最多時間） */
+  function fertAll() {
+    const e = document.getElementById('finfo'); if (night()) { if (e) e.innerHTML = '🌙 晚上農場休息，明天早上 6 點以後再施肥'; return; }
+    const f = F(), ks = []; for (let k = 0; k < plotsFor(lvOf(f.xp).lv); k++) { const P = f.p[k], S = stat(P); if (!S.empty && !S.ripe && !P.fz) ks.push([k, S.left]); }
+    if (!ks.length) { if (e) e.innerHTML = '🧴 現在沒有可以施肥的田（沒種東西、已經成熟，或這一輪施過了）'; return; }
+    if ((f.fert || 0) < 1) { if (e) e.innerHTML = '🧴 肥料用完了！一輪 10 題答對 8 題，就送 1 包肥料'; return; }
+    ks.sort((a, b) => b[1] - a[1]); let n = 0;
+    for (const [k] of ks) { if ((f.fert || 0) < 1) break; const P = f.p[k], S = stat(P); f.fert--; P.f = (P.f || 0) + Math.round(S.left / 2); P.fz = 1; addXp(1); n++; }
+    save(); paint(); snd(760); ks.slice(0, n).forEach(([k]) => fx(k, '🧴', 'water'));
+    if (e) e.innerHTML = `🧴 施了 ${n} 塊田，用了 ${n} 包肥料，還剩 ${f.fert || 0} 包${ks.length > n ? `（還有 ${ks.length - n} 塊沒施，肥料不夠）` : ''}`;
   }
   function fertilize(k) {
     const f = F(), P = f.p[k], S = stat(P); if (S.empty || S.ripe || P.fz || (f.fert || 0) < 1) return;
@@ -691,7 +702,7 @@
   .fact{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem}.fact button{flex:1 1 8rem;min-height:3rem;border:0;border-radius:14px;font-size:1.15rem;font-weight:900;font-family:inherit}
   .fgo{background:#2e7554;color:#fff;box-shadow:0 4px 0 #1f5139}.fgo2{background:#fff;color:#2e7554;border:3px solid #cfe5c4!important}
   .farm [data-k].fsel{filter:drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 3px #2e7554) drop-shadow(0 0 6px #9be37a)}
-  .fbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:.6rem}
+  .fbar{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}.fbtn.big{white-space:nowrap}
   .fbtn.big{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:3.4rem;font-size:1.2rem;border:3px solid #eaf4de}
   .fbtn.big[data-k="all"]{flex-wrap:wrap;row-gap:0;align-content:center}.fbtn.big small{font-size:.72em;color:#8a9a6e;font-weight:800;flex-basis:100%;text-align:center;line-height:1.1}.fbtn.big small:empty{display:none}.fbtn:disabled{opacity:.5;filter:grayscale(.5)}.fbim{width:1.6em;height:1.6em;vertical-align:-.45em}
   .fsum{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin-top:.6rem;min-height:2.75rem}
@@ -701,7 +712,7 @@
   .farm [data-k].fhint{filter:drop-shadow(0 0 4px #f59f00) drop-shadow(0 0 4px #f59f00) drop-shadow(0 0 8px #ffd43b);transition:filter .3s}
   .fbtn .fbi{font-size:1.4rem}
   .fmain>.fsum,.fmain>.fbar{grid-column:1/-1;margin-top:0}   /* 摘要、全部收成／澆水按鈕放在 .fmain 裡：電腦在田地下方整排，手機緊接在田地下面（說明框排到後面） */
-  @media (max-width:900px),(orientation:portrait){.fmain>.fside{order:3}.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}.fbar .fbtn:last-child{grid-column:1/-1}}
+  @media (max-width:900px),(orientation:portrait){.fmain>.fside{order:3}.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .fdpv{border-radius:16px;overflow:hidden;margin-bottom:.5rem;background:#a5d8ff}.fdpv svg{display:block;width:100%;height:auto}.fdslot{cursor:pointer}
   .fdsl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.35rem;margin-bottom:.35rem}
   .fdsl button{border:3px solid #d8f5a2;background:#fff;border-radius:14px;padding:.25rem .1rem;font:800 .85rem/1.2 inherit;font-family:inherit;color:#5c940d;display:flex;flex-direction:column;align-items:center;min-width:0}
