@@ -2616,13 +2616,13 @@ async function wrAll(){if(!(await fbOnline()))return null;const v=(await timeout
     on.forEach(x=>x.rank=1+on.filter(y=>y.r>x.r||(y.r===x.r&&y.w>x.w)).length);
     out[g]={on,all:arr}});
   return out}
-async function loadWR(L){let all;try{all=await wrAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
+async function loadWR(L){let all;try{await lkLoad();all=await wrAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(!all){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   const COLS={xq:'#c0392b',aq:'#8e5a2b',pd:'#2563eb',pm:'#e8590c',bk:'#d6336c',dr:'#7048e8'};
   const bkb=BK_OPEN?await bkBoards():null;
   L.innerHTML=Object.entries(GAMES).filter(([g])=>g!=='ps'&&g!=='pb'&&(g!=='bk'||BK_OPEN)&&(g!=='dr'||DR_OPEN)).map(([g,G0])=>{if(g==='bk'&&bkb)return bkRankCol(bkb.rank)+bkSprintCol(bkb.sprint);const B=all[g],me=user&&B.all.find(x=>x.seat===user.seat),mine=me&&B.on.find(x=>x.seat===me.seat);
     let rows='';B.on.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;
-      rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${Math.round(r.r*100)}%<small>${r.w}勝${r.l}敗${r.d?r.d+'和':''}</small></i></div>`});
+      rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span class="lkrow">${lkRow(r.seat,r.seat+' 號',m?'<small>我</small>':'')}</span><i>${Math.round(r.r*100)}%<small>${r.w}勝${r.l}敗${r.d?r.d+'和':''}</small></i></div>`});
     const tip=me&&!mine?`<div class="wrme">我下了 ${me.n} 局，再 ${WR_MIN-me.n} 局就上榜</div>`:'';
     return `<div class="bcol" style="--dc:${COLS[g]||'#7a5a32'}"><div class="bh">${ico(G0.img,'hi2')}${G0.n}<small>${B.on.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人上榜，快去對戰！</div>'}${tip}</div>`}).join('')}
 /* ===================== 方塊對戰：段位（星星）、40 排競速 =====================
@@ -2647,16 +2647,16 @@ async function bkBoards(){const g=async k=>{try{return (await timeout(db.ref(`${
   const sprint=L(b,r=>r.s>0).sort((x,y)=>x.s-y.s||x.seat-y.seat);sprint.forEach(r=>r.rank=1+sprint.filter(x=>x.s<r.s).length);
   return {rank,sprint}}
 function bkCol(title,c,arr,fmt,empty){const mine=user&&arr.find(r=>r.seat===user.seat);let rows='';
-  arr.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${fmt(r)}</i></div>`});
+  arr.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span class="lkrow">${lkRow(r.seat,r.seat+' 號',m?'<small>我</small>':'')}</span><i>${fmt(r)}</i></div>`});
   return `<div class="bcol" style="--dc:${c}"><div class="bh">${title}<small>${arr.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||`<div class="ld">${empty}</div>`}</div>`}
 const bkRankCol=arr=>bkCol(`${ico('vs-vs','hi2')}方塊對戰段位`,'#d6336c',arr,r=>{const t=bkTier(r.s);return `<img src="img/bk/bk-rank-${t.tier}.webp" alt="" style="width:1.5em;height:1.5em;vertical-align:-.4em">${t.name} ${t.rank} 段<small>${bkStarTxt(t.stars)}</small>`},'還沒有人上榜，快去對戰！');
 const bkSprintCol=arr=>bkCol('⏱ 方塊 40 排競速','#7048e8',arr,r=>bkMs(r.s),'還沒有人挑戰，搶第一！');
 /* 雙人合作過關：比過了幾關（一樣多再比寶石） */
-async function coBoard(){let v={};try{v=(await timeout(db.ref(`${ROOT}/lb/coop`).get(),8000)).val()||{}}catch(e){}
+async function coBoard(){let v={};try{await lkLoad();v=(await timeout(db.ref(`${ROOT}/lb/coop`).get(),8000)).val()||{}}catch(e){}
   const arr=Object.entries(v).map(([st,o])=>({seat:+st,s:o&&+o.s||0})).filter(r=>r.s>0&&!isTest(r.seat)).sort((a,b)=>b.s-a.s||a.seat-b.seat);
   arr.forEach(r=>r.rank=1+arr.filter(x=>x.s>r.s).length);const mine=user&&arr.find(r=>r.seat===user.seat);let rows='';
   arr.forEach((r,i)=>{const m=user&&r.seat===user.seat;if(i>=8&&!m)return;
-    rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span>${r.seat} 號${m?'<small>我</small>':''}</span><i>${Math.floor(r.s/100)} 關<small>💎${r.s%100}</small></i></div>`});
+    rows+=`<div class="br${m?' me':''}"><b>${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</b><span class="lkrow">${lkRow(r.seat,r.seat+' 號',m?'<small>我</small>':'')}</span><i>${Math.floor(r.s/100)} 關<small>💎${r.s%100}</small></i></div>`});
   return `<div class="bcol" style="--dc:#2563eb"><div class="bh"><img class="ico hi2" src="img/co/ui-invite.webp" alt="" draggable="false">雙人合作過關<small>${arr.length} 人上榜${mine?`・我第 ${mine.rank} 名`:''}</small></div>${rows||'<div class="ld">還沒有人過關，快找同學一起闖！</div>'}</div>`}
 /* 排行榜:每個遊戲的 4 個難度各自一個榜,雲端存在 lb/遊戲_難度/座號(例如 lb/tower_easy/12)。
    以前的 lb/遊戲/座號 只存一筆「最好的」,讀的時候放進那一筆的難度,舊成績不會不見。 */
@@ -3851,7 +3851,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v184';let verNew=false,verBusy=false;
+const APP_VER='learn601-v185';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
