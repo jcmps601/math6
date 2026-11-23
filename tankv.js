@@ -141,6 +141,7 @@
   const BOSS_D = 340, BOSS_DK = { hell: 370 }, BOSS_ANC = { rock: .812, thunder: .83, hell: .886 };
   const BOSS_VIS = { rock: [.047, .186, .953, .812], thunder: [.047, .17, .953, .832], hell: [.047, .111, .953, .887] };   // 魔王圖有畫東西的範圍（圖寬、圖高的比例），護盾要包住這一塊   // 魔王圖畫在場上的大小、腳底在圖的哪裡（美術給的錨點）
   Object.keys(TK.BOSS).forEach(k => { img('boss-' + k); img('boss-' + k + '-rage'); img('boss-' + k + '-shot'); }); img('boss-shield'); img('ammo-heal'); img('boss-hell-meteor');
+  ['boss-rock-boulder', 'boss-rock-wall', 'boss-rock-crack', 'boss-thunder-bolt', 'boss-thunder-cloud', 'boss-hell-flame-ball', 'boss-hell-scorch', 'boss-hell-ground-fire-1', 'boss-hell-ground-fire-2', 'boss-hell-ground-fire-3', 'boss-hell-ground-fire-4'].forEach(n => img(n));   // 2026-11-23 魔王技能特效圖（GPT 畫的，已去背）；還沒載好的時候用程式畫的備援
   const BLEND = 12;   // 畫面上的砲口差，飛幾步之內接回真正的彈道
   const skinOf = i => { const s = host.skins && host.skins()[i]; return SKINS.includes(s) ? s : SKINS[i % 2 ? 2 : 0]; };
   const L = () => LOOK[shown && shown.site] || LOOK.grass;
@@ -219,7 +220,7 @@
     paintCtl();
   }
   function reset(st, toks) {
-    key = st.map + '#' + st.seed + '#' + (st.mode || ''); outKey = JSON.stringify(st.out || {}); queue = []; anim = null; shells = []; parts = []; texts = []; fxs = []; pendingFire = false; live = null; turnKey = ''; big = null;
+    scorch = []; key = st.map + '#' + st.seed + '#' + (st.mode || ''); outKey = JSON.stringify(st.out || {}); queue = []; anim = null; shells = []; parts = []; texts = []; fxs = []; pendingFire = false; live = null; turnKey = ''; big = null;
     shown = rp(toks.length); shownN = toks.length;
     const sizeChanged = W !== shown.W || H !== shown.H; W = shown.W; H = shown.H; if (sizeChanged) fit();
     const g0 = TK.decode(st.map); aim = g0.xs.map(x => ({ a: x < W / 2 ? 45 : 135, p: 60, w: 'n', f: x < W / 2 ? 1 : -1 })); lastShot = g0.xs.map(() => null);
@@ -352,7 +353,7 @@
     for (const c of [...(A && A.F ? A.F.crates : [])]) if (TK.crateNear(shown, V.g, c, e.x, e.y)) { A.F.crates = A.F.crates.filter(z => z !== c); V.crates = V.crates.filter(z => z.id !== c.id); }
     if (W0.wall) { TK.mound(shown, V.g, e.x, e.y, W0.ww, W0.wh); V.gv++; snd.wall(); shake = Math.max(shake, W0.wh ? 20 : 8); dust(e.x, e.y, W0.wh ? 60 : 26); texts.push({ x: e.x, y: e.y - (W0.wh ? 160 : 90), t: W0.wh ? '岩牆擋住了！' : '築牆！', c: '#8b5a2b', life: 90, s: W0.wh ? 36 : 30 }); return; }
     if (W0.quake) { dust(e.x, e.y, 34); for (let k = 0; k < 6; k++) parts.push({ x: e.x + (Math.random() - .5) * 60, y: e.y - 4, vx: (Math.random() - .5) * 2, vy: -1 - Math.random() * 3, g: .2, life: 40, max: 40, r: 6 + Math.random() * 6, c: 'dirt' }); }
-    else if (W0.storm) { bolt(e.x, -20, e.x, e.y, 26); parts.push({ x: e.x, y: e.y, r: 90, life: 14, max: 14, c: 'flash' }); snd.zap(); }
+    else if (W0.storm) { boltI(e.x, Math.max(60, groundY(e.x) - 230) + 40, e.x, e.y + 6, 26); parts.push({ x: e.x, y: e.y, r: 90, life: 14, max: 14, c: 'flash' }); snd.zap(); }
     if (W0.tele) {
       const t = V.T[A ? A.side : 0]; snd.tele();
       const spark = (x, y) => { for (let k = 0; k < 26; k++) { const a = Math.random() * 6.3, v = 1 + Math.random() * 4; parts.push({ x, y: y - 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 45, max: 45, r: 3 + Math.random() * 3, c: 'star' }); } };
@@ -381,7 +382,7 @@
       const d = e.d[j]; if (!d || t.dead || t.out) return;
       const bb = isBoss(j), tyy = bb ? TK.bossBody(shown).cy - TK.bossBody(shown).ry - 30 : t.y - 116;
       if (d < 0) { const add = Math.min(-d, (t.max || TK.HP) - t.hp); t.hp += add; texts.push({ x: t.x, y: tyy, t: '+' + add + ' 補血', c: '#2f9e44', life: 90, s: 40, vy: -.6 }); return; }
-      if (W0.chain && !bb) { const c1 = tankCenter(j); if (chainN++ > 0) { bolt(chainFrom[0], chainFrom[1], c1[0], c1[1], 30); snd.zap(); texts.push({ x: t.x, y: tyy - 40, t: '⚡ 電流跳過來了！', c: '#ca8a04', life: 90, s: 28, vy: -.5 }); } chainFrom = c1; }   // 連鎖閃電：電流一台跳一台
+      if (W0.chain && !bb) { const c1 = tankCenter(j); if (chainN++ > 0) { boltI(chainFrom[0], chainFrom[1], c1[0], c1[1], 30); snd.zap(); texts.push({ x: t.x, y: tyy - 40, t: '⚡ 電流跳過來了！', c: '#ca8a04', life: 90, s: 28, vy: -.5 }); } chainFrom = c1; }   // 連鎖閃電：電流一台跳一台
       t.hp = Math.max(0, t.hp - d); t.flash = 14; t.shakeT = 12; if (bb) t.recoil = Math.min(1.2, (t.recoil || 0) + .3 + d / 40);
       texts.push({ x: bb ? TK.bossBody(shown).cx : t.x, y: tyy, t: '-' + d + (bb && shown.shield ? ' 護盾' : ''), c: '#dc2626', life: 80, s: d >= 25 || bb ? 50 : 40, vy: -.6 });
       if (bb && TK.bossWeak && TK.bossWeak(shown, e.x, e.y)) { texts.push({ x: TK.bossBody(shown).cx, y: tyy + 46, t: `打中弱點！×${TK.WEAK}`, c: '#e8590c', life: 90, s: 36, vy: -.6 }); snd.clang(); }   // 打中魔王的頭
@@ -592,6 +593,9 @@
   let flashSky = 0;
   /* 閃電：一條鋸齒狀的線，外面一圈黃光（存在 parts，跟火花一起淡出） */
   function bolt(x0, y0, x1, y1, life) { const pts = [[x0, y0]], n = Math.max(4, Math.round(Math.hypot(x1 - x0, y1 - y0) / 34)); for (let k = 1; k < n; k++) { const f = k / n; pts.push([x0 + (x1 - x0) * f + (Math.random() - .5) * 34, y0 + (y1 - y0) * f + (Math.random() - .5) * 34]); } pts.push([x1, y1]); parts.push({ x: x1, y: y1, pts, life, max: life, c: 'bolt' }); }
+  /* 閃電圖：頂端對準 (x0,y0)、尖端對準 (x1,y1)；圖還沒載好就用程式畫的 */
+  function boltI(x0, y0, x1, y1, life) { const bi = img('boss-thunder-bolt'); if (!ok(bi)) return bolt(x0, y0, x1, y1, life); parts.push({ x: x1, y: y1, x0, y0, life, max: life, c: 'boltI' }); }
+  let scorch = [];
   /* 地震：從魔王腳下往左一路揚起塵土 */
   function quakeWave() { const bx = TK.bossBody(shown).cx - 120; for (let x = bx; x > 0; x -= 26) { const d = (bx - x) / 26; parts.push({ x, y: groundY(x), vx: (Math.random() - .5) * 2, vy: -2 - Math.random() * 3, g: .2, life: 30 + d * 1.6, max: 30 + d * 1.6, r: 4 + Math.random() * 6, c: 'dirt' }); } }
   /* 預告：大字＋音效（真正的範圍由 drawPend 一直畫到大招放完） */
@@ -617,7 +621,8 @@
       for (const x of pd.xs) {
         const y = groundY(x); c.fillStyle = yl ? `rgba(250,204,21,${.16 + .16 * p})` : `rgba(220,38,38,${.16 + .14 * p})`; c.strokeStyle = yl ? `rgba(202,138,4,${.6 + .4 * p})` : `rgba(159,18,57,${.6 + .4 * p})`;
         c.lineWidth = 4; c.setLineDash([12, 8]); c.beginPath(); c.ellipse(x, y - 4, R, 22, 0, 0, 7); c.fill(); c.stroke(); c.setLineDash([]);
-        if (yl) { const cy = Math.max(60, y - 230); c.save(); c.globalAlpha = .85; for (const [ox2, oy2, rr] of [[-50, 8, 34], [-18, -10, 42], [22, -4, 38], [54, 10, 30], [0, 16, 36]]) { const gr = c.createRadialGradient(x + ox2, cy + oy2 - 10, 4, x + ox2, cy + oy2, rr); gr.addColorStop(0, '#9ca3af'); gr.addColorStop(1, '#374151'); c.fillStyle = gr; c.beginPath(); c.arc(x + ox2, cy + oy2, rr, 0, 7); c.fill(); } c.restore(); if (Math.random() < .03) bolt(x + (Math.random() - .5) * 60, cy + 30, x + (Math.random() - .5) * 60, cy + 90, 5); }   // 烏雲
+        if (yl && ok(img('boss-thunder-cloud'))) { const ci = img('boss-thunder-cloud'), cy = Math.max(60, y - 230), cw = 230, chh = cw * ci.naturalHeight / ci.naturalWidth; c.drawImage(ci, x - cw / 2 + Math.sin(now / 700 + x) * 4, cy - chh / 2, cw, chh); if (Math.random() < .03) boltI(x + (Math.random() - .5) * 80, cy + 20, x + (Math.random() - .5) * 60, cy + 110, 6); }   // 烏雲（圖）
+        else if (yl) { const cy = Math.max(60, y - 230); c.save(); c.globalAlpha = .85; for (const [ox2, oy2, rr] of [[-50, 8, 34], [-18, -10, 42], [22, -4, 38], [54, 10, 30], [0, 16, 36]]) { const gr = c.createRadialGradient(x + ox2, cy + oy2 - 10, 4, x + ox2, cy + oy2, rr); gr.addColorStop(0, '#9ca3af'); gr.addColorStop(1, '#374151'); c.fillStyle = gr; c.beginPath(); c.arc(x + ox2, cy + oy2, rr, 0, 7); c.fill(); } c.restore(); if (Math.random() < .03) bolt(x + (Math.random() - .5) * 60, cy + 30, x + (Math.random() - .5) * 60, cy + 90, 5); }   // 烏雲
         if (yl && Math.random() < .08) bolt(x + (Math.random() - .5) * R, y - 190, x + (Math.random() - .5) * R, y - 30, 6);   // 黃色區偶爾閃一下小電光
         const inMe = myT && Math.abs(myT.x - x) < R, tx = inMe ? (yl ? '快開出黃色區！' : '快開出紅圈！') : yl ? '落雷區' : '隕石落點';
         c.globalAlpha = .55 + .45 * p; c.lineWidth = 3; c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x, y - 150); c.stroke(); c.globalAlpha = 1;
@@ -626,11 +631,18 @@
       }
       c.restore();
     }
-    if (shown.burn && !(anim && anim.side === shown.bi && anim.ph !== 'drive')) {   // 燒著的地面：橘色光＋一直冒火
+    /* 燒焦的痕跡：地面在燒的時候一直在，火熄了以後慢慢淡掉（只是裝飾） */
+    const burnOn = shown.burn && !(anim && anim.side === shown.bi && anim.ph !== 'drive'), si = img('boss-hell-scorch');
+    if (burnOn) for (const x of shown.burn) if (!scorch.some(q => Math.abs(q.x - x) < 4 && !q.te)) scorch.push({ x });
+    scorch.forEach(q => { if (!q.te && !(burnOn && shown.burn.some(x => Math.abs(q.x - x) < 4))) q.te = now; }); scorch = scorch.filter(q => !q.te || now - q.te < 5000);
+    if (ok(si)) for (const q of scorch) { const y = groundY(q.x), w = 96, h = w * si.naturalHeight / si.naturalWidth; c.save(); c.globalAlpha = q.te ? Math.max(0, 1 - (now - q.te) / 5000) * .9 : .9; c.drawImage(si, q.x - w / 2, y - h / 2 + 2, w, h); c.restore(); }
+    if (burnOn) {   // 燒著的地面：橘色光＋火焰動畫（4 張圖輪流播，每張 120 ms）
       c.save();
+      const fi = [1, 2, 3, 4].map(k => img('boss-hell-ground-fire-' + k)), fok = fi.every(ok);
       for (const x of shown.burn) {
         const y = groundY(x), gr = c.createRadialGradient(x, y, 4, x, y, 56); gr.addColorStop(0, `rgba(255,120,20,${.45 + .2 * p})`); gr.addColorStop(1, 'rgba(255,80,0,0)'); c.fillStyle = gr; c.beginPath(); c.ellipse(x, y - 6, 56, 26, 0, 0, 7); c.fill();
-        if (Math.random() < .5) parts.push({ x: x + (Math.random() - .5) * 60, y: y - 2, vx: (Math.random() - .5) * .6, vy: -1 - Math.random() * 1.6, life: 26, max: 26, r: 5 + Math.random() * 6, c: 'fire' });
+        if (fok) { const f = fi[(Math.floor(now / 120) + Math.round(x / 37)) % 4], w = 58, h = w * f.naturalHeight / f.naturalWidth; c.drawImage(f, x - w / 2, y - h + 6, w, h); }
+        else if (Math.random() < .5) parts.push({ x: x + (Math.random() - .5) * 60, y: y - 2, vx: (Math.random() - .5) * .6, vy: -1 - Math.random() * 1.6, life: 26, max: 26, r: 5 + Math.random() * 6, c: 'fire' });
         if (myT && Math.abs(myT.x - x) < 42) { const ly = y - 140 + 4 * Math.sin(now / 120); c.font = `900 26px ${FONT}`; c.textAlign = 'center'; c.lineWidth = 6; c.strokeStyle = '#fff'; c.strokeText('地面在燒，快開走！', x, ly); c.fillStyle = '#ea580c'; c.fillText('地面在燒，快開走！', x, ly); }
       }
       c.restore();
@@ -652,7 +664,9 @@
       for (let k = 0; k < w.b.length; k++) { const x = w.x0 + k, top = V.g[x]; if (top < w.b[k] - 2) seg.push([x, top, w.b[k]]); }
       if (seg.length < 3) continue;
       c.moveTo(seg[0][0], seg[0][2]); for (const [x, t] of seg) c.lineTo(x, t); for (let k = seg.length - 1; k >= 0; k--) c.lineTo(seg[k][0], seg[k][2]); c.closePath();
-      c.fillStyle = stonePat; c.fill(); c.strokeStyle = '#3f3a35'; c.lineWidth = 3; c.beginPath(); seg.forEach(([x, t], k) => k ? c.lineTo(x, t) : c.moveTo(x, t)); c.stroke(); on = true;
+      const wi = img('boss-rock-wall');
+      if (ok(wi)) { const xL = w.x0, xR = w.x0 + w.b.length - 1, bm = Math.max(...seg.map(q => q[2])), tp = Math.min(...w.b) - (TK.WEAP.W.wh || 115) - 6; c.save(); c.clip(); c.drawImage(wi, xL - 4, tp, xR - xL + 8, bm - tp + 4); c.restore(); }   // 石牆圖：拉到整面牆的大小，再用現在的地形剪出形狀（炸掉的地方就不見了）
+      else { c.fillStyle = stonePat; c.fill(); c.strokeStyle = '#3f3a35'; c.lineWidth = 3; c.beginPath(); seg.forEach(([x, t], k) => k ? c.lineTo(x, t) : c.moveTo(x, t)); c.stroke(); } on = true;
     }
     c.restore();
   }
@@ -745,8 +759,9 @@
       const bossW = anim && isBoss(anim.side);
       if (bossW && w === 'O') { const mi = img('boss-hell-meteor'); if (ok(mi)) { const L = 110; c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 0) - Math.PI * .75); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(mi, -L * .3, -L * .7, L, L); c.restore(); continue; } }
       if (bossW && w === 'V') { if (s.t % 2 === 0) bolt(X + (Math.random() - .5) * 20, Y - 120, X, Y, 4); continue; }   // 落雷：一道一道往下的電光
+      if (bossW && w === 'B' && ok(img('boss-hell-flame-ball'))) { const fb = img('boss-hell-flame-ball'), L = 66, h = L * fb.naturalHeight / fb.naturalWidth; c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 1)); c.drawImage(fb, -L * .82, -h / 2, L, h); c.restore(); continue; }   // 火球圖：球心在圖的右邊 82%，轉到跟飛的方向一樣
       if (bossW && w === 'B') { const gl = c.createRadialGradient(X, Y, 0, X, Y, 22); gl.addColorStop(0, 'rgba(255,245,180,.95)'); gl.addColorStop(.45, 'rgba(255,140,20,.85)'); gl.addColorStop(1, 'rgba(220,38,38,0)'); c.fillStyle = gl; c.beginPath(); c.arc(X, Y, 22, 0, 7); c.fill(); if (Math.random() < .6) parts.push({ x: X, y: Y, vx: (Math.random() - .5), vy: -.5 - Math.random(), life: 18, max: 18, r: 4 + Math.random() * 5, c: 'fire' }); continue; }
-      if (bossW && w === 'W') { const ri = img('boss-rock-shot'); if (ok(ri)) { const L = 64; c.save(); c.translate(X, Y); c.rotate(s.t / 14); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(ri, -L / 2, -L / 2, L, L); c.restore(); continue; } }
+      if (bossW && w === 'W') { const bi2 = img('boss-rock-boulder'), ri = ok(bi2) ? bi2 : img('boss-rock-shot'); if (ok(ri)) { const L = ok(bi2) ? 76 : 64; c.save(); c.translate(X, Y); c.rotate(s.t / 14); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(ri, -L / 2, -L / 2, L, L); c.restore(); continue; } }
       if (bossW && w === 'F') { const mi = img('boss-hell-meteor'); if (ok(mi)) { const L = 124; c.save(); c.translate(X, Y); c.rotate(Math.atan2(s.vy || 0, s.vx || 0) - Math.PI * .75); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 6; c.drawImage(mi, -L * .3, -L * .7, L, L); c.restore(); continue; } }   // 隕石：圖的石頭在左下、火焰尾巴往右上，轉到跟飛的方向一樣
       const oi = bossW ? img('boss-' + shown.boss + '-shot') : w === 'h' ? img('ammo-heal') : null;
       if (oi && ok(oi)) { const L2 = bossW ? (w === 'Q' || w === 'X' || w === 'Y' ? 30 : 38) : 30; c.save(); c.translate(X, Y); if (bossW) c.rotate(s.t / 12); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 5; c.drawImage(oi, -L2 / 2, -L2 / 2, L2, L2); c.restore(); continue; }
@@ -781,6 +796,9 @@
       else if (p.c === 'jet') { const gr = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r); gr.addColorStop(0, `rgba(220,245,255,${k})`); gr.addColorStop(.5, `rgba(80,180,255,${k * .8})`); gr.addColorStop(1, 'rgba(40,90,255,0)'); c.fillStyle = gr; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); }
       else if (p.c === 'ember') { c.fillStyle = `rgba(${k > .5 ? 255 : 220},${k > .5 ? 120 : 60},${k > .5 ? 240 : 200},${k})`; c.beginPath(); c.arc(p.x, p.y, p.r * (.5 + k * .5), 0, 7); c.fill(); }
       else if (p.c === 'steam') { p.r += .3 * dt; c.fillStyle = `rgba(255,255,255,${k * .35})`; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); }
+      else if (p.c === 'crack' && ok(img('boss-rock-crack'))) { const ci = img('boss-rock-crack'), age = 1 - k, N = p.pts.length, n = Math.min(N, Math.ceil(N * Math.min(1, age * 5))), sw = ci.naturalWidth / N, hh = 22; c.save(); c.globalAlpha = Math.min(1, k * 3);   // 裂痕圖：切成一段一段，沿著地面貼（從魔王那邊往左裂開）
+        for (let q = 0; q < n; q++) { const [x] = p.pts[q], y = groundY(x); if (y > H) continue; c.drawImage(ci, ci.naturalWidth - (q + 1) * sw, 0, sw, ci.naturalHeight, x - 14, y + 2 - hh / 2, 15, hh); } c.restore(); }
+      else if (p.c === 'boltI') { const bi = img('boss-thunder-bolt'), dx = p.x - p.x0, dy = p.y - p.y0, L = Math.hypot(dx, dy), w2 = L * bi.naturalWidth / bi.naturalHeight; c.save(); c.globalAlpha = Math.min(1, k * 2.5); c.translate(p.x0, p.y0); c.rotate(Math.atan2(dy, dx) - Math.PI / 2); c.drawImage(bi, -w2 / 2, 0, w2, L); c.restore(); }
       else if (p.c === 'crack') { const age = 1 - k, n = Math.min(p.pts.length, Math.ceil(p.pts.length * Math.min(1, age * 5))); c.save(); c.globalAlpha = Math.min(1, k * 3); c.lineJoin = 'round';
         for (const [w2, col] of [[9, 'rgba(255,120,20,.35)'], [4, '#2b1d12']]) { c.strokeStyle = col; c.lineWidth = w2; c.beginPath(); for (let q = 0; q < n; q++) { const [x, oy] = p.pts[q], y = groundY(x) + 6 + oy; q ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); } c.restore(); }
       else if (p.c === 'bolt') { c.save(); c.lineJoin = 'round'; for (const [w, col] of [[14, `rgba(250,204,21,${k * .35})`], [6, `rgba(255,236,120,${k * .9})`], [2.5, `rgba(255,255,255,${k})`]]) { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); p.pts.forEach(([x, y], q) => q ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); } c.restore(); }
