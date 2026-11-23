@@ -1263,7 +1263,7 @@
   #petmini{display:flex;align-items:center;gap:.9rem;width:100%;margin-top:1rem;text-align:left;border:0;background:linear-gradient(135deg,#fff,#fff0f6);cursor:pointer;font-family:inherit}
   #petmini.glow{box-shadow:0 0 0 4px #ffe066,0 0 24px #ffd43b;animation:pglow 1.6s ease-in-out infinite}@keyframes pglow{50%{box-shadow:0 0 0 4px #ffe066,0 0 6px #ffd43b}}
   #petmini .pmv{width:5.6rem;height:5.6rem;flex:none}
-  #petmini .pmi{flex:1;min-width:0}#petmini .pmt{font-size:1.4rem;font-weight:900;color:#d6336c}#petmini .pmt small{font-size:1rem;color:#f06595;margin-left:.3rem}
+  #petmini .pmi{flex:1;min-width:0}#petmini .pmt{font-size:1.4rem;font-weight:900;color:#d6336c}#petmini .pmt small{font-size:1rem;color:#f06595;margin-left:.3rem;white-space:nowrap;display:inline-block}
   #petmini .pms{font-size:1.05rem;color:#666;font-weight:800;margin-top:.25rem}
   #petmini .pmb{display:flex;align-items:center;gap:.35rem;margin-top:.3rem}#petmini .pmb .pbar{flex:1}
   #petmini .pgo{font-size:1.6rem;color:#f06595;flex:none}

@@ -486,7 +486,7 @@ body{background:url(img/ui/bg-platform.webp) center/cover fixed,#fff8ec}   /* �
 @keyframes cffall{to{transform:translateY(105vh) rotate(720deg)}}
 .bs{position:fixed;width:9px;height:9px;border-radius:50%;z-index:20;pointer-events:none;animation:bsfly .7s ease-out forwards}
 @keyframes bsfly{from{transform:translate(-50%,-50%)}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3);opacity:0}}
-#toast{top:3vh;z-index:30}
+#toast{top:3vh;z-index:30}#toast{width:max-content;max-width:min(92vw,40rem);text-align:center;box-sizing:border-box}
 .tkc small{display:block;margin-top:.1rem}
 @media (max-width:900px),(orientation:portrait){.mascot.big{font-size:3rem}.hello .hi{font-size:1.4rem}.bubble{font-size:.95rem}#login .fsb{top:.4rem;right:.4rem;font-size:.9rem}.uc .ui{font-size:2.6rem}.sidebtns{flex:none;flex-direction:column;gap:.2rem}.sidebtns button{font-size:.75rem;padding:.15rem .35rem}}
 
@@ -1706,13 +1706,14 @@ let user=LS.get('learn601_user',null);              // {seat,pin}
 let sum=null;
 const base=()=>`${ROOT}/u/${user.seat}/${user.pin}`;
 const blankSum=()=>({best:{},days:{},total:0,first:0,tv:{},last:0,tk:0,tc:0,tco:0,gb2:{}});
-function loadSum(){sum=Object.assign(blankSum(),LS.get('learn601_sum_'+user.seat,{}))}
+function loadSum(){const L=LS.get('learn601_sum_'+user.seat,null);sum=Object.assign(blankSum(),L||{});if(!L)sum.fresh=1}   // fresh：這台第一次登入、還沒讀過雲端（2026-11-23：以前新平板一登入，遊戲券會被這台的 0 蓋掉）
 function saveSum(remote){if(!user||!sum)return;sum.last=Date.now();dvPrune();rvPrune();LS.set('learn601_sum_'+user.seat,sum);if(remote)enqueue(base()+'/sum',sum,true)}
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
+  const myLast=sum.fresh?0:(sum.last||0);delete sum.fresh;   // 還沒讀過雲端的新平板：雲端的一律比較新
   {const g0=sum.tkg||{},g1=r.tkg||{};   // sum.tkg：發過的獎勵券（每週任務）。兩台各自發的券，蓋過來時不會不見，也不會多算
-  if((r.last||0)>(sum.last||0)){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0;for(const k in g0)if(!g1[k])sum.tk++}   // 遊戲券以最後更新的那台為準
+  if((r.last||0)>myLast){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0;for(const k in g0)if(!g1[k])sum.tk++}   // 遊戲券以最後更新的那台為準
   else for(const k in g1)if(!g0[k])sum.tk=(sum.tk||0)+1;
   if(Object.keys(g1).length)sum.tkg=Object.assign({},g1,g0)}
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
@@ -1741,7 +1742,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
   sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   /* 方塊對戰：段位會升也會降 → 看最後更新的那台；這台還沒有就用雲端的。40 排競速：留最快的（2026-11-22：以前沒合併，換平板段位會不見） */
-  if(r.bks!=null&&(sum.bks==null||(r.last||0)>(sum.last||0)))sum.bks=r.bks;if(r.bksp>0)sum.bksp=sum.bksp>0?Math.min(sum.bksp,r.bksp):r.bksp;
+  if(r.bks!=null&&(sum.bks==null||(r.last||0)>myLast))sum.bks=r.bks;if(r.bksp>0)sum.bksp=sum.bksp>0?Math.min(sum.bksp,r.bksp):r.bksp;
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
 /* 老師在雲端清除紀錄後,平板上留下的舊進度也要歸零(還有沒上傳的資料就不動) */
 function resetIfCleared(remote){if(remote!=null||!user||!sum)return false;
@@ -1839,7 +1840,7 @@ function tone(f,d,type,v,at){if(!sndOn)return;try{AC=AC||new (window.AudioContex
   o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v||.08,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
 const sfx={ok(){tone(784,.12,'triangle',.09);tone(1175,.18,'triangle',.08,.09)},no(){tone(220,.18,'sine',.07);tone(180,.22,'sine',.06,.1)},
   ticket(){[659,784,988,1319].forEach((f,i)=>tone(f,.16,'triangle',.08,i*.08))},win(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.08,i*.1))},done(){tone(659,.15,'triangle',.07);tone(880,.2,'triangle',.07,.12)}};
-function paintSnd(){const b=document.getElementById('sndBtn');if(b){b.innerHTML=ico('nav-snd','bi')+(sndOn?'聲音・設定':'靜音・設定');b.setAttribute('aria-label','聲音與設定');b.classList.toggle('mute',!sndOn)}}
+function paintSnd(){const b=document.getElementById('sndBtn');if(b){b.innerHTML=ico('nav-snd','bi')+'設定';b.setAttribute('aria-label','聲音與設定');b.classList.toggle('mute',!sndOn)}}
 {const b=document.getElementById('sndBtn');if(b)tap(b,()=>cfgOpen())}
 /* ===== 聲音與舒適度設定（從原本的「音效」按鈕進來，不另外多一個按鈕）=====
    跟著學生帳號記：learn601_cfg_座號 = {snd 音效, say 題目自動朗讀, rm 減少動態, lr 左右手操作}；還沒登入、沒設定過的用系統「減少動態效果」當預設
@@ -3788,7 +3789,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v175';let verNew=false,verBusy=false;
+const APP_VER='learn601-v176';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
