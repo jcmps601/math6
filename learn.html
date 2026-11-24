@@ -2311,6 +2311,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v192',d:'11/24',it:[['🔧','修正：國語題目的注音有時會變成亂碼（例如「2">」），現在都正常顯示成直的了']]},
   {v:'v191',d:'11/24',it:[['🐳','傳說寵物有技能了！帶在身邊就會發動：星空鯨（金幣 +20%）、福氣獅（每日任務獎勵加倍）、彩虹馬（每天第一次收成多 1 包肥料）、智慧龜（第 21 題起金幣不減半）'],['✨','帶傳說寵物的人，排行榜上名字旁邊會有發光的小寵物']]},
   {v:'v190',d:'11/24',it:[['🎯','同一個單元超過 20 題，還是可以拿獎勵了！只要最近 10 題答對 8 題以上（第一次就答對才算）'],['🏆','學習排行榜新增「本週認真答對」：這週第一次就答對幾題，不限單元'],['🎖️','新稱號：「專心小達人」（一天認真答對 50 題）、「認真學霸」（一天認真答對 150 題）']]},
   {v:'v189',d:'11/24',it:[['📖','國語第 8 課〈街頭藝術家〉的題目上線了！生字、注音、語詞、成語、句型、課文理解、閱讀測驗都有'],['ㄅ','注音改成直的，跟課本一樣（第 7 課也一起改了）'],['📕','單元獎勵拿滿以後答錯的題目，到錯題本訂正只算練習，不會有獎勵']]},
@@ -3253,7 +3254,8 @@ function key(k){if(solved||!round)return;const q=round.qs[cur];if(q.type==='mc'|
 document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')||$('#end').classList.contains('on')||vt)return;if($('#teach').classList.contains('on')){if(e.key==='Enter'||e.key===' '){e.preventDefault();tNext()}return}
   if(/^[0-9.]$/.test(e.key))key(e.key==='.'&&/frac|ratio/.test(round.qs[cur].type)?'下一格':e.key);else if(e.key==='Backspace')key('⌫');
   else if(e.key==='Tab'||e.key==='/'||e.key===':'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
-const hl=s=>s.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>');
+/* 題目裡的數字加顏色；只改文字，不動 HTML 標籤裡面（直式注音的 class="t4" 以前會被改壞，顯示成 4">） */
+const hl=s=>String(s).split(/(<[^>]+>)/).map(p=>p[0]==='<'?p:p.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>')).join('');
 function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';scrReset();const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
   $('#prac').classList.toggle('en',isEn);$('#qno').innerHTML=`第 ${cur+1} 題`+(q.rv?'<small class="rvtag">複習</small>':'');const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
@@ -3915,7 +3917,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v191';let verNew=false,verBusy=false;
+const APP_VER='learn601-v192';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
