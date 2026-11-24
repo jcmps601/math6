@@ -1757,10 +1757,11 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.amd)sum.amd=Object.assign({},sum.amd||{},r.amd);   // 早自修完成的日子
   if(r.fdc){const a=sum.fdc||{},b=r.fdc,nw=(b.u||0)>(a.u||0)?b:a;sum.fdc={own:Object.assign({},a.own||{},b.own||{}),s:Array.from({length:6},(_,k)=>(nw.s&&nw.s[k])||''),u:Math.max(a.u||0,b.u||0)}}   // 農場裝飾：買過的兩邊合起來，擺法以最後擺的那台為準
   if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.xp||0)!==(A.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}   /* 農場經驗只會增加：留經驗比較多的那份（另一台的舊資料、空農場都蓋不過來）；一樣多才看誰比較新 */
-  if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
+  if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{}),r:Object.assign({},r.uq.r||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   if(r.qd&&r.qd.d===dkey()){if(!sum.qd||sum.qd.d!==r.qd.d)sum.qd={d:r.qd.d,k:(r.qd.k||[]).slice()};else sum.qd.k=[...new Set([...(sum.qd.k||[]),...(r.qd.k||[])])]}   // 今天做過的題目
   sum.amr=mx(sum.amr,r.amr);   // 早自修讀到第幾篇
+  sum.fmx=mx(sum.fmx,r.fmx);if(r.fv&&typeof r.fv==='object'){sum.fv=sum.fv||{};for(const d in r.fv){const a=sum.fv[d]=sum.fv[d]||{},b=r.fv[d]||{};for(const j in b)a[j]=mx(a[j],b[j])}}   // 認真答對：每台各自記，合起來取大的
   if(r.rh&&typeof r.rh==='object'){sum.rh=sum.rh||{};for(const k in r.rh){if(!Array.isArray(r.rh[k]))continue;const M=new Map();[...(sum.rh[k]||[]),...r.rh[k]].forEach(x=>{if(x&&x.t)M.set(x.t,x)});sum.rh[k]=[...M.values()].sort((a,b)=>a.t-b.t).slice(-5)}}   // 每個單元最近 5 回（我的進步）：兩台合起來，同一回不重複
   if(r.dn&&typeof r.dn==='object'){sum.dn=sum.dn||{};for(const k in r.dn)sum.dn[k]=mx(sum.dn[k],r.dn[k])}
   if(Array.isArray(r.wf)){const M=new Map();[...(sum.wf||[]),...r.wf].forEach(x=>{if(Array.isArray(x))M.set(x[0]+'|'+x[1],x)});sum.wf=[...M.values()].filter(x=>x[0]>Date.now()-35*864e5).sort((a,b)=>a[0]-b[0])}   // 錯題本訂正紀錄：兩台合起來、同一筆不重複
@@ -2309,6 +2310,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v190',d:'11/24',it:[['🎯','同一個單元超過 20 題，還是可以拿獎勵了！只要最近 10 題答對 8 題以上（第一次就答對才算）'],['🏆','學習排行榜新增「本週認真答對」：這週第一次就答對幾題，不限單元'],['🎖️','新稱號：「專心小達人」（一天認真答對 50 題）、「認真學霸」（一天認真答對 150 題）']]},
   {v:'v189',d:'11/24',it:[['📖','國語第 8 課〈街頭藝術家〉的題目上線了！生字、注音、語詞、成語、句型、課文理解、閱讀測驗都有'],['ㄅ','注音改成直的，跟課本一樣（第 7 課也一起改了）'],['📕','單元獎勵拿滿以後答錯的題目，到錯題本訂正只算練習，不會有獎勵']]},
   {v:'v187',d:'11/24',it:[['🐢','智慧龜的條件修好了：數學現在只有一個期末單元，那個單元 3 顆星就算。寵物任務會寫「還差哪一科」'],['🎧','帶回家沒網路時，英語聽力也聽得到了（回家前在學校打開平台一次就好）'],['⚔️','全班打魔王：首頁會寫「今天 ○／500」，每人每天最多打 500 點，一週可以累計']]},
   {v:'v185',d:'11/23',it:[['🏆','雙人對戰、方塊對戰、雙人合作的排行榜，也會顯示頭像框、名牌和稱號了']]},
@@ -2420,7 +2422,7 @@ function wkCard(){const W=wkCur(),L=wkSubs(),c=el('div','cd');c.id='wkc';if(!L.l
 /* ===================== 學習排行榜 =====================
    每個人把自己的學習數字放在 learn/stat/座號 = {w:本週星期一, tw:本週練習題數, n:累計題數, f:累計一次就答對題數, st:連續完成天數, t:時間}
    （只能寫自己那一格；Firebase 規則要加 STAT_RULE 那一段）。全班都看得到，測試帳號不上榜。
-   四個榜：本週練習、累計練習、一次就答對率（累計做滿 STAT_MIN 題才上榜，免得做 3 題對 3 題就 100%）、連續完成天數 */
+   五個榜：本週練習、本週認真答對（tf：這週有獎勵的題目第一次就答對幾題，2026-11-24 加）、累計練習、一次就答對率（累計做滿 STAT_MIN 題才上榜，免得做 3 題對 3 題就 100%）、連續完成天數 */
 const STAT_MIN=100;
 const STAT_RULE=`"stat": {
   ".read": true,
@@ -2430,27 +2432,28 @@ const STAT_RULE=`"stat": {
   }
 }`;
 const weekQ=()=>weekKeys(0).reduce((a,k)=>a+(sum.days[k]||0),0);
-function statMine(){return {w:bossWk(),tw:weekQ(),n:sum.total||0,f:Math.min(sum.first||0,sum.total||0),st:streak(),cd:doneDays(),t:Date.now()}}
+function statMine(){return {w:bossWk(),tw:weekQ(),tf:weekF(),n:sum.total||0,f:Math.min(sum.first||0,sum.total||0),st:streak(),cd:doneDays(),t:Date.now()}}
 /* 練完一輪、打開平台時更新（數字沒變就不送） */
-function statPush(){if(!user||!sum)return;const v=statMine(),k=[v.w,v.tw,v.n,v.f,v.st,v.cd].join('|');if(statPush.k===user.seat+k)return;statPush.k=user.seat+k;
+function statPush(){if(!user||!sum)return;const v=statMine(),k=[v.w,v.tw,v.tf,v.n,v.f,v.st,v.cd].join('|');if(statPush.k===user.seat+k)return;statPush.k=user.seat+k;
   enqueue(`${ROOT}/stat/${user.seat}`,v,true)}
 let STATC=null;
 async function statAll(){if(STATC&&Date.now()-STATC.at<30000)return STATC;if(!(await fbOnline()))return null;
   let v,denied=false;try{v=(await timeout(db.ref(`${ROOT}/stat`).get(),8000)).val()||{}}catch(e){denied=/permission/i.test(String(e&&(e.code||e.message)));if(denied)return {denied:true};throw e}
   const wk=bossWk(),today=dkey(),ld=(()=>{const d=new Date();do d.setDate(d.getDate()-1);while(d.getDay()%6===0);return dkey(d)})(),rows=[];
   for(const [st,o] of Object.entries(v)){const seat=+st;if(!o||isTest(seat))continue;const day=dkey(new Date(+o.t||0));
-    rows.push({seat,tw:o.w===wk?(+o.tw||0):0,n:+o.n||0,f:+o.f||0,st:day>=ld?(+o.st||0):0,cd:+(o.cd!=null?o.cd:o.st)||0})}   // 連續天數：上一個上學日之後都沒更新就斷了
-  if(user&&!isTest(user.seat)){const m=statMine(),i=rows.findIndex(r=>r.seat===user.seat),me={seat:user.seat,tw:m.tw,n:m.n,f:m.f,st:m.st,cd:m.cd};if(i>=0)rows[i]=me;else rows.push(me)}   // 自己的用這台平板上最新的
+    rows.push({seat,tw:o.w===wk?(+o.tw||0):0,tf:o.w===wk?(+o.tf||0):0,n:+o.n||0,f:+o.f||0,st:day>=ld?(+o.st||0):0,cd:+(o.cd!=null?o.cd:o.st)||0})}   // 連續天數：上一個上學日之後都沒更新就斷了
+  if(user&&!isTest(user.seat)){const m=statMine(),i=rows.findIndex(r=>r.seat===user.seat),me={seat:user.seat,tw:m.tw,tf:m.tf,n:m.n,f:m.f,st:m.st,cd:m.cd};if(i>=0)rows[i]=me;else rows.push(me)}   // 自己的用這台平板上最新的
   STATC={at:Date.now(),rows};return STATC}
 const STAT_BOARDS=[
   {k:'tw',n:'本週練習',img:'pr-pen',c:'#1c7ed6',u:'題',sub:'這週做了幾題',v:r=>r.tw,on:r=>r.tw>0},
+  {k:'tf',n:'本週認真答對',img:'pr-ok',c:'#7048e8',u:'題',sub:'這週第一次就答對幾題',v:r=>r.tf,on:r=>r.tf>0},
   {k:'n',n:'累計練習',img:'rw-trophy',c:'#2e7554',u:'題',sub:'全部做了幾題',v:r=>r.n,on:r=>r.n>0},
   {k:'acc',n:'一次就答對',img:'pr-ok',c:'#e8590c',u:'%',sub:`做滿 ${STAT_MIN} 題才上榜`,v:r=>r.n?Math.round(r.f/r.n*1000)/10:0,on:r=>r.n>=STAT_MIN},
   {k:'st',n:'完成天數',img:'rw-fire',c:'#c2255c',u:'天',sub:`做滿 ${GOAL} 題的天數，一直累計`,v:r=>r.cd,on:r=>r.cd>0}];
 function statRank(B,rows){const on=rows.filter(B.on).map(r=>({seat:r.seat,v:B.v(r),n:r.n})).sort((a,b)=>b.v-a.v||b.n-a.n||a.seat-b.seat);
   on.forEach(x=>x.rank=1+on.filter(y=>y.v>x.v).length);return on}
 const statFmt=(B,x)=>B.k==='acc'?`${x.v}%<small>${x.n} 題</small>`:`${x.v} ${B.u}`;
-/* 學習頁：四個榜 */
+/* 學習頁：五個榜 */
 async function loadStatBoard(L){let S;try{await lkLoad();S=await statAll()}catch(e){L.innerHTML='<div class="ld">讀取失敗，等一下再試</div>';return}
   if(!S){L.innerHTML='<div class="ld">📴 連上網路才看得到排行榜</div>';return}
   if(S.denied){L.innerHTML='<div class="ld">⏳ 學習排行榜還沒開通（請告訴老師）</div>';return}
@@ -2465,7 +2468,7 @@ function ldWatch(box,retry){setTimeout(()=>{if(!box.isConnected)return;const l=b
   tap(l.querySelector('.ldr'),()=>{l.innerHTML='讀取中…';retry();ldWatch(box,retry)})},12000)}
 function statCardHome(){const c=el('div','cd');c.id='shome';c.innerHTML='<div class="ld">讀取中…</div>';
   lkLoad().then(()=>statAll()).then(S=>{if(!c.isConnected)return;if(!S||S.denied){c.innerHTML=`<div class="ld">${S&&S.denied?'⏳ 學習排行榜還沒開通':'📴 連上網路才看得到排行榜'}</div>`;return}
-    c.innerHTML=[STAT_BOARDS[0],STAT_BOARDS[2]].map(B=>{const on=statRank(B,S.rows),me=user&&on.find(x=>x.seat===user.seat);
+    c.innerHTML=['tw','acc'].map(k=>STAT_BOARDS.find(B=>B.k===k)).map(B=>{const on=statRank(B,S.rows),me=user&&on.find(x=>x.seat===user.seat);
       return `<div class="shc" style="--dc:${B.c}"><div class="sht">${ico(B.img,'shi')}${B.n}<small>${B.sub}</small></div>${on.slice(0,3).map(x=>`<div class="shr${user&&x.seat===user.seat?' me':''}"><b>${['🥇','🥈','🥉'][x.rank-1]||x.rank}</b><span>${lkName(x.seat,x.seat+' 號')}</span><i>${statFmt(B,x)}</i></div>`).join('')||'<div class="shn">還沒有人上榜，快去練習！</div>'}
         <div class="shm">${me?`我第 <b>${me.rank}</b> 名・${statFmt(B,me).replace(/<small>.*<\/small>/,'')}`:isTest(user.seat)?'測試帳號不上榜':B.k==='acc'?`做滿 ${STAT_MIN} 題就上榜（我做了 ${sum.total||0} 題）`:'練習 1 題就上榜！'}</div></div>`}).join('');
     const more=el('button','hmore','完整排行榜 ▶');tap(more,()=>{goView('learn');setTimeout(()=>{const e=document.getElementById('sboard');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},300)});c.appendChild(more)}).catch(()=>{c.innerHTML='<div class="ld">讀取失敗，等一下再試</div>'});
@@ -2875,7 +2878,7 @@ const lkU3=s=>{try{return UN.filter(u=>u.g&&!u.hid&&u.s===s&&((sum.best||{})[u.k
   lkA=k=>{try{return (PET.P().ach||{})[k]||0}catch(e){return 0}},
   lkDex=()=>{try{return Object.keys(PET.P().dex||{}).length}catch(e){return 0}},
   lkLim=()=>{try{const o=PET.P().own||{};return Object.keys(o).filter(id=>PET.ITEMS[id]&&PET.ITEMS[id].lim).length}catch(e){return 0}},
-  lkTot=()=>(sum&&sum.total)||0,lkFirst=()=>(sum&&sum.first)||0,lkRate=()=>lkTot()?Math.round(lkFirst()/lkTot()*100):0,
+  lkTot=()=>(sum&&sum.total)||0,lkFmx=()=>(sum&&sum.fmx)||0,lkFirst=()=>(sum&&sum.first)||0,lkRate=()=>lkTot()?Math.round(lkFirst()/lkTot()*100):0,
   lkAm=()=>Object.keys((sum&&sum.amd)||{}).length,lkWin=()=>(sum&&sum.look&&sum.look.vw)||0,
   lkGames=()=>{if(!sum)return 0;const g=new Set(Object.keys(sum.gb2||{}));Object.keys(sum.gb3||{}).forEach(k=>g.add(k.slice(0,k.lastIndexOf('_'))));((sum.look&&sum.look.vg)||[]).forEach(x=>g.add('vs-'+x));return g.size};
 const LK_CAT=[['study','學習','pr-pen'],['pet','寵物','nav-pet'],['farm','農場','nav-farm'],['game','遊戲','nav-game'],['all','總成就','rw-star']];
@@ -2886,6 +2889,8 @@ const LK_TT=[
   ['t-zh','國語小書蟲',1,'study','國語 5 個單元拿到 3 顆星',()=>lkU3('zh')>=5,lkP(()=>lkU3('zh'),5,'個單元'),'zh'],
   ['t-morning','早自修模範生',1,'study','早自修完成 20 天（11/20 起算）',()=>lkAm()>=20,lkP(lkAm,20,'天'),'morning'],
   ['t-sharp','神準射手',2,'study','答滿 500 題，一次就答對 90% 以上',()=>lkTot()>=500&&lkRate()>=90,()=>`${Math.min(lkTot(),500)} / 500 題・一次答對 ${lkRate()}%`,'sharp'],
+  ['t-focus','專心小達人',1,'study','一天認真答對 50 題（第一次就答對、有獎勵的題目）',()=>lkFmx()>=50,lkP(lkFmx,50,'題（一天最多）'),'focus'],
+  ['t-focus2','認真學霸',3,'study','一天認真答對 150 題',()=>lkFmx()>=150,lkP(lkFmx,150,'題（一天最多）'),'focus2'],
   ['t-wb','錯題剋星',2,'study','錯題本練會 50 題',()=>lkA('wb')>=50,lkP(()=>lkA('wb'),50,'題'),'wb'],
   ['t-30d','全勤小學霸',2,'study','練習做滿 30 天',()=>doneDays()>=30,lkP(doneDays,30,'天'),'30d'],
   ['t-1000','千題王',3,'study','累計練習 3,000 題',()=>lkTot()>=3000,lkP(lkTot,3000,'題'),'1000'],
@@ -3147,13 +3152,24 @@ function listFor(types,n){let L=[];while(L.length<n)L.push(...shuf(types));L=shu
 /* ===================== 防刷題：同一個單元每天前 UNIT_CAP 題才有獎勵 =====================
    ・每台平板記「今天每個單元答了幾題」：sum.uq = {d:今天, u:{單元:題數}}（跟著摘要同步，兩台合起來取大的）
    ・前 UNIT_CAP 題照常：今日任務、排行榜題數、遊戲券分數、金幣、水滴、打魔王
-   ・之後還是可以練，但上面這些都不加；要開始新的一輪時跳出提示，推薦今天還能拿獎勵的單元
+   ・之後（2026-11-24 起）：最近 10 題第一次就答對 8 題以上才照常加，不到只算練習；要開始新的一輪時跳出提示，推薦今天還能拿全額獎勵的單元
    ・錯題本不限制（重練錯題本來就是希望學生多做的） */
 const UNIT_CAP=20;
 const ukeyOf=k=>k==='wb'||k==null?null:typeof k==='string'?k:(UN[k]&&UN[k].key);
 function uqDay(){const d=dkey();if(!sum.uq||sum.uq.d!==d)sum.uq={d,u:{}};sum.uq.u=sum.uq.u||{};return sum.uq}
 const uqN=key=>key?(uqDay().u[key]||0):0;
 const capOf=k=>{const key=ukeyOf(k);return !!key&&uqN(key)>=UNIT_CAP};
+/* 2026-11-24 超過 UNIT_CAP 題以後：不再全部沒有獎勵，改成看最近 UQ_WIN 題（這個單元今天的，包括前 20 題）第一次就答對幾題，
+   有 UQ_NEED 題以上就照常有獎勵（金幣本來就從當天第 21 題起減半），不到就只算練習。亂按的人到不了 8 成，認真的人可以一直練。
+   sum.uq.r = {單元: '1101…'} 最近 UQ_WIN 題的結果（1＝第一次就答對）；只記在這台，合併時留自己的 */
+const UQ_WIN=10,UQ_NEED=8;
+const uqWin=key=>(uqDay().r=uqDay().r||{})[key]||'';
+const uqPush=(key,ok)=>{const R=uqDay().r=uqDay().r||{};R[key]=((R[key]||'')+(ok?'1':'0')).slice(-UQ_WIN)};
+const uqHit=key=>[...uqWin(key)].filter(c=>c==='1').length;
+/* 認真答對：有獎勵的題目第一次就答對，每天記一個數（每台平板分開記、一天＝各台加起來，跟 sum.dv 一樣）；sum.fmx＝一天最多認真答對幾題（成就用，只會變大） */
+function fvDay(k){let t=0;for(const v of Object.values(sum.fv||{}))t+=(v&&+v[k])||0;return t}
+function fvAdd(k){sum.fv=sum.fv||{};const m=sum.fv[DEV]=sum.fv[DEV]||{};m[k]=(m[k]||0)+1;const old=dkey(new Date(Date.now()-21*864e5));for(const d in sum.fv){const x=sum.fv[d]||{};for(const j in x)if(j<old)delete x[j];if(!Object.keys(x).length)delete sum.fv[d]}sum.fmx=Math.max(sum.fmx||0,fvDay(k))}
+const weekF=()=>weekKeys(0).reduce((a,k)=>a+fvDay(k),0);
 /* 防刷題（同一題）：同一題今天已經做過（拿過獎勵），再做一次只算練習，不加今日任務、題數、遊戲券、金幣……
    ・用題目指紋 qKey 記在 sum.qd = {d:今天, k:[指紋]}（跟著摘要同步，兩台平板合起來算）
    ・錯題本另外算（前面加 w:）：今天在單元做錯、再到錯題本做對，錯題本那次照樣有獎勵
@@ -3173,9 +3189,9 @@ function capAlt(k){const key=ukeyOf(k),cur=UN.find(u=>u.key===key)||mixByKey(key
   const L=[...UN.filter(u=>u.g&&live(u)),...MIXES.filter(M=>mixOf(M.s))].filter(u=>u.key!==key&&uqN(u.key)<UNIT_CAP);
   return L.sort((a,b)=>(b.s===sj)-(a.s===sj)||uqN(a.key)-uqN(b.key)).slice(0,4)}
 function capModal(k,goAnyway){const m=el('div','pmod','');m.id='capm';const alt=capAlt(k);
-  m.innerHTML=`<div class="pmc capc"><img src="img/ui/mascot-think.webp" alt=""><div class="rmt">換個單元練練看！</div>
-    <div class="rms">今天「${unitName(k)}」已經練 ${UNIT_CAP} 題了。<br>換一個單元，就可以繼續拿遊戲券、金幣和排行榜題數。<br><small>（沒有獎勵時答錯的題目，到錯題本訂正也沒有獎勵）</small></div><div class="capl"></div>
-    <div class="capx"><button class="gray capgo">還是練這個（沒有獎勵）</button></div></div>`;document.body.appendChild(m);
+  m.innerHTML=`<div class="pmc capc"><img src="img/ui/mascot-think.webp" alt=""><div class="rmt">這個單元練很多了！</div>
+    <div class="rms">今天「${unitName(k)}」已經練 ${UNIT_CAP} 題了。<br>繼續練這個也可以：<b>最近 ${UQ_WIN} 題要答對 ${UQ_NEED} 題以上</b>，才繼續有獎勵。<br>換一個單元，前 ${UNIT_CAP} 題都有獎勵。<br><small>（沒有獎勵時答錯的題目，到錯題本訂正也沒有獎勵）</small></div><div class="capl"></div>
+    <div class="capx"><button class="gray capgo">繼續練這個（答對 ${UQ_NEED} 成有獎勵）</button></div></div>`;document.body.appendChild(m);
   const box=m.querySelector('.capl');
   alt.forEach(u=>{const b=el('button','capu',`<span class="ci">${u.img?ico(u.img):(u.ic||'')}</span><span><small>${isMix(u)?'★ 綜合':uTag(u)}</small><b>${u.name}</b></span>`);b.style.setProperty('--c',u.c);
     tap(b,()=>{m.remove();const nk=isMix(u)?u.key:UN.indexOf(u);if(document.getElementById('prac').classList.contains('on')){setPU(nk);newRound()}else startPractice(nk,true)});box.appendChild(b)});
@@ -3361,8 +3377,9 @@ function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div 
 const dis=(b,v)=>{b.disabled=v;b.classList.toggle('off',v)};
 function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),true);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
-  const uk=ukeyOf(pu),dup=qdHas(q),wbe=pu==='wb'&&wbLoad().find(x=>x.k===qKey(q)),wnr=!!(pu==='wb'&&(q.nr||wbe&&wbe.q.nr)),rew=!dup&&!wnr&&(!uk||uqN(uk)<UNIT_CAP);if(uk&&!dup){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}if(!dup)qdAdd(q);   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵；同一題今天做過就不再加
-  const k=dkey();if(rew){dvAdd(k);sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
+  const uk=ukeyOf(pu),dup=qdHas(q),wbe=pu==='wb'&&wbLoad().find(x=>x.k===qKey(q)),wnr=!!(pu==='wb'&&(q.nr||wbe&&wbe.q.nr)),over=!!uk&&uqN(uk)>=UNIT_CAP;if(uk&&!dup&&!wnr)uqPush(uk,round.res[cur]==='ok');
+  const rew=!dup&&!wnr&&(!over||uqHit(uk)>=UQ_NEED);/* 超過 20 題：最近 10 題答對 8 題以上才有獎勵 */if(uk&&!dup){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}if(!dup)qdAdd(q);   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵；同一題今天做過就不再加
+  const k=dkey();if(rew){dvAdd(k);sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1;fvAdd(k)}}
   const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):q.type==='grp'?0.5:1;   // 這題的遊戲券分數
   let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
   if(!rew){}
@@ -3373,8 +3390,9 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   const bh=rew?bossHit(round.res[cur]):0,pc=rew?PET.gain(round.res[cur]):0,fw=rew?FARM.gain(round.res[cur]):0;if(rew)try{wkAdd(q,round.res[cur])}catch(e){}   // 每週任務：這一科答對 +1
   if(wnr){$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">這題是在沒有獎勵的時候答錯的，訂正只算練習</span>')}
   else if(dup){$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">這題今天做過了，這次只算練習</span>')}
-  else if(!rew){round.capped=1;if(!round.capNote){round.capNote=1;$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">今天這個單元的獎勵拿滿了</span>')}}
-  else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
+  else if(!rew){round.capped=1;$('#fb').insertAdjacentHTML('beforeend',`<span class="bhit capn">最近 ${UQ_WIN} 題答對 ${uqHit(uk)} 題，要 ${UQ_NEED} 題才有獎勵</span>`)}
+  else if(over&&!round.ovNote){round.ovNote=1;$('#fb').insertAdjacentHTML('beforeend',`<span class="bhit capn">超過 ${UNIT_CAP} 題了：保持最近 ${UQ_WIN} 題答對 ${UQ_NEED} 題，就一直有獎勵</span>`)}
+  else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」練滿 ${UNIT_CAP} 題了！接下來要最近 ${UQ_WIN} 題答對 ${UQ_NEED} 題才有獎勵，也可以換個單元`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
   if(pu==='am'&&round.amr!=null&&round.res.every(x=>x))sum.amr=Math.max(sum.amr||0,round.amr+1);   // 10 題都做完（還沒按看結果就離開也算）：閱讀測驗下次換下一篇
   saveSum(round.got>0||rushed);amRunSave();if(rushed)rushModal();wbUpdate(q,round.res[cur],rew);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&cfgGet().say!==false)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
@@ -3893,7 +3911,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v189';let verNew=false,verBusy=false;
+const APP_VER='learn601-v190';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
