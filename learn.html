@@ -413,6 +413,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 .br em.nk{color:#bbb}.br em small{font-size:.75rem}
 .br em{font-style:normal;font-size:1.05rem;color:#888;width:5.5rem;text-align:center}
 .br em.lkt{width:auto;font-size:.72em;color:#e8590c;text-align:left}
+.lkpet{width:1.7em;height:1.7em;object-fit:contain;flex:none;filter:drop-shadow(0 0 3px #ffc53d) drop-shadow(0 0 1px #f59f00);vertical-align:middle}
 .br>span.lkrow{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0}.br .lkid{display:flex;align-items:center;gap:.2rem;white-space:nowrap}.br .lkid small{margin-left:.1rem}
 .br>span.lkrow .lkt{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:.56em;padding:0 .3em;margin:.1rem 0 0;position:relative;z-index:2}.br>i{flex:none}
 .br .lkav.mini{width:1.9rem;height:1.9rem;margin:.6rem .4rem .45rem .55rem}.br .lkav.mini>i{font-size:.82rem}.br .lkid:has(.lkav)+.lkt{margin-top:-.3rem}
@@ -2310,6 +2311,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v191',d:'11/24',it:[['🐳','傳說寵物有技能了！帶在身邊就會發動：星空鯨（金幣 +20%）、福氣獅（每日任務獎勵加倍）、彩虹馬（每天第一次收成多 1 包肥料）、智慧龜（第 21 題起金幣不減半）'],['✨','帶傳說寵物的人，排行榜上名字旁邊會有發光的小寵物']]},
   {v:'v190',d:'11/24',it:[['🎯','同一個單元超過 20 題，還是可以拿獎勵了！只要最近 10 題答對 8 題以上（第一次就答對才算）'],['🏆','學習排行榜新增「本週認真答對」：這週第一次就答對幾題，不限單元'],['🎖️','新稱號：「專心小達人」（一天認真答對 50 題）、「認真學霸」（一天認真答對 150 題）']]},
   {v:'v189',d:'11/24',it:[['📖','國語第 8 課〈街頭藝術家〉的題目上線了！生字、注音、語詞、成語、句型、課文理解、閱讀測驗都有'],['ㄅ','注音改成直的，跟課本一樣（第 7 課也一起改了）'],['📕','單元獎勵拿滿以後答錯的題目，到錯題本訂正只算練習，不會有獎勵']]},
   {v:'v187',d:'11/24',it:[['🐢','智慧龜的條件修好了：數學現在只有一個期末單元，那個單元 3 顆星就算。寵物任務會寫「還差哪一科」'],['🎧','帶回家沒網路時，英語聽力也聽得到了（回家前在學校打開平台一次就好）'],['⚔️','全班打魔王：首頁會寫「今天 ○／500」，每人每天最多打 500 點，一週可以累計']]},
@@ -2936,7 +2938,9 @@ function lkName(seat,text,pv){const L=lkOf(seat,pv);return `<span class="lkn${L.
 function lkAv(seat,inner,cls,pv,fr){const f=fr!==undefined?fr:lkOf(seat,pv).fr,I=LK[f];
   return `<span class="lkav${cls?' '+cls:''}${I?' g'+I.t+' f-'+f:''}" style="--fc:${I?LK_TIER[I.t][2]:'transparent'}"><i>${inner}</i>${I?`<img class="lkfr" src="img/look/${f}.webp" alt="" draggable="false" onerror="this.parentNode.classList.add('nf');this.remove()">`:''}</span>`}
 /* 排行榜一列的名字：有頭像框就只放頭像（框裡有座號），沒有就寫「幾號」（名牌底色）；稱號接在後面，太長就截斷，整列不換行 */
-const lkRow=(seat,text,after='')=>{const L=lkOf(seat);return `<span class="lkid">${L.fr?lkAv(seat,seat,'mini'):`<span class="lkn${L.np?' '+L.np:''}">${text}</span>`}${after}</span>${L.tt?`<em class="lkt">${LK[L.tt].n}</em>`:''}`};
+/* 2026-11-24 帶傳說寵物的人：名字旁邊多一個發光的小寵物（自己的用這台的寵物，同學的讀 learn/pet） */
+const lkPet=seat=>{try{let v=LKC&&LKC.v[seat];if(user&&+seat===user.seat){const p=PET.P();v=p&&p.st==='pet'?{sp:p.sp,lv:PET.lvOf(p.xp||0).lv}:null}return PET.legIcon(v)}catch(e){return ''}};
+const lkRow=(seat,text,after='')=>{const L=lkOf(seat);return `<span class="lkid">${L.fr?lkAv(seat,seat,'mini'):`<span class="lkn${L.np?' '+L.np:''}">${text}</span>`}${lkPet(seat)}${after}</span>${L.tt?`<em class="lkt">${LK[L.tt].n}</em>`:''}`};
 function lkPub(){try{const p=PET.P();if(p)PET.pub(p)}catch(e){}}
 function paintMeLook(){if(!user)return;const a=document.getElementById('meav'),n=document.getElementById('menm');if(!a||isTest(user.seat)&&!lkMe().fr)return;
   const L=lkOf(user.seat),I=LK[L.fr];a.classList.toggle('lkme',!!I);a.style.setProperty('--fc',I?LK_TIER[I.t][2]:'transparent');a.className='av'+(I?' lkme g'+I.t+' f-'+L.fr:'');
@@ -3911,7 +3915,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v190';let verNew=false,verBusy=false;
+const APP_VER='learn601-v191';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}

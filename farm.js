@@ -312,6 +312,7 @@
   function harvest(k, quiet) {
     const f = F(), P = f.p[k], S = stat(P); if (!S.ripe) return 0;
     f.store[P.c] = (f.store[P.c] || 0) + S.yieldN; addXp(S.C.xp); f.p[k] = 0; try { PET.note('hv', 1); } catch (e) { }
+    try { if (PET.skillOn('unicorn') && f.uh !== dkey()) { f.uh = dkey(); f.fert = (f.fert || 0) + 1; setTimeout(() => PET.skillFx('unicorn', '今天第一次收成：多送 1 包肥料！'), 300); } } catch (e) { }   // 彩虹馬（傳說技能）
     if (!quiet) { cheer(k); fx(k, `${S.C.n} ×${S.yieldN}`, 'har', P.c); snd(880); setTimeout(() => snd(1100), 120); save(); paint(); paintStore(); info(k); }
     return S.yieldN;
   }

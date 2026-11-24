@@ -53,6 +53,31 @@
       need: '五科的綜合複習都 3 顆星（只有一個單元的科目，就是那個單元），而且一次就答對累計 1,000 題', pr: () => { const us = SUBJ.map(S => ({ S, ks: mixNeed(S.k) })).filter(x => x.ks.length), miss = us.filter(x => !x.ks.some(star3)), n = us.length - miss.length;
         return [!miss.length && firstN() >= 1000 ? 1 : 0, 1, `綜合 3 顆星 ${n}/${us.length}${miss.length ? `（還差${miss.map(x => x.S.n).join('、')}）` : ''}・一次就答對 ${Math.min(firstN(), 1000)}/1000`]; } },
   };
+  /* ───────── 2026-11-24 傳說寵物技能（第一期）─────────
+     帶在身邊才有效（寵物屋裡的不算），只在有獎勵的題目發動（learn.html 只對有獎勵的題目呼叫 gain），所以不會鼓勵亂刷題。
+     whale 第一次就答對的金幣 +20%（小數累積起來，滿 1 枚就加）；lion 每日任務的經驗、金幣加倍；
+     unicorn 每天第一次收成多 1 包肥料（farm.js 的 harvest 呼叫）；turtle 每天第 21 題起答對的金幣不減半。
+     發動時右下角跳出寵物＋特效（skillFx）。技能圖還沒畫好之前用寵物原本的圖＋程式畫的光點；圖到了把種類加進 SK_ART */
+  const SKILL = {
+    whale: { n: '星星水花', d: '第一次就答對的題目，金幣 +20%', c: '#5866d8' },
+    lion: { n: '福氣滿滿', d: '完成每日任務的獎勵（經驗、金幣）加倍', c: '#e8590c' },
+    unicorn: { n: '彩虹豐收', d: '每天第一次收成，多送 1 包肥料', c: '#9775fa' },
+    turtle: { n: '慢慢想', d: '每天第 21 題起，答對的金幣不減半', c: '#2f9e44' },
+  };
+  const SK_ART = new Set(['whale', 'lion', 'unicorn', 'turtle']);   // 有技能圖的：img/pet/種類-skill.webp、img/pet/fx-種類.webp
+  const skillOn = sp => { const p = P(); return !!(p && p.st === 'pet' && p.sp === sp && SKILL[sp]); };
+  function skillFx(sp, msg) {
+    const p = P(), K = SKILL[sp]; if (!K || !p) return;
+    const old = document.getElementById('psk'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'psk'; d.className = 'psk'; d.style.setProperty('--c', K.c);
+    const art = SK_ART.has(sp);
+    d.innerHTML = `<div class="pskfx">${art ? `<img src="img/pet/fx-${sp}.webp" alt="">` : Array.from({ length: 14 }, (_, i) => `<i style="--a:${i * 360 / 14}deg;--d:${i % 3}"></i>`).join('')}</div>
+      <div class="pskpet">${art ? `<img src="img/pet/${sp}-skill.webp" alt="">` : petArt(look(p, { mood: 'happy' }))}</div>
+      <div class="psktx"><b>${SPECIES[sp].n}・${K.n}</b><span>${msg}</span></div>`;
+    document.body.appendChild(d); setTimeout(() => d.remove(), 2600);
+  }
+  /* 排行榜名字旁邊的小頭像：只有帶傳說寵物的才有（v＝公開資料 {sp, lv}） */
+  const legIcon = v => v && SKILL[v.sp] ? `<img class="lkpet" src="img/pet/${v.sp}-${stageOf(v.lv || 1)}.webp" alt="" draggable="false" title="傳說寵物：${SPECIES[v.sp].n}">` : '';
   const SP_KEYS = Object.keys(SPECIES), STARTERS = SP_KEYS.filter(k => !SPECIES[k].r);
   const TIER = ['', '稀有', '傳說'], EGG_N = ['普通蛋', '稀有蛋', '傳說蛋'];
   /* 有圖的寵物（img/pet/種類-0/1/2.webp）。圖還沒來之前是空的，全部用 SVG 畫 */
@@ -648,13 +673,15 @@
     const p = P(); if (!p) return 0;
     const today = dkey(); if (p.dd !== today) { p.dd = today; p.dn = 0; }
     const right = !!GAIN[res]; let coin = 0, xp = 0, G = null;
-    if (right) { p.dn = (p.dn || 0) + 1; G = p.dn <= BOOST_N ? GAIN[res] : LATE[res]; coin = G[0]; xp = G[1]; }
+    if (right) { p.dn = (p.dn || 0) + 1; G = p.dn <= BOOST_N ? GAIN[res] : LATE[res]; coin = G[0]; xp = G[1];
+      if (p.dn > BOOST_N && skillOn('turtle')) { coin = GAIN[res][0]; if (p.skt !== today) { p.skt = today; skillFx('turtle', '接下來答對的金幣不減半！'); } }   // 智慧龜
+      if (res === 'ok' && coin && skillOn('whale')) { p.skw = (p.skw || 0) + coin * 0.2; const b = Math.floor(p.skw + 1e-9); if (b) { p.skw -= b; coin += b; if (round && !round.skw) { round.skw = 1; skillFx('whale', `金幣多 ${b} 枚！`); } } } }   // 星空鯨
     /* 練習就是餵養：答對寵物就吃飽、開心；做滿每日任務再補一點 */
     if (right && p.st === 'pet') { if (!p.pg || p.pg.d !== today) p.pg = { d: today, f: 0, j: 0 };   // 練習加的飽足、開心：每天最多各 30
       const df = Math.min(res === 'ok' ? 2 : 1, PRAC_CAP - p.pg.f), dj = Math.min(1, PRAC_CAP - p.pg.j);
       if (df > 0) { p.pg.f += df; setFull(p, fullNow(p) + df); } if (dj > 0) { p.pg.j += dj; setJoy(p, joyNow(p) + dj); } }
     /* 每日任務獎勵：第 10 題答錯也要給，所以放在「答對才有」的外面 */
-    if (((sum.days || {})[today] || 0) >= GOAL && p.gd !== today) { p.gd = today; xp += DAY_XP; coin += DAY_COIN; if (round) round.pday = 1; if (p.st === 'pet') { setFull(p, fullNow(p) + DAY_FILL); setJoy(p, joyNow(p) + DAY_FILL); } }
+    if (((sum.days || {})[today] || 0) >= GOAL && p.gd !== today) { p.gd = today; const k2 = skillOn('lion') ? 2 : 1; xp += DAY_XP * k2; coin += DAY_COIN * k2; if (k2 > 1) setTimeout(() => skillFx('lion', `每日任務獎勵加倍：🪙 +${DAY_COIN * 2}`), 900); if (round) round.pday = 1; if (p.st === 'pet') { setFull(p, fullNow(p) + DAY_FILL); setJoy(p, joyNow(p) + DAY_FILL); } }
     if (right) { try { const wk = bossWk(); if (p.ach.bk !== wk) { p.ach.bk = wk; p.ach.bw = (p.ach.bw || 0) + 1; } } catch (e) { } wishHit(p); }
     if (!coin && !xp) { wishTick(p); p.u = Date.now(); return 0; }
     if (coin) coinAdd(p, coin); if (round) round.pc = (round.pc || 0) + coin;
@@ -816,7 +843,7 @@
     if (p.st === 'egg') return eggPage(Pn, p);
     if (checkAch(p)) save(p);   // 打開寵物頁也檢查一次：條件是練習結束後才達成的（例如最後一回拿到 3 顆星），不用再答一題才拿得到蛋
     const L = lvOf(p.xp || 0), st = stageOf(L.lv), S = SPECIES[p.sp];
-    const Sg = el('div', 'cd pstage' + (night() ? ' night' : '')); Sg.id = 'pstage';
+    const Sg = el('div', 'cd pstage' + (night() ? ' night' : '') + (SKILL[p.sp] ? ' leg' : '')); Sg.id = 'pstage';
     Sg.innerHTML = `${roomArt(p.room)}${furLayer(p, p.room || 'home')}<div class="ptag"><b>${nameOf(p)}</b><small>${S.f[st]}（${S.n}）${S.r ? `<i class="ptier r${S.r}">${TIER[S.r]}</i>` : ''}</small></div><div class="pcoin">🪙 <b id="pcoin">${p.coin || 0}</b></div>
       <div class="pbub" id="pbub">${moodLine(p)}</div><div class="ppet" id="ppet">${petArt(look(p, { mood: moodOf(p), cls: 'big' }))}</div><div id="pfx"></div><div id="plikes"></div>`;
     /* 寬版：左邊場景（約 60%）、右邊照顧資訊（約 40%）；窄版上下排 */
@@ -833,6 +860,7 @@
       <div class="pdec">白天每小時：🍙 -3、💖 -2（晚上睡覺不會變少）</div>
       <div class="pday"><span>⚡ 今日全額經驗 <b>${Math.min(dn, BOOST_N)}</b> / ${BOOST_N}</span></div>`;
     R.appendChild(B);
+    if (SKILL[p.sp]) { const K = SKILL[p.sp], c = el('div', 'cd pskc'); c.style.setProperty('--c', K.c); c.innerHTML = `<div class="pskt">✨ 傳說技能「${K.n}」<small>帶在身邊才有效</small></div><div class="pskd">${K.d}</div><button class="go pskb">看技能</button>`; tap(c.querySelector('.pskb'), () => skillFx(p.sp, K.d)); R.appendChild(c); }
     const A = el('div', 'pacts');
     [['pat', '🖐️', '摸摸頭'], ['play', '⚽', '一起玩'], ['food', '🍽️', '餵點心'], ['wear', '👒', '換造型'], ['name', '✏️', '改名字']].forEach(([k, i, n]) => {
       const b = el('button', 'pact', `<span>${i}</span>${n}`); b.dataset.k = k;
@@ -1089,7 +1117,7 @@
         const S = SPECIES[sp], r = list.find(x => x.sp === sp), has = !!p.dex[sp], lv = r ? lvOf(r.xp || 0).lv : 1, inEgg = p.eggs.some(e => e.sp === sp);
         let cnd = '';
         if (!has && t) { const v = S.pr(); cnd = inEgg ? '🥚 蛋已經在蛋籃裡了' : `${S.need}<i>${v[2] || `${Math.min(v[0], v[1])} / ${v[1]}`}</i>`; }
-        h += `<div class="pdx${has ? ' has' : ''} r${t}">${petArt({ sp, lv, sil: !has, mood: 'happy' })}<b>${has ? S.n : '？？？'}</b>${has ? `<small>${S.f.join(' → ')}</small>` : cnd ? `<span>${cnd}</span>` : ''}</div>`;
+        h += `<div class="pdx${has ? ' has' : ''} r${t}">${petArt({ sp, lv, sil: !has, mood: 'happy' })}<b>${has ? S.n : '？？？'}</b>${has ? `<small>${S.f.join(' → ')}</small>` : cnd ? `<span>${cnd}</span>` : ''}${SKILL[sp] ? `<em class="pdxsk">✨ ${SKILL[sp].n}：${SKILL[sp].d}</em>` : ''}</div>`;
       });
       h += '</div>';
     });
@@ -1277,6 +1305,24 @@
   .pbar i.f{background:linear-gradient(90deg,#ffd43b,#fab005)}.pbar i.j{background:linear-gradient(90deg,#ff8fab,#f06595)}
   .pbar b{position:relative;display:block;text-align:center;font-size:.95rem;line-height:1.5rem;color:#333}.pbar.x b{line-height:1.7rem}
   .pstage{position:relative;height:min(25rem,52vh);padding:0;overflow:hidden;border-radius:28px;container-type:size}
+  .pstage.leg .ppet>.pa,.pstage.leg .ppet>.psvg{filter:drop-shadow(0 0 .55rem rgba(255,196,50,.9))}
+  .pstage.leg .ppet::before{content:'';position:absolute;left:5%;right:5%;bottom:0;height:70%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,226,120,.55),transparent);animation:plegg 2.4s ease-in-out infinite;pointer-events:none}
+  @keyframes plegg{50%{opacity:.4;transform:scale(1.07)}}
+  .pskc{border:2px solid var(--c);background:linear-gradient(135deg,#fffbea,#fff)}.pskt{font-weight:900;color:var(--c);font-size:1.05rem}.pskt small{font-weight:700;color:#868e96;font-size:.78rem;margin-left:.4rem}
+  .pskd{margin:.3rem 0 .55rem;font-weight:700;color:#495057}.pskc .pskb{padding:.35rem 1rem;font-size:.92rem;background:var(--c);box-shadow:0 4px 0 rgba(0,0,0,.18)}
+  .pdxsk{display:block;font-style:normal;font-size:.72rem;font-weight:700;color:#b35c00;margin-top:.2rem;line-height:1.3}
+  .psk{position:fixed;left:1rem;bottom:1rem;z-index:9000;width:14.5rem;height:14.5rem;pointer-events:none;animation:pskin 2.6s ease forwards}
+  .pskfx{position:absolute;left:50%;top:40%;width:14rem;height:14rem;transform:translate(-50%,-50%)}
+  .pskfx img{width:100%;height:100%;object-fit:contain;animation:pskb 1.3s ease-out forwards}
+  .pskfx i{position:absolute;left:50%;top:50%;width:.8rem;height:.8rem;margin:-.4rem;border-radius:50%;background:radial-gradient(circle,#fff 25%,var(--c));box-shadow:0 0 .7rem var(--c);opacity:0;animation:pskp 1.3s ease-out forwards;animation-delay:calc(var(--d) * .1s + .15s)}
+  @keyframes pskp{0%{transform:rotate(var(--a)) translateY(0) scale(.3);opacity:1}100%{transform:rotate(var(--a)) translateY(-6rem) scale(1);opacity:0}}
+  @keyframes pskb{0%{transform:scale(.3);opacity:0}25%{opacity:1}100%{transform:scale(1.1);opacity:0}}
+  .pskpet{position:absolute;left:50%;top:40%;width:10rem;height:10rem;filter:drop-shadow(0 0 .4rem #fff) drop-shadow(0 0 .3rem #fff);transform:translate(-50%,-50%);animation:pskj .6s ease-out}
+  .pskpet>*{width:100%!important;height:100%!important;object-fit:contain}
+  @keyframes pskj{0%{transform:translate(-50%,-10%) scale(.4)}60%{transform:translate(-50%,-62%) scale(1.1)}100%{transform:translate(-50%,-50%) scale(1)}}
+  .psktx{position:absolute;left:0;right:0;bottom:0;background:#fff;border:3px solid var(--c);border-radius:16px;padding:.35rem .6rem;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+  .psktx b{display:block;color:var(--c);font-size:.95rem}.psktx span{font-size:.85rem;font-weight:700;color:#343a40}
+  @keyframes pskin{0%{transform:translateX(-120%)}12%{transform:translateX(0)}85%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(-30%)}}
   .pfur{position:absolute;left:0;right:0;bottom:0;height:100%;height:max(100cqh,66.64cqw);pointer-events:none}   /* 跟房間圖一樣高（房間圖 cover、靠下對齊） */
   .pfu{position:absolute;aspect-ratio:1;transform:translate(-50%,6.25%);max-width:none}.pfu.zw,.pfu.zs{transform:translate(-50%,50%)}
   .pstage.night .pfu{filter:brightness(.62) saturate(.85)}
@@ -1408,5 +1454,5 @@
   const S = document.createElement('style'); S.textContent = css + `
   @media (max-height:520px) and (min-width:600px){.pstage{height:min(22rem,80vh)}.pstage .ppet{height:calc(100% - 4.2rem)}.pbub{top:.9rem;font-size:1rem;max-width:min(20rem,44%)}}`; document.head.appendChild(S);
 
-  window.PET = { wishCard, _ADJ: ADJ, _GOGT: GOGT, _GOGA: GOGA, coinAdd, coinOnce, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
+  window.PET = { SKILL, skillOn, skillFx, legIcon, wishCard, _ADJ: ADJ, _GOGT: GOGT, _GOGA: GOGA, coinAdd, coinOnce, coinOf, mergePet, night: () => night(), petSVG, petArt, eggSVG, itemSVG, SPECIES, ITEMS, XS, ROOMS, FOODS, NAMES, STICKERS, lvOf, stageOf, formName, cum, xpNeed, MAXLV, EVO, gain, note, endMsg, homeCard, page, P, fullNow, joyNow, moodOf, look, pub, refresh, closeModal, patJoy, feedCrop, cropFood, nameOf, showEvo, checkAch, _set: (k, v) => { if (k === 'night') night.f = v; } };
 })();
