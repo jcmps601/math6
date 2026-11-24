@@ -727,6 +727,8 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .pgm{flex:1;min-width:0;padding-bottom:.3rem}.pgu{font-size:.95rem;color:#657065;font-weight:800}
 .pgs small{font-size:.85rem;color:#657065}.pgf{margin-top:.5rem;font-weight:800;color:#33443b;display:flex;align-items:center;gap:.3rem}.pgf b{color:#2e7554;font-size:1.2rem}.pgfi{width:1.6rem;height:1.6rem}.pga{margin-top:.5rem}.pga .go{min-height:2.75rem;background:#fff!important;color:#2e7554!important;border:2px solid #b2f2bb;box-shadow:0 3px 0 #d3f9d8!important;font-size:1rem!important;padding:.35rem 1rem!important;width:auto}
 .rwbtn{border:2px solid #e7ddcc;background:#fff;border-radius:999px;font-size:1rem;font-weight:900;color:#657065;padding:.15rem .7rem .15rem .4rem;font-family:inherit}
+#newsm .pmc{max-width:30rem;max-height:86vh;overflow:auto;text-align:left}#newsm .pmh{text-align:center}#newsm .nwv{margin:.7rem 0 .3rem;font-size:1.05rem;font-weight:900;color:#e8590c}#newsm .nwv small{color:#999;font-weight:800;margin-left:.4rem}
+#newsm .nwi{display:flex;gap:.6rem;align-items:flex-start;background:#fffaf0;border-radius:14px;padding:.55rem .75rem;margin-bottom:.4rem;font-size:1.08rem;font-weight:800;line-height:1.45;color:#3b3b3b}#newsm .nwi>i{font-style:normal;font-size:1.35rem;line-height:1.2}#newsm .nwold{opacity:.75}#newsm .go{display:block;margin:.8rem auto 0}
 .rwh{max-width:24rem}.rwr{display:flex;align-items:center;gap:.7rem;background:#fffaf0;border-radius:16px;padding:.5rem .8rem;margin-bottom:.5rem;text-align:left}.rwr img.ico{width:2.6rem;height:2.6rem}.rwr b{font-size:1.25rem;color:#33443b;width:4.2rem}.rwr span{font-size:1.1rem;font-weight:800;color:#657065}
 .rws{font-size:.95rem;color:#888;font-weight:800;margin:.3rem 0 .7rem}.rwok{font-size:1.3rem}
 /* 裝置設定「減少動態效果」時，動畫都停下來 */
@@ -1927,7 +1929,7 @@ function giftShow(L){if(document.getElementById('giftm'))return;const tc=L.reduc
     toast(c||t?`🎁 收到了！${c?`🪙+${c}`:''}${c&&t?'、':''}${t?`🎟️+${t}`:''}`:'🎁 這份禮物已經領過了')})}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(giftCheck,1200)});
 setInterval(()=>{if(document.visibilityState==='visible')giftCheck()},120000);
-function enterHome(){cfgApply();show$('home');presence();listenInv();listenSum();amLoad();wfLoad();setTimeout(resolveXqPending,1500);setTimeout(bkResync,5000);setTimeout(giftCheck,2500);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
+function enterHome(){cfgApply();show$('home');presence();listenInv();listenSum();amLoad();wfLoad();setTimeout(resolveXqPending,1500);setTimeout(bkResync,5000);setTimeout(giftCheck,2500);setTimeout(newsCheck,4000);const isT=isTest(user.seat);document.getElementById('meav').textContent=isT?'🧪':user.seat;document.getElementById('menm').innerHTML=isT?'測試<small>不上排行榜</small>':`${user.seat} 號<small>601</small>`;paintNavs();paintMeLook();lkLoad();render();paintSync();
   verify(user.seat,user.pin).then(r=>{if(r.ok){resetIfCleared(r.val);mergeSum(r.val);saveSum(true);wbPull();paintMeLook();render();ensureBind().then(()=>flush());pwCheck()}else if(r.why==='bad'){LS.del('learn601_user');user=null;show$('login')}})}
 /* 選單（2026-11-05 改版）
    ・寬版左側：首頁、學習、寵物、農場、遊戲，下面「其他」放錯題
@@ -2018,6 +2020,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>聲音與設定</b><small>音效${sndOn?'開著':'關著'}・朗讀・減少動態</small></button>
     <button data-k="fs">${ico(full?'ic-fullscreen-exit':'nav-fs')}<b>全螢幕</b><small>${full?'離開全螢幕':'畫面變大'}</small></button>
     <button data-k="help">${ico('pr-hint')}<b>獎勵說明</b><small>金幣、水滴、遊戲券</small></button>
+    <button data-k="news">${ico('rw-star')}<b>更新說明</b><small>${NEWS[0].d} 更新了什麼</small></button>
     <button data-k="off">${ico('ic-sync-done')}<b>帶回家準備</b><small>${offReady()?'✅ 可以離線使用':'在家沒網路也能練'}</small></button>
     <button data-k="pw">${ico('ic-lock-closed')}<b>改密碼</b><small>換一組自己的密碼</small></button>
     <button data-k="lite">${ico('ic-energy-bolt')}<b>省電模式</b><small>${liteOn()?'開著（動畫比較少）':'關著'}</small></button>
@@ -2028,6 +2031,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
   m.querySelectorAll('[data-k]').forEach(b=>tap(b,()=>{const k=b.dataset.k;
     if(k==='game'||k==='wb')return goView(k);
     if(k==='help'){closeMore();return rewardHelp()}
+    if(k==='news'){closeMore();return newsShow(true)}
     if(k==='pw'){closeMore();return pwChange()}
     if(k==='lite'){LS.set('learn601_lite',liteOn()?0:1);liteApply();closeMore();return toast(liteOn()?'⚡ 省電模式開了：動畫變少，比較順':'省電模式關了')}
     if(k==='off'){closeMore();return offPrep()}
@@ -2288,6 +2292,25 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
   tap(c.querySelector('#pgGo'),()=>startPractice(isMix(U)?U.key:UN.indexOf(U)));
   return c}
 /* 獎勵說明：第一次在首頁出現，之後從「獎勵說明」再看 */
+/* ===================== 更新說明（2026-11-24） =====================
+   每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
+   學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
+const NEWS=[
+  {v:'v187',d:'11/24',it:[['🐢','智慧龜的條件修好了：數學現在只有一個期末單元，那個單元 3 顆星就算。寵物任務會寫「還差哪一科」'],['🎧','帶回家沒網路時，英語聽力也聽得到了（回家前在學校打開平台一次就好）'],['⚔️','全班打魔王：首頁會寫「今天 ○／500」，每人每天最多打 500 點，一週可以累計']]},
+  {v:'v185',d:'11/23',it:[['🏆','雙人對戰、方塊對戰、雙人合作的排行榜，也會顯示頭像框、名牌和稱號了']]},
+  {v:'v184',d:'11/23',it:[['✨','閃亮金、彩虹糖名牌和傳說頭像框（金龍、皇家金冠），在排行榜、登入頁也會一直閃']]},
+  {v:'v182',d:'11/23',it:[['🐉','一起打王：魔王會動了！岩甲巨獸會重踏、雷霆機甲龍會衝刺、暗焰魔龍王會飛，技能也換上新特效']]},
+  {v:'v180',d:'11/23',it:[['💥','一起打王：三隻魔王都有新招式（地震重踏、岩牆、連鎖閃電、雷暴、火焰吐息、末日隕石）。看到地上的警告範圍，下一輪就是大招，快開走！'],['🧍','可以 1 個人打王了：每天 2 場，打贏的金幣是多人的一半，跟多人的場數分開算']]},
+  {v:'v179',d:'11/22',it:[['🛡️','坦克車庫新增 9 台坦克，砲彈造型也不一樣']]}];
+const newsK=()=>'learn601_news_'+(user?user.seat:0);
+function newsShow(all){if(document.getElementById('newsm'))return;const seen=LS.get(newsK(),null),i=NEWS.findIndex(n=>n.v===seen);
+  const fresh=all?NEWS:(i<0?NEWS.slice(0,1):NEWS.slice(0,i)).slice(0,3);if(!fresh.length)return;
+  const m=el('div','pmod','');m.id='newsm';m.innerHTML=`<div class="pmc"><div class="pmh">${all?'更新說明':'🎉 平台更新了！'}</div>`+
+    fresh.map((n,k)=>`<div class="${all&&k>=3?'nwold':''}"><div class="nwv">${n.d} 更新<small>${n.v}</small></div>${n.it.map(([e,t])=>`<div class="nwi"><i>${e}</i><span>${t}</span></div>`).join('')}</div>`).join('')+
+    `<button class="go nwok">我知道了</button></div>`;document.body.appendChild(m);
+  const close=()=>{m.remove();LS.set(newsK(),NEWS[0].v)};tap(m.querySelector('.nwok'),close);tap(m,e=>{if(e.target===m)close()})}
+/* 進首頁 4 秒後：沒有其他視窗（老師送禮物、教學…）才跳，不要疊在一起 */
+function newsCheck(){if(!user||!sum||LS.get(newsK(),null)===NEWS[0].v)return;if(document.querySelector('.pmod,#giftm')||!(document.getElementById('home')||{classList:{contains:()=>0}}).classList.contains('on'))return setTimeout(newsCheck,5000);newsShow(false)}
 function rewardHelp(){const m=el('div','pmod','');m.id='rwhelp';m.innerHTML=`<div class="pmc rwh"><div class="pmh">學習獎勵</div>
   <div class="rwr">${ico('rw-coin')}<b>金幣</b><span>買點心與造型</span></div><div class="rwr">${ico('ic-water-drop')}<b>水滴</b><span>照顧農場</span></div><div class="rwr">${ico('rw-ticket')}<b>遊戲券</b><span>進入挑戰樂園</span></div>
   <div class="rws">練習答對就會拿到；每 10 題拿到 8 分換 1 張遊戲券（一次就答對 1 分，選擇題第二次才對 0.5 分）。完成「今日願望」還能集愛心，一週集滿 5 顆送限定配件</div><button class="go rwok">我知道了</button></div>`;document.body.appendChild(m);
@@ -3853,7 +3876,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v187';let verNew=false,verBusy=false;
+const APP_VER='learn601-v188';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
