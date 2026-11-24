@@ -729,6 +729,9 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .rwbtn{border:2px solid #e7ddcc;background:#fff;border-radius:999px;font-size:1rem;font-weight:900;color:#657065;padding:.15rem .7rem .15rem .4rem;font-family:inherit}
 #newsm .pmc{max-width:30rem;max-height:86vh;overflow:auto;text-align:left}#newsm .pmh{text-align:center}#newsm .nwv{margin:.7rem 0 .3rem;font-size:1.05rem;font-weight:900;color:#e8590c}#newsm .nwv small{color:#999;font-weight:800;margin-left:.4rem}
 #newsm .nwi{display:flex;gap:.6rem;align-items:flex-start;background:#fffaf0;border-radius:14px;padding:.55rem .75rem;margin-bottom:.4rem;font-size:1.08rem;font-weight:800;line-height:1.45;color:#3b3b3b}#newsm .nwi>i{font-style:normal;font-size:1.35rem;line-height:1.2}#newsm .nwold{opacity:.75}#newsm .go{display:block;margin:.8rem auto 0}
+.zy{display:inline-flex;align-items:center;vertical-align:middle;line-height:1;margin:0 .1em;font-family:"BpmfZihiKaiStd","標楷體","DFKai-SB","BiauKai",inherit}.zy b{display:inline-flex;flex-direction:column;align-items:center;font-size:.82em;font-weight:inherit}.zy b u,.zy b s{text-decoration:none;line-height:1}.zy b s{line-height:.55}.zy i{font-style:normal;font-size:.95em;font-weight:900;margin-left:.02em;align-self:center}.zy i{--o:0em;--n:0em;transform:translateY(calc(var(--o) + var(--n)))}.zy i.t2,.zy i.t4{--o:.28em}.zy i.t3{--o:.02em}.zy.n3 i.t3{--o:.16em}.zy.n3 i{--n:.45em}   /* 聲調：1、2 個符號放在正中間（2 個就是兩個的中間）；3 個放在中間和最下面那個的中間 */
+.zyr .zy{margin:0}.zyr .zy b{font-size:.56em}.zyr .zy i{font-size:.6em}.zyr .zy.n3 i{--n:.5em}   /* 標在字旁邊的注音小一點；單獨出現的注音（選項、句子裡）大一點，聲調才看得清楚 */
+.zyr{display:inline-flex;align-items:center;vertical-align:middle;gap:.04em}.zyr .qbx{display:inline-block;width:.85em;height:.85em;border:.12em solid #9aa0a6;border-radius:.15em;background:#fff;margin:0}.zyr .zc{line-height:1}
 .rwh{max-width:24rem}.rwr{display:flex;align-items:center;gap:.7rem;background:#fffaf0;border-radius:16px;padding:.5rem .8rem;margin-bottom:.5rem;text-align:left}.rwr img.ico{width:2.6rem;height:2.6rem}.rwr b{font-size:1.25rem;color:#33443b;width:4.2rem}.rwr span{font-size:1.1rem;font-weight:800;color:#657065}
 .rws{font-size:.95rem;color:#888;font-weight:800;margin:.3rem 0 .7rem}.rwok{font-size:1.3rem}
 /* 裝置設定「減少動態效果」時，動畫都停下來 */
@@ -1537,7 +1540,17 @@ const KIND_HINT={listen:['再按 🔊 聽一次，仔細聽','先看清楚每個
   look:['再仔細看一次圖','先把不可能的選項刪掉'],think:['把題目再讀一次','先把不可能的選項刪掉']};
 /* 英語:彎的引號 ’ ‘ “ ” 換成直的 ' "(中文字型裡彎的引號是全形,It’s 會變成 It’  s) */
 const enQ=v=>typeof v==='string'?v.replace(/[’‘]/g,"'").replace(/[“”]/g,'"'):Array.isArray(v)?v.map(enQ):v;
-function bankQ(it,s){if(it.grp)return grpQ(it,s);if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);it=o}let big=it.big==null?'':String(it.big);const n=[...big.replace(/<[^>]+>/g,'')].length,kind=bankKind(it);
+/* 2026-11-24 國語的注音改成直式（跟課本一樣）：注音符號由上往下排、聲調在右邊、輕聲「˙」在最上面。
+   題庫照常寫橫的注音（ㄆㄧㄝˇ），這裡自動換；要標在字旁邊的寫 [字|ㄈㄨˋ]，寫國字的空格寫 [□|ㄈㄨˋ] */
+const ZYS=/˙?[\u3105-\u3119]?[\u3127-\u3129]?[\u311a-\u3126]?[ˊˇˋ˙]?/y,ZYL=/[\u3105-\u3129]/;
+function zyOne(sy){let lt='',tn='';if(sy[0]==='˙'){lt='˙';sy=sy.slice(1)}if(/[ˊˇˋ˙]$/.test(sy)){if(sy.endsWith('˙'))lt='˙';else tn=sy.slice(-1);sy=sy.slice(0,-1)}
+  return `<span class="zy n${[...sy].length}"><b>${lt?`<s>${lt}</s>`:''}${[...sy].map(c=>`<u>${c}</u>`).join('')}</b>${tn?`<i class="t${'ˊˇˋ'.indexOf(tn)+2}">${tn}</i>`:''}</span>`}
+function zyRun(t){let o='',i=0;while(i<t.length){if(ZYL.test(t[i])||(t[i]==='˙'&&ZYL.test(t[i+1]||''))){ZYS.lastIndex=i;const m=ZYS.exec(t);if(m&&m[0]&&ZYL.test(m[0])){o+=zyOne(m[0]);i+=m[0].length;continue}}o+=t[i++]}return o}
+function zyH(v){if(typeof v!=='string'||!/[\u3105-\u3129]/.test(v))return v;
+  v=v.replace(/\[([^\]|]{1,2})\|([^\]]+)\]/g,(m,c,z)=>`<span class="zyr">${c==='□'?'<i class="qbx"></i>':`<span class="zc">${c}</span>`}${zyRun(z)}</span>`);
+  return v.split(/(<[^>]+>)/).map(p=>p[0]==='<'?p:zyRun(p)).join('')}
+function bankQ(it,s){if(it.grp)return grpQ(it,s);
+  if(s==='zh'&&!it._zy){const row0=it.opts.length<=3&&it.opts.every(o=>o.length<=1);it=Object.assign({},it,{_zy:1,_row:row0,q:zyH(it.q),big:zyH(it.big),opts:it.opts.map(zyH),a:zyH(it.a),exp:Array.isArray(it.exp)?it.exp.map(zyH):zyH(it.exp),hint:Array.isArray(it.hint)?it.hint.map(zyH):zyH(it.hint)})}if(s==='en'){const o={};for(const k in it)o[k]=enQ(it[k]);it=o}let big=it.big==null?'':String(it.big);const n=[...big.replace(/<[^>]+>/g,'')].length,kind=bankKind(it);
   /* 短文填空:其他還沒輪到的格子也畫成淡淡的底線,學生才看得出哪裡是空格 */
   /* 題目問「畫線的部分」:畫線的字一開始就要看得到(以前答完才出現) */
   if(it.reveal&&/畫線/.test(it.q||'')&&!big){big=String(it.reveal);it=Object.assign({},it,{reveal:'',bc:'',exp:''})}
@@ -1545,7 +1558,7 @@ function bankQ(it,s){if(it.grp)return grpQ(it,s);if(s==='en'){const o={};for(con
   if(it.t==='短文填空')big=big.replace(/(^|[^>])\((\d)\)(?!＿)/g,'$1<span class="ob">($2)＿＿</span>');
   /* 字的大小看長度:對話、句子用大字,只有長的短文才用小字 */
   const bc=it.bc==='p'?(n>160?'p':'p big'):it.bc!=null?it.bc:n>6?'s':'';
-  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:it.opts.every(o=>/^[○╳]/.test(o))?it.opts.slice():shuf(it.opts),text:it.q,ans:it.a,row:it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=(s==='zh'||s==='soc'||s==='sci'?1:s==='en'?2:3)),   // 並排:圖片,或很短的(ar、ee;國語只有單一個字才並排)
+  return {type:'mc',id:`${s}|${it.q}|${big}|${it.img||''}|${it.a}`,opts:it.opts.every(o=>/^[○╳]/.test(o))?it.opts.slice():shuf(it.opts),text:it.q,ans:it.a,row:it._zy?it._row||it.opts.every(o=>/^(<span class="zy">.*?<\/span>)+$/.test(o)&&o.split('class="zy"').length<=3):it.opts.every(isImg)||it.opts.length<=3&&it.opts.every(o=>o.length<=(s==='zh'||s==='soc'||s==='sci'?1:s==='en'?2:3)),   // 並排:圖片,或很短的(ar、ee;國語只有單一個字才並排)
     big:(it.img?`<img class="qimg${it.tall?' tall':''}" src="${it.img}" alt="">`:'')+(big?`<div class="bx${bc?' '+bc:''}">${big}</div>`:''),
     say:it.say||'',au:it.au||'',rv:it.reveal||'',hd:it.au&&it.exp?it.exp:'',speak:s==='en'&&!it.au&&/^[\x20-\x7e]+$/.test(it.a)?it.a:'',
     subj:s,kind,hints:it.hint?[].concat(it.hint):KIND_HINT[kind].slice(),
@@ -2296,6 +2309,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v189',d:'11/24',it:[['📖','國語第 8 課〈街頭藝術家〉的題目上線了！生字、注音、語詞、成語、句型、課文理解、閱讀測驗都有'],['ㄅ','注音改成直的，跟課本一樣（第 7 課也一起改了）'],['📕','單元獎勵拿滿以後答錯的題目，到錯題本訂正只算練習，不會有獎勵']]},
   {v:'v187',d:'11/24',it:[['🐢','智慧龜的條件修好了：數學現在只有一個期末單元，那個單元 3 顆星就算。寵物任務會寫「還差哪一科」'],['🎧','帶回家沒網路時，英語聽力也聽得到了（回家前在學校打開平台一次就好）'],['⚔️','全班打魔王：首頁會寫「今天 ○／500」，每人每天最多打 500 點，一週可以累計']]},
   {v:'v185',d:'11/23',it:[['🏆','雙人對戰、方塊對戰、雙人合作的排行榜，也會顯示頭像框、名牌和稱號了']]},
   {v:'v184',d:'11/23',it:[['✨','閃亮金、彩虹糖名牌和傳說頭像框（金龍、皇家金冠），在排行榜、登入頁也會一直閃']]},
@@ -2499,10 +2513,10 @@ async function wbPull(){if(!db||!user)return;try{const cm=(await timeout(db.ref(
 /* 錯題本「訂正成功」的紀錄：只有在錯題本裡真的答對、從錯題本拿掉那一刻才記（刪除、換範圍不算）。
    sum.wf = [[時間, 題目指紋], …]，留 35 天，跟著摘要同步；「我的進步」的「這週訂正幾題」就是數這個 */
 function wfLog(k){sum.wf=(sum.wf||[]).filter(x=>Array.isArray(x)&&x[0]>Date.now()-35*864e5);if(!sum.wf.some(x=>x[1]===k&&Date.now()-x[0]<6e4))sum.wf.push([Date.now(),k]);saveSum(true)}
-function wbUpdate(q,res){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
-  if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];const T=wbTomb();T[k]=Date.now();LS.set(wbxKey(),T);wbSave(W);wfLog(k);if(!q.rv)rvAdd(x.q,x.k);try{PET.note('wb')}catch(e){}toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
-  if(i>=0){const x=W.splice(i,1)[0];x.n++;x.d=dkey();x.m=Date.now();W.push(x)}
-  else{const c=JSON.parse(JSON.stringify(q));delete c.rv;delete c.rvs;W.push({k,q:c,n:1,d:dkey(),m:Date.now()});const T=wbTomb();if(T[k]){delete T[k];LS.set(wbxKey(),T)}}   // 複習題答錯：照原本的方式存進錯題本（rvk 留著，之後過關會接回同一筆複習）
+function wbUpdate(q,res,rew){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
+  if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];const T=wbTomb();T[k]=Date.now();LS.set(wbxKey(),T);wbSave(W);if(!x.q.nr){wfLog(k);try{PET.note('wb')}catch(e){}}if(!q.rv)rvAdd(x.q,x.k);toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
+  if(i>=0){const x=W.splice(i,1)[0];x.n++;if(rew&&pu!=='wb')delete x.q.nr;x.d=dkey();x.m=Date.now();W.push(x)}
+  else{const c=JSON.parse(JSON.stringify(q));delete c.rv;delete c.rvs;if(!rew&&pu!=='wb')c.nr=1;else delete c.nr;W.push({k,q:c,n:1,d:dkey(),m:Date.now()});const T=wbTomb();if(T[k]){delete T[k];LS.set(wbxKey(),T)}}   // 複習題答錯：照原本的方式存進錯題本（rvk 留著，之後過關會接回同一筆複習）
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
 function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題再練`);h.style.setProperty('--c',WB.c);P.appendChild(h);
   const W=wbLoad();const c=el('div','cd');c.id='practice';c.style.setProperty('--c',WB.c);
@@ -3142,7 +3156,9 @@ const uqN=key=>key?(uqDay().u[key]||0):0;
 const capOf=k=>{const key=ukeyOf(k);return !!key&&uqN(key)>=UNIT_CAP};
 /* 防刷題（同一題）：同一題今天已經做過（拿過獎勵），再做一次只算練習，不加今日任務、題數、遊戲券、金幣……
    ・用題目指紋 qKey 記在 sum.qd = {d:今天, k:[指紋]}（跟著摘要同步，兩台平板合起來算）
-   ・錯題本另外算（前面加 w:）：今天在單元做錯、再到錯題本做對，錯題本那次照樣有獎勵 */
+   ・錯題本另外算（前面加 w:）：今天在單元做錯、再到錯題本做對，錯題本那次照樣有獎勵
+   ・防「領完獎勵故意猜錯，再去錯題本領」：沒有獎勵的時候（單元拿滿、同一題重做）答錯，存進錯題本的題目標 q.nr=1，
+     在錯題本訂正一樣會拿掉，但沒有獎勵、不算錯題剋星和寵物任務；之後在有獎勵的時候又答錯，就把 nr 拿掉 */
 function qdDay(){const d=dkey();if(!sum.qd||sum.qd.d!==d)sum.qd={d,k:[]};sum.qd.k=sum.qd.k||[];return sum.qd}
 const qdKey=q=>(pu==='wb'?'w:':'')+qKey(q);
 const qdHas=q=>qdDay().k.includes(qdKey(q));
@@ -3158,7 +3174,7 @@ function capAlt(k){const key=ukeyOf(k),cur=UN.find(u=>u.key===key)||mixByKey(key
   return L.sort((a,b)=>(b.s===sj)-(a.s===sj)||uqN(a.key)-uqN(b.key)).slice(0,4)}
 function capModal(k,goAnyway){const m=el('div','pmod','');m.id='capm';const alt=capAlt(k);
   m.innerHTML=`<div class="pmc capc"><img src="img/ui/mascot-think.webp" alt=""><div class="rmt">換個單元練練看！</div>
-    <div class="rms">今天「${unitName(k)}」已經練 ${UNIT_CAP} 題了。<br>換一個單元，就可以繼續拿遊戲券、金幣和排行榜題數。</div><div class="capl"></div>
+    <div class="rms">今天「${unitName(k)}」已經練 ${UNIT_CAP} 題了。<br>換一個單元，就可以繼續拿遊戲券、金幣和排行榜題數。<br><small>（沒有獎勵時答錯的題目，到錯題本訂正也沒有獎勵）</small></div><div class="capl"></div>
     <div class="capx"><button class="gray capgo">還是練這個（沒有獎勵）</button></div></div>`;document.body.appendChild(m);
   const box=m.querySelector('.capl');
   alt.forEach(u=>{const b=el('button','capu',`<span class="ci">${u.img?ico(u.img):(u.ic||'')}</span><span><small>${isMix(u)?'★ 綜合':uTag(u)}</small><b>${u.name}</b></span>`);b.style.setProperty('--c',u.c);
@@ -3345,7 +3361,7 @@ function rushModal(){const m=el('div','pmod','');m.id='rushm';m.innerHTML=`<div 
 const dis=(b,v)=>{b.disabled=v;b.classList.toggle('off',v)};
 function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),true);$('#hint').classList.remove('pulse');$('#show').classList.add('hide');paintF();
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
-  const uk=ukeyOf(pu),dup=qdHas(q),rew=!dup&&(!uk||uqN(uk)<UNIT_CAP);if(uk&&!dup){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}if(!dup)qdAdd(q);   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵；同一題今天做過就不再加
+  const uk=ukeyOf(pu),dup=qdHas(q),wbe=pu==='wb'&&wbLoad().find(x=>x.k===qKey(q)),wnr=!!(pu==='wb'&&(q.nr||wbe&&wbe.q.nr)),rew=!dup&&!wnr&&(!uk||uqN(uk)<UNIT_CAP);if(uk&&!dup){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}if(!dup)qdAdd(q);   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵；同一題今天做過就不再加
   const k=dkey();if(rew){dvAdd(k);sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1}}
   const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):q.type==='grp'?0.5:1;   // 這題的遊戲券分數
   let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
@@ -3355,11 +3371,12 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
     if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 得 ${n} 分，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
     else{round.miss=(round.miss||0)+1;toast(`這 10 題得 ${n} 分，要 ${TK_NEED} 分才有券`)}}
   const bh=rew?bossHit(round.res[cur]):0,pc=rew?PET.gain(round.res[cur]):0,fw=rew?FARM.gain(round.res[cur]):0;if(rew)try{wkAdd(q,round.res[cur])}catch(e){}   // 每週任務：這一科答對 +1
-  if(dup){$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">這題今天做過了，這次只算練習</span>')}
+  if(wnr){$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">這題是在沒有獎勵的時候答錯的，訂正只算練習</span>')}
+  else if(dup){$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">這題今天做過了，這次只算練習</span>')}
   else if(!rew){round.capped=1;if(!round.capNote){round.capNote=1;$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">今天這個單元的獎勵拿滿了</span>')}}
   else if(uk&&uqN(uk)===UNIT_CAP)toast(`今天「${unitName(pu)}」的獎勵拿滿了，下一輪換個單元吧！`);if(bh||pc||fw||tkp)$('#fb').insertAdjacentHTML('beforeend',`${tkp&&!rushed?`<span class="bhit tkp">🎟️ +${tkp} 分</span>`:''}${bh?`<span class="bhit">⚔️ +${bh}</span>`:''}${pc?`<span class="bhit coin">🪙 +${pc}</span>`:''}${fw?`<span class="bhit water">💧 +${fw}</span>`:''}`);
   if(pu==='am'&&round.amr!=null&&round.res.every(x=>x))sum.amr=Math.max(sum.amr||0,round.amr+1);   // 10 題都做完（還沒按看結果就離開也算）：閱讀測驗下次換下一篇
-  saveSum(round.got>0||rushed);amRunSave();if(rushed)rushModal();wbUpdate(q,round.res[cur]);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&cfgGet().say!==false)setTimeout(()=>speak(q.speak),300);
+  saveSum(round.got>0||rushed);amRunSave();if(rushed)rushModal();wbUpdate(q,round.res[cur],rew);if(q.rv){const r=rvAnswer(q,round.res[cur],round.det[cur]);if(r!=null)(round.rvd=round.rvd||[]).push(r)}if(q.speak&&cfgGet().say!==false)setTimeout(()=>speak(q.speak),300);
   solv(q);fitBig();[...$('#steps').querySelectorAll('.h')].forEach(e=>e.remove());q.sol.forEach(s=>addStep(s,'sol'));
   if(!ok){const fb=$('#fb');fb.className='bad';fb.textContent=q.type==='grp'?'綠色的是正確答案，看一下再下一題':q.id&&q.type==='mc'?(q.kind==='listen'?'綠色的是正確答案，再按 🔊 聽一次':'綠色的是正確答案，看一下再下一題'):'正確答案在這裡，看懂算式再下一題';
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
@@ -3876,7 +3893,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v188';let verNew=false,verBusy=false;
+const APP_VER='learn601-v189';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
