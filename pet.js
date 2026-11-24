@@ -15,6 +15,9 @@
   const stk = () => { try { return streak(); } catch (e) { return 0; } };
   const star3 = k => ((sum && sum.best && sum.best[k]) || 0) >= 9;
   const A = () => (P() && P().ach) || {};
+  /* 2026-11-24 智慧龜：每一科要哪一個 3 顆星。學習頁「只有 1 個期末單元」時不放綜合複習卡（題目一樣），
+     這時那個單元 3 顆星就算；以前綜合複習已經 3 顆星的也算。回傳可以算數的 key（空的＝這一科還沒有題目） */
+  const mixNeed = k => { const M = mixOf(k); if (!M) return []; let LV = []; try { LV = UN.filter(u => u.g && u.s === k && live(u)); } catch (e) { } return LV.length === 1 ? [M.key, LV[0].key] : [M.key]; };
   const SPECIES = {
     chick: { n: '啾啾鳥', f: ['啾啾', '啾翼', '晴空鳥'], r: 0, pal: C3('#ffd84d', '#fff4bf', '#d39a00'), say: '啾啾！' },
     cat: { n: '喵喵貓', f: ['喵喵', '星喵', '月光喵'], r: 0, pal: C3('#ffb067', '#ffe8cf', '#dc6f17'), say: '喵～' },
@@ -47,7 +50,8 @@
     unicorn: { n: '彩虹馬', f: ['小彩', '彩虹駒', '天馬獨角獸'], r: 2, emo: '🦄', pal: C3('#fbfbff', '#ffffff', '#b197fc'), say: '彩虹出來了！',
       need: '圖鑑收集 8 隻寵物', pr: () => [dexN(), 8] },
     turtle: { n: '智慧龜', f: ['算算龜', '學者龜', '智慧神龜'], r: 2, emo: '🐢', pal: C3('#8fdcb4', '#e6fbef', '#3e9a6b'), say: '慢慢想，一定會懂！',
-      need: '五科的綜合複習都 3 顆星，而且一次就答對累計 1,000 題', pr: () => { const us = SUBJ.map(S => mixOf(S.k)).filter(Boolean), n = us.filter(u => star3(u.key)).length; return [n === us.length && firstN() >= 1000 ? 1 : 0, 1, `綜合 3 顆星 ${n}/${us.length}・一次就答對 ${Math.min(firstN(), 1000)}/1000`]; } },
+      need: '五科的綜合複習都 3 顆星（只有一個單元的科目，就是那個單元），而且一次就答對累計 1,000 題', pr: () => { const us = SUBJ.map(S => ({ S, ks: mixNeed(S.k) })).filter(x => x.ks.length), miss = us.filter(x => !x.ks.some(star3)), n = us.length - miss.length;
+        return [!miss.length && firstN() >= 1000 ? 1 : 0, 1, `綜合 3 顆星 ${n}/${us.length}${miss.length ? `（還差${miss.map(x => x.S.n).join('、')}）` : ''}・一次就答對 ${Math.min(firstN(), 1000)}/1000`]; } },
   };
   const SP_KEYS = Object.keys(SPECIES), STARTERS = SP_KEYS.filter(k => !SPECIES[k].r);
   const TIER = ['', '稀有', '傳說'], EGG_N = ['普通蛋', '稀有蛋', '傳說蛋'];

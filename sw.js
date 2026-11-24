@@ -2,7 +2,7 @@
    第一次有網路時打開平台，就把平台、遊戲和雲端程式存在平板上；之後沒網路也能打開練習。
    網頁本身「先抓網路上最新的，抓不到才用存起來的」，所以老師更新後學生一連網就會拿到新版。
    改版時 CACHE 的版本號要跟 learn.html 的 APP_VER 一起改（learn.html 靠這個號碼知道有新版、自動重新載入）。 */
-const CACHE = 'learn601-v185';
+const CACHE = 'learn601-v187';
 /* 圖片、錄音另外放一個「不跟著版本清掉」的櫃子：學生按「帶回家前準備」下載的東西，平台改版後還在 */
 const ASSETS = 'learn601-assets';
 const PAGES = ['./learn.html', './game.html', './chess.html', './xq.js', './aq.js', './tank.js', './tankv.js', './party.html', './coop.html', './sling.html', './ps.js', './ps2.js', './blocks.html', './bk.js', './draw.html', './ico.js', './am.js', './pet.js', './farm.js', ...['m5', 'zh', 'en', 'sci', 'soc', 'am_zh', 'am_cy'].map(k => `./bank/${k}.js`)];
@@ -24,6 +24,17 @@ self.addEventListener('activate', e => {
   })());
 });
 
+/* 從存好的整個檔案切出「bytes=開始-結束」那一段，回 206（分段的回應） */
+async function rangeResp(req) {
+  const hit = await caches.match(req.url, { ignoreSearch: true });
+  if (!hit || hit.status !== 200) { try { return await fetch(req); } catch (err) { return Response.error(); } }
+  const buf = await hit.arrayBuffer(), size = buf.byteLength, m = /bytes=(\d*)-(\d*)/.exec(req.headers.get('range') || '');
+  let a = 0, b = size - 1;
+  if (m) { if (m[1] === '' && m[2] !== '') a = Math.max(0, size - +m[2]); else { a = +m[1] || 0; if (m[2] !== '') b = Math.min(+m[2], size - 1); } }
+  if (a >= size || a > b) return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${size}` } });
+  return new Response(buf.slice(a, b + 1), { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': hit.headers.get('Content-Type') || 'audio/mpeg', 'Content-Range': `bytes ${a}-${b}/${size}`, 'Content-Length': String(b - a + 1), 'Accept-Ranges': 'bytes' } });
+}
+
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error('timeout')), ms))]);
 
 self.addEventListener('fetch', e => {
@@ -35,7 +46,9 @@ self.addEventListener('fetch', e => {
 
   /* 圖片、錄音很少變動：有存就先用存的（馬上顯示），背景再抓新的存起來，下次打開就是新版 */
   if (url.origin === self.location.origin && /\.(webp|png|jpe?g|gif|svg|mp3|m4a|ogg|wav)$/i.test(url.pathname)) {
-    if (req.headers.has('range')) return;   // 錄音分段讀取：交給瀏覽器自己處理
+    /* 2026-11-24 錄音分段讀取：iPad 的 Safari 播錄音一定會分段要（先要前 2 個 byte），以前直接交給網路，回家沒網路就聽不到。
+       改成：平板裡有存（帶回家準備下載過）就從存好的檔案切出那一段給它；沒存才去網路抓 */
+    if (req.headers.has('range')) { e.respondWith(rangeResp(req)); return; }
     e.respondWith((async () => {
       const c = await caches.open(ASSETS);
       const hit = await caches.match(req, { ignoreSearch: true });   // 兩個櫃子都找

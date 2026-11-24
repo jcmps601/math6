@@ -1758,7 +1758,9 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const q of ['bsr','bss','bsr1'])if(r[q]&&r[q].d===dkey()&&(!sum[q]||sum[q].d!==r[q].d||(r[q].n||0)>(sum[q].n||0)))sum[q]={d:r[q].d,n:r[q].n||0};   // 今天打王拿過幾次金幣（bsr 多人、bsr1 一個人）、一個人打王開了幾場（bss）
   if(r.rv){sum.rv=sum.rv||{};for(const k in r.rv){const a=sum.rv[k],b=r.rv[k];if(b&&(!a||(b.m||0)>(a.m||0)))sum.rv[k]=b}}   // 延後複習：每一筆看比較新的
   if(r.dv){sum.dv=sum.dv||{};for(const d in r.dv){const a=sum.dv[d]=sum.dv[d]||{},b=r.dv[d]||{};for(const k in b){a[k]=mx(a[k],b[k]);dvFix(k)}}}
-  sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
+  sum.bossD=sum.bossD||{};for(const k in r.bossD||{})sum.bossD[k]=mx(sum.bossD[k],r.bossD[k]);
+  if(r.bossT&&r.bossT.d===dkey()&&(!sum.bossT||sum.bossT.d!==r.bossT.d||(r.bossT.n||0)>(sum.bossT.n||0)))sum.bossT={d:r.bossT.d,n:r.bossT.n||0};   // 2026-11-24 今天打魔王的點數也要跟雲端合併：以前沒合併，登出再登入、換一台平板，今天的 500 點就重新算
+  sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   /* 方塊對戰：段位會升也會降 → 看最後更新的那台；這台還沒有就用雲端的。40 排競速：留最快的（2026-11-22：以前沒合併，換平板段位會不見） */
   if(r.bks!=null&&(sum.bks==null||(r.last||0)>myLast))sum.bks=r.bks;if(r.bksp>0)sum.bksp=sum.bksp>0?Math.min(sum.bksp,r.bksp):r.bksp;
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
@@ -3403,9 +3405,9 @@ const myBoss=wk=>(sum&&sum.bossD&&sum.bossD[wk])||0;
 /* 魔王打倒了沒（這台平板記得的）：打倒以後答對就不再扣血、不再加點數 */
 const bdeadK=wk=>'learn601_bdead_'+(user&&user.seat)+'_'+wk;
 const bossDead=wk=>!!LS.get(bdeadK(wk),0);
-function bossHit(res){const h=BOSS_HIT[res]||0;if(!h||!user||!sum)return 0;const wk=bossWk();
+function bossHit(res){let h=BOSS_HIT[res]||0;if(!h||!user||!sum)return 0;const wk=bossWk();
   if(bossDead(wk))return 0;
-  if(wk>=BOSS_NEW){const dk=dkey();if(!sum.bossT||sum.bossT.d!==dk)sum.bossT={d:dk,n:0};if(sum.bossT.n>=BOSS_DAY)return 0;sum.bossT.n+=h;if(sum.bossT.n>=BOSS_DAY)toast('⚔️ 今天打魔王的點數滿了，明天再來！')}
+  if(wk>=BOSS_NEW){const dk=dkey();if(!sum.bossT||sum.bossT.d!==dk)sum.bossT={d:dk,n:0};if(sum.bossT.n>=BOSS_DAY)return 0;h=Math.min(h,BOSS_DAY-sum.bossT.n);sum.bossT.n+=h;if(sum.bossT.n>=BOSS_DAY)toast('⚔️ 今天打魔王的點數滿了，明天再來！')}
   if(!bossHit.at||Date.now()-bossHit.at>60000){bossHit.at=Date.now();bossLoad(wk).then(R=>{if(R&&R.ok&&R.tot>=R.hp)LS.set(bdeadK(wk),1)}).catch(()=>{})}   // 一分鐘看一次全班打倒了沒
   sum.bossD=sum.bossD||{};sum.bossD[wk]=(sum.bossD[wk]||0)+h;
   for(const k of Object.keys(sum.bossD))if(k<bossWk(4))delete sum.bossD[k];   // 只留最近幾週
@@ -3455,7 +3457,7 @@ async function bossPaint(c,wk,tries=0){const B=bossOf(wk);let R,L=null;try{[R,L]
   c.classList.toggle('dead',dead);c.querySelector('#bbi').style.width=(left/R.hp*100)+'%';
   c.querySelector('#bbt').textContent=dead?'💥 被打倒了！':`剩 ${left} / ${R.hp}`;
   if(dead){c.querySelector('#bbs').innerHTML=`🎉 全班合力把${B.n}打倒了！`+(me?`我出手了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'下週一會來新的魔王');}
-  else c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${tot}</b> 點・`:seen&&seen.wk===wk?`全班已經打了 <b>${tot}</b> 點（連線中…）・`:R.denied?'⏳ 全班的點數還沒開通（請告訴老師）・':'📴 連上網路才看得到全班打了多少・')+(me?`我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！');
+  else c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${tot}</b> 點・`:seen&&seen.wk===wk?`全班已經打了 <b>${tot}</b> 點（連線中…）・`:R.denied?'⏳ 全班的點數還沒開通（請告訴老師）・':'📴 連上網路才看得到全班打了多少・')+(me?`這週我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！')+(wk>=BOSS_NEW&&sum?`・今天 ${sum.bossT&&sum.bossT.d===dkey()?sum.bossT.n:0}／${BOSS_DAY}`:'');   // 2026-11-24 每天上限 500，一週累計可以超過，寫清楚
   const md=['🥇','🥈','🥉'];c.querySelector('#bbtop').innerHTML=R.rows.length?'本週勇者：'+R.rows.slice(0,5).map((r,i)=>`<span>${md[i]||''}${r.seat} 號 ${r.s}</span>`).join(''):'';
   /* 打倒了:有出手的人領獎(這週、上週) */
   const rw=c.querySelector('#bbrw');rw.innerHTML='';
@@ -3851,7 +3853,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v185';let verNew=false,verBusy=false;
+const APP_VER='learn601-v187';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
