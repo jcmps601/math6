@@ -968,7 +968,7 @@ html:not(.rm) body.lite .np-gold::after,html:not(.rm) body.lite .np-candy::after
 .amql span{background:#f8f9fa;border-radius:10px;padding:.25rem .55rem}.amql span.no{background:#fff5f5;color:#c92a2a}.amql span.ok2{background:#fff9db}
 @media (max-width:760px){.amcare{grid-template-columns:1fr}}
 /* 每日成語卡 */
-.cyc{text-align:center}.cyw{display:flex;justify-content:center;gap:.5rem;margin:.2rem 0 .6rem}.cyz{display:flex;flex-direction:column;align-items:center;min-width:3.2rem}.cyz b{font-size:2.8rem;font-weight:900;color:#d9480f;line-height:1.15}.cyz i{font-style:normal;font-size:1.05rem;font-weight:800;color:#495057;white-space:nowrap}
+.cyc{text-align:center}.cyw{display:flex;justify-content:center;gap:.5rem;margin:.2rem 0 .6rem}.cyz{display:inline-flex;font-size:2.8rem;line-height:1}.cyz .zc{font-weight:900;color:#d9480f}.cyz .zy{color:#495057;font-weight:800}
 .cypw{position:relative;display:block;width:fit-content;max-width:100%;margin:.1rem auto .6rem;cursor:zoom-in}.cypw::after{content:'🔍';position:absolute;right:.3rem;bottom:.3rem;font-size:1.2rem;background:#fffd;border-radius:999px;padding:.1rem .3rem;pointer-events:none}
 .cyp{display:block;width:min(100%,30rem);max-height:44vh;object-fit:contain;border-radius:12px;border:2px solid #eee}
 #cyzoom{position:fixed;inset:0;z-index:9000;background:#000c;display:grid;place-items:center;padding:2vmin;cursor:zoom-out}#cyzoom img{max-width:100%;max-height:100%;border-radius:10px;background:#fff}
@@ -1596,7 +1596,7 @@ function cyDay(d){if(!CY)return null;const t=new Date(d+'T00:00:00'),s0=new Date
   let n=0;for(const x=new Date(s0);x<t;x.setDate(x.getDate()+1)){const y=x.getDay();if(y>=1&&y<=4)n++}
   const N=CY.L.length,wk=[];for(let k=1;k<=4&&n-k>=0;k++){const x=new Date(t);x.setDate(t.getDate()-k);const y=x.getDay();if(y>=1&&y<=4&&y<w)wk.push((n-k)%N)}   // 這週已經學過的
   return w===5?{rev:1,n,wk}:{i:n%N,n,wk}}
-const cyRuby=c=>[...c.c].map((h,k)=>`<span class="cyz"><b>${h}</b><i>${c.z[k]}</i></span>`).join('');
+const cyRuby=c=>[...c.c].map((h,k)=>`<span class="cyz">[${h}|${c.z[k]}]</span>`).join('');   // 注音直式標在字的右邊（bankQ 的 zyH 會把 [字|注音] 換掉）
 const cyMark=(c,x)=>c.s.replace(c.c,x);
 function cyOthers(i,learned,k){const c=CY.L[i],L=CY.L.map((x,j)=>j).filter(j=>j!==i&&(CY.L[j].l===c.l||learned.includes(j)));return shuf(L).slice(0,k)}
 const cyPic=i=>(CY.img||[]).includes(i+1)?'cy-'+String(i+1).padStart(2,'0'):CY.L[i].p;   // 有四格漫畫的成語：img/cy/cy-編號.webp
@@ -3917,7 +3917,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v192';let verNew=false,verBusy=false;
+const APP_VER='learn601-v193';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
