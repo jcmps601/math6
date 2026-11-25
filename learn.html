@@ -1745,6 +1745,9 @@ const tkgN=v=>v===true?1:Math.max(0,Math.round(+v||0));   // sum.tkg 每一筆�
 function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   for(const k in r.best||{})sum.best[k]=mx(sum.best[k],r.best[k]);for(const k in r.days||{})sum.days[k]=mx(sum.days[k],r.days[k]);
   for(const k in r.tv||{})sum.tv[k]=mx(sum.tv[k],r.tv[k]);sum.total=mx(sum.total,r.total);sum.first=mx(sum.first,r.first);
+  /* 2026-11 做題數改成「每台各記各的再加起來」：同一個人用兩台平板（或 iPad 的主畫面＋Safari）輪流做題，兩邊的題數都算（以前取大的，會少算一邊） */
+  if(r.cb&&typeof r.cb==='object'){const c=sum.cb||{};sum.cb={n:mx(c.n,r.cb.n),f:mx(c.f,r.cb.f)}}
+  if(r.ct&&typeof r.ct==='object'){sum.ct=sum.ct||{};for(const d in r.ct){const a=sum.ct[d]=sum.ct[d]||{},b=r.ct[d]||{};a.n=mx(a.n,b.n);a.f=mx(a.f,b.f)}}ctFix();
   const myLast=sum.fresh?0:(sum.last||0);delete sum.fresh;   // 還沒讀過雲端的新平板：雲端的一律比較新
   {const g0=sum.tkg||{},g1=r.tkg||{};   // sum.tkg：發過的獎勵券（每週任務）。兩台各自發的券，蓋過來時不會不見，也不會多算
   if((r.last||0)>myLast){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0;for(const k in g0)if(!g1[k])sum.tk+=tkgN(g0[k])}   // 遊戲券以最後更新的那台為準
@@ -2060,6 +2063,9 @@ function todayN(){return sum.days[dkey()]||0}
 const DEV=(()=>{let d=LS.get('learn601_dev',null);if(!d){d='d'+Math.random().toString(36).slice(2,9);LS.set('learn601_dev',d)}return d})();
 function dvSum(k){let t=0;for(const v of Object.values(sum.dv||{}))t+=(v&&+v[k])||0;return t}
 function dvFix(k){const t=dvSum(k);if(t>(sum.days[k]||0))sum.days[k]=t}
+/* 做題數：cb＝開始分台記之前的題數（各台取大的），ct[裝置]＝這台之後做的題數；總題數＝cb＋每台加起來 */
+function ctFix(){const c=sum.cb;if(!c)return;let n=+c.n||0,f=+c.f||0;for(const v of Object.values(sum.ct||{})){n+=(v&&+v.n)||0;f+=(v&&+v.f)||0}if(n>(sum.total||0))sum.total=n;if(f>(sum.first||0))sum.first=f}
+function ctAdd(ok){if(!sum.cb)sum.cb={n:sum.total||0,f:sum.first||0};sum.ct=sum.ct||{};const m=sum.ct[DEV]=sum.ct[DEV]||{n:0,f:0};m.n=(m.n||0)+1;if(ok)m.f=(m.f||0)+1}
 function dvAdd(k){sum.dv=sum.dv||{};const m=sum.dv[DEV]=sum.dv[DEV]||{};m[k]=(m[k]||0)+1;sum.days[k]=(sum.days[k]||0)+1;dvFix(k)}
 function dvPrune(){if(!sum.dv)return;const old=dkey(new Date(Date.now()-21*864e5));for(const d in sum.dv){const m=sum.dv[d]||{};for(const k in m)if(k<old)delete m[k];if(!Object.keys(m).length)delete sum.dv[d]}}
 /* 累計完成天數：做滿 10 題的天數，只會往上加 */
@@ -3385,7 +3391,7 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   round.det[cur].s=Math.round((Date.now()-qStart)/1000);
   const uk=ukeyOf(pu),dup=qdHas(q),wbe=pu==='wb'&&wbLoad().find(x=>x.k===qKey(q)),wnr=!!(pu==='wb'&&(q.nr||wbe&&wbe.q.nr)),over=!!uk&&uqN(uk)>=UNIT_CAP;if(uk&&!dup&&!wnr)uqPush(uk,round.res[cur]==='ok');
   const rew=!dup&&!wnr&&(!over||uqHit(uk)>=UQ_NEED);/* 超過 20 題：最近 10 題答對 8 題以上才有獎勵 */if(uk&&!dup){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}if(!dup)qdAdd(q);   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵；同一題今天做過就不再加
-  const k=dkey();if(rew){dvAdd(k);sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1;fvAdd(k)}}
+  const k=dkey();if(rew){dvAdd(k);ctAdd(round.res[cur]==='ok');sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1;fvAdd(k)}}
   const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):q.type==='grp'?0.5:1;   // 這題的遊戲券分數
   let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
   if(!rew){}
@@ -3917,7 +3923,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v193';let verNew=false,verBusy=false;
+const APP_VER='learn601-v194';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
