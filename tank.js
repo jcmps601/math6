@@ -327,6 +327,7 @@
     const i = m.i, me = S.T[i], g = S.g, before = S.T.map((_, j) => alive(S, j)), L = S.legacy, isB = !!S.boss && i === S.bi;
     const xPrev = me.x;
     if (isB) { S.shield = false; S.bt++; if (S.bm && isFinite(m.x)) S.bossX = clamp(Math.round(m.x), BOSS_X0, BOSS_X1); m.x = S.bossX; if (!m.pass && m.w === 'G') { S.shield = true; S.ev.push({ k: 'guard' }); } S.burn = null; }   // b4：魔王先走到新位置；燒著的地面熄掉
+    if (isB && !m.pass && m.imp && m.imp.length && BOSS[S.boss] && (m.w === BOSS[S.boss].shot || m.w === BOSS[S.boss].shot3)) { let bj = -1, bd = 1e9; for (let j = 0; j < S.n; j++) if (j !== S.bi && !S.T[j].out) { const d = Math.abs(S.T[j].x - m.imp[0].x); if (d < bd) { bd = d; bj = j; } } S.lt = bj; }   // 2026-11 記下魔王上一次瞄準打的是誰（下一次盡量換人）
     if (isFinite(m.x)) me.x = clamp(m.x, 20, S.W - 20);
     const yb = S.T.map(t => gAt(g, t.x)), x0 = me.x;
     let tele = false;
@@ -552,10 +553,11 @@
     return { k, xs, r: k === 'O' ? WEAP.O.R : WEAP.V.R };
   }
   const pass = (S, i, x) => S.legacy === 'v1' ? Math.round(x) + ':-' : (i | 0) + ':' + Math.round(x) + ':-';
-  /* 魔王這一回合要怎麼打：照招式順序；瞄準打＝挑一台坦克（常常挑血最少的），試很多角度、力道找最接近的，再故意偏一點 */
+  /* 魔王這一回合要怎麼打：照招式順序；瞄準打＝隨機挑一台坦克（上一次打過的盡量換人），試很多角度、力道找最接近的，再故意偏一點 */
   function bossMove(S) {
     const B = BOSS[S.boss], bi = S.bi, r = rng(((S.seed ^ 0x9e3779b9) >>> 0) + S.a * 977), rage = S.T[bi].hp <= S.T[bi].max / 2;
-    const seq = S.sk ? B.seq5 : B.seq; let act = seq[S.bt % seq.length];
+    /* 2026-11 招式不再照固定順序：每一輪（seq 的長度）把同一組招式洗牌，招式出現的次數不變，但順序每輪不一樣；同一招不會連續兩回合（A 瞄準打除外） */
+    const seq = S.sk ? B.seq5 : B.seq; let act = bossOrder(S, seq, Math.floor(S.bt / seq.length))[S.bt % seq.length];
     const pl = [...Array(S.n).keys()].filter(j => j !== bi && alive(S, j));
     if (!pl.length) return pass(S, bi, S.bossX);
     /* b4：先決定走到哪裡（往一邊走一段；走不下就往另一邊），玩家每一輪都要重新瞄準 */
@@ -574,7 +576,8 @@
     }
     if (act === 'G') return fire(S, nx, 150, 50, 'G').tok;
     if (act === 'Y') return fire(S, nx, 150, 50, 'Y').tok;
-    const low = pl.slice().sort((a, b) => S.T[a].hp - S.T[b].hp)[0], tgt = r() < .45 ? low : pl[Math.floor(r() * pl.length)];
+    /* 2026-11 瞄準誰：還活著的人裡隨機挑，上一次瞄準打過的人盡量不再挑（只剩他一個才打他）；以前有 45% 專打血最少的，會一直抓同一個人 */
+    const cand = pl.length > 1 ? pl.filter(j => j !== S.lt) : pl, tgt = cand[Math.floor(r() * cand.length)];
     const tx = S.T[tgt].x, g = S.g;
     let best = null;
     const sim = (a, p) => simX(S, nx, a, p);
@@ -583,6 +586,20 @@
     const err = B.err * (rage ? .7 : 1), a = clamp(Math.round(best.a + (r() - .5) * 2 * err), 91, 179), p = clamp(Math.round(best.p + (r() - .5) * err * .8), 10, 100);
     const W5 = { M: 'M', e: 'e', v: 'v', o: 'o', L: 'L', B: 'B' };
     return fire(S, nx, a, p, W5[act] || (rage ? B.shot3 : B.shot)).tok;
+  }
+  /* 第 c 輪的招式順序：用 seed 洗牌（每台平板算出來都一樣）；相鄰不能是同一招（A 可以），也不能跟上一輪最後一招一樣 */
+  function bossOrder(S, seq, c) {
+    const memo = S._bo || (S._bo = {}), key = (S.sk ? 5 : 0) + ':' + c; if (memo[key]) return memo[key];
+    const prev = c > 0 ? bossOrder(S, seq, c - 1) : null, last = prev ? prev[prev.length - 1] : null;
+    const r = rng(((S.seed ^ 0x51ed270b) >>> 0) + c * 7919);
+    /* 會「下一回合接著放」的招（e、v、o 預告大招；M 畫紅圈、下一回合隕石）跟後面那一格綁在一起洗（後面那格原本是 '-'，沒有 '-' 的就綁一個 A），才不會吃掉別的招 */
+    const pool = seq.slice(), units = [], fill = pool.includes('-') ? '-' : 'A';
+    for (const x of seq.filter(x => /^[evoM]$/.test(x))) { pool.splice(pool.indexOf(x), 1); const f = pool.indexOf(fill); if (f >= 0) { pool.splice(f, 1); units.push([x, fill]); } else units.push([x]); }
+    pool.forEach(x => units.push([x === '-' ? 'A' : x]));
+    const ok = o => o.every((x, k) => x === 'A' || x === '-' || (k ? o[k - 1] !== x : x !== last));
+    let best = null;
+    for (let t = 0; t < 40; t++) { const u = units.slice(); for (let k = u.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [u[k], u[j]] = [u[j], u[k]]; } best = u.flat(); if (ok(best)) break; }
+    return (memo[key] = best);
   }
   /* 魔王試打一發普通彈（不打到任何坦克）會落在哪個 x */
   function simX(S, nx, a, p) { const F = launch(S, Float64Array.from(S.g), S.bi, nx, a, p, 'n'), s = F.sh[0]; F.T = F.T.map(t => ({ ...t, on: false })); for (let k = 0; k < SUB * 900 && s.live; k++) { const h = stepFlight(F); if (h.length) return h[0].x; } return s.x; }
