@@ -1753,6 +1753,10 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if((r.last||0)>myLast){sum.tk=r.tk||0;sum.tc=r.tc||0;sum.tco=r.tco||0;sum.trs=r.trs||0;sum.se=r.se||0;for(const k in g0)if(!g1[k])sum.tk+=tkgN(g0[k])}   // 遊戲券以最後更新的那台為準
   else for(const k in g1)if(!g0[k])sum.tk=(sum.tk||0)+tkgN(g1[k]);
   if(Object.keys(g1).length)sum.tkg=Object.assign({},g1,g0)}
+  /* 2026-11 遊戲券改成記帳（跟金幣一樣）：每台各記拿了幾張、用了幾張，合起來算。以前看最後存檔的那台，停在舊畫面的那台會把張數蓋掉 */
+  if(r.tl&&typeof r.tl==='object'){const B=r.tl,A=sum.tl;if(!A)sum.tl=JSON.parse(JSON.stringify(B));else{if((+B.t||0)<(+A.t||0)){A.t=B.t;A.b=B.b;A.g=Object.assign({},B.g||{})}   // 起點：用最早開始記帳的那台（它是讀過雲端才開始的）
+    for(const w of ['e','s']){A[w]=A[w]||{};for(const d in B[w]||{})A[w][d]=mx(A[w][d],B[w][d])}}}
+  tkL();tkFix();
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
   if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   /* 農場：同一個農場（b 一樣）看誰比較新；不是同一個（新平板先開了一份空的）就留經驗比較多的，免得高等農場被空的蓋掉 */
@@ -1760,7 +1764,8 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.look){const a=sum.look||{own:{}},b=r.look;const nw=(b.u||0)>(a.u||0)?b:a;sum.look={own:Object.assign({},a.own||{},b.own||{}),fr:nw.fr||'',np:nw.np||'',tt:nw.tt||'',u:Math.max(a.u||0,b.u||0),vw:Math.max(a.vw||0,b.vw||0),vg:[...new Set([...(a.vg||[]),...(b.vg||[])])]};if(a.ach||b.ach)sum.look.ach=Object.assign({},a.ach||{},b.ach||{})}
   if(r.amd)sum.amd=Object.assign({},sum.amd||{},r.amd);   // 早自修完成的日子
   if(r.fdc){const a=sum.fdc||{},b=r.fdc,nw=(b.u||0)>(a.u||0)?b:a;sum.fdc={own:Object.assign({},a.own||{},b.own||{}),s:Array.from({length:6},(_,k)=>(nw.s&&nw.s[k])||''),u:Math.max(a.u||0,b.u||0)}}   // 農場裝飾：買過的兩邊合起來，擺法以最後擺的那台為準
-  if(r.farm){const A=sum.farm;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.xp||0)!==(A.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm}   /* 農場經驗只會增加：留經驗比較多的那份（另一台的舊資料、空農場都蓋不過來）；一樣多才看誰比較新 */
+  if(r.farm){const A=sum.farm,xa=A&&A.xl,xb=r.farm.xl;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.xp||0)!==(A.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm;
+    if(xa||xb){const f=sum.farm,X={b:Math.max(+(xa||{}).b||0,+(xb||{}).b||0),e:{}};for(const Y of [xa,xb])for(const d in (Y&&Y.e)||{})X.e[d]=Math.max(X.e[d]||0,+Y.e[d]||0);f.xl=X;const t=X.b+Object.values(X.e).reduce((a,v)=>a+(+v||0),0);if(t>(f.xp||0))f.xp=t}}   // 農場經驗帳本：兩台加的經驗都算   /* 農場經驗只會增加：留經驗比較多的那份（另一台的舊資料、空農場都蓋不過來）；一樣多才看誰比較新 */
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{}),r:Object.assign({},r.uq.r||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   if(r.qd&&r.qd.d===dkey()){if(!sum.qd||sum.qd.d!==r.qd.d)sum.qd={d:r.qd.d,k:(r.qd.k||[]).slice()};else sum.qd.k=[...new Set([...(sum.qd.k||[]),...(r.qd.k||[])])]}   // 今天做過的題目
@@ -1941,7 +1946,7 @@ function giftShow(L){if(document.getElementById('giftm'))return;const tc=L.reduc
   tap(m.querySelector('.gget'),()=>{const p=PET.P();let c=0,t=0;
     for(const [id,g] of L){const k='gf_'+id,gc=+g.c||0,gt=+g.t||0;
       if(gc>0&&p&&PET.coinOnce(p,k,gc))c+=gc;
-      if(gt>0){sum.tkg=sum.tkg||{};if(sum.tkg[k]==null){sum.tkg[k]=gt;sum.tk=(sum.tk||0)+gt;t+=gt}}
+      if(gt>0&&tkGift(k,gt))t+=gt;
       enqueue(base()+`/gift/${id}/got`,Date.now())}
     saveSum(true);m.remove();try{paintRes();paintNavs()}catch(e){}try{confetti(80)}catch(e){}
     toast(c||t?`🎁 收到了！${c?`🪙+${c}`:''}${c&&t?'、':''}${t?`🎟️+${t}`:''}`:'🎁 這份禮物已經領過了')})}
@@ -2066,6 +2071,12 @@ function dvFix(k){const t=dvSum(k);if(t>(sum.days[k]||0))sum.days[k]=t}
 /* 做題數：cb＝開始分台記之前的題數（各台取大的），ct[裝置]＝這台之後做的題數；總題數＝cb＋每台加起來 */
 function ctFix(){const c=sum.cb;if(!c)return;let n=+c.n||0,f=+c.f||0;for(const v of Object.values(sum.ct||{})){n+=(v&&+v.n)||0;f+=(v&&+v.f)||0}if(n>(sum.total||0))sum.total=n;if(f>(sum.first||0))sum.first=f}
 function ctAdd(ok){if(!sum.cb)sum.cb={n:sum.total||0,f:sum.first||0};sum.ct=sum.ct||{};const m=sum.ct[DEV]=sum.ct[DEV]||{n:0,f:0};m.n=(m.n||0)+1;if(ok)m.f=(m.f||0)+1}
+/* 遊戲券帳本 sum.tl：b＝開始記帳時的張數、g＝那時已經算進去的獎勵券、e[裝置]＝這台拿到幾張、s[裝置]＝這台用掉幾張；張數＝b＋e－s＋之後的獎勵券 */
+function tkL(){if(!sum.tl)sum.tl={t:Date.now(),b:Math.max(0,+sum.tk||0),g:Object.fromEntries(Object.keys(sum.tkg||{}).map(k=>[k,1])),e:{},s:{}};return sum.tl}
+function tkFix(){const L=sum.tl;if(!L)return;let n=+L.b||0;for(const v of Object.values(L.e||{}))n+=+v||0;for(const v of Object.values(L.s||{}))n-=+v||0;for(const k in sum.tkg||{})if(!(L.g||{})[k])n+=tkgN(sum.tkg[k]);sum.tk=Math.max(0,n)}
+function tkAdd(n){const L=tkL();L.e=L.e||{};L.e[DEV]=(L.e[DEV]||0)+n;tkFix()}
+function tkUse(n){const L=tkL();L.s=L.s||{};L.s[DEV]=(L.s[DEV]||0)+n;tkFix()}
+function tkGift(k,n){sum.tkg=sum.tkg||{};if(sum.tkg[k]!=null)return false;sum.tkg[k]=n;if(sum.tl)tkFix();else sum.tk=(sum.tk||0)+n;return true}   // 獎勵券（禮物、每週任務、打魔王）：同一份兩台都領也只算一次
 function dvAdd(k){sum.dv=sum.dv||{};const m=sum.dv[DEV]=sum.dv[DEV]||{};m[k]=(m[k]||0)+1;sum.days[k]=(sum.days[k]||0)+1;dvFix(k)}
 function dvPrune(){if(!sum.dv)return;const old=dkey(new Date(Date.now()-21*864e5));for(const d in sum.dv){const m=sum.dv[d]||{};for(const k in m)if(k<old)delete m[k];if(!Object.keys(m).length)delete sum.dv[d]}}
 /* 累計完成天數：做滿 10 題的天數，只會往上加 */
@@ -2387,7 +2398,7 @@ function wkAdd(q,res){if(res!=='ok'&&res!=='ok2')return;const k=wkSubjOf(q);if(!
 /* 自動發獎：金幣記在「這個獎勵」自己的帳本格（wk週_3 等），遊戲券記在 sum.tkg；兩台裝置都發了也只算一次 */
 function wkReward(){if(!user||!sum)return;const W=wkCur(),L=wkSubs(),done=L.filter(k=>wkTot(W,k)>=WK_NEED),p=PET.P();if(!p)return;const give=[];
   if(L.length&&done.length>=Math.min(3,L.length)&&!W.r[3]){W.r[3]=1;give.push(['3',WK_R3])}
-  if(L.length&&done.length===L.length&&!W.r.a){W.r.a=1;give.push(['a',WK_RALL]);const id=`wk${W.w}a`;sum.tkg=sum.tkg||{};if(!sum.tkg[id]){sum.tkg[id]=1;sum.tk=(sum.tk||0)+1}sum.wkb=(sum.wkb||0)+1}
+  if(L.length&&done.length===L.length&&!W.r.a){W.r.a=1;give.push(['a',WK_RALL]);tkGift(`wk${W.w}a`,1);sum.wkb=(sum.wkb||0)+1}
   if(W.f&&wkTot(W,W.f)>=WK_NEED&&!W.r.f){W.r.f=1;give.push(['f',WK_RF])}
   if(!give.length)return;let c=0;give.forEach(([r,n])=>{if(PET.coinOnce(p,`wk${W.w}_${r}`,n))c+=n});saveSum(true);logPush({k:'wk',r:give.map(x=>x[0]).join(''),c});paintNavs();setTimeout(()=>wkChest(give),1700)}
 /* 已經確認寫進雲端的獎勵（上傳成功、或從雲端讀回來就有）：沒確認的顯示「同步中」 */
@@ -2615,7 +2626,7 @@ const BK_OPEN=true;      // 方塊對戰開放了沒（2026-11-15 開放）
 const TK_SELL=10;
 function sellTk(n){const p=PET.P();n=Math.min(n,sum.tk||0);if(!p||n<=0)return;
   if(!confirm(`要把 ${n} 張遊戲券賣掉，換 🪙${n*TK_SELL} 嗎？\n\n賣掉以後不能再用金幣買回來喔！`))return;
-  sum.tk=(sum.tk||0)-n;PET.coinAdd(p,n*TK_SELL);saveSum(true);logPush({k:'sell',n,c:n*TK_SELL});try{sfx.ticket()}catch(e){}
+  tkUse(n);PET.coinAdd(p,n*TK_SELL);saveSum(true);logPush({k:'sell',n,c:n*TK_SELL});try{sfx.ticket()}catch(e){}
   toast(`🪙 賣掉 ${n} 張遊戲券，拿到 ${n*TK_SELL} 枚金幣！`);paintNavs();render()}
 function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 挑戰樂園`);h.style.setProperty('--c',GM.c);P.appendChild(h);
   const c=el('div','cd');c.id='tkcard';
@@ -2803,7 +2814,7 @@ async function resolveXqPending(){const p=user&&LS.get(xqpKey(),null);if(!p||!p.
     else if(same&&st.phase==='play'&&meta.game==='bk'){if(!(st.dead&&p.me in st.dead))try{await timeout(db.ref(`rooms/${p.pin}/state`).update({['dead/'+p.me]:firebase.database.ServerValue.TIMESTAMP,t:Date.now()}),8000)}catch(e){}}   // 方塊對戰：中途跑掉＝出局
     else if(same&&st.phase==='play'){try{await timeout(db.ref(`rooms/${p.pin}/state`).update(pm?{['out/i'+p.me]:meta.game==='dr'?(+st.tn||0):String(st.moves||'').split(',').filter(Boolean).length,t:Date.now()}:{phase:'end',winner:p.me==='r'?'b':'r',reason:'對手中途離開',t:Date.now()}),8000)}catch(e){}}
     const fresh=xqResult({k:p.k,o:p.o,w,r,n:0,g:p.g});xqPending(null);
-    if(fresh&&(w===0||String(p.k).startsWith('pb'))&&!isTest(user.seat)){sum.tk=Math.max(0,(sum.tk||0)-1);   // 一起打王：贏輸都用 1 張
+    if(fresh&&(w===0||String(p.k).startsWith('pb'))&&!isTest(user.seat)){if((sum.tk||0)>0)tkUse(1);   // 一起打王：贏輸都用 1 張
     saveSum(true);logPush({k:'g',game:'xq'});paintNavs();render();
       toast(`${GAMES[GK(p.g)].i} ${GAMES[GK(p.g)].n}上一局沒下完就離開，算輸，用掉 1 張遊戲券`)}
   }finally{xqpBusy=false}}
@@ -3028,7 +3039,7 @@ window.__learn601={
   /* 開一局:5 分鐘還沒用完就直接玩;用完了才扣 1 張券、重新給 5 分鐘 */
   startPlay(g,d){if(!user||!sum)return {ok:false};if(playLeft()>0)return {ok:true};
     if(isTest(user.seat)){sum.se=Date.now()+PLAY_MS;saveSum(true);return {ok:true}}   // 測試帳號:不用券,時間到了自動再給 5 分鐘
-    if(!((sum.tk||0)>0))return {ok:false};sum.tk--;sum.se=Date.now()+PLAY_MS;saveSum(true);logPush({k:'g',game:g,diff:d});return {ok:true,fresh:true}},
+    if(!((sum.tk||0)>0))return {ok:false};tkUse(1);sum.se=Date.now()+PLAY_MS;saveSum(true);logPush({k:'g',game:g,diff:d});return {ok:true,fresh:true}},
   /* 象棋:連線對戰輸的人用 1 張、同一台平板一局用 1 張(老師測試帳號不用) */
   myPet:()=>{try{const p=PET.P();return p&&p.st==='pet'&&p.sp?{sp:p.sp,st:PET.stageOf(PET.lvOf(p.xp||0).lv)}:null}catch(e){return null}},
   /* 雙人合作過關的排行：s＝過關數×100＋寶石數，存在 lb/coop/座號（只會變多） */
@@ -3054,7 +3065,7 @@ window.__learn601={
   bossSoloUse(){if(!user||!sum||isTest(user.seat))return;const d=dkey(),r=sum.bss&&sum.bss.d===d?sum.bss:{d,n:0};r.n++;sum.bss=r;saveSum(true)},
   drLog(v){if(!user||!v)return;logPush({k:'dv',rk:String(v.rk||'').slice(0,60),dr:+v.dr||0,w:String(v.w||'').slice(0,20),by:String(v.by||'').slice(0,40),gn:+v.gn||0,me:v.me==='dr'?'dr':'rp'})},
   useTicket(g){if(!user||!sum)return false;if(isTest(user.seat))return true;if(!((sum.tk||0)>0))return false;
-    sum.tk--;saveSum(true);logPush({k:'g',game:g});return true},
+    tkUse(1);saveSum(true);logPush({k:'g',game:g});return true},
   board:()=>lbAll().catch(()=>null),
   async score(g,dk,s){if(!user||!sum||typeof s!=='number'||!isFinite(s)||!(dk in DIDX))return null;LBC=null;
     const d=DIDX[dk],k=bKey(g,d);logPush({k:'gs',game:g,diff:dk,score:s});sum.gb3=sum.gb3||{};
@@ -3397,7 +3408,7 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   if(!rew){}
   else if((sum.trs||0)>=RUSH_MAX){sum.tc=0;sum.tco=0;sum.trs=0;rushed=true;round.rushed=1;round.miss=0;logPush({k:'rush'})}
   else if(sum.tc>=TK_EVERY){const n=sum.tco||0;sum.tc=0;sum.tco=0;sum.trs=0;round.last10=n;
-    if(n>=TK_NEED){sum.tk=(sum.tk||0)+1;round.got=(round.got||0)+1;toast(`🎟️ 得 ${n} 分，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
+    if(n>=TK_NEED){tkAdd(1);round.got=(round.got||0)+1;toast(`🎟️ 得 ${n} 分，拿到 1 張遊戲券！`);logPush({k:'t',ok:n})}
     else{round.miss=(round.miss||0)+1;toast(`這 10 題得 ${n} 分，要 ${TK_NEED} 分才有券`)}}
   const bh=rew?bossHit(round.res[cur]):0,pc=rew?PET.gain(round.res[cur]):0,fw=rew?FARM.gain(round.res[cur]):0;if(rew)try{wkAdd(q,round.res[cur])}catch(e){}   // 每週任務：這一科答對 +1
   if(wnr){$('#fb').insertAdjacentHTML('beforeend','<span class="bhit capn">這題是在沒有獎勵的時候答錯的，訂正只算練習</span>')}
@@ -3510,7 +3521,7 @@ function bossClaim(wk,R){if(!sum||bossClaimed(wk))return;
     sum.bossR=sum.bossR||{};sum.bossR[wk]=1;const p=PET.P();p.cl.e=p.cl.e||{};p.cl.e['boss_'+wk]=c;p.coin=PET.coinOf(p);p.u=Date.now();saveSum(true);sfx.ticket();confetti(rk<=3?140:90);   // 寫成帳本裡固定的一格：兩台平板都領也只算一次
     toast(`🪙 ${bossOf(wk).n}被打倒了！${rk<=BOSS_TOP?`你是第 ${rk} 名，`:''}拿到 ${c} 金幣`);paintNavs();render();return}
   sum.bossR=sum.bossR||{};sum.bossR[wk]=1;
-  if(!isTest(user.seat))sum.tk=(sum.tk||0)+1;saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);
+  if(!isTest(user.seat))tkGift('bw_'+wk,1);saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);
   toast(`🎟️ ${bossOf(wk).n}被打倒了！拿到 1 張遊戲券`);paintNavs();render()}
 const bossEnd=()=>{const d=new Date(),left=7-((d.getDay()+6)%7);return left<=1?'今天晚上 12 點換新魔王':`還有 ${left} 天`};
 /* 首頁的魔王卡片:先畫平板上的資料,雲端讀回來再更新 */
@@ -3923,7 +3934,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v194';let verNew=false,verBusy=false;
+const APP_VER='learn601-v195';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
