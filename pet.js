@@ -587,6 +587,7 @@
   const LOOK = ['h', 'g', 'k', 'b', 'x', 'room', 'nm'];   // 外觀：換的時候記 p.lu（最後換造型的時間）
   function mergePet(a, b) {
     if (!a) return b; if (!b) return a;
+    const xa = a.xl, xb = b.xl;
     /* 兩份不是同一隻（pb 建立時間不同）：通常是新平板、清過資料，雲端還沒讀回來就先開了一份空的。
        這時不能看誰比較新，要留進度比較多的那一份（不然高等的寵物會被空的蛋蓋掉） */
     /* 進度分數：孵出來 > 圖鑑、寵物屋的隻數 > 所有寵物的經驗加起來（這些都只會增加，不會減少） */
@@ -608,6 +609,7 @@
     const box = Object.assign({}, pick.box || {}); for (const k in other.box || {}) if (!box[k] && k !== pick.sp) box[k] = other.box[k]; if (other.sp && other.st === 'pet' && other.sp !== pick.sp && !box[other.sp] && pick.st === 'pet') { const o = {}; PF.forEach(k => { if (other[k] !== undefined) o[k] = other[k]; }); box[other.sp] = o; } pick.box = box;
     const eg = (pick.eggs || []).slice(); (other.eggs || []).forEach(e => { if (e && e.sp && !eg.some(x => x.sp === e.sp) && !(pick.dex || {})[e.sp] && pick.sp !== e.sp && !box[e.sp]) eg.push(e); }); pick.eggs = eg;
     if ((other.lu || 0) > (pick.lu || 0) && other.sp === pick.sp && other.st === pick.st) { LOOK.forEach(k => { pick[k] = other[k]; }); pick.lu = other.lu; }
+    if (xa || xb) { const L = { b: {}, e: {} }; for (const X of [xa, xb]) { if (!X) continue; for (const k in X.b || {}) L.b[k] = Math.max(L.b[k] || 0, +X.b[k] || 0); for (const d in X.e || {}) { const m = L.e[d] = L.e[d] || {}; for (const k in X.e[d] || {}) m[k] = Math.max(m[k] || 0, +X.e[d][k] || 0); } } pick.xl = L; xpFix(pick); }   // 經驗帳本兩邊合起來
     return pick;
   }
   function P() {
@@ -690,7 +692,7 @@
       if (was < EGG_NEED[0] && p.ex >= EGG_NEED[0]) toast('🥚 你的蛋在動了！快去「寵物」看看');
     } else {
       xp = Math.round(xp * (cared(p) ? CARE_K : 1));
-      const b = lvOf(p.xp || 0).lv, mb = maxLv(p); p.xp = (p.xp || 0) + xp; if (round) round.px = (round.px || 0) + xp;
+      const b = lvOf(p.xp || 0).lv, mb = maxLv(p); xpL(p, p.sp, xp); p.xp = (p.xp || 0) + xp; if (round) round.px = (round.px || 0) + xp;
       const a = lvOf(p.xp).lv;
       const e = p.eggs[0]; if (e && G) { const need = EGG_NEED[e.t | 0], w = e.ex || 0; e.ex = Math.min(need, w + G[1]); if (w < need && e.ex >= need) setTimeout(() => toast(`🥚 蛋籃裡的${EGG_N[e.t | 0]}要孵化了！去「寵物屋」看看`), 2200); }
       if (a > b) levelUp(p, b, a, mb);
@@ -726,9 +728,22 @@
     const U = q.uk && UN.find(u => u.key === q.uk); if (!U) return;
     if ((w.u && U.key === w.u) || (w.s && U.s === w.s)) w.n = (w.n || 0) + 1;
   }
+  /* 2026-11 寵物經驗記帳：xl.b＝開始記帳時每隻寵物的經驗、xl.e[裝置][寵物]＝這台之後加了多少。
+     兩台裝置（或 iPad 主畫面＋Safari）都有練習時，合併後經驗＝起點＋每台加的，不會只留一邊 */
+  function xpL(p, sp, n) {
+    if (!n || !sp || TST()) return; const D = typeof DEV !== 'undefined' ? DEV : 'x';
+    if (!p.xl) { const b = {}; if (p.st === 'pet' && p.sp) b[p.sp] = p.xp || 0; for (const k in p.box || {}) if (p.box[k]) b[k] = p.box[k].xp || 0; p.xl = { b, e: {} }; }
+    p.xl.e = p.xl.e || {}; const m = p.xl.e[D] = p.xl.e[D] || {}; m[sp] = (m[sp] || 0) + n;
+  }
+  function xpFix(p) {
+    const L = p && p.xl; if (!L) return; const t = {};
+    for (const k in L.b || {}) t[k] = +L.b[k] || 0;
+    for (const d in L.e || {}) for (const k in L.e[d] || {}) t[k] = (t[k] || 0) + (+L.e[d][k] || 0);
+    for (const k in t) { if (p.st === 'pet' && p.sp === k) { if (t[k] > (p.xp || 0)) p.xp = t[k]; } else if (p.box && p.box[k] && t[k] > (p.box[k].xp || 0)) p.box[k].xp = t[k]; }
+  }
   function giveXp(p, n) {
     if (p.st === 'egg') { p.ex = (p.ex || 0) + n; return; }
-    const b = lvOf(p.xp || 0).lv, mb = maxLv(p); p.xp = (p.xp || 0) + n; const a = lvOf(p.xp).lv; if (a > b) levelUp(p, b, a, mb);
+    const b = lvOf(p.xp || 0).lv, mb = maxLv(p); xpL(p, p.sp, n); p.xp = (p.xp || 0) + n; const a = lvOf(p.xp).lv; if (a > b) levelUp(p, b, a, mb);
   }
   function wishTick(p) {
     const { w } = wishParts(p);
