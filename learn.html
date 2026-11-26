@@ -320,6 +320,8 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #setup button{border:0;border-radius:14px;background:var(--g);color:#fff;font-size:1.2rem;font-weight:900;padding:.5rem 1rem;align-self:flex-start}
 #setup button.gray{background:#e9ecef;color:#555}
 #rulemsg{font-size:1.3rem;font-weight:900;line-height:1.5}
+/* 購買預覽（2026-11-26） */
+.pmod.pask.lktry{z-index:80}.gtryb{text-align:center}.gtryb img{width:min(100%,22rem);height:auto}.lktry .pmc{max-width:30rem}.lktry .lktop{margin:.4rem 0}.lktry .lkme2{display:flex;align-items:center;justify-content:center;gap:1rem}.lktry .lkme2 .lkav{margin:.4rem}.lktry .lkt1{font-size:1.5rem;font-weight:900;color:#333}.lktry .lks{font-size:.95rem;color:#868e96;font-weight:700}.lktryr{background:#f8f9fa;border-radius:14px;padding:.4rem .7rem;margin:.4rem 0 .8rem}.lktryr small{color:#868e96;font-weight:800}
 /* 老師頁分頁（2026-11）：每次只看一類功能 */
 #setup .trule{padding:.5rem 1rem}#setup .trule #rulemsg{font-size:1.05rem}
 .ttabs{display:flex;gap:.4rem;flex-wrap:wrap;position:sticky;top:-1.2rem;z-index:4;background:var(--bg,#fff8f0);padding:.5rem 0}
@@ -3018,7 +3020,7 @@ function lkShop(){if(!user||!sum)return;const old=document.getElementById('lksho
       else pv=`${lkBadge(id)}<em class="lkt">${I.n}</em>`;
       const tag=`<i class="lkq" style="--qc:${LK_TIER[I.t][2]}">${LK_TIER[I.t][0]}</i>`;
       const btn=on?`<button class="lkb eq" data-off="${id}">使用中</button>`:has?`<button class="lkb use" data-use="${id}">換上</button>`:
-        I.how?`<div class="lkhow">${I.how}<small>${I.prog()}</small></div>`:`<button class="lkb buy" data-buy="${id}" ${c<I.p?'disabled':''}>🪙 ${I.p}${c<I.p?'<small>金幣不夠</small>':''}</button>`;
+        I.how?`<div class="lkhow">${I.how}<small>${I.prog()}</small></div>`:`<button class="lkb buy" data-buy="${id}">🪙 ${I.p}<small>${c<I.p?'先看看':'試戴看看'}</small></button>`;
       return `<div class="lkc${on?' on':''}${has?'':' lock'}">${tag}<div class="lkp">${pv}</div>${I.k!=='tt'?`<div class="lkcn">${I.n}</div>`:''}${btn}</div>`};
     box.innerHTML=`<div class="lkbox"><div class="lktop"><div class="lkme2">${lkAv(user.seat,user.seat,'big')}<div><div class="lkt1">${lkName(user.seat,user.seat+' 號')}</div><div class="lks">同學在排行榜、農場、寵物看得到你的名片</div></div></div><div class="lkcoin">🪙 <b>${T?'∞':c}</b></div></div>
       <div class="lktabs">${[['fr','頭像框'],['np','名牌'],['tt','稱號']].map(([k,n])=>`<button data-t="${k}" class="${lkTab===k?'on':''}">${n}</button>`).join('')}</div>
@@ -3028,10 +3030,19 @@ function lkShop(){if(!user||!sum)return;const old=document.getElementById('lksho
     const set=(k,id)=>{const L=lkMe();L[k]=id;L.u=Date.now();saveSum(true);lkPub();paintMeLook();try{sfx.ok()}catch(e){}paint()};
     box.querySelectorAll('[data-use]').forEach(b=>tap(b,()=>{const id=b.dataset.use;set(LK[id].k,id)}));
     box.querySelectorAll('[data-off]').forEach(b=>tap(b,()=>set(LK[b.dataset.off].k,'')));
-    box.querySelectorAll('[data-buy]').forEach(b=>tap(b,()=>{const id=b.dataset.buy,I=LK[id],p=PET.P();if(!p||PET.coinOf(p)<I.p)return;
-      if(!confirm(`用 🪙${I.p} 買「${I.n}」${I.k==='fr'?'頭像框':I.k==='np'?'名牌':'稱號'}嗎？`))return;
+    box.querySelectorAll('[data-buy]').forEach(b=>tap(b,async()=>{const id=b.dataset.buy,I=LK[id],p=PET.P();if(!p)return;
+      if(!(await lkTry(id)))return;if(PET.coinOf(p)<I.p&&!isTest(user.seat))return;   // 2026-11-26 先看換上的樣子，按「買下」才買
       PET.coinAdd(p,-I.p);const L=lkMe();L.own[id]=1;try{toast(`🎉 買到「${I.n}」了！`)}catch(e){}set(I.k,id);paintNavs&&paintNavs()}))}
   box.addEventListener('pointerdown',e=>{if(e.target===box)close()});paint()}
+/* 名片預覽：我的頭像、名牌、稱號換上這件的樣子（名片、排行榜一列），看完再決定買不買 */
+function lkTry(id){const I=LK[id],s=user.seat,L=lkOf(s),fr=I.k==='fr'?id:L.fr,np=I.k==='np'?id:L.np,tt=L.tt,c=(()=>{try{return PET.coinOf(PET.P())}catch(e){return 0}})(),T=isTest(s),lack=!T&&c<I.p?I.p-c:0;
+  const nm=t=>`<span class="lkn${np?' '+np:''}">${t}</span>${tt?`<em class="lkt">${LK[tt].n}</em>`:''}`;
+  return new Promise(res=>{const m=el('div','pmod pask lktry',`<div class="pmc"><div class="pmh2">👀 換上看看：${I.n}</div>
+    <div class="lktop"><div class="lkme2">${lkAv(s,s,'big',null,fr)}<div><div class="lkt1">${nm(s+' 號')}</div><div class="lks">同學在排行榜、農場、寵物看得到</div></div></div></div>
+    <div class="lktryr"><small>排行榜上</small><div class="br"><b>1</b><span class="lkrow"><span class="lkid">${fr?lkAv(s,s,'mini',null,fr):`<span class="lkn${np?' '+np:''}">${s} 號</span>`}${lkPet(s)}</span>${tt?`<em class="lkt">${LK[tt].n}</em>`:''}</span></div></div>
+    <div class="pbtns"><button class="go" data-a="1"${lack?' disabled':''}>${lack?`金幣不夠，還差 🪙${lack}`:`🪙 ${I.p} 買下並換上`}</button><button class="gray pmx" data-a="0">先不要</button></div></div>`);
+    document.body.appendChild(m);m.querySelectorAll('[data-a]').forEach(b=>tap(b,()=>{if(b.disabled)return;m.remove();res(b.dataset.a==='1')}));
+    tap(m,e=>{if(e.target===m){m.remove();res(false)}})})}
 /* 首頁的名片卡 */
 function lookCard(){const c=el('div','cd');c.id='lkcard';const L=lkOf(user.seat);
   c.innerHTML=`${lkAv(user.seat,isTest(user.seat)?'🧪':user.seat,'big')}<div class="lkci"><div class="a">我的名片</div><div class="b">${lkName(user.seat,isTest(user.seat)?'測試帳號':user.seat+' 號')}</div><div class="s">${L.fr||L.np||L.tt?'同學在排行榜、農場看得到':'用金幣買頭像框、名牌、稱號'}</div></div>`;
@@ -3053,15 +3064,19 @@ function garage(){return new Promise(done=>{if(!user||!sum){done();return}
       <div class="glist">${Object.entries(TANK_SKINS).filter(([,v])=>v.t===gt).map(([k,v])=>{const own=tkOwn(k),on=use===k;
         return `<div class="gcard t${v.t}${on?' on':''}${own?'':' lock'}"><div class="gpw"><img class="gprev" src="${pv(k,v)}" alt=""></div><div class="gn">${v.n}</div>${rar(v.t)}
         ${on?`<button class="gb eq" disabled>${gIco('equipped')}使用中</button>`:own?`<button class="gb use" data-k="${k}">${gIco('unlock')}使用</button>`:
-          `<div class="gbs"><button class="gb try" data-k="${k}">試穿</button><button class="gb buy" data-k="${k}" ${c<v.p?'disabled':''}>${gIco(c<v.p?'lock':'coin')}${v.p} 金幣</button></div>${c<v.p?`<div class="gneed">還差 ${v.p-c} 金幣</div>`:''}`}</div>`}).join('')}</div>
+          `<div class="gbs"><button class="gb try" data-k="${k}">試穿</button><button class="gb buy" data-k="${k}">${gIco(c<v.p?'lock':'coin')}${v.p} 金幣</button></div>${c<v.p?`<div class="gneed">還差 ${v.p-c} 金幣</div>`:''}`}</div>`}).join('')}</div>
       <div class="gfoot">金幣在練習、寵物、農場都拿得到　<button class="gx">${gIco('back')}好了</button></div></div>`;
     box.querySelectorAll('.gtab').forEach(b=>tap(b,()=>{gt=+b.dataset.t;paint()}));
     box.querySelectorAll('.gb.try').forEach(b=>tap(b,()=>{tryK=b.dataset.k;try{sfx.ok()}catch(e){}paint();box.querySelector('.gbox').scrollTop=0}));
     const gtx=box.querySelector('.gtx');if(gtx)tap(gtx,()=>{tryK='';paint()});
     tap(box.querySelector('.gx'),close);
     box.querySelectorAll('.gb.use').forEach(b=>tap(b,()=>{sum.tks=sum.tks||{own:{}};sum.tks.use=b.dataset.k;sum.tks.u=Date.now();saveSum(true);try{sfx.ok()}catch(e){}paint()}));
-    box.querySelectorAll('.gb.buy').forEach(b=>tap(b,()=>{const k=b.dataset.k,v=TANK_SKINS[k];if(coins()<v.p)return;
-      if(!confirm(`用 ${v.p} 金幣買「${v.n}」坦克嗎？`))return;
+    const tkTry=k=>{const v=TANK_SKINS[k],c=coins(),lack=!isTest(user.seat)&&c<v.p?v.p-c:0;return new Promise(res=>{const m=el('div','pmod pask lktry',`<div class="pmc"><div class="pmh2">👀 看看：${v.n}</div>
+      <div class="gtryb"><img src="${pv(k,v)}" alt=""></div><div class="lks" style="text-align:center">對戰時同學看得到你的坦克（只改外觀，不影響攻擊力）</div>
+      <div class="pbtns"><button class="go" data-a="1"${lack?' disabled':''}>${lack?`金幣不夠，還差 ${lack} 金幣`:`${v.p} 金幣 買下並使用`}</button><button class="gray pmx" data-a="0">先不要</button></div></div>`);
+      document.body.appendChild(m);m.querySelectorAll('[data-a]').forEach(b=>tap(b,()=>{if(b.disabled)return;m.remove();res(b.dataset.a==='1')}));tap(m,e=>{if(e.target===m){m.remove();res(false)}})})};
+    box.querySelectorAll('.gb.buy').forEach(b=>tap(b,async()=>{const k=b.dataset.k,v=TANK_SKINS[k];
+      if(!(await tkTry(k)))return;   // 2026-11-26 先看大張的坦克，按「買下」才買
       const p=PET.P();if(!p||PET.coinOf(p)<v.p)return;PET.coinAdd(p,-v.p);
       sum.tks=sum.tks||{own:{}};sum.tks.own=sum.tks.own||{};sum.tks.own[k]=1;if(TK_OLD[k]){sum.tks.rf=sum.tks.rf||{};sum.tks.rf[k]=sum.tks.rf[k]||2}sum.tks.use=k;sum.tks.u=Date.now();saveSum(true);if(tryK===k)tryK='';
       try{sfx.ok()}catch(e){}toast(`🎉 買到「${v.n}」坦克了！`);paintNavs&&paintNavs();paint()}))}
@@ -4041,7 +4056,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v199';let verNew=false,verBusy=false;
+const APP_VER='learn601-v200';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
