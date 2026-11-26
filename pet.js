@@ -171,7 +171,7 @@
     'penguin-2': {bow: [18, 10, .9, 15], flower: [24, 2, .9, 20], halo: [0, -20]},   // 冰晶冠
     'robot-0': {halo: [0, -23]}, 'robot-1': {halo: [0, -21]}, 'robot-2': {halo: [0, -8]},   // 天線、齒輪
     'turtle-1': {bow: [0, 9], flower: [0, 9]},
-    'turtle-2': {b: {x: 181, y: 120}},   // 上面有浮空寶石
+    'turtle-2': {...allHats([5, 4, .95, 7]), b: {x: 181, y: 120}},   // 上面有浮空寶石；2026-11-26 帽子原本跟著頭歪得太多、偏左浮起來 → 往右、往下戴進去，轉正一點
     'whale-0': {halo: [0, -28], b: {x: 140, y: 88}},   // 噴水的星星；小夥伴離開尾巴
     'whale-1': {halo: [-16, -22], b: {x: 166, y: 70}},
     'whale-2': {halo: [0, -24], b: {x: 34, y: 62}},   // 自己就有一圈光環
@@ -609,6 +609,12 @@
     const box = Object.assign({}, pick.box || {}); for (const k in other.box || {}) if (!box[k] && k !== pick.sp) box[k] = other.box[k]; if (other.sp && other.st === 'pet' && other.sp !== pick.sp && !box[other.sp] && pick.st === 'pet') { const o = {}; PF.forEach(k => { if (other[k] !== undefined) o[k] = other[k]; }); box[other.sp] = o; } pick.box = box;
     const eg = (pick.eggs || []).slice(); (other.eggs || []).forEach(e => { if (e && e.sp && !eg.some(x => x.sp === e.sp) && !(pick.dex || {})[e.sp] && pick.sp !== e.sp && !box[e.sp]) eg.push(e); }); pick.eggs = eg;
     if ((other.lu || 0) > (pick.lu || 0) && other.sp === pick.sp && other.st === pick.st) { LOOK.forEach(k => { pick[k] = other[k]; }); pick.lu = other.lu; }
+    /* 2026-11-26 帶哪一隻在身邊：看哪一台最後「換寵物」（su）。以前看整份資料誰比較新，另一台還帶著舊寵物、只是有在練習，就會把剛換的寵物換回去 */
+    if ((other.su || 0) > (pick.su || 0) && other.st === 'pet' && pick.st === 'pet' && other.sp && other.sp !== pick.sp && pick.box && pick.box[other.sp]) {
+      const r = pick.box[other.sp], cur = {}; PF.forEach(k => { if (pick[k] != null) cur[k] = pick[k]; });
+      pick.box[pick.sp] = cur; PF.forEach(k => delete pick[k]); Object.assign(pick, r); pick.sp = other.sp; delete pick.box[other.sp];
+    }
+    if ((other.su || 0) > (pick.su || 0)) pick.su = other.su;
     if (xa || xb) { const L = { b: {}, e: {} }; for (const X of [xa, xb]) { if (!X) continue; for (const k in X.b || {}) L.b[k] = Math.max(L.b[k] || 0, +X.b[k] || 0); for (const d in X.e || {}) { const m = L.e[d] = L.e[d] || {}; for (const k in X.e[d] || {}) m[k] = Math.max(m[k] || 0, +X.e[d][k] || 0); } } pick.xl = L; xpFix(pick); }   // 經驗帳本兩邊合起來
     return pick;
   }
@@ -1143,7 +1149,7 @@
   async function switchTo(sp) {
     const p = P(); if (p.sp === sp || !p.box[sp]) return;
     const r = p.box[sp]; if (!(await ask(`<div class="paskp">${petArt(look(r, { sp, mood: 'happy' }))}</div>換 ${NAMES[r.nm | 0]} 帶在身邊嗎？<small>${nameOf(p)}會回寵物屋休息，等級不會變</small>`, '換牠！'))) return;
-    p.box[p.sp] = pick(p); PF.forEach(k => delete p[k]); Object.assign(p, r); p.sp = sp; delete p.box[sp];
+    p.box[p.sp] = pick(p); PF.forEach(k => delete p[k]); Object.assign(p, r); p.sp = sp; delete p.box[sp]; p.su = Date.now();
     save(p); toast(`🐾 ${nameOf(p)}來陪你了！`); render();
   }
   function eggTap(i) {
@@ -1159,7 +1165,7 @@
     pickName(sp, async nm => {
       const p = P(); p.eggs.splice(i, 1); p.dex[sp] = 1; p.box[sp] = { nm, xp: 0, h: '', g: '', k: '', b: '', x: 0, xo: {} };
       save(p); closeModal(); toast(`🐣 歡迎 ${NAMES[nm]}！`); try { sfx.win(); confetti(100); } catch (e) { }
-      if (await ask(`<div class="paskp">${petArt({ sp, lv: 1, mood: 'happy' })}</div>要換 ${NAMES[nm]} 帶在身邊嗎？<small>帶在身邊的寵物才會升級；${nameOf(p)}可以隨時換回來</small>`, '帶牠！', '等一下')) { delete p.box[sp]; p.box[p.sp] = pick(p); PF.forEach(k => delete p[k]); Object.assign(p, { nm, xp: 0, h: '', g: '', k: '', b: '', x: 0, xo: {} }); p.sp = sp; save(p); }
+      if (await ask(`<div class="paskp">${petArt({ sp, lv: 1, mood: 'happy' })}</div>要換 ${NAMES[nm]} 帶在身邊嗎？<small>帶在身邊的寵物才會升級；${nameOf(p)}可以隨時換回來</small>`, '帶牠！', '等一下')) { delete p.box[sp]; p.box[p.sp] = pick(p); PF.forEach(k => delete p[k]); Object.assign(p, { nm, xp: 0, h: '', g: '', k: '', b: '', x: 0, xo: {} }); p.sp = sp; p.su = Date.now(); save(p); }
       tab = 'house'; render();
     });
   }
@@ -1213,7 +1219,7 @@
       if (t === 'egg') { p.eggs = p.eggs || []; p.eggs.push({ t: 0, ex: EGG_NEED[0] }); }
       go();
     }));
-    const S = T.querySelector('select'); if (S) S.onchange = () => { p.sp = S.value; p.dex = p.dex || {}; p.dex[S.value] = 1; delete p.evo; go(); };
+    const S = T.querySelector('select'); if (S) S.onchange = () => { p.sp = S.value; p.su = Date.now(); p.dex = p.dex || {}; p.dex[S.value] = 1; delete p.evo; go(); };
   }
   function hatch() {
     const w = document.getElementById('ppet'); if (!w || hatch.busy) return; hatch.busy = 1;
