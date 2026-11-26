@@ -1113,12 +1113,27 @@
     C.querySelectorAll('[data-z]').forEach(b => tap(b, () => { fuZ = b.dataset.z; paintTab(); }));
     C.querySelectorAll('[data-f]').forEach(b => tap(b, () => furPut(b.dataset.f)));
   }
+  /* 擺設預覽：把這件擺進房間（同一個位置原本的先拿開），寵物站在裡面，看完再決定買不買 */
+  function tryFur(id) {
+    const p = P(), [n, rid, z] = FU[id], pr = fuPrice(id), c = p.coin || 0, lack = c < pr ? pr - c : 0;
+    const fz = Object.assign({}, p.fz || {}); fz[rid] = Object.assign({}, fz[rid] || {}, { [z]: id });
+    const tmp = Object.assign({}, p, { fz, fo: Object.assign({}, p.fo || {}, { [id]: 1 }) });
+    return new Promise(res => {
+      const m = el('div', 'pmod pask ptrym', `<div class="pmc"><div class="pmh2">👀 擺擺看：${n}</div>
+        <div class="pstage ptry${night() ? ' night' : ''}">${roomArt(rid)}${furLayer(tmp, rid)}<div class="ppet">${petArt(look(p, { mood: 'happy', cls: 'big' }))}</div></div>
+        <div class="ptryi">放在${FZ_ROOM[rid][z][0]}，每一隻寵物的房間都看得到${lack ? `<br><b>你現在有 🪙${c}</b>` : ''}</div>
+        <div class="pbtns"><button class="go" data-a="1"${lack ? ' disabled' : ''}>${lack ? `金幣不夠，還差 🪙${lack}` : `🪙 ${pr} 買下並擺上去`}</button><button class="gray pmx" data-a="0">先不要</button></div></div>`);
+      document.body.appendChild(m);
+      m.querySelectorAll('[data-a]').forEach(b => tap(b, () => { if (b.disabled) return; m.remove(); res(b.dataset.a === '1'); }));
+      tap(m, e => { if (e.target === m) { m.remove(); res(false); } });
+    });
+  }
   async function furPut(id) {
     const p = P(), [n, rid, z] = FU[id], pr = fuPrice(id); p.fo = p.fo || {}; p.fz = p.fz || {}; p.fz[rid] = p.fz[rid] || {};
     if (p.fz[rid][z] === id) { delete p.fz[rid][z]; p.fzu = Date.now(); save(p); render(); return; }   // 再點一次＝收起來
     if (!TST() && !p.fo[id]) {
-      if ((p.coin || 0) < pr) { say(`金幣不夠…還差 ${pr - (p.coin || 0)} 枚`, 2200); return; }
-      if (!(await ask(`<div class="paskf"><img src="${IMG}${id}.webp" alt=""></div>用 🪙${pr} 買「${n}」嗎？<small>買了以後放在${FZ_ROOM[rid][z][0]}，每一隻寵物的房間都看得到</small>`, '買！'))) return;
+      if (!(await tryFur(id))) return;   // 2026-11-26 先看擺進房間的樣子，按「買下」才買（金幣不夠也能先看，按鈕會寫還差多少）
+      if ((p.coin || 0) < pr) return;
       coinAdd(p, -pr); p.fo[id] = 1; try { sfx.ticket(); } catch (e) { }
     }
     p.fz[rid][z] = id; p.fzu = Date.now(); save(p); render(); setTimeout(() => { bounce('spin', 'happy', 1000); fx('✨', 'star', 4); say(pick2(['好漂亮的房間！', '我好喜歡！', '謝謝你！']), 2200); }, 300);
