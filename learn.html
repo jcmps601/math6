@@ -3249,7 +3249,10 @@ function qfAdd(q){const D=qfDay(),k=qdKey(q);if(!D.k.includes(k)){D.k.push(k);if
 /* 早自修中途離開：記住今天這 10 題和做到哪裡，下次「繼續」從下一題開始，不會回到第一題 */
 const amRunK=()=>'learn601_amrun_'+(user?user.seat:0);
 function amRunSave(){if(pu!=='am'||!round)return;LS.set(amRunK(),{d:dkey(),qs:round.qs,res:round.res,det:round.det,amr:round.amr,lgd:round.lgd||[]})}
-function amRunLoad(){const R=LS.get(amRunK(),null);if(!R||R.d!==dkey()||!Array.isArray(R.qs)||!R.qs.length||!R.res.some(x=>!x))return null;return R}
+function amRunLoad(){const R=LS.get(amRunK(),null);if(!R||R.d!==dkey()||!Array.isArray(R.qs)||!R.qs.length||!R.res.some(x=>!x))return null;R.qs=R.qs.map(rdUpgrade);return R}
+/* 2026-11 改版前就存起來的閱讀題（今天做到一半的早自修、錯題本裡的）補上新功能：先讀文章、答錯畫黃線。用題目代號找回原本那一題，選項順序、作答紀錄都不動 */
+function rdUpgrade(q){try{if(!q||q.t!=='閱讀測驗'||q.rt||!window.AMZ)return q;const m=/^〈(.+?)〉/.exec(q.text||'');const P=m&&AMZ.READ.find(p=>p.t===m[1]);if(!P)return q;
+  for(let j=0;j<P.qs.length;j++){const c=amReadQ(P,P.qs[j],j>0);if(c.id===q.id){q.big=c.big;q.rt=c.rt;if(c.ev)q.ev=c.ev;if(c.rd)q.rd=c.rd;else delete q.rd;return q}}}catch(e){}return q}
 const unitName=k=>{if(k==='am')return '早自修';const key=ukeyOf(k),U=key&&(UN.find(u=>u.key===key)||mixByKey(key));return U?U.name:''};
 /* 今天還能拿獎勵的單元：同一科優先、還沒練過的優先 */
 function capAlt(k){const key=ukeyOf(k),cur=UN.find(u=>u.key===key)||mixByKey(key),sj=cur?cur.s:subj;
@@ -3284,7 +3287,7 @@ function newRound(){let qs;
     qs=items.map(([u,t])=>fresh(u,t))}
   else if(pu==='am'){const R=amRunLoad();if(R){N=R.qs.length;round={qs:R.qs,res:R.res,det:R.det,t0:Date.now(),logged:false,lgd:R.lgd||[],amr:R.amr};AMK=R.amr;cur=R.res.findIndex(x=>!x);showQ();paintDots();paintP();return}
     qs=amQs()}
-  else if(pu==='wb'){const W=wbLoad();qs=W.slice(0,10).map(x=>{const q=JSON.parse(JSON.stringify(x.q)),j=fixU(q,'wb');if(j!=null)q.u=j;return q})}
+  else if(pu==='wb'){const W=wbLoad();qs=W.slice(0,10).map(x=>{const q=rdUpgrade(JSON.parse(JSON.stringify(x.q))),j=fixU(q,'wb');if(j!=null)q.u=j;return q})}
   else qs=listFor(UN[pu].types,10).map(t=>fresh(pu,t));
   if(dupN>=3&&!capOf(pu))setTimeout(()=>toast('💡 這個單元今天的新題目快做完了，重複的題目沒有獎勵，換個單元試試吧！'),600);
   N=qs.length;
@@ -3840,7 +3843,7 @@ function amrRender(){if(!AMR)return;const O=$('#amrout'),today=dkey(),wk=weekKey
     return t+'</table></div>'};
   h+=tbl(S.filter(x=>x.x),'🧡 學扶組')+tbl(S.filter(x=>!x.x),'💙 一般組');
   /* 2026-11 閱讀測驗作答情形：每個人這天的閱讀題（一次答對、平均每題幾秒、秒答＝選項能按後 3 秒內就選）；秒答 2 題以上，或答對很少又做很快，標「可能亂猜」 */
-  {const R=S.filter(x=>!x.x).map(x=>{const q=x.st.q.filter(y=>y.uk==='amr'||y.t==='閱讀測驗');if(!q.length)return null;
+  {const R=S.filter(x=>!x.x).map(x=>{const q=x.st.q.filter(y=>y.uk==='amr');if(!q.length)return null;
       const ok1=q.filter(y=>y.r==='ok').length,sec=q.reduce((a,y)=>a+(+y.s||0),0),fa=q.filter(y=>y.fa!=null),fast=fa.filter(y=>y.fa<3).length,avg=Math.round(sec/q.length),tt=[...new Set(q.map(y=>y.rt).filter(Boolean))];
       const bad=fast>=2||(q.length>=3&&ok1/q.length<.4&&avg<15);return {s:x.s,q,ok1,sec,avg,fast,hasFa:fa.length>0,tt,bad}}).filter(Boolean);
     if(R.length){const B=R.filter(r=>r.bad);h+=`<div class="dsec">閱讀測驗作答情形<small>${md(D)}・${R.length} 人做了・秒答＝選項能按後 3 秒內就選</small></div>`+
@@ -4037,7 +4040,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v196';let verNew=false,verBusy=false;
+const APP_VER='learn601-v197';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
