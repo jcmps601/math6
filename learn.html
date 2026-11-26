@@ -320,6 +320,21 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #setup button{border:0;border-radius:14px;background:var(--g);color:#fff;font-size:1.2rem;font-weight:900;padding:.5rem 1rem;align-self:flex-start}
 #setup button.gray{background:#e9ecef;color:#555}
 #rulemsg{font-size:1.3rem;font-weight:900;line-height:1.5}
+/* 老師頁分頁（2026-11）：每次只看一類功能 */
+#setup .trule{padding:.5rem 1rem}#setup .trule #rulemsg{font-size:1.05rem}
+.ttabs{display:flex;gap:.4rem;flex-wrap:wrap;position:sticky;top:-1.2rem;z-index:4;background:var(--bg,#fff8f0);padding:.5rem 0}
+#setup .ttabs button{background:#fff;color:#666;border:3px solid #e9ecef;border-radius:999px;font-size:1.1rem;padding:.35rem 1rem;align-self:auto;box-shadow:none}
+#setup .ttabs button.on{border-color:#e8590c;background:#fff4e6;color:#d9480f}
+#setup .tpinw{background:#fff4e6;border:3px solid #ffd8a8;color:#d9480f;flex-direction:row;flex-wrap:wrap;align-items:center}
+#setup [data-tab].toff{display:none}#setup .tpinw[hidden]{display:none}#wqc .dhead{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+#setup details.amnd{font-size:1rem;color:#868e96;font-weight:800}#setup details.amnd summary{cursor:pointer;color:#adb5bd;width:max-content}#setup details.amnd .amnote{margin-top:.3rem}
+/* 學生錯題 */
+.wqbar{gap:.6rem}.wqbar select{font-size:1.1rem;padding:.2rem .4rem;border:2px solid #dee2e6;border-radius:8px}
+.wql{display:flex;flex-direction:column;gap:.6rem}
+.wqi{border:2px solid #f1f3f5;border-radius:14px;padding:.6rem .8rem;display:flex;flex-direction:column;gap:.3rem}
+.wqh{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;font-size:1rem;color:#868e96}.wqh .wqn{background:#ffe3e3;color:#c92a2a;border-radius:999px;padding:0 .6rem;font-weight:900}
+.wqt{font-size:1.2rem;color:#333;line-height:1.5}.wqb{font-size:1rem;color:#666;background:#f8f9fa;border-radius:10px;padding:.3rem .5rem;max-height:7.5em;overflow:auto;line-height:1.5}
+.wqa{font-size:1.1rem;color:#2b8a3e}.wqw{font-size:1.05rem;color:#c92a2a}.wqs{display:flex;flex-wrap:wrap;gap:.3rem}.wqs span{background:#f1f3f5;border-radius:999px;padding:.05rem .6rem;font-size:1rem}.wqs span small{color:#c92a2a;margin-left:.2rem}
 #setmsg,#tabmsg,#hmsg{color:#1c7ed6;font-weight:900}
 .hrow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}.hrow input{width:4em;font-size:1.2rem;padding:.2rem;border:2px solid #dee2e6;border-radius:8px}.hrow select{font-size:1.1rem;padding:.2rem}
 #hout{font:1.1rem monospace;width:min(20rem,100%);border:2px solid #dee2e6;border-radius:10px;padding:.4rem}
@@ -945,6 +960,9 @@ html:not(.rm) body.lite .np-gold::after,html:not(.rm) body.lite .np-candy::after
 #amc .ami{font-size:2.6rem;flex:none}#amc .amt{flex:1;min-width:0}#amc .a{font-size:.95rem;font-weight:900;color:#e8590c}#amc .b{font-size:1.25rem;font-weight:900;color:#333;overflow-wrap:anywhere}#amc .s{font-size:.95rem;color:#868e96;font-weight:700}
 #amc .go{flex:none}
 #amt .amnote{font-size:.9rem;color:#666;margin:.4rem 0 .6rem;line-height:1.6}#amt .amimp{display:inline-block;border:2px solid #dee2e6;border-radius:10px;padding:.2rem .6rem;cursor:pointer;font-weight:800;color:#555}
+.evtip{background:linear-gradient(transparent 55%,#ffe066 55%);padding:0 .1em}
+tr.rbad td{background:#fff4e6}
+.rs.ev{background:linear-gradient(transparent 55%,#ffe066 55%);border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .amr{border:2px solid #eee;border-radius:12px;padding:.4rem .6rem;margin:.35rem 0}.amr.ch{border-color:#ffa94d;background:#fff9f0}
 .amh{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}.ams{font-size:1.2rem;min-width:2.2rem}
 .amsw{display:inline-flex;align-items:center;gap:.2rem}.amsw b{font-size:.9rem;color:#555;margin-right:.1rem}.amsw button{border:2px solid #dee2e6;background:#fff;border-radius:999px;padding:.15rem .6rem;font-weight:800;color:#888}
@@ -1071,91 +1089,99 @@ body.qapv #pback,body.qapv #ptk,body.qapv #acts{visibility:hidden}
 
 <section class="scr" id="setup">
  <h2>👩‍🏫 老師設定</h2>
- <div class="cd"><div id="rulemsg"></div></div>
- <div class="cd" id="tboss"><div class="dhead"><b>⚔️ 本週全班打魔王</b><button id="tbload">🔄 重新整理</button></div><div id="tbout"></div></div>
- <div class="cd" id="amrep">
+ <div class="cd trule"><div id="rulemsg"></div></div>
+ <div class="ttabs" id="ttabs" role="tablist"></div>
+ <div class="cd tpinw" id="tpinw" hidden>這台電腦還沒有學生的密碼檔，很多功能讀不到資料。<button id="tpingo">到「帳號資料」選擇 pins.json</button></div>
+ <div class="cd" id="tboss" data-tab="now"><div class="dhead"><b>⚔️ 本週全班打魔王</b><button id="tbload">🔄 重新整理</button></div><div id="tbout"></div></div>
+ <div class="cd" id="amrep" data-tab="now">
   <div class="dhead"><b>🌅 早自修完成情形</b><div class="dper" id="amwk"><button data-w="0" class="on">本週</button><button data-w="1">上週</button></div><button id="amrload">🔄 重新整理</button><span id="amrmsg"></span></div>
-  <div id="amrout"><div class="dnone">選好下面 ① 的 pins.json 以後，這裡會顯示每天早自修誰做完了</div></div>
+  <div id="amrout"><div class="dnone">到「帳號資料」分頁選好 pins.json 以後，這裡會顯示每天早自修誰做完了</div></div>
  </div>
- <div class="cd" id="dash">
+ <div class="cd" id="wqc" data-tab="wrong">
+  <div class="dhead"><b>學生錯題</b><button id="wqload">讀取全班錯題本</button><span id="wqmsg"></span></div>
+  <div class="hrow wqbar"><div class="dper" id="wqmode"><button data-m="c" class="on">全班最常錯</button><button data-m="s">看一位學生</button></div><select id="wqsubj" aria-label="科目"><option value="">全部科目</option></select><select id="wqseat" aria-label="座號" hidden></select></div>
+  <div id="wqout"><div class="dnone">按「讀取全班錯題本」，看學生還沒訂正的題目：題目內容、正確答案、他選了什麼</div></div>
+  <div class="amnote">資料來自每位學生的錯題本：答錯、或第二次才答對的題目會存進去，在「錯題再練」一次就答對才會拿掉。所以這裡是「還沒學會」的題目。學生選錯的答案是這一版上線以後才開始記錄。</div>
+ </div>
+ <div class="cd" id="dash" data-tab="learn">
   <div class="dhead"><b>📊 班級儀表板</b>
    <div class="dper" id="dper"><button data-p="w" class="on">本週</button><button data-p="7">最近 7 天</button><button data-p="30">最近 30 天</button><button data-p="0">全部</button></div>
    <button id="dload">🔄 重新整理</button><button id="dxls" class="gray">📥 匯出 Excel</button><span id="dmsg"></span></div>
-  <div id="dout"><div class="dnone">選好 ① 的 pins.json 以後，這裡會自動顯示全班的狀況</div></div>
+  <div id="dout"><div class="dnone">到「帳號資料」分頁選好 pins.json 以後，這裡會自動顯示全班的狀況</div></div>
  </div>
- <div class="cd">
-  <div>① 開通密碼（只要做一次）：選擇 pins.json</div>
+ <div class="cd" data-tab="acct">
+  <div><b>開通密碼（只要做一次）：選擇 pins.json</b></div>
   <input type="file" id="pinfile" accept=".json,application/json">
   <button id="pinwrite">寫入雲端</button>
   <div id="setmsg"></div>
  </div>
- <div class="cd">
+ <div class="cd" data-tab="acct">
   <div>🔑 學生自己設的密碼（學生忘記時來這裡看，或按「重設」讓他用老師發的密碼重新設）</div>
   <button id="pwload">查看</button><span id="pwmsg2"></span>
   <div id="pwout" class="chips"></div>
  </div>
- <div class="cd" id="gift">
+ <div class="cd" id="gift" data-tab="reward">
   <div class="dhead"><b>🎁 發禮物給學生</b><button id="glist">看發送紀錄</button><span id="gmsg2"></span></div>
   <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="gseat" style="font-size:1.1rem"></select>
    🪙 金幣 <input id="gamt" type="number" value="0" min="0" max="3000" style="width:6rem;font-size:1.1rem">
    🎟️ 遊戲券 <input id="tamt" type="number" value="0" min="0" max="50" style="width:4.5rem;font-size:1.1rem"> 張
    留言 <input id="gnote" maxlength="30" placeholder="可以不寫，例如：謝謝你幫忙！" style="width:14rem;font-size:1.05rem"><button id="gbtn">送出</button><span id="gmsg"></span></div>
-  <div class="amnote">送出後，學生打開平台會跳出「老師送你禮物」，按「領取」才會收到（換平板、同步都不會不見，也不會領到兩次）。選「全班」會每個人各送一份。學生還沒領之前，可以在「看發送紀錄」收回。要先在 ① 選過 pins.json。</div>
+  <div class="amnote">送出後，學生打開平台會跳出「老師送你禮物」，按「領取」才會收到（換平板、同步都不會不見，也不會領到兩次）。選「全班」會每個人各送一份。學生還沒領之前，可以在「看發送紀錄」收回。要先在「帳號資料」分頁選過 pins.json。</div>
   <div id="gout"></div>
  </div>
- <div class="cd" id="wktc">
+ <div class="cd" id="wktc" data-tab="reward">
   <div class="dhead"><b>每週任務：五科走透透</b><button id="wkload">讀取全班</button><span id="wkmsg"></span></div>
   <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">本週加油科 <select id="wkfs" style="font-size:1.1rem"><option value="">系統幫每個人挑（他最弱的科目）</option><option value="math">全班：數學</option><option value="zh">全班：國語</option><option value="en">全班：英語</option><option value="sci">全班：自然</option><option value="soc">全班：社會</option></select><button id="wkfset">套用到全班</button></div>
   <div id="wkout"></div>
-  <div class="amnote">每週一到週日，每科答對 10 題算完成（同一科多練也只算 10 題）。完成 3 科 +30 金幣、五科全部 +100 金幣＋1 張遊戲券＋全勤章、加油科完成再 +20 金幣，學生做到就自動發。加油科只在這週有效，下週一會重新挑；學生已經完成加油科以後再換，不會重複發獎勵。要先在 ① 選過 pins.json。</div>
+  <div class="amnote">每週一到週日，每科答對 10 題算完成（同一科多練也只算 10 題）。完成 3 科 +30 金幣、五科全部 +100 金幣＋1 張遊戲券＋全勤章、加油科完成再 +20 金幣，學生做到就自動發。加油科只在這週有效，下週一會重新挑；學生已經完成加油科以後再換，不會重複發獎勵。要先在「帳號資料」分頁選過 pins.json。</div>
  </div>
- <div class="cd" id="bkc">
+ <div class="cd" id="bkc" data-tab="acct">
   <div class="dhead"><b>還原寵物、農場</b></div>
   <div class="hrow" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-weight:800">座號 <select id="bkseat" style="font-size:1.1rem"></select><button id="bkload">看備份</button><span id="bkmsg"></span></div>
   <div id="bkout"></div>
-  <div class="amnote">每位同學每天第一次上傳進度時，會自動備份一次（留 14 天）。學生說寵物、農場不見了，先按「看備份」比對，再選要還原的那一天。只還原寵物和農場，金幣、題數不會動。要先在 ① 選過 pins.json。</div>
+  <div class="amnote">每位同學每天第一次上傳進度時，會自動備份一次（留 14 天）。學生說寵物、農場不見了，先按「看備份」比對，再選要還原的那一天。只還原寵物和農場，金幣、題數不會動。要先在「帳號資料」分頁選過 pins.json。</div>
  </div>
- <div class="cd" id="drc">
+ <div class="cd" id="drc" data-tab="reward">
   <div class="dhead"><b>你畫我猜檢舉紀錄</b><button id="drload">讀取最近 7 天</button><span id="drmsg"></span></div>
   <div id="drout"></div>
-  <div class="amnote">你畫我猜的題目有一半以上（至少 2 人）檢舉就作廢。這裡列出被作廢的題目：誰畫的、題目、誰檢舉的。同一個人常被作廢可能是在寫字或亂畫；常常檢舉別人、但別人都沒檢舉的，可能是亂按。要先在 ① 選過 pins.json。</div>
+  <div class="amnote">你畫我猜的題目有一半以上（至少 2 人）檢舉就作廢。這裡列出被作廢的題目：誰畫的、題目、誰檢舉的。同一個人常被作廢可能是在寫字或亂畫；常常檢舉別人、但別人都沒檢舉的，可能是亂按。要先在「帳號資料」分頁選過 pins.json。</div>
  </div>
- <div class="cd" id="amt">
+ <div class="cd" id="amt" data-tab="bank">
   <div class="dhead"><b>🌅 早自修分組</b><button id="amload">讀取</button><button id="amsave">儲存</button><label class="amimp">📂 匯入分組檔<input type="file" id="amfile" accept=".json,application/json" hidden></label><span id="ammsg"></span></div>
   <div class="amnote">每天 15 題，先做 2 題成語。沒設定的學生是「一般」：1 篇閱讀測驗，剩下的國語、數學各一半，從學習頁目前的範圍出（國語第 7 課起、數學期末範圍的單元；新增單元會自動加入）。「學扶」可以數學、國語分開設，再勾要練的題型（都不勾＝全部題型），成語以外國語、數學各一半。<br>設定存在每位學生自己的雲端資料裡，同學看不到；網站的程式裡不會有任何人的分組。</div>
   <div id="amout"></div>
  </div>
- <div class="cd" id="repcard">
+ <div class="cd" id="repcard" data-tab="bank">
   <div class="dhead"><b>🚩 學生回報的題目問題</b><button id="repload">讀取</button><span id="repmsg"></span></div>
   <div class="amnote">學生在練習時按「這題有問題」送來的。只有老師看得到（存在每位學生自己的資料裡）；回報不會改題目、不會改對錯，也不會加獎勵。</div>
   <div class="repf"><select id="repfs" aria-label="處理狀態"><option value="0">未處理</option><option value="1">已查看</option><option value="2">已處理</option><option value="">全部</option></select><select id="repfj" aria-label="科目"><option value="">全部科目</option></select><select id="repfc" aria-label="問題類型"><option value="">全部類型</option><option value="img">圖片不清楚</option><option value="ans">答案可能有問題</option><option value="snd">聲音沒播放</option></select></div>
   <div id="replist"><div class="dnone">按「讀取」看學生回報的題目</div></div>
  </div>
- <div class="cd" id="qacard">
+ <div class="cd" id="qacard" data-tab="bank">
   <div class="dhead"><b>🔎 題目與素材檢查</b><button id="qaopen">打開</button><span id="qaomsg"></span></div>
   <div class="amnote">檢查圖片、錄音能不能載入，題目有沒有缺答案、選項重複、對不到的題型，隨機題抽樣檢查，再用手機大小排一次看會不會超出畫面。只會列出問題，不會改任何題目或刪檔案。</div>
   <div id="qabox"></div>
  </div>
- <div class="cd">
-  <div>② 全班練習紀錄</div>
+ <div class="cd" data-tab="learn">
+  <div><b>全班練習紀錄</b></div>
   <button id="tabload">重新整理</button><div id="tabmsg"></div>
   <table id="tab"></table>
  </div>
- <div class="cd" id="ana">
-  <div>③ 學習分析</div>
+ <div class="cd" id="ana" data-tab="learn">
+  <div><b>學習分析</b></div>
   <div class="hrow"><select id="aper"><option value="7">最近 7 天</option><option value="30">最近 30 天</option><option value="0">全部</option></select><button id="aload">分析</button><span id="amsg"></span></div>
   <div id="aout"></div>
  </div>
- <div class="cd">
-  <div>④ 榮譽卡加點（看完成每日任務的天數）</div>
+ <div class="cd" data-tab="reward">
+  <div>榮譽卡加點（看完成每日任務的天數）</div>
   <div class="hrow">每完成 1 天 ＋<input id="hpd" type="number" value="1" min="0" max="10"> 點，每週最多 <input id="hcap" type="number" value="5" min="0" max="50"> 點
    <select id="hwk"><option value="1">上週</option><option value="0">本週</option></select></div>
   <button id="hcalc">計算</button><div id="hmsg"></div>
   <textarea id="hout" rows="8" readonly placeholder="座號 [Tab] 點數"></textarea>
   <button class="gray" id="hcopy">📋 複製</button>
  </div>
- <div class="cd">
-  <div>⑤ ♟️ 對戰紀錄（軍棋・暗棋・大砲對轟・大砲混戰）</div>
+ <div class="cd" data-tab="reward">
+  <div>對戰紀錄（軍棋・暗棋・大砲對轟・大砲混戰）</div>
   <button id="xqload">讀取</button><span id="xqmsg"></span>
   <div id="xqout"></div>
  </div>
@@ -1617,7 +1643,21 @@ const cyTodayName=()=>{const D=cyDay(dkey());return !D?'':D.rev?'成語複習':C
 if(CY)UN.push({key:'amc',s:'zh',term:'fin',hid:1,no:'早',ic:'🀄',name:'早自修・每日成語',nav:'每日成語',c:AM_C,cb:AM_CB,g:{'每日成語':()=>cyLearnQ(ri(0,CY.L.length-1),[]),'成語複習':()=>cyRevQ(ri(0,CY.L.length-1),[],0)},types:['每日成語','成語複習'],tools:[]});
 /* 一篇閱讀測驗的一題：文章放在題目下面（每一題都看得到文章） */
 function amReadQ(p,x,again){const q=bankQ({t:'閱讀測驗',q:`〈${p.t}〉${x.q}`,big:p.p.join('<br>'),bc:'p',opts:x.opts,a:x.a,hint:['回到文章裡，找出和題目有關的句子','把每個選項和文章比一比，刪掉文章沒說的'],exp:''},'zh');
-  q.u=ukIdx('amr');q.t='閱讀測驗';if(again)q.lk=READ_MIN;return q}
+  q.u=ukIdx('amr');q.t='閱讀測驗';if(again)q.lk=READ_MIN;
+  /* 2026-11 防亂猜：文章每一句包成 <span class="rs" data-r="段-句">（答錯一次時標出答案在哪一句）；q.rt 篇名、q.ev 答案所在的句子、q.rd 這篇的第一題（先讀文章才出現選項）
+     包句子是在 bankQ 之後做，題目代號 q.id 不會變（今天做過的題目、錯題本都照舊認得） */
+  q.big=q.big.replace(/(<div class="bx[^"]*">)([\s\S]*)(<\/div>)$/,(m,a,b,c)=>a+b.split('<br>').map((par,pi)=>{let si=0;return par.replace(/[^。！？]*[。！？]+[」』）”]*|[^。！？]+$/g,t=>t.replace(/<[^>]+>|\s|　/g,'')?`<span class="rs" data-r="${pi}-${si++}">${t}</span>`:t)}).join('<br>')+c);
+  q.rt=p.t;if(Array.isArray(x.ev)&&x.ev.length)q.ev=x.ev.slice();if(!again)q.rd=[...p.p.join('').replace(/<[^>]+>/g,'').replace(/\s|　/g,'')].length;return q}
+/* 先讀文章：這篇的第一題，選項要等「文章字數 ÷ 每秒 8 字」（最少 8 秒、最多 60 秒）才能按；今天讀過這篇（等滿過）就不用再等 */
+const RD_CPS=8,RD_MIN=8,RD_MAX=60;
+const rdNeed=q=>Math.round(Math.min(RD_MAX,Math.max(RD_MIN,(q.rd||0)/RD_CPS)));
+const rdK=()=>'learn601_rd_'+(user?user.seat:0);
+const rdDone=t=>{const v=LS.get(rdK(),null);return !!(v&&v.d===dkey()&&(v.t||[]).includes(t))};
+function rdMark(t){const v=LS.get(rdK(),null),o=v&&v.d===dkey()?v:{d:dkey(),t:[]};if(!o.t.includes(t))o.t.push(t);LS.set(rdK(),o)}
+/* 答錯一次（或答完）時把答案所在的句子畫出來 */
+function evShow(q){if(!q||!q.ev||!q.ev.length)return false;const c=$('#bigc');if(!c)return false;let first=null;
+  q.ev.forEach(r=>c.querySelectorAll(`.rs[data-r="${r}"]`).forEach(e=>{e.classList.add('ev');if(!first)first=e}));
+  if(first)try{first.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}return !!first}
 /* 單元標籤:數學的單元對應課本(單元 1～4);國語、英語…題庫的分類是「題型」,不寫單元幾,免得學生以為是課本第幾單元 */
 const uLab=U=>U.hid?'🌅 早自修':U.s&&U.s!=='math'?`${subjOf(U.s).n}・${U.nav||U.name}`:'單元'+U.no;
 const uTag=U=>U.hid?'🌅 早自修':U.s&&U.s!=='math'?`${subjOf(U.s).ic} ${subjOf(U.s).n}`:'單元 '+U.no;
@@ -1768,6 +1808,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
     if(xa||xb){const f=sum.farm,X={b:Math.max(+(xa||{}).b||0,+(xb||{}).b||0),e:{}};for(const Y of [xa,xb])for(const d in (Y&&Y.e)||{})X.e[d]=Math.max(X.e[d]||0,+Y.e[d]||0);f.xl=X;const t=X.b+Object.values(X.e).reduce((a,v)=>a+(+v||0),0);if(t>(f.xp||0))f.xp=t}}   // 農場經驗帳本：兩台加的經驗都算   /* 農場經驗只會增加：留經驗比較多的那份（另一台的舊資料、空農場都蓋不過來）；一樣多才看誰比較新 */
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{}),r:Object.assign({},r.uq.r||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
+  if(r.qf&&r.qf.d===dkey()){const D=qfDay();for(const k of r.qf.k||[])if(!D.k.includes(k))D.k.push(k)}   // 今天第一次就答錯的題目：兩台合起來
   if(r.qd&&r.qd.d===dkey()){if(!sum.qd||sum.qd.d!==r.qd.d)sum.qd={d:r.qd.d,k:(r.qd.k||[]).slice()};else sum.qd.k=[...new Set([...(sum.qd.k||[]),...(r.qd.k||[])])]}   // 今天做過的題目
   sum.amr=mx(sum.amr,r.amr);   // 早自修讀到第幾篇
   sum.fmx=mx(sum.fmx,r.fmx);if(r.fv&&typeof r.fv==='object'){sum.fv=sum.fv||{};for(const d in r.fv){const a=sum.fv[d]=sum.fv[d]||{},b=r.fv[d]||{};for(const j in b)a[j]=mx(a[j],b[j])}}   // 認真答對：每台各自記，合起來取大的
@@ -2290,7 +2331,7 @@ function imgLock(on){const a=document.getElementById('ansc');if(!a)return;a.clas
   if(on&&!m){m=document.createElement('div');m.id='imglockm';m.textContent='題目的圖片還沒載入，載入好以後再作答';a.prepend(m)}else if(!on&&m)m.remove()}
 /* 老師：讀全班的回報（每位學生自己的 rep），可以篩選、標記已查看／已處理 */
 let REPS=null;
-async function repLoad(){const pins=LS.get('learn601_pins',null),M=$('#repmsg');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+async function repLoad(){const pins=LS.get('learn601_pins',null),M=$('#repmsg');if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上雲端';return}
   const all=[];await Promise.all(Object.keys(pins).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/rep`).get(),10000)).val()||{};for(const id in v)all.push(Object.assign({s,id,p:pins[s]},v[id]))}catch(e){}}));
   REPS=all.sort((a,b)=>(b.at||0)-(a.at||0));M.textContent=`共 ${all.length} 筆`;
@@ -2538,7 +2579,7 @@ async function wbPull(){if(!db||!user)return;try{const cm=(await timeout(db.ref(
 function wfLog(k){sum.wf=(sum.wf||[]).filter(x=>Array.isArray(x)&&x[0]>Date.now()-35*864e5);if(!sum.wf.some(x=>x[1]===k&&Date.now()-x[0]<6e4))sum.wf.push([Date.now(),k]);saveSum(true)}
 function wbUpdate(q,res,rew){if(!user)return;let W=wbLoad();const k=qKey(q),i=W.findIndex(x=>x.k===k);
   if(res==='ok'){if(i>=0){const x=W.splice(i,1)[0];const T=wbTomb();T[k]=Date.now();LS.set(wbxKey(),T);wbSave(W);if(!x.q.nr){wfLog(k);try{PET.note('wb')}catch(e){}}if(!q.rv)rvAdd(x.q,x.k);toast('🎉 這題學會了！過幾天會再複習一次，記得更牢。')}return}
-  if(i>=0){const x=W.splice(i,1)[0];x.n++;if(rew&&pu!=='wb')delete x.q.nr;x.d=dkey();x.m=Date.now();W.push(x)}
+  if(i>=0){const x=W.splice(i,1)[0];x.n++;if(rew&&pu!=='wb')delete x.q.nr;if(Array.isArray(q.wa))x.q.wa=q.wa.slice();x.d=dkey();x.m=Date.now();W.push(x)}
   else{const c=JSON.parse(JSON.stringify(q));delete c.rv;delete c.rvs;if(!rew&&pu!=='wb')c.nr=1;else delete c.nr;W.push({k,q:c,n:1,d:dkey(),m:Date.now()});const T=wbTomb();if(T[k]){delete T[k];LS.set(wbxKey(),T)}}   // 複習題答錯：照原本的方式存進錯題本（rvk 留著，之後過關會接回同一筆複習）
   if(W.length>WB_MAX)W=W.slice(-WB_MAX);wbSave(W)}
 function renderWB(P){const h=el('div','h1',`<span class="tag">📕</span>錯題再練`);h.style.setProperty('--c',WB.c);P.appendChild(h);
@@ -3201,6 +3242,10 @@ function qdDay(){const d=dkey();if(!sum.qd||sum.qd.d!==d)sum.qd={d,k:[]};sum.qd.
 const qdKey=q=>(pu==='wb'?'w:':'')+qKey(q);
 const qdHas=q=>qdDay().k.includes(qdKey(q));
 const qdAdd=q=>{const D=qdDay(),k=qdKey(q);if(!D.k.includes(k))D.k.push(k)};
+/* 2026-11 防「答錯一次就回首頁、再進來重新答」：第一次答錯就記在 sum.qf（今天、跟著同步），這題再出現時直接從第二次機會開始（答對不算一次就對、答錯就結束） */
+function qfDay(){const d=dkey();if(!sum.qf||sum.qf.d!==d)sum.qf={d,k:[]};sum.qf.k=sum.qf.k||[];return sum.qf}
+const qfHas=q=>!!q&&qfDay().k.includes(qdKey(q));
+function qfAdd(q){const D=qfDay(),k=qdKey(q);if(!D.k.includes(k)){D.k.push(k);if(D.k.length>400)D.k=D.k.slice(-400);saveSum(true)}}
 /* 早自修中途離開：記住今天這 10 題和做到哪裡，下次「繼續」從下一題開始，不會回到第一題 */
 const amRunK=()=>'learn601_amrun_'+(user?user.seat:0);
 function amRunSave(){if(pu!=='am'||!round)return;LS.set(amRunK(),{d:dkey(),qs:round.qs,res:round.res,det:round.det,amr:round.amr,lgd:round.lgd||[]})}
@@ -3244,7 +3289,7 @@ function newRound(){let qs;
   if(dupN>=3&&!capOf(pu))setTimeout(()=>toast('💡 這個單元今天的新題目快做完了，重複的題目沒有獎勵，換個單元試試吧！'),600);
   N=qs.length;
   qs.forEach(q=>{if(q.u!=null&&UN[q.u])q.uk=UN[q.u].key});
-  round={qs,res:Array(N).fill(null),det:qs.map(q=>({u:q.u,uk:q.uk,t:q.t,w:[],h:0,s:0})),t0:Date.now(),logged:false,lgd:[],amr:pu==='am'?AMK:null};cur=0;amRunSave();showQ()}
+  round={qs,res:Array(N).fill(null),det:qs.map(q=>Object.assign({u:q.u,uk:q.uk,t:q.t,w:[],h:0,s:0},q.rt?{rt:q.rt}:{})),t0:Date.now(),logged:false,lgd:[],amr:pu==='am'?AMK:null};cur=0;amRunSave();showQ()}
 function paintP(){const done=round.res.filter(x=>x).length;document.querySelector('#pbar i').style.width=done/N*100+'%';document.getElementById('pcnt').textContent=`${done} / ${N}`;
   const t=document.getElementById('ptk');if(t)t.innerHTML=`${ico('rw-ticket','ii')}× ${tkN()}<small>這輪 ${sum.tc||0}/10・得 ${sum.tco||0} 分</small>`}
 const tkLeft=()=>TK_EVERY-(sum.tc||0);
@@ -3273,7 +3318,7 @@ document.addEventListener('keydown',e=>{if(!$('#prac').classList.contains('on')|
   else if(e.key==='Tab'||e.key==='/'||e.key===':'){e.preventDefault();key('下一格')}else if(e.key==='Enter'){solved?nextQ():key('檢查')}});
 /* 題目裡的數字加顏色；只改文字，不動 HTML 標籤裡面（直式注音的 class="t4" 以前會被改壞，顯示成 4">） */
 const hl=s=>String(s).split(/(<[^>]+>)/).map(p=>p[0]==='<'?p:p.replace(/(\d+(?:\.\d+)?)/g,'<span class="num">$1</span>')).join('');
-function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';scrReset();const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=0;solved=false;hintK=0;qStart=Date.now();
+function showQ(){$('#prac').classList.remove('sv');$('#opts').style.display='';scrReset();const q=round.qs[cur];scrClear();$('#figc').scrollTop=0;requestAnimationFrame(scrFit);$('#box').style.display='';$('#fbx').style.display='';val='';fv={w:'',n:'',d:''};act='n';tries=qfHas(q)?1:0;if(tries)setTimeout(()=>{if(!solved&&round&&round.qs[cur]===q){const fb=$('#fb');fb.className='bad';fb.innerHTML=`${ico('mascot-think','fbm')}<b>這題剛剛答錯過一次</b> 這次是第二次機會，仔細看題目再作答`}},0);solved=false;hintK=0;qStart=Date.now();
   const isEn=(q.subj||(q.id&&q.id.split('|')[0]))==='en';if(isEn)['text','big','ans','rv','hd','speak','opts','sol','hints'].forEach(k=>{if(q[k]!=null)q[k]=enQ(q[k])});   // 錯題本裡以前存的題目也換成直的引號
   $('#prac').classList.toggle('en',isEn);$('#qno').innerHTML=`第 ${cur+1} 題`+(q.rv?'<small class="rvtag">複習</small>':'');const ut=$('#utag');ut.textContent=uLab(UN[q.u]);ut.style.color=UN[q.u].c;
   $('#q').innerHTML=hl(q.text);
@@ -3302,7 +3347,7 @@ tap($('#hint'),()=>{const q=round.qs[cur];if(solved||hintK>=q.hints.length)retur
 tap($('#show'),()=>{if(solved)return;round.res[cur]='no';finish(round.qs[cur],false)});
 tap($('#next'),()=>nextQ());
 const near=(a,b)=>Math.abs(a-b)<1e-6;
-function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]+>/g,''):'');const q=round.qs[cur],fb=$('#fb');fb.className='bad';
+function wrong(msg){tries++;if(tries===1)try{qfAdd(round.qs[cur])}catch(e){}round.det[cur].w.push(msg?String(msg).replace(/<[^>]+>/g,''):'');const q=round.qs[cur],fb=$('#fb');fb.className='bad';
   if(tries>=2){round.res[cur]='no';finish(q,false);return}
   sfx.no();
   if(q.id){bankTry(q,msg);return}   // 國語、英語…:不用數學的「看一題例子」
@@ -3310,6 +3355,7 @@ function wrong(msg){tries++;round.det[cur].w.push(msg?String(msg).replace(/<[^>]
 /* 題庫題答錯一次:錯的選項劃掉,依題型告訴學生該怎麼再試(聽力→再聽一次、短文→回去找線索、看圖→再看圖),順便給第一個提示 */
 const KIND_TRY={listen:'再按 🔊 聽一次',read:'回到短文裡找線索',look:'再仔細看一次圖',think:'看看提示，再選一次'};
 function bankTry(q,msg){const fb=$('#fb');fb.innerHTML=`${ico('mascot-think','fbm')}<b>再想一想</b> `+(msg||KIND_TRY[q.kind]||KIND_TRY.think);
+  if(q.ev&&evShow(q)){fb.innerHTML=`${ico('mascot-think','fbm')}<b>再想一想</b> 答案在文章<b class="evtip">畫黃線</b>的地方，再讀一次`;$('#hint').classList.remove('pulse');return}   // 閱讀測驗：標出答案在文章的哪一句
   /* 聽力題:上面已經說「再聽一次」,提示就不要再重複一樣的話 */
   if(q.kind==='listen')while(hintK<q.hints.length&&/聽一次/.test(q.hints[hintK]))hintK++;
   if(hintK<q.hints.length){addStep('💡 '+q.hints[hintK++],'h');round.det[cur].h=hintK;if(hintK>=q.hints.length)dis($('#hint'),true)}
@@ -3340,7 +3386,7 @@ function check(){const q=round.qs[cur];
     const a=+fv.n,b=+fv.d,[x,y]=q.ans;if(!a||!b){fb.className='bad';fb.textContent='比的前項、後項不能是 0';return}
     if(a===x&&b===y||!q.simp&&a*y===b*x){['bn','bd'].forEach(id=>$('#'+id).classList.add('ok'));right(q);return}
     if(a*y===b*x){F2.className='';void F2.offsetWidth;F2.className='no';fb.className='bad';fb.textContent='是相等的比！還要化成最簡單整數比';return}
-    F2.className='';void F2.offsetWidth;F2.className='no';wrong(a*x===b*y?'前項、後項的順序弄反了':null);return}
+    F2.className='';void F2.offsetWidth;F2.className='no';waSet(q,`${fv.n}：${fv.d}`);wrong(a*x===b*y?'前項、後項的順序弄反了':null);return}
   if(q.type==='frac'){const w=fv.w===''?0:+fv.w,hasF=fv.n!==''||fv.d!=='';
     if(!hasF&&fv.w==='')return;
     if(hasF&&(fv.n===''||fv.d==='')){$('#fb').className='bad';$('#fb').textContent='分子、分母都要填喔';act=fv.n===''?'n':'d';paintF();return}
@@ -3350,13 +3396,18 @@ function check(){const q=round.qs[cur];
       if(hasF&&n!==0&&gcd(n,d)>1){F2.className='';void F2.offsetWidth;F2.className='no';$('#fb').className='bad';$('#fb').textContent='數值對了！還要約成最簡分數';return}
       if(hasF&&fv.w!==''&&n>=d){F2.className='';void F2.offsetWidth;F2.className='no';$('#fb').className='bad';$('#fb').textContent='帶分數的分數部分要比 1 小';return}
       ['bw','bn','bd'].forEach(id=>$('#'+id).classList.add('ok'));right(q);return}
-    F2.className='';void F2.offsetWidth;F2.className='no';wrong(trapMsg(q,v));return}
+    F2.className='';void F2.offsetWidth;F2.className='no';waSet(q,(fv.w!==''?fv.w+' 又 ':'')+(hasF?`${fv.n}/${fv.d}`:''));wrong(trapMsg(q,v));return}
   if(val===''||val==='.')return;const v=+val,box=$('#box');
   if(near(v,q.ans)){box.className='ib ok';right(q);return}
-  box.className='ib';void box.offsetWidth;box.className='ib no';wrong(trapMsg(q,v))}
+  box.className='ib';void box.offsetWidth;box.className='ib no';waSet(q,val);wrong(trapMsg(q,v))}
+/* 學生這題選錯／填錯的答案（存進錯題本，老師頁看得到）：第一次錯的、第二次錯的 */
+function waSet(q,v){try{const t=String(v==null?'':v).replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim().slice(0,40);if(!t)return;q.wa=tries===0?[t]:[...(Array.isArray(q.wa)?q.wa:[]),t].slice(-2)}catch(e){}}
 /* 防亂點：題目出來後，選項先等「讀題時間」才能按（字越多越久；聽力題等錄音播完）。答錯一次後，剩下的選項也等一下 */
 let lkTok=0,optOpen=0;
 function lockOpts(q,ms){const O=$('#opts'),tok=++lkTok,t0=Date.now();optOpen=Infinity;
+  if(!ms&&pu==='am'&&q&&q.rd&&q.rt&&!rdDone(q.rt)){const need=rdNeed(q);O.classList.add('wait');O.classList.remove('au');O.style.setProperty('--lk',need*1000+'ms');   // 閱讀測驗第一題：先讀文章
+    const upd=()=>{const left=Math.max(0,Math.ceil(need-(Date.now()-t0)/1000));O.dataset.w=`先讀文章，還有 ${left} 秒`;return left};upd();
+    const iv=setInterval(()=>{if(tok!==lkTok){clearInterval(iv);return}if(upd()<=0){clearInterval(iv);O.classList.remove('wait','au');optOpen=Date.now();rdMark(q.rt)}},250);return}
   if(!ms){O.classList.remove('wait','au');optOpen=Date.now();return}   // 2026-11：題目一出來就能作答（拿掉「先看題目」「聽完再選」）；只留答錯後的「再想一想」
   const txt=[q.text,q.big,...(q.grp||[]),...(q.opts||[]).filter(o=>!isImg(o))].join(' ').replace(/<[^>]+>/g,'').replace(/\s+/g,'');
   const au=!ms&&!!(q.au||q.say), need=ms||q.lk||Math.min(READ_MAX,Math.max(READ_MIN,800+txt.length*45));
@@ -3367,9 +3418,10 @@ function lockOpts(q,ms){const O=$('#opts'),tok=++lkTok,t0=Date.now();optOpen=Inf
   const busy=()=>{try{return !!(AUD&&!AUD.paused&&!AUD.ended)||('speechSynthesis' in window&&speechSynthesis.speaking)}catch(e){return false}};
   const iv=setInterval(()=>{const t=Date.now()-t0;if(tok!==lkTok||t>=9000||(t>=READ_MIN&&!busy())){clearInterval(iv);open()}},200)}
 function choose(b,o){if(solved||b.classList.contains('no')||$('#opts').classList.contains('wait'))return;const q=round.qs[cur];
+  if(q.rt&&round.det[cur]&&round.det[cur].fa==null&&optOpen<Infinity)round.det[cur].fa=Math.max(0,Math.round((Date.now()-optOpen)/100)/10);   // 閱讀測驗：選項能按以後幾秒就作答（老師頁看有沒有亂猜）
   if(tries===0&&o!==q.ans&&Date.now()-optOpen<RUSH_MS)sum.trs=(sum.trs||0)+1;   // 選項能按之後不到 1.5 秒就答錯：算一次「太快作答」
   if(o===q.ans){b.classList.add('ok');right(q);return}
-  b.classList.add('no');wrong(q.trapsMC&&q.trapsMC[o]);
+  b.classList.add('no');waSet(q,isImg(o)?'（圖片選項）':o);wrong(q.trapsMC&&q.trapsMC[o]);
   const left=[...$('#opts').children].filter(x=>!x.classList.contains('no')).length;if(!solved&&left<=1){round.res[cur]='no';finish(q,false)}
   if(!solved&&q.id)lockOpts(q,1200)}
 /* 題組：畫出每一句和 ○╳（或勾選框），右邊只有一顆「送出」 */
@@ -3387,7 +3439,7 @@ function grpSend(){const q=round.qs[cur];if(solved||q.type!=='grp'||$('#opts').c
   const a=q.grp.map((_,i)=>q.gk==='chk'?(gsel[i]||'╳'):gsel[i]),fb=$('#fb');
   if(a.some(x=>!x)){fb.className='bad';fb.textContent=`還有 ${a.filter(x=>!x).length} 句沒選喔，每一句都要選`;return}
   const s=a.join('');if(s===q.ans){right(q);return}
-  const k=[...s].filter((v,i)=>v!==q.ans[i]).length;wrong(`有 ${k} 句不對，再檢查一次`);if(!solved)lockOpts(q,1200)}
+  const k=[...s].filter((v,i)=>v!==q.ans[i]).length;waSet(q,s);wrong(`有 ${k} 句不對，再檢查一次`);if(!solved)lockOpts(q,1200)}
 /* 答完：每一句標出對錯，錯的那句寫出正確答案 */
 function grpShow(q){const chk=q.gk==='chk';$('#opts').style.display='none';$('#bigc').querySelectorAll('.gr').forEach(r=>{const i=+r.dataset.i,a=q.ans[i],m=chk?(gsel[i]||'╳'):gsel[i],good=m===a;
   r.classList.add(good?'ok':'no');if(!good)r.insertAdjacentHTML('beforeend',`<em class="ga">${chk?(a==='○'?'你漏勾了':'這個不用勾'):'答案 '+a}</em>`);
@@ -3423,7 +3475,7 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
     if(q.type==='mc'){[...$('#opts').children].forEach(b=>{if(b.dataset.v===q.ans)b.classList.add('ok')})}
     else if(q.type==='grp'){}
     else{const r=$('#rev');r.innerHTML=q.type==='frac'?mx(q.ans.n,q.ans.d):q.type==='ratio'?q.ans.join('：'):f(q.ans);r.style.display='inline-block';$('#box').style.display='none';$('#fbx').style.display='none'}}
-  if(q.id)bankReveal(q);if(q.type==='grp')grpShow(q);
+  if(q.id)bankReveal(q);if(q.type==='grp')grpShow(q);if(q.ev)evShow(q);
   dis($('#next'),false);$('#next').textContent=cur===N-1?'看結果 ▶':'下一題 ▶';paintDots();paintP();
   setTimeout(()=>{const s=$('#steps').lastElementChild;if(s&&s.scrollIntoView)s.scrollIntoView({block:'nearest'})},50)}
 /* 題庫題答完:答案填進底線;聽力題把聽到的內容、或答完才給看的字,放在播音鍵下面 */
@@ -3564,13 +3616,56 @@ async function bossTeacher(){const O=$('#tbout');if(!O)return;O.textContent='讀
     ((R.tests||[]).length?`<div class="tbh" style="font-size:1rem;color:#888">🧪 ${R.tests.map(r=>`${testName(r.seat).replace('🧪 ','')} ${r.s} 點`).join('、')}（不算進全班）</div>`:'')}
 
 /* ===================== 老師設定 ===================== */
-function openSetup(){show$('setup');setTimeout(()=>{if(!DASH)dashLoad();if(!AMR)amrLoad();bossTeacher()},300);$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
+/* ===== 老師頁分頁（2026-11）：今日概況・學生錯題・學習紀錄・獎勵活動・題目管理・帳號資料 ===== */
+const TTABS=[['now','今日概況'],['wrong','學生錯題'],['learn','學習紀錄'],['reward','獎勵活動'],['bank','題目管理'],['acct','帳號資料']];
+function ttabSet(k){if(!TTABS.some(t=>t[0]===k))k='now';LS.set('learn601_ttab',k);
+  document.querySelectorAll('#ttabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===k));
+  document.querySelectorAll('#setup [data-tab]').forEach(c=>c.classList.toggle('toff',c.dataset.tab!==k));
+  setTimeout(()=>{try{dispatchEvent(new Event('resize'))}catch(e){}},30)}
+(()=>{const T=$('#ttabs');if(!T)return;TTABS.forEach(([k,n])=>{const b=el('button','',n);b.dataset.t=k;b.setAttribute('role','tab');b.onclick=()=>ttabSet(k);T.appendChild(b)});
+  /* 說明文字收起來（按「說明」才打開） */
+  document.querySelectorAll('#setup .amnote').forEach(n=>{const d=document.createElement('details');d.className='amnd';d.innerHTML='<summary>說明</summary>';n.parentNode.insertBefore(d,n);d.appendChild(n)});
+  tap($('#tpingo'),()=>ttabSet('acct'));ttabSet(LS.get('learn601_ttab','now'))})();
+function tpinPaint(){const w=$('#tpinw');if(w)w.hidden=!!LS.get('learn601_pins',null)}
+/* ===== 學生錯題：讀每位學生雲端的錯題本（wbq），只顯示純文字（學生的資料不直接當 HTML 放進老師頁） ===== */
+let WQ=null,wqMode='c';
+const wqTxt=h=>{try{const B=new DOMParser().parseFromString(String(h==null?'':h),'text/html').body;B.querySelectorAll('.fr').forEach(e=>{const i=e.querySelectorAll('i');e.textContent=` ${i[0]?i[0].textContent:''}/${i[1]?i[1].textContent:''} `});B.querySelectorAll('br').forEach(e=>e.replaceWith(' '));return B.textContent.replace(/\s+/g,' ').trim()}catch(e){return ''}};   // 分數 → 3/4
+function wqAns(q){const a=q.ans!=null?q.ans:q.a;if(a==null)return '';if(Array.isArray(a))return a.map(wqTxt).join('：');
+  if(typeof a==='object')return a.n!=null&&a.d!=null?`${a.w?(+a.w)+' 又 ':''}${+a.n}/${+a.d}`:'';const t=wqTxt(a);return (q.pre?wqTxt(q.pre)+' ':'')+t+(q.unit?' '+wqTxt(q.unit):'')}
+function wqUnit(q){const U=UN.find(u=>u.key===q.uk)||(q.u!=null&&UN[q.u]&&!q.uk?UN[q.u]:null),S=U&&SUBJ.find(x=>x.k===U.s);return {s:U?U.s:'',sn:S?S.n:'',un:U?(U.nav||U.name):''}}
+async function wqLoad(){const pins=LS.get('learn601_pins',null),M=$('#wqmsg');if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
+  M.textContent='讀取中…';if(!(await fbOnline())){M.textContent='連不上 Firebase';return}
+  const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let done=0,fail=0;const items=[];
+  await Promise.all(seats.map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/wbq`).get(),15000)).val()||{};
+      for(const k in v){const c=v[k];if(!c||c.x||!c.q)continue;let q;try{q=JSON.parse(c.q)}catch(e){continue}if(!q||typeof q!=='object')continue;items.push({s:+s,k,q,n:+c.n||1,d:String(c.d||'').slice(0,10)})}}catch(e){fail++}
+    M.textContent=`讀取中… ${++done} / ${seats.length}`}));
+  WQ={items,t:Date.now()};const n=new Date();M.textContent=`更新時間 ${pad2(n.getHours())}:${pad2(n.getMinutes())}・${items.length} 題`+(fail?`（${fail} 人讀取失敗，再按一次）`:'');
+  const ss=[...new Set(items.map(x=>x.s))].sort((a,b)=>a-b),sel=$('#wqseat'),cur=sel.value;sel.innerHTML=ss.map(s=>`<option value="${s}">${s} 號（${items.filter(x=>x.s===s).length} 題）</option>`).join('');if(cur&&ss.includes(+cur))sel.value=cur;wqRender()}
+function wqCard(q,head,extra){const U=wqUnit(q),t=wqTxt(q.text||q.q),b=wqTxt(q.big),fig=q.fig?'（題目有圖）':'',wa=Array.isArray(q.wa)?q.wa.map(wqTxt).filter(Boolean):[];
+  return `<div class="wqi"><div class="wqh">${head}<span>${rEsc(U.sn)}・${rEsc(U.un)}${q.t?'・'+rEsc(wqTxt(q.t)):''}</span></div>
+    <div class="wqt">${rEsc(t.slice(0,200))}${rEsc(fig)}</div>${b?`<div class="wqb">${rEsc(b.slice(0,600))}${b.length>600?'…':''}</div>`:''}
+    <div class="wqa">正確答案：${rEsc(wqAns(q))}</div>${wa.length?`<div class="wqw">選了：${wa.map(x=>rEsc(x.slice(0,40))).join('，再選 ')}</div>`:''}${extra||''}</div>`}
+function wqRender(){const O=$('#wqout');if(!WQ)return;const sj=$('#wqsubj').value,L=WQ.items.filter(x=>!sj||wqUnit(x.q).s===sj);
+  $('#wqseat').hidden=wqMode!=='s';
+  if(!L.length){O.innerHTML='<div class="dnone">沒有錯題（或這一科沒有）</div>';return}
+  if(wqMode==='c'){const G={};L.forEach(x=>{const g=G[x.k]=G[x.k]||{q:x.q,who:[]};g.who.push(x)});
+    const A=Object.values(G).sort((a,b)=>b.who.length-a.who.length||b.who.reduce((t,x)=>t+x.n,0)-a.who.reduce((t,x)=>t+x.n,0)).slice(0,60);
+    O.innerHTML=`<div class="dsec">全班最常錯的題目<small>${Object.keys(G).length} 題，列出前 ${A.length} 題・同一題有幾個人還沒學會</small></div><div class="wql">`+
+      A.map((g,i)=>{const wq=Object.assign({},g.q);const was=g.who.map(x=>Array.isArray(x.q.wa)&&x.q.wa[0]?wqTxt(x.q.wa[0]):'').filter(Boolean),cnt={};was.forEach(w=>cnt[w]=(cnt[w]||0)+1);delete wq.wa;
+        const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        return wqCard(wq,`<b>${i+1}.</b><span class="wqn">${g.who.length} 人</span>`,`${top.length?`<div class="wqw">常選錯的答案：${top.map(([w,n])=>`${rEsc(w.slice(0,40))}（${n} 人）`).join('、')}</div>`:''}<div class="wqs">${g.who.sort((a,b)=>a.s-b.s).map(x=>`<span>${x.s} 號${x.n>1?`<small>錯 ${x.n} 次</small>`:''}</span>`).join('')}</div>`)}).join('')+'</div>'}
+  else{const s=+$('#wqseat').value,M=L.filter(x=>x.s===s).sort((a,b)=>b.d.localeCompare(a.d));
+    O.innerHTML=`<div class="dsec">${s} 號的錯題本<small>${M.length} 題・新的在上面</small></div><div class="wql">`+(M.map(x=>wqCard(x.q,`<span class="wqn">錯 ${x.n} 次</span><span>${rEsc(x.d)}</span>`)).join('')||'<div class="dnone">沒有錯題</div>')+'</div>'}}
+$('#wqsubj').innerHTML='<option value="">全部科目</option>'+SUBJ.map(x=>`<option value="${x.k}">${x.n}</option>`).join('');
+tap($('#wqload'),()=>wqLoad());$('#wqsubj').onchange=wqRender;$('#wqseat').onchange=wqRender;
+document.querySelectorAll('#wqmode button').forEach(b=>b.addEventListener('click',()=>{wqMode=b.dataset.m;document.querySelectorAll('#wqmode button').forEach(x=>x.classList.toggle('on',x===b));wqRender()}));
+function openSetup(){show$('setup');tpinPaint();setTimeout(()=>{if(!DASH)dashLoad();if(!AMR)amrLoad();bossTeacher()},300);$('#rulemsg').textContent='檢查中…';rulesOK().then(ok=>{$('#rulemsg').innerHTML=ok?'✅ Firebase 規則已生效':ok===false?'❗ Firebase 規則還沒更新：請到 Firebase 主控台 → Realtime Database →「規則」，貼上 firebase_rules.json 的內容，按「發布」，再重新整理這頁':'📴 連不上 Firebase'});const p=LS.get('learn601_pins',null);if(p)$('#tabmsg').textContent=`這台電腦已存 ${Object.keys(p).length} 位學生的密碼`}
 let tapT=[];tap(document.querySelector('#login h1'),()=>{const t=Date.now();tapT=tapT.filter(x=>t-x<2500);tapT.push(t);if(tapT.length>=5){tapT=[];openSetup()}});
 tap($('#setback'),()=>{history.replaceState(null,'',location.pathname);show$('login')});
 let pinData=null;
 $('#pinfile').addEventListener('change',async e=>{const fl=e.target.files[0];if(!fl)return;
   try{const o=JSON.parse(await fl.text());const ok=Object.keys(o).length>=1&&Object.entries(o).every(([k,v])=>/^\d+$/.test(k)&&/^\d{4}$/.test(String(v)));
-    if(!ok)throw 0;for(const k in o)o[k]=String(o[k]);pinData=o;LS.set('learn601_pins',o);$('#setmsg').textContent=`讀到 ${Object.keys(o).length} 位學生的密碼，已存在這台電腦`;dashLoad();amrLoad()}
+    if(!ok)throw 0;for(const k in o)o[k]=String(o[k]);pinData=o;LS.set('learn601_pins',o);tpinPaint();$('#setmsg').textContent=`讀到 ${Object.keys(o).length} 位學生的密碼，已存在這台電腦`;dashLoad();amrLoad()}
   catch(_){pinData=null;$('#setmsg').textContent='檔案格式不對'}});
 tap($('#pinwrite'),async()=>{const o=pinData||LS.get('learn601_pins',null);if(!o){$('#setmsg').textContent='請先選擇 pins.json';return}
   $('#setmsg').textContent='寫入中…';await fbReady;if(!db){$('#setmsg').textContent='連不上 Firebase';return}
@@ -3578,9 +3673,9 @@ tap($('#pinwrite'),async()=>{const o=pinData||LS.get('learn601_pins',null);if(!o
   catch(e){if(!/permission/i.test(String(e&&(e.code||e.message)))){$('#setmsg').textContent='寫入失敗：'+(e.message||e);return}
     $('#setmsg').textContent=(await rulesOK())===false?'❗ 寫不進去：Firebase 規則還沒更新（看最上面的說明）':'已經開通過了（要改密碼請到 Firebase 主控台）'}});
 /* 讀每個人 learn/u/座號/密碼/某個路徑（老師頁用）→ [[座號, 值]] */
-async function fetchAllPath(msgEl,path){const pins=LS.get('learn601_pins',null);if(!pins){msgEl.textContent='請先在 ① 選擇 pins.json';return null}msgEl.textContent='讀取中…';await fbReady;if(!db){msgEl.textContent='連不上 Firebase';return null}
+async function fetchAllPath(msgEl,path){const pins=LS.get('learn601_pins',null);if(!pins){msgEl.textContent='請先到「帳號資料」分頁選擇 pins.json';return null}msgEl.textContent='讀取中…';await fbReady;if(!db){msgEl.textContent='連不上 Firebase';return null}
   const S=Object.keys(pins);try{return await Promise.all(S.map(async s=>[s,(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/${path}`).get(),15000)).val()]))}catch(e){msgEl.textContent='讀取失敗，再按一次';return null}}
-async function fetchAll(msgEl){const pins=LS.get('learn601_pins',null);if(!pins){msgEl.textContent='請先在 ① 選擇 pins.json';return null}
+async function fetchAll(msgEl){const pins=LS.get('learn601_pins',null);if(!pins){msgEl.textContent='請先到「帳號資料」分頁選擇 pins.json';return null}
   msgEl.textContent='讀取中…';await fbReady;if(!db){msgEl.textContent='連不上 Firebase';return null}
   return Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),10000)).val();return [s,v]}catch(e){return [s,'err']}}))}
 const weekKeys=back=>{const mon=new Date();mon.setDate(mon.getDate()-((mon.getDay()+6)%7)-7*back);const wk=[];for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);wk.push(dkey(d))}return wk};
@@ -3612,7 +3707,7 @@ function paintXqAll(sel){const A=XQALL||{},rows=[...SEATS.flat(),...TEST_SEATS].
 /* 只讀某個時間以後的作答紀錄：紀錄的編號開頭是時間，所以可以從那個編號開始讀；from=0 讀全部 */
 function logRef(s,pin,from){let r=db.ref(`${ROOT}/u/${s}/${pin}/log`);return from?r.orderByKey().startAt(Math.floor(from).toString(36)):r}
 const dayStart=n=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d.getTime()};
-tap($('#aload'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#amsg');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+tap($('#aload'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#amsg');if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
   const days=+$('#aper').value,since=days?dkey(new Date(Date.now()-(days-1)*864e5)):'',from=days?dayStart(days+1):0;
   const rows=await Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(logRef(s,pins[s],from).get(),20000)).val()||{};return [s,Object.values(v)]}catch(e){return [s,null]}}));
@@ -3650,7 +3745,7 @@ tap($('#hcalc'),async()=>{const rows=await fetchAll($('#hmsg'));if(!rows)return;
   $('#hout').value=out.map(([s,p])=>`${s}\t${p}`).join('\n');
   $('#hmsg').textContent=`${wk[0].slice(5)}～${wk[6].slice(5)}：共 ${out.filter(x=>x[1]>0).length} 人加點`+(rows.some(r=>r[1]==='err')?'（有人讀取失敗）':'')});
 tap($('#hcopy'),async()=>{const t=$('#hout');try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();document.execCommand('copy')}$('#hmsg').textContent='✅ 已複製，可以貼到榮譽卡系統'});
-tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$('#tabmsg').textContent='請先在 ① 選擇 pins.json';return}
+tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$('#tabmsg').textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   $('#tabmsg').textContent='讀取中…';await fbReady;if(!db){$('#tabmsg').textContent='連不上 Firebase';return}
   const today=dkey(),mon=new Date();mon.setDate(mon.getDate()-((mon.getDay()+6)%7));const wk=[];for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);wk.push(dkey(d))}
   const rows=await Promise.all(Object.keys(pins).sort((a,b)=>a-b).map(async s=>{try{const v=(await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/sum`).get(),10000)).val();return [s,v]}catch(e){return [s,'err']}}));
@@ -3663,7 +3758,7 @@ tap($('#tabload'),async()=>{const pins=LS.get('learn601_pins',null);if(!pins){$(
 
 /* 老師頁：學生自己設的密碼。要用那個座號的身分才讀得到，所以一個一個座號「綁定」後讀（用 pins.json 裡老師發的密碼證明） */
 async function tBind(s,pin){if(!fauth.currentUser)await timeout(fauth.signInAnonymously(),10000);boundKey='';await timeout(db.ref(`${ROOT}/bind/${fauth.currentUser.uid}`).set({s:String(s),p:String(pin)}),10000)}
-async function pwTeacher(){const pins=LS.get('learn601_pins',null),M=$('#pwmsg2'),O=$('#pwout');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+async function pwTeacher(){const pins=LS.get('learn601_pins',null),M=$('#pwmsg2'),O=$('#pwout');if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   M.textContent='讀取中…';await fbReady;if(!db||!fauth){M.textContent='連不上 Firebase';return}O.innerHTML='';
   const P2={...pins};TEST_SEATS.forEach(t=>{if(!P2[t])P2[t]='0000'});   // 測試帳號：老師發的密碼是 0000
   const seats=Object.keys(P2).filter(s=>!isTest(+s)).sort((a,b)=>a-b).concat(TEST_SEATS.map(String));let n=0;
@@ -3676,7 +3771,7 @@ async function pwTeacher(){const pins=LS.get('learn601_pins',null),M=$('#pwmsg2'
 tap($('#pwload'),()=>pwTeacher());
 /* 老師頁：早自修分組。用 pins.json 裡老師發的密碼讀、寫每位學生的 u/座號/密碼/am */
 let AMT=null;
-async function amTeacher(){const pins=LS.get('learn601_pins',null),M=$('#ammsg'),O=$('#amout');if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+async function amTeacher(){const pins=LS.get('learn601_pins',null),M=$('#ammsg'),O=$('#amout');if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
   const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);const d=dkey();AMT={};
   try{await Promise.all(seats.map(async s=>{const [a,u]=await Promise.all([db.ref(`${ROOT}/u/${s}/${pins[s]}/am`).get(),db.ref(`${ROOT}/u/${s}/${pins[s]}/sum/uq`).get()]);const uq=u.val();
@@ -3699,7 +3794,7 @@ async function amSave(){const pins=LS.get('learn601_pins',null),M=$('#ammsg');if
     try{await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/am`).set(v),10000);r.ch=false;ok++}catch(e){}}
   M.textContent=ok===L.length?`✅ 存好了（${ok} 人）`:`存好 ${ok} 人，${L.length-ok} 人失敗，再按一次`;amPaint()}
 tap($('#amload'),()=>amTeacher());
-tap($('#qaopen'),async()=>{const M=$('#qaomsg');if(!LS.get('learn601_pins',null)){M.textContent='請先在 ① 選擇 pins.json（只有老師的電腦能用）';return}
+tap($('#qaopen'),async()=>{const M=$('#qaomsg');if(!LS.get('learn601_pins',null)){M.textContent='請先到「帳號資料」分頁選擇 pins.json（只有老師的電腦能用）';return}
   M.textContent='載入中…';try{if(!window.QA)await loadJS('qa.js?v='+APP_VER);QA.mount();M.textContent='';$('#qaopen').hidden=true}catch(e){M.textContent='載入失敗，請檢查網路'}});tap($('#amsave'),()=>amSave());
 $('#amfile').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const M=$('#ammsg');
   if(!AMT){await amTeacher();if(!AMT)return}
@@ -3744,6 +3839,14 @@ function amrRender(){if(!AMR)return;const O=$('#amrout'),today=dkey(),wk=weekKey
       if(amrSel===x.s)t+=`<tr><td colspan="7"><div class="amql">${st.q.map((q,i)=>`<span class="${q.r==='no'?'no':q.r==='ok2'?'ok2':''}">${i+1}. ${subj(q)}・${tName(fixU(q,'am'),q.t)}　${q.r==='ok'?'✅ 一次答對':q.r==='ok2'?'🟡 第二次才對':'❌ 看解答'}</span>`).join('')||(st.n?'正在做，做完這一輪才會出現每一題的紀錄':'這天沒有做早自修')}</div></td></tr>`});
     return t+'</table></div>'};
   h+=tbl(S.filter(x=>x.x),'🧡 學扶組')+tbl(S.filter(x=>!x.x),'💙 一般組');
+  /* 2026-11 閱讀測驗作答情形：每個人這天的閱讀題（一次答對、平均每題幾秒、秒答＝選項能按後 3 秒內就選）；秒答 2 題以上，或答對很少又做很快，標「可能亂猜」 */
+  {const R=S.filter(x=>!x.x).map(x=>{const q=x.st.q.filter(y=>y.uk==='amr'||y.t==='閱讀測驗');if(!q.length)return null;
+      const ok1=q.filter(y=>y.r==='ok').length,sec=q.reduce((a,y)=>a+(+y.s||0),0),fa=q.filter(y=>y.fa!=null),fast=fa.filter(y=>y.fa<3).length,avg=Math.round(sec/q.length),tt=[...new Set(q.map(y=>y.rt).filter(Boolean))];
+      const bad=fast>=2||(q.length>=3&&ok1/q.length<.4&&avg<15);return {s:x.s,q,ok1,sec,avg,fast,hasFa:fa.length>0,tt,bad}}).filter(Boolean);
+    if(R.length){const B=R.filter(r=>r.bad);h+=`<div class="dsec">閱讀測驗作答情形<small>${md(D)}・${R.length} 人做了・秒答＝選項能按後 3 秒內就選</small></div>`+
+      `<div class="cbox ${B.length?'a':'b'}" style="margin-bottom:.5rem"><div class="ct">可能沒讀文章<b>${B.length}</b> 人</div><div class="chips">${B.sort((a,b)=>a.s-b.s).map(r=>chip(r.s,`秒答 ${r.fast}・對 ${r.ok1}/${r.q.length}`)).join('')||'<span class="ok">沒有</span>'}</div></div>`+
+      `<div class="amgrp"><table class="at"><tr><th>座號</th><th>篇名</th><th>一次答對</th><th>平均每題</th><th>秒答</th><th></th></tr>`+
+      R.sort((a,b)=>a.s-b.s).map(r=>`<tr class="${r.bad?'rbad':''}"><td><b>${r.s}</b></td><td>${r.tt.map(t=>'〈'+t+'〉').join('')||'—'}</td><td class="c ${cls(pc(r.ok1,r.q.length))}"><b>${r.ok1}</b><small>/ ${r.q.length}</small></td><td>${r.avg} 秒</td><td>${r.hasFa?r.fast+' 題':'—'}</td><td>${r.bad?'<b style="color:#e8590c">可能亂猜</b>':''}</td></tr>`).join('')+'</table></div>'}}
   O.innerHTML=h;
   O.querySelectorAll('.amday button').forEach(b=>b.onclick=()=>{amrDay=b.dataset.d;amrSel=null;amrRender()});
   O.querySelectorAll('[data-s]').forEach(e=>e.onclick=()=>{const s=+e.dataset.s;amrSel=amrSel===s?null:s;amrRender();const r=O.querySelector(`tr.st[data-s="${s}"]`);if(amrSel&&r)r.scrollIntoView({block:'nearest',behavior:'smooth'})})}
@@ -3755,7 +3858,7 @@ $('#gseat').innerHTML='<option value="all">全班</option>'+SEATS.flat().concat(
 $('#bkseat').innerHTML=SEATS.flat().map(s=>`<option value="${s}">${s} 號</option>`).join('');
 tap($('#bkload'),()=>bkLoad());
 /* 你畫我猜：作廢的題目（畫的人、檢舉的人各記一筆 k:'dv'，用 rk 合併） */
-async function drTeacher(){const pins=LS.get('learn601_pins',null),M=$('#drmsg'),O=$('#drout');O.innerHTML='';if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+async function drTeacher(){const pins=LS.get('learn601_pins',null),M=$('#drmsg'),O=$('#drout');O.innerHTML='';if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
   const from=Date.now()-7*864e5,seats=Object.keys(pins).filter(s=>!isTest(+s)),R={};
   try{await Promise.all(seats.map(async s=>{const v=(await timeout(logRef(s,pins[s],from).get(),20000)).val()||{};
@@ -3772,13 +3875,13 @@ async function wkTeacher(){const M=$('#wkmsg'),O=$('#wkout');O.innerHTML='';cons
   const rows=all.map(([s,v])=>{const W=v&&v!=='err'&&v.wk&&v.wk.w===w?v.wk:{c:{},r:{}},c=W.c||{},d=L.filter(k=>(c[k]||0)>=WK_NEED).length;
     return `<tr><td>${s} 號</td>${L.map(k=>{const n=c[k]||0;return `<td style="${n>=WK_NEED?'color:#2b8a3e':n?'':'color:#c92a2a;background:#fff5f5'}">${n>=WK_NEED?'✔':n}${W.f===k?' ★':''}</td>`}).join('')}<td><b>${d}/${L.length}</b></td></tr>`});
   O.innerHTML=`<table class="amtb" style="width:100%;font-weight:800;text-align:center"><tr><th>座號</th>${L.map(k=>`<th>${subjOf(k).n}</th>`).join('')}<th>完成</th></tr>${rows.join('')}</table><div class="amnote">數字＝這週答對幾題（滿 ${WK_NEED} 題打 ✔）；★＝他的加油科；紅底＝這週還沒碰的科目。</div>`}
-async function wkFocusSet(){const pins=LS.get('learn601_pins',null),M=$('#wkmsg'),k=$('#wkfs').value;if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+async function wkFocusSet(){const pins=LS.get('learn601_pins',null),M=$('#wkmsg'),k=$('#wkfs').value;if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   if(!confirm(k?`把全班這週的加油科設成「${subjOf(k).n}」？`:'改回由系統幫每個人挑加油科？'))return;M.textContent='儲存中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
   const w=bossWk(),S=Object.keys(pins);let ok=0;await Promise.all(S.map(async s=>{try{await timeout(db.ref(`${ROOT}/u/${s}/${pins[s]}/wf`).set(k?{w,s:k,t:Date.now()}:null),10000);ok++}catch(e){}}));
   M.textContent=ok===S.length?`✅ 設好了（${ok} 人），學生重新打開平台就會看到`:`設好 ${ok} 人，${S.length-ok} 人失敗，再按一次`}
 tap($('#wkload'),()=>wkTeacher());tap($('#wkfset'),()=>wkFocusSet());
 async function bkLoad(){const pins=LS.get('learn601_pins',null),M=$('#bkmsg'),O=$('#bkout'),s=$('#bkseat').value;O.innerHTML='';
-  if(!pins||!pins[s]){M.textContent='請先在 ① 選擇 pins.json';return}M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
+  if(!pins||!pins[s]){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}M.textContent='讀取中…';await fbReady;if(!db){M.textContent='連不上 Firebase';return}
   const B=`${ROOT}/u/${s}/${pins[s]}`;let cur,bk;try{[cur,bk]=await Promise.all([timeout(db.ref(B+'/sum').get(),10000).then(x=>x.val()||{}),timeout(db.ref(B+'/bk').get(),10000).then(x=>x.val()||{})])}catch(e){M.textContent='讀取失敗，再按一次';return}
   const desc=v=>{const p=v.pet||{},f=v.farm||{},pets=[p.st==='pet'?`${(PET.SPECIES[p.sp]||{}).n||p.sp} Lv.${PET.lvOf(p.xp||0).lv}`:'🥚 蛋'].concat(Object.entries(p.box||{}).filter(([,x])=>x&&(x.xp||0)>0).map(([k,x])=>`${(PET.SPECIES[k]||{}).n||k} Lv.${PET.lvOf(x.xp||0).lv}`));return `寵物：${pets.join('、')}　農場 Lv.${FARM.lvOf(f.xp||0).lv}（${(f.p||[]).filter(Boolean).length} 塊田有種）`};
   const ds=Object.keys(bk).sort().reverse();M.textContent=ds.length?'':'還沒有備份（明天開始會有）';
@@ -3792,7 +3895,7 @@ async function bkLoad(){const pins=LS.get('learn601_pins',null),M=$('#bkmsg'),O=
    學生按「領取」才入帳（got＝領取時間）。還沒領的可以收回（整筆刪掉） */
 const gEsc=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 tap($('#gbtn'),async()=>{const pins=LS.get('learn601_pins',null),M=$('#gmsg'),sv=$('#gseat').value,c=Math.round(+$('#gamt').value||0),t=Math.round(+$('#tamt').value||0),m=$('#gnote').value.trim().slice(0,30);
-  if(!pins){M.textContent='請先在 ① 選擇 pins.json';return}
+  if(!pins){M.textContent='請先到「帳號資料」分頁選擇 pins.json';return}
   if(!(c>=0&&c<=3000&&t>=0&&t<=50)||c+t<=0){M.textContent='金幣 0～3000、遊戲券 0～50，至少要送一樣';return}
   const S=sv==='all'?Object.keys(pins).filter(s=>!isTest(+s)):[sv];if(!S.every(s=>pins[s])){M.textContent=`${sv} 號不在 pins.json 裡`;return}
   const what=[c?`🪙${c}`:'',t?`🎟️${t} 張`:''].filter(Boolean).join('＋');
@@ -3821,7 +3924,7 @@ const dSince=()=>dPer==='w'?weekKeys(0)[0]:+dPer?dkey(new Date(Date.now()-(+dPer
 const dPerName=()=>({w:'本週','7':'最近 7 天','30':'最近 30 天','0':'全部'})[dPer];
 /* 儀表板要讀到哪一天：本週、最近 7 天都讀 9 天（多留 2 天）；最近 30 天讀 32 天；全部才整個讀 */
 const dFrom=()=>dPer==='0'?0:dayStart(dPer==='30'?32:9);
-async function dashLoad(){const pins=LS.get('learn601_pins',null),M=$('#dmsg');if(!pins){$('#dout').innerHTML='<div class="dnone">先在下面 ① 選擇 pins.json，這裡就會顯示全班的狀況</div>';return}
+async function dashLoad(){const pins=LS.get('learn601_pins',null),M=$('#dmsg');if(!pins){$('#dout').innerHTML='<div class="dnone">先到「帳號資料」分頁選擇 pins.json，這裡就會顯示全班的狀況</div>';return}
   M.textContent='讀取中…';if(!(await fbOnline())){M.textContent='📴 連不上 Firebase';return}
   const seats=Object.keys(pins).filter(s=>!isTest(+s)).sort((a,b)=>a-b);let done=0;const from=dFrom();
   const rows=await Promise.all(seats.map(async s=>{let sm=null,lg=null;
@@ -3934,7 +4037,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v195';let verNew=false,verBusy=false;
+const APP_VER='learn601-v196';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
