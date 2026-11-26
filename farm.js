@@ -163,6 +163,20 @@
   const fdHas = id => !!FD[id] && (tst() || !!fdMe().own[id]);
   const fdS = () => fdMe().s.map(id => fdHas(id) ? id : '');
   let fdK = 0;
+  /* 裝飾預覽：把這件放進選好的位置（同一件原本放別處的先拿開），看整個農場的樣子，再決定要不要買 */
+  function fdTry(id, k) {
+    const [n, z] = FD[id], pr = FD_SZ[z][1], T = tst(), c = coins(), lack = !T && c < pr ? pr - c : 0, d = fdS().slice(), at = d.indexOf(id);
+    if (at >= 0) d[at] = ''; d[k] = id;
+    return new Promise(res => {
+      const w = document.createElement('div'); w.className = 'pmod pask fdtry';
+      w.innerHTML = `<div class="pmc"><div class="pmh2">👀 擺擺看：${n}</div><div class="fdpv">${farmSVG(F(), { d })}</div>
+        <div class="ptryi">放在位置 ${k + 1}${lack ? `<br><b>你現在有 🪙${c}</b>` : ''}</div>
+        <div class="pbtns"><button class="go" data-a="1"${lack ? ' disabled' : ''}>${lack ? `金幣不夠，還差 🪙${lack}` : `🪙 ${pr} 買下並放上去`}</button><button class="gray pmx" data-a="0">先不要</button></div></div>`;
+      document.body.appendChild(w);
+      w.querySelectorAll('[data-a]').forEach(b => tap(b, () => { if (b.disabled) return; w.remove(); res(b.dataset.a === '1'); }));
+      tap(w, e => { if (e.target === w) { w.remove(); res(false); } });
+    });
+  }
   function decoModal() {
     const m = modal('<div id="fdm"></div>');   // 每次都重新拿 fdMe()：同步時 sum.fdc 可能被換成合併後的新物件
     const set = () => { fdMe().u = Date.now(); save(); paint(); try { if (window.paintNavs) paintNavs(); } catch (e) { } draw(); };
@@ -171,7 +185,7 @@
       const card = id => { const [n, z] = FD[id], Z = FD_SZ[z], has = fdHas(id), here = cur === id, at = D.s.indexOf(id), fit = fdFits(id, fdK);
         const btn = here ? `<button class="fdb off" data-off="${id}">收起來</button>` : !fit ? `<button class="fdb no" disabled>位置 ${fdK + 1} 放不下</button>`
           : has ? `<button class="fdb put" data-put="${id}">${at >= 0 ? `從位置 ${at + 1} 搬過來` : `放在位置 ${fdK + 1}`}</button>`
-          : `<button class="fdb buy" data-buy="${id}" ${!T && c < Z[1] ? 'disabled' : ''}>🪙 ${Z[1]}${!T && c < Z[1] ? '<small>金幣不夠</small>' : ''}</button>`;
+          : `<button class="fdb buy" data-buy="${id}">🪙 ${Z[1]}${!T && c < Z[1] ? '<small>先看看</small>' : '<small>擺擺看</small>'}</button>`;   // 2026-11-26 金幣不夠也能先擺擺看
         return `<div class="fdc${here ? ' on' : ''}${has ? '' : ' lock'}${fit ? '' : ' nofit'}"><i class="fdz ${z}">${Z[0]}</i><img src="${IMG}${id}.webp" alt="" draggable="false"><b>${n}</b>${at >= 0 && !here ? `<small>在位置 ${at + 1}</small>` : ''}${btn}</div>`; };
       m.querySelector('#fdm').innerHTML = `<div class="pmh">🏡 農場裝飾　<small>🪙 ${T ? '∞' : c}</small></div>
         <div class="fdpv">${farmSVG(F(), { d: fdS(), slots: fdK })}</div>
@@ -183,8 +197,9 @@
       tap(m.querySelector('.fdpv'), e => { const g = e.target.closest('[data-fs]'); if (g) { fdK = +g.dataset.fs; draw(); } });
       m.querySelectorAll('[data-put]').forEach(b => tap(b, () => { const D = fdMe(), id = b.dataset.put, at = D.s.indexOf(id); if (at >= 0) D.s[at] = ''; D.s[fdK] = id; snd(660); set(); }));
       m.querySelectorAll('[data-off]').forEach(b => tap(b, () => { fdMe().s[fdK] = ''; snd(400); set(); }));
-      m.querySelectorAll('[data-buy]').forEach(b => tap(b, () => { const id = b.dataset.buy, [n, z] = FD[id], pr = FD_SZ[z][1];
-        if (!T && coins() < pr) return; if (!confirm(`用 🪙${pr} 買「${n}」，放在位置 ${fdK + 1} 嗎？`)) return;
+      m.querySelectorAll('[data-buy]').forEach(b => tap(b, async () => { const id = b.dataset.buy, [n, z] = FD[id], pr = FD_SZ[z][1];
+        if (!(await fdTry(id, fdK))) return;   // 先看放進農場的樣子，按「買下」才買
+        if (!T && coins() < pr) return;
         if (!T) addCoin(-pr); const D = fdMe(); D.own[id] = 1; D.s[fdK] = id; logAdd(`🏡 買了「${n}」裝飾農場`); try { sfx.ticket(); confetti(30); toast(`🎉 買到「${n}」了！`); } catch (e) { } set(); }));
       tap(m.querySelector('.pmx'), () => m.remove());
     }
@@ -718,7 +733,7 @@
   .fbtn .fbi{font-size:1.4rem}
   .fmain>.fsum,.fmain>.fbar{grid-column:1/-1;margin-top:0}   /* 摘要、全部收成／澆水按鈕放在 .fmain 裡：電腦在田地下方整排，手機緊接在田地下面（說明框排到後面） */
   @media (max-width:900px),(orientation:portrait){.fmain>.fside{order:3}.fmain{grid-template-columns:minmax(0,1fr)}.fbar{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  .fdpv{border-radius:16px;overflow:hidden;margin-bottom:.5rem;background:#a5d8ff}.fdpv svg{display:block;width:100%;height:auto}.fdslot{cursor:pointer}
+  .pmod.pask.fdtry{z-index:70}.fdtry .pmc{max-width:34rem}.fdtry .ptryi{text-align:center;font-weight:800;margin:.3rem 0 .6rem}.fdpv{border-radius:16px;overflow:hidden;margin-bottom:.5rem;background:#a5d8ff}.fdpv svg{display:block;width:100%;height:auto}.fdslot{cursor:pointer}
   .fdsl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.35rem;margin-bottom:.35rem}
   .fdsl button{border:3px solid #d8f5a2;background:#fff;border-radius:14px;padding:.25rem .1rem;font:800 .85rem/1.2 inherit;font-family:inherit;color:#5c940d;display:flex;flex-direction:column;align-items:center;min-width:0}
   .fdsl button b{font-size:1.25rem}.fdsl button small{font-size:.72rem;color:#888;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fdsl button.on{border-color:#f08c00;background:#fff4e6;color:#d9480f}
