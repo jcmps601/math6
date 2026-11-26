@@ -1798,7 +1798,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
     for(const w of ['e','s']){A[w]=A[w]||{};for(const d in B[w]||{})A[w][d]=mx(A[w][d],B[w][d])}}}
   tkL();tkFix();
   sum.gb2=sum.gb2||{};for(const g in r.gb2||{}){if(gBetter(g,r.gb2[g],sum.gb2[g]))sum.gb2[g]=r.gb2[g]}
-  if(r.pet)sum.pet=PET.mergePet(sum.pet,r.pet);   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
+  if(r.pet){const m=PET.mergePet(sum.pet,r.pet);if(sum.pet&&m!==sum.pet&&typeof sum.pet==='object'){for(const k of Object.keys(sum.pet))delete sum.pet[k];Object.assign(sum.pet,m)}else sum.pet=m}   // 2026-11-26 合併後還是同一個物件（畫面上正在用的寵物資料不會變成舊的，換寵物、改裝扮才不會被蓋回去）   // 寵物:比較新的那份為準,金幣帳本兩邊合起來(不會被另一台蓋掉)
   /* 農場：同一個農場（b 一樣）看誰比較新；不是同一個（新平板先開了一份空的）就留經驗比較多的，免得高等農場被空的蓋掉 */
   /* 名片：買過的兩邊合起來；穿戴看哪一邊最後換的 */
   if(r.look){const a=sum.look||{own:{}},b=r.look;const nw=(b.u||0)>(a.u||0)?b:a;sum.look={own:Object.assign({},a.own||{},b.own||{}),fr:nw.fr||'',np:nw.np||'',tt:nw.tt||'',u:Math.max(a.u||0,b.u||0),vw:Math.max(a.vw||0,b.vw||0),vg:[...new Set([...(a.vg||[]),...(b.vg||[])])]};if(a.ach||b.ach)sum.look.ach=Object.assign({},a.ach||{},b.ach||{})}
@@ -4041,7 +4041,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v198';let verNew=false,verBusy=false;
+const APP_VER='learn601-v199';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
