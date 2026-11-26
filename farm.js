@@ -150,7 +150,9 @@
     clearTimeout(pubT); pubT = setTimeout(() => { if (!user) return; const f = F(); enqueue(`${ROOT}/farm/${user.seat}`, { xp: f.xp | 0, sm: f.sm ? 1 : 0, p: f.p.map(x => x || 0), d: fdS(), t: Date.now() }, true); }, 1000);
   }
   function addXp(n) {
-    const f = F(), b = lvOf(f.xp).lv; f.xp = (f.xp || 0) + n; const a = lvOf(f.xp).lv;
+    const f = F(), b = lvOf(f.xp).lv;
+    if (!tst()) { const D = typeof DEV !== 'undefined' ? DEV : 'x'; if (!f.xl) f.xl = { b: f.xp || 0, e: {} }; f.xl.e = f.xl.e || {}; f.xl.e[D] = (f.xl.e[D] || 0) + n; }   // 農場經驗記帳：每台各記加了多少，合併時加起來（2026-11）
+    f.xp = (f.xp || 0) + n; const a = lvOf(f.xp).lv;
     if (a > b) setTimeout(() => {
       const un = CK.filter(k => CROPS[k].lv > b && CROPS[k].lv <= a).map(k => CROPS[k].n), more = plotsFor(a) - plotsFor(b);
       toast(`🎉 農場升到 Lv.${a}！` + (un.length ? `可以種：${un.join('、')}` : '') + (more ? `　多了 ${more} 塊田！` : '')); try { sfx.ticket(); confetti(60); } catch (e) { }
@@ -212,17 +214,16 @@
     C.innerHTML = `<div class="fhead"><div class="flv"><b>🌾 我的農場 Lv.${L.lv}</b><div class="pbar s"><i style="width:${L.cur / L.need * 100}%;background:linear-gradient(90deg,#a9e34b,#74b816)"></i></div><small>經驗 ${L.cur} / ${L.need}</small></div>
         <div class="fres"><span title="水（練習答對 1 題 +1）">💧 <b id="fwater">${f.water || 0}</b></span><span title="肥料（10 題答對 8 題送 1 包）">🧴 <b id="ffert">${f.fert || 0}</b></span><span>🪙 <b id="fcoin">${coins()}</b></span></div><button class="fsm${f.sm ? ' on' : ''}" id="fsm">🥷 偷菜模式：${f.sm ? '開' : '關'}</button></div>
       ${night() ? '<div class="fnight">🌙 晚上 10 點到早上 6 點農場休息，作物會繼續長大，明天早上再來照顧吧！</div>' : ''}
-      <div class="fmain"><div class="fbox" id="fbox"><div id="fsvg"></div><button class="fzoom" id="fzoom"></button></div>
+      <div class="fmain"><div class="fbox" id="fbox"><div id="fsvg"></div><button class="fzoom" id="fzoom"></button><button class="fphelp" id="fphelp" hidden></button></div>
         <div class="fside"><div class="finfo" id="finfo"></div><div class="fpinfo" id="fpinfo"></div></div>
       <div class="fsum" id="fsum" aria-live="polite"></div>
       <div class="fbar" id="fbar"></div></div>
       <div class="frow2"><div class="cd fstore" id="fstore"></div><div class="cd flog" id="flog"></div></div>`;
     paint(); paintBar(); paintStore(); paintLog(); info(curK);
     tap(C.querySelector('#fzoom'), () => { zoomSet(!zoomOn()); paint(); paintZoom(); }); paintZoom();
-    tap(C.querySelector('#fstore'), storeModal); tap(C.querySelector('#fsm'), smToggle);
+    tap(C.querySelector('#fstore'), storeModal); tap(C.querySelector('#fphelp'), () => petTap()); tap(C.querySelector('#fsm'), smToggle);
     WK = walker(C.querySelector('#fbox'), () => { const p = PET.P(); return p && p.st === 'pet' ? p : null; }, { own: 1, zoom: zoomOn, auto: () => autoHelp() }); paintPetInfo();
     tap(C.querySelector('#fbox'), e => {   // tap：用手指捲動畫面時不會按到田
-      if (e.target.closest('.fpet')) return petTap();
       if (e.target.closest('#fbarn')) return storeModal();
       const g = e.target.closest('[data-k]'); if (!g) return; tapPlot(+g.dataset.k);
     });
@@ -511,11 +512,14 @@
   }
   function paintPetInfo() {
     const e = document.getElementById('fpinfo'); if (!e) return; const p = PET.P();
+    const hb = document.getElementById('fphelp');
+    if (hb) { if (!p || p.st !== 'pet') hb.hidden = true; else { const st0 = PET.stageOf(PET.lvOf(p.xp).lv), l0 = helpLeft(F(), st0), can = st0 >= 1 && l0 > 0 && !night(); hb.hidden = false; hb.classList.toggle('off', st0 >= 1 && !can);
+      hb.innerHTML = `<span class="fphi">${PET.petArt(PET.look(p, { mood: 'happy' }))}</span>${st0 >= 1 ? `請${PET.nameOf(p)}幫忙 <b>${l0}</b>` : `摸摸${PET.nameOf(p)}`}`; } }
     if (!p || p.st !== 'pet') { e.innerHTML = '🥚 孵出寵物以後，牠會來農場陪你、幫你顧田！'; return; }
     const st = PET.stageOf(PET.lvOf(p.xp).lv), nm = PET.nameOf(p), left = helpLeft(F(), st);
     const lv = PET.lvOf(p.xp).lv, au = lv >= AUTO_LV;
     e.innerHTML = st === 0 ? `🐾 ${nm}會在農場走來走去，提醒你哪塊田要照顧。<b>Lv.${PET.EVO[0]} 進化</b>以後會幫忙捉蟲、拔草！`
-      : `🐾 ${au ? `${nm}會自己去` : `點${nm}，牠會`}幫忙捉蟲、拔草${st >= 2 ? '、澆水' : ''}（今天還能 <b>${left}</b> 次）${!au ? `。<b>Lv.${AUTO_LV}</b> 以後會自己去幫忙！` : st < 2 ? `。Lv.${PET.EVO[1]} 最終進化以後還會幫忙澆水！` : ''}`;
+      : `🐾 ${au ? `${nm}會自己去` : `按田地左上角的「請${nm}幫忙」，牠會`}幫忙捉蟲、拔草${st >= 2 ? '、澆水' : ''}（今天還能 <b>${left}</b> 次）${!au ? `。<b>Lv.${AUTO_LV}</b> 以後會自己去幫忙！` : st < 2 ? `。Lv.${PET.EVO[1]} 最終進化以後還會幫忙澆水！` : ''}`;
     e.innerHTML += '<small>倉庫裡的菜也可以拿去餵牠</small>';
   }
 
@@ -582,7 +586,6 @@
     const VW = pv && PET.SPECIES[pv.sp] ? walker(m.querySelector('#fvbox'), () => Object.assign({}, pv, { mood: 'happy' }), { zoom: () => false, F: () => Fm }) : null;
     const msg = t => m.querySelector('#fvinfo').innerHTML = t;
     tap(m.querySelector('#fvbox'), e => {
-      if (e.target.closest('.fpet')) { if (VW) { VW.hop(); VW.say(`嗨！我是${PET.NAMES[pv.nm | 0]}`); } return; }
       const g = e.target.closest('[data-k]'); if (!g) return; const k = +g.dataset.k, P = Fm.p[k], S = stat(P);
       if (night()) return msg('🌙 晚上農場在休息，明天再來吧');
       if (S.empty) return msg('這塊田是空的');
@@ -683,7 +686,8 @@
   #farmmini .fmv{width:7.5rem;flex:none}#farmmini .fmi{flex:1;min-width:0}#farmmini .fmt{font-size:1.4rem;font-weight:900;color:#5c940d}#farmmini .fmt small{font-size:1rem;color:#94d82d}#farmmini .fms{font-size:1.05rem;color:#666;font-weight:800;margin-top:.2rem}#farmmini .pgo{font-size:1.6rem;color:#94d82d}
   .farmend{color:#5c940d}
   .fbox{position:relative}.fpetL{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-  .fpet{position:absolute;aspect-ratio:1;transform:translate(-50%,-90%);transition-property:left,top;transition-timing-function:linear;pointer-events:auto;cursor:pointer;z-index:2;touch-action:manipulation}
+  .fpet{position:absolute;aspect-ratio:1;transform:translate(-50%,-90%);transition-property:left,top;transition-timing-function:linear;pointer-events:none;z-index:2}   /* 2026-11：寵物常走到田上，點田會點到牠、變成叫牠幫忙（浪費次數）→ 寵物不接收點擊，點下去一定是點到田；要牠幫忙按左上角的按鈕 */
+  .fphelp{position:absolute;left:.6rem;top:.6rem;z-index:3;display:flex;align-items:center;gap:.3rem;border:0;border-radius:12px;background:rgba(255,255,255,.92);box-shadow:0 2px 6px rgba(0,0,0,.12);font-size:1rem;font-weight:900;color:#d6336c;padding:.25rem .7rem .25rem .35rem;font-family:inherit;cursor:pointer}.fphelp[hidden]{display:none}.fphelp .fphi{width:1.9rem;height:1.9rem;display:block}.fphelp .fphi svg,.fphelp .fphi img{width:100%;height:100%}.fphelp b{background:#ae3ec9;color:#fff;border-radius:99px;padding:0 .45rem;font-size:.9rem}.fphelp.off{color:#868e96}
   .fpet .fpa{width:100%;height:100%;transition:transform .25s}.fpet.flip .fpa{transform:scaleX(-1)}
   .fpet.walk .fpa>.pa{animation:fpw .3s ease-in-out infinite alternate}@keyframes fpw{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-7%) rotate(4deg)}}
   .fpet.hop .fpa>.pa{animation:fph .6s ease-out}@keyframes fph{40%{transform:translateY(-32%) scale(.96,1.05)}80%{transform:translateY(0) scale(1.08,.92)}}
