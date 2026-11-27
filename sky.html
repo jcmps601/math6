@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>無盡雲階</title>
+<style>
+/* 無盡雲階：整個畫面都是遊戲（像大砲遊戲），高度、時間、按鈕都疊在遊戲畫面上 */
+:root{color-scheme:dark;font-family:"Microsoft JhengHei","PingFang TC",system-ui,sans-serif;color:#fff7df}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#142739;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font:inherit;font-weight:800;color:inherit;cursor:pointer;border:1px solid #c9d8e877;background:#1b2f42d9;border-radius:12px;min-height:40px;padding:6px 12px;touch-action:manipulation}
+button:focus-visible{outline:3px solid #f9cf75;outline-offset:2px}[hidden]{display:none!important}
+.stage{position:fixed;inset:0;overflow:hidden;isolation:isolate}
+canvas{display:block;width:100%;height:100%}
+/* 上方：高度、時間、按鈕 */
+.top{position:absolute;top:max(8px,env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));display:flex;justify-content:space-between;align-items:flex-start;gap:6px;pointer-events:none}
+.top>*{pointer-events:auto}
+.top{z-index:3}.veil{z-index:2}
+.hl{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+.chips{display:flex;gap:5px}
+.chip{background:#122638d9;border:1px solid #bad9ca66;border-radius:10px;padding:4px 10px;line-height:1.15}
+.chip small{display:block;color:#c5e1e0;font-size:.72rem}.chip b{font-size:clamp(1rem,3.4vw,1.3rem);font-variant-numeric:tabular-nums}
+.chip.time{text-align:center}.chip.time.warn b{color:#ffb35c}
+.where{background:#122638b3;border-radius:10px;padding:3px 10px;font-size:.82rem;line-height:1.35;pointer-events:none}
+.where #objective{color:#f8dea6}
+.btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.btns button{display:flex;align-items:center;gap:5px;padding:5px 10px}.btns img{width:24px;height:24px}
+@media (max-width:480px){.chip{padding:3px 7px}.chip small{font-size:.66rem}.btns button{padding:5px 8px}.btns .rk{display:none}}
+.message{position:absolute;top:calc(max(8px,env(safe-area-inset-top)) + 106px);left:50%;translate:-50% 0;background:#fff1bf;color:#233644;max-width:94%;width:max-content;padding:5px 12px;border-radius:16px;font-size:.9rem;font-weight:800;pointer-events:none;text-align:center}
+/* 下方：按鈕直接疊在遊戲畫面上（半透明） */
+.controls{position:absolute;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:flex-end;gap:12px;pointer-events:none}
+.controls .dir{display:flex;gap:12px}
+.controls button{pointer-events:auto;touch-action:none;width:clamp(64px,14vmin,96px);height:clamp(64px,14vmin,96px);border-radius:50%;padding:0;display:grid;place-items:center;background:#16293b8c;border:2px solid #e7f1ff6b;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.controls [data-action=jump]{width:clamp(78px,17vmin,116px);height:clamp(78px,17vmin,116px);background:#2f6b528c;border-color:#c9f0c08a}
+.controls button span{display:none}
+.controls button[data-held]{background:#f6d689d9;color:#28343b;border-color:#ffeab3}
+.ci{width:52%;height:52%;fill:currentColor}
+.keyhint{position:absolute;bottom:14px;left:50%;translate:-50% 0;font-size:.8rem;color:#e6eef5cc;background:#12263899;padding:3px 10px;border-radius:9px;pointer-events:none;white-space:nowrap}
+@media (any-pointer:coarse),(max-width:700px){.keyhint{display:none}}
+/* 開始、結算的卡片 */
+.veil{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(#20404e22,#142e4670);padding:60px 14px 14px}
+.card{background:#17273aef;border:1px solid #9ac5ca99;box-shadow:0 15px 42px #0c162a99;border-radius:22px;padding:clamp(14px,4vw,24px);text-align:center;width:min(100%,340px)}
+.tag{color:#ffd486;font-size:.85rem;font-weight:800;letter-spacing:.06em;margin:0}.card p{margin:7px 0;line-height:1.45}.card h2{font-size:clamp(27px,6vw,42px);margin:5px 0;line-height:1.05}
+.ticket-line{font-size:.86rem;color:#f2d59c;min-height:1.2em}
+.primary{background:#ffd280;color:#282a37;min-width:160px;min-height:48px;margin-top:8px;border:0;box-shadow:0 3px #b77e3b}.primary:disabled{opacity:.55;cursor:default}
+.help{font-size:.82rem;color:#c9dbe6}
+@media (max-height:520px) and (orientation:landscape){.card{padding:10px 14px}.card h2{font-size:24px}.card p{margin:4px 0;font-size:.86rem}.help{display:none}.veil{padding-top:50px}.where{display:none}.message{top:58px}}
+/* 排行榜 */
+.board{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#0b1622b8;padding:14px}
+.bcard{width:min(100%,460px);max-height:calc(100dvh - 28px);display:flex;flex-direction:column;background:#17273a;border:1px solid #9aabcd5c;border-radius:20px;padding:14px 14px 10px;box-shadow:0 18px 48px #050c18b0}
+.bhead{display:flex;align-items:center;justify-content:space-between;gap:10px}.bhead h2{display:flex;align-items:center;gap:8px;margin:0;font-size:1.25rem}.bhead h2 img{width:40px;height:40px}
+.btabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 4px}.btabs button.on{background:#ffd280;color:#282a37;border-color:#ffd280}
+.bsub{margin:4px 2px 8px;color:#b9d0d2;font-size:.85rem}
+.board ol{list-style:none;margin:0;padding:0;overflow:auto;display:grid;gap:6px}
+.board li{display:grid;grid-template-columns:40px 40px 1fr auto;align-items:center;gap:8px;padding:6px 10px;border-radius:12px;background:#22364c}
+.board li.me{background:#3d4f2f;outline:2px solid #f6d397}
+.board li.none{display:block;text-align:center;color:#b9d0d2;background:none;padding:14px}
+.board .medal{width:38px;height:38px}.board .rk{text-align:center;font-weight:800;color:#dfe9f0}
+.board .bpet{width:38px;height:38px;object-fit:contain}.board .bm{font-weight:800;color:#ffd486}
+</style>
+</head>
+<body>
+<section class="stage" aria-label="無盡雲階">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <div class="top">
+    <div class="hl"><div class="chips">
+      <div class="chip"><small>目前高度</small><b id="current">0 m</b></div>
+      <div class="chip time" id="clockBox"><small>剩餘時間</small><b id="clock">5:00</b></div>
+      <div class="chip"><small>本次最高</small><b id="height">0 m</b></div>
+    </div>
+    <div class="where"><span id="stage">第 1 段 · 林冠步道</span>　<span id="best">最佳 0 m</span><br><span id="objective"></span></div></div>
+    <div class="btns"><button id="rank"><img src="img/ui/sky-gold.webp" alt=""><span class="rk">排行榜</span></button><button id="pause" hidden>暫停</button><button id="end" hidden>結算</button></div>
+  </div>
+  <div class="message" id="message" role="status" hidden></div>
+  <nav class="controls" aria-label="攀登操作">
+    <div class="dir">
+      <button type="button" data-action="left" aria-label="向左"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3 5 12l12 9z"/></svg><span>左移</span></button>
+      <button type="button" data-action="right" aria-label="向右"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3l12 9-12 9z"/></svg><span>右移</span></button>
+    </div>
+    <button type="button" data-action="jump" aria-label="跳躍"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 12.5h5.5V22h7v-9.5H21z"/></svg><span>跳躍</span></button>
+  </nav>
+  <div class="keyhint">方向鍵移動・空白鍵跳躍・空中再按一次二段跳</div>
+  <div class="veil" id="veil">
+    <div class="card"><p class="tag" id="tag">601 挑戰樂園</p><h2 id="title">你能爬多高？</h2><p id="detail">一張遊戲券玩 5 分鐘，時間到就結算。5 分鐘內掉下去，可以馬上再挑戰。</p><p class="help">左手按住方向、右手按跳躍；空中再按一次跳躍可以二段跳。看到預警線，先在平台等一下再跳。</p><p id="ticketLine" class="ticket-line"></p><button id="start" class="primary">開始</button></div>
+  </div>
+</section>
+<div class="board" id="board" hidden><div class="bcard" role="dialog" aria-label="雲階排行榜">
+  <div class="bhead"><h2><img src="img/ui/sky-entry.webp" alt="">雲階排行榜</h2><button id="bclose">關閉</button></div>
+  <div class="btabs"><button data-t="week" class="on">本週</button><button data-t="all">歷史最佳</button></div>
+  <p class="bsub" id="bsub"></p><ol id="blist"></ol>
+</div></div>
+<script src="sky.js"></script></body></html>
