@@ -29,11 +29,20 @@ canvas{display:block;width:100%;height:100%}
 @media (max-width:480px){.chip{padding:3px 7px}.chip small{font-size:.66rem}.btns button{padding:5px 8px}.btns .rk{display:none}}
 .message{position:absolute;top:calc(max(8px,env(safe-area-inset-top)) + 106px);left:50%;translate:-50% 0;background:#fff1bf;color:#233644;max-width:94%;width:max-content;padding:5px 12px;border-radius:16px;font-size:.9rem;font-weight:800;pointer-events:none;text-align:center}
 /* 下方：按鈕直接疊在遊戲畫面上（半透明） */
-.controls{position:absolute;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:flex-end;gap:12px;pointer-events:none}
+/* 按鈕離螢幕邊緣遠一點：iPad 從左邊緣滑是「上一頁」、從下面滑是回主畫面，太靠邊手指容易被系統搶走，放開的訊號就收不到 */
+.controls{position:absolute;left:max(28px,env(safe-area-inset-left));right:max(28px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:flex-end;gap:12px;pointer-events:none}
 .controls .dir{display:flex;gap:12px}
-.controls button{pointer-events:auto;touch-action:none;width:clamp(64px,14vmin,96px);height:clamp(64px,14vmin,96px);border-radius:50%;padding:0;display:grid;place-items:center;background:#16293b8c;border:2px solid #e7f1ff6b;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
-.controls [data-action=jump]{width:clamp(78px,17vmin,116px);height:clamp(78px,17vmin,116px);background:#2f6b528c;border-color:#c9f0c08a}
+.controls button{pointer-events:auto;touch-action:none;width:calc(clamp(64px,14vmin,96px)*var(--ks,1));height:calc(clamp(64px,14vmin,96px)*var(--ks,1));border-radius:50%;padding:0;display:grid;place-items:center;background:#16293b8c;border:2px solid #e7f1ff6b;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.controls [data-action=jump]{width:calc(clamp(78px,17vmin,116px)*var(--ks,1));height:calc(clamp(78px,17vmin,116px)*var(--ks,1));background:#2f6b528c;border-color:#c9f0c08a}
 .controls button span{display:none}
+.controls.free{inset:0}.controls.free .dir{display:contents}.controls.free button{position:absolute;translate:-50% -50%}
+/* 按鍵設定：可以拖拉按鈕換位置、調大小（存在這台平板上） */
+.controls.edit button{outline:3px dashed #ffd280;outline-offset:4px;cursor:grab;background:#16293bcc}.controls.edit button span{display:block;position:absolute;bottom:100%;margin-bottom:6px;font-size:.8rem;white-space:nowrap;background:#122638d9;padding:1px 7px;border-radius:7px}
+.kset{position:fixed;z-index:4;top:16%;left:50%;translate:-50% 0;width:min(92%,360px);background:#17273af2;border:1px solid #9ac5ca99;border-radius:18px;padding:14px 16px;text-align:center;box-shadow:0 15px 42px #0c162a99}
+.kset h3{margin:0 0 4px;font-size:1.2rem}.kset p{margin:4px 0 8px;font-size:.86rem;color:#c9dbe6;line-height:1.4}
+.kset .ksz{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 10px}.kset .ksz button{padding:6px 0}.kset .ksz button.on{background:#ffd280;color:#282a37;border-color:#ffd280}
+.kset .krow{display:flex;gap:8px;justify-content:center}.kset .krow button{flex:1}
+.kbtn{display:block;margin:8px auto 0;font-size:.86rem;min-height:36px;background:#24405a}
 .controls button[data-held]{background:#f6d689d9;color:#28343b;border-color:#ffeab3}
 .ci{width:52%;height:52%;fill:currentColor}
 .keyhint{position:absolute;bottom:14px;left:50%;translate:-50% 0;font-size:.8rem;color:#e6eef5cc;background:#12263899;padding:3px 10px;border-radius:9px;pointer-events:none;white-space:nowrap}
@@ -82,9 +91,12 @@ canvas{display:block;width:100%;height:100%}
   </nav>
   <div class="keyhint">方向鍵移動・空白鍵跳躍・空中再按一次二段跳</div>
   <div class="veil" id="veil">
-    <div class="card"><p class="tag" id="tag">601 挑戰樂園</p><h2 id="title">你能爬多高？</h2><p id="detail">一張遊戲券玩 5 分鐘，時間到就結算。5 分鐘內掉下去，可以馬上再挑戰。</p><p class="help">左手按住方向、右手按跳躍；空中再按一次跳躍可以二段跳。看到預警線，先在平台等一下再跳。</p><p id="ticketLine" class="ticket-line"></p><button id="start" class="primary">開始</button></div>
+    <div class="card"><p class="tag" id="tag">601 挑戰樂園</p><h2 id="title">你能爬多高？</h2><p id="detail">一張遊戲券玩 5 分鐘，時間到就結算。5 分鐘內掉下去，可以馬上再挑戰。</p><p class="help">左手按住方向、右手按跳躍；空中再按一次跳躍可以二段跳。看到預警線，先在平台等一下再跳。</p><p id="ticketLine" class="ticket-line"></p><button id="start" class="primary">開始</button><button id="kopen" class="kbtn">按鍵設定（大小、位置）</button></div>
   </div>
 </section>
+<div class="kset" id="kset" hidden><h3>按鍵設定</h3><p>選按鈕大小；用手指<b>拖拉按鈕</b>可以換位置。<br>設定會記在這台平板上。</p>
+  <div class="ksz" id="ksz"><button data-k=".8">小</button><button data-k="1">中</button><button data-k="1.25">大</button><button data-k="1.5">特大</button></div>
+  <div class="krow"><button id="kreset">恢復預設</button><button id="kdone" class="primary" style="margin:0;min-width:0">完成</button></div></div>
 <div class="board" id="board" hidden><div class="bcard" role="dialog" aria-label="雲階排行榜">
   <div class="bhead"><h2><img src="img/ui/sky-entry.webp" alt="">雲階排行榜</h2><button id="bclose">關閉</button></div>
   <div class="btabs"><button data-t="week" class="on">本週</button><button data-t="all">歷史最佳</button></div>
