@@ -10,6 +10,128 @@ const PET_ASSETS={"bear-0":{"flip":1,"scale":0.28205,"f":[[0,0,256,256,129,225],
 /* 跳台、機關圖的切格（img/sky/platforms.webp、traps.webp） */
 const SCENE_ATLAS={"platforms":[[21,199,408,101],[462,199,409,98],[904,200,408,96],[1346,199,411,113],[19,619,409,128],[463,617,408,113],[904,617,408,108],[1347,617,409,105]],"traps":[[66,64,405,400],[560,74,414,375],[1082,79,391,382],[58,640,410,264],[594,555,348,405],[1063,556,430,405]]};
 const el=id=>document.getElementById(id);
+/* ===================== 音樂、音效（2026-11-27）=====================
+   全部用程式即時合成（跟挑戰樂園同一套做法），不用下載音樂檔、沒有版權問題。
+   - 背景音樂：開始畫面是安靜的版本；爬的時候依段落換曲（第 1～3 段、第 4～6 段、無盡雲階），無盡雲階越上面越快
+   - 暫停、看排行榜時音樂變小；結算時淡出
+   - 音效跟著平台「設定 → 音效」；音樂另外有一顆開關（記在這台平板） */
+let ac=null;
+const acGet=()=>{try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}catch(e){return null}};
+const sfxOn=()=>{try{return !P||!P.snd||P.snd()!==false}catch(e){return true}};
+let bgmOff=false;try{bgmOff=localStorage.getItem('sky_bgm_off')==='1'}catch(e){}
+const midiHz=m=>440*Math.pow(2,(m-69)/12);
+function rng32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let noiseBuf=null;
+function noiseOf(a){if(noiseBuf&&noiseBuf.sampleRate===a.sampleRate)return noiseBuf;const b=a.createBuffer(1,Math.round(a.sampleRate*.5),a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return noiseBuf=b}
+function osc(a,out,type,f,t,vol,att,hold,rel,o2){
+  const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+  if(o2&&o2.slide){o.frequency.setValueAtTime(f*o2.slide,t);o.frequency.exponentialRampToValueAtTime(f,t+.07)}
+  if(o2&&o2.to)o.frequency.exponentialRampToValueAtTime(o2.to,t+(o2.toT||.12));
+  if(o2&&o2.det)o.detune.setValueAtTime(o2.det,t);
+  let node=o;if(o2&&o2.lp){const fl=a.createBiquadFilter();fl.type='lowpass';fl.frequency.setValueAtTime(o2.lp,t);fl.Q.value=o2.q||.7;o.connect(fl);node=fl}
+  node.connect(g);g.connect(out);const h=Math.max(t+att+.001,t+hold);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+att);if(hold>att+.01)g.gain.setValueAtTime(vol,h);
+  g.gain.exponentialRampToValueAtTime(.0001,h+rel);o.start(t);o.stop(h+rel+.05);
+}
+function noise(a,out,t,vol,dur,ft,fq,q){const s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=noiseOf(a);fl.type=ft;fl.frequency.value=fq;fl.Q.value=q||.7;
+  s.connect(fl);fl.connect(g);g.connect(out);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.start(t);s.stop(t+dur+.02)}
+function inst(a,out,e,t,sd){
+  const f=e.m?midiHz(e.m):0,v=e.v,d=Math.max(.06,(e.l||1)*sd);
+  switch(e.i){
+    case 'bell':osc(a,out,'sine',f,t,v,.004,.004,1.1);osc(a,out,'sine',f*4,t,v*.16,.002,.002,.22);osc(a,out,'sine',f*2,t,v*.22,.003,.003,.5);break;
+    case 'mallet':osc(a,out,'sine',f,t,v,.003,.003,.42);osc(a,out,'sine',f*4,t,v*.3,.002,.002,.06);break;
+    case 'steel':osc(a,out,'sine',f,t,v,.004,.004,.5);osc(a,out,'triangle',f*2,t,v*.25,.003,.003,.25);osc(a,out,'sine',f*3.02,t,v*.12,.002,.002,.12);break;
+    case 'pluck':osc(a,out,'triangle',f,t,v,.003,.003,Math.min(.45,d+.15));osc(a,out,'sine',f*2,t,v*.25,.002,.002,.12);break;
+    case 'keys':osc(a,out,'triangle',f,t,v,.004,Math.min(d*.7,.25),.35);osc(a,out,'sine',f*2,t,v*.3,.003,.003,.3);break;
+    case 'chip':osc(a,out,'square',f,t,v*.55,.003,d*.8,.04);break;
+    case 'flute':osc(a,out,'sine',f,t,v,.06,d*.85,.15);osc(a,out,'triangle',f*2,t,v*.08,.06,d*.85,.12);break;
+    case 'bass':osc(a,out,'triangle',f,t,v,.006,d*.85,.06);break;
+    case 'sbass':osc(a,out,'sawtooth',f,t,v*.75,.005,d*.75,.06,{lp:520,q:2});break;
+    case 'pad':osc(a,out,'sawtooth',f,t,v,.35,d-.2,.6,{lp:900,det:-7});osc(a,out,'sawtooth',f,t,v,.35,d-.2,.6,{lp:900,det:7});break;
+    case 'kick':osc(a,out,'sine',150,t,v,.003,.003,.24,{to:42,toT:.13});break;
+    case 'snare':noise(a,out,t,v,.16,'bandpass',1900,.8);osc(a,out,'triangle',190,t,v*.5,.002,.002,.08);break;
+    case 'clap':[0,.012,.026].forEach(k=>noise(a,out,t+k,v,.09,'bandpass',1300,1.2));break;
+    case 'hat':noise(a,out,t,v,.045,'highpass',7500);break;
+    case 'shaker':noise(a,out,t,v,.08,'highpass',5200);break;
+  }
+}
+const SC={maj:[0,2,4,5,7,9,11],dor:[0,2,3,5,7,9,10],mix:[0,2,4,5,7,9,10]};
+/* 編曲：和弦進行＋節奏型，用固定種子產生旋律（每次都是同一首），每 4 小節一句 */
+function compile(spec){
+  const sc=SC[spec.sc||'maj'],n=sc.length,B=16,bars=8,sd=60/spec.bpm/4,len=B*bars,at=Array.from({length:len},()=>[]),rnd=rng32(spec.seed);
+  const pm=d=>spec.key+12*Math.floor(d/n)+sc[((d%n)+n)%n],rootOf=b=>spec.prog[b%spec.prog.length],pat=(p,b)=>Array.isArray(p)?p[b%p.length]:p;
+  const ons=p=>[...p].map((c,i)=>c!=='.'?i:-1).filter(i=>i>=0),lenTo=(o,k,mx)=>Math.min(mx,(k+1<o.length?o[k+1]:B)-o[k]);
+  if(spec.lead){const L=spec.lead,lo=-2,hi=9;let d=4,dir=1;const mel=[];
+    const gen=(b,end)=>{const o=ons(pat(L.pat,b)),r=rootOf(b),ch=[r,r+2,r+4],out=[];
+      o.forEach((i,k)=>{const strong=i===0||i===8;
+        if(end&&k===o.length-1)d=[0,7,-7].reduce((x,c)=>Math.abs(c-d)<Math.abs(x-d)?c:x,7);
+        else if(strong||k===0){let bst=d,bd=99;for(const c0 of ch)for(const sh of [-n,0,n]){const c=c0+sh;if(c<lo||c>hi)continue;const ds=Math.abs(c-d)+(c===d?1.5:0)+rnd()*.8;if(ds<bd){bd=ds;bst=c}}d=bst}
+        else{const st=[1,1,2,1,-1,2,1,-1];let s=st[Math.floor(rnd()*st.length)]*dir;if(rnd()<.22)dir=-dir;let x=d+s;if(x>hi){x=d-Math.abs(s);dir=-1}if(x<lo){x=d+Math.abs(s);dir=1}d=Math.max(lo,Math.min(hi,x))}
+        out.push({i,d,l:lenTo(o,k,4)})});return out};
+    for(let b=0;b<bars;b++){const last=b===bars-1;if(b>=4&&!last&&pat(L.pat,b)===pat(L.pat,b-4))mel.push(mel[b-4].map(x=>({...x})));else mel.push(gen(b,last))}
+    mel.forEach((bar,b)=>bar.forEach(x=>at[b*B+x.i].push({i:L.inst,m:pm(x.d)+(L.oct||0),l:x.l*.9,v:L.v})))}
+  for(let b=0;b<bars;b++){const r=rootOf(b),base=b*B;
+    if(spec.bass){const Q=spec.bass,p=pat(Q.pat,b),o=ons(p);o.forEach((i,k)=>{const c=p[i],dd=c==='f'?r+4:c==='o'?r+7:r;at[base+i].push({i:Q.inst,m:pm(dd)+(Q.oct??-24),l:lenTo(o,k,4)*.9,v:Q.v})})}
+    if(spec.arp){const A=spec.arp,p=pat(A.pat,b),seq=A.seq||[0,2,4,7];let k=0;ons(p).forEach(i=>at[base+i].push({i:A.inst,m:pm(r+seq[(k++)%seq.length])+(A.oct||0),l:1,v:A.v}))}
+    if(spec.pad)[0,2,4].forEach(x=>at[base].push({i:'pad',m:pm(r+x)-12,l:B,v:spec.pad}));
+    if(spec.dr)for(const [k,p0] of Object.entries(spec.dr)){const p=pat(p0,b),nm={k:'kick',s:'snare',c:'clap',h:'hat',sh:'shaker'}[k],vv={kick:.12,snare:.05,clap:.045,hat:.02,shaker:.02}[nm];
+      [...p].forEach((c,i)=>{if(c==='x')at[base+i].push({i:nm,v:vv})})}}
+  return {sd,len,at};
+}
+/* 四首原創曲：開始畫面（安靜）、第 1～3 段（森林、峽谷、遺跡：輕快）、第 4～6 段（冰橋、風暴、燈塔：比較緊湊）、無盡雲階（最有衝勁） */
+const SONGS={
+  calm:{bpm:84,key:65,prog:[0,5,3,4],seed:601,gain:1.5,pad:.009,arp:{inst:'bell',pat:'x.......x.......',v:.02,oct:12},bass:{inst:'bass',pat:'x...............',v:.045}},
+  low:{bpm:112,key:67,prog:[0,4,5,3],seed:6011,lead:{inst:'flute',oct:12,pat:['x...x.x.x.......','x.x.x...x...x...'],v:.05},
+    arp:{inst:'mallet',pat:'x.x.x.x.x.x.x.x.',v:.018},bass:{inst:'pluck',pat:'x.......f...x...',oct:-12,v:.05},dr:{sh:'..x...x...x...x.',k:'x.......x.......'}},
+  mid:{bpm:120,key:62,sc:'dor',prog:[0,6,5,6],seed:6012,lead:{inst:'bell',oct:12,pat:['x.x.x...x...x...','x...x.x.x.x.....'],v:.04},
+    arp:{inst:'steel',pat:'x...x...x...x...',v:.02},bass:{inst:'sbass',pat:'x..x..x.x..x..x.',v:.055},dr:{k:'x.......x.......',h:'..x...x...x...x.',c:'....x.......x...'}},
+  top:{bpm:128,key:64,sc:'mix',prog:[0,6,3,0],seed:6013,lead:{inst:'keys',oct:12,pat:['x.x.x.x.x...x...','x...x.x.x.x.x...'],v:.045},
+    arp:{inst:'mallet',pat:'x.x.x.x.x.x.x.x.',v:.016},bass:{inst:'sbass',pat:'x.x.x.x.x.x.x.x.',v:.05},dr:{k:'x...x...x...x...',s:'....x.......x...',h:'..x...x...x...x.'}}
+};
+const BGM_VOL=.42,songCache={},bgm={on:false,key:'',gain:null,song:null,t0:0,next:0,timer:0,vol:1,want:'calm@1'};
+function bgmStart(name,tempo){
+  const key=name+'@'+tempo;bgm.want=key;if(bgmOff){bgmStop(true);bgm.want=key;return}
+  if(bgm.on&&bgm.key===key)return;const a=acGet();if(!a)return;
+  bgmStop(false);bgm.want=key;
+  const spec={...SONGS[name],bpm:Math.round(SONGS[name].bpm*tempo)},song=songCache[key]||(songCache[key]=compile(spec));
+  const g=a.createGain();g.connect(a.destination);bgm.vol=BGM_VOL*(spec.gain||1);
+  g.gain.setValueAtTime(.0001,a.currentTime);g.gain.exponentialRampToValueAtTime(bgm.vol*(bgm.duck||1),a.currentTime+.8);
+  Object.assign(bgm,{on:true,key,song,gain:g,t0:a.currentTime+.08,next:0});bgm.timer=setInterval(bgmPump,40);bgmPump();
+}
+function bgmPump(){if(!bgm.on)return;const a=ac,s=bgm.song,hz=a.currentTime+.3;
+  while(bgm.t0+bgm.next*s.sd<hz){const i=bgm.next++,t=bgm.t0+i*s.sd;if(t<a.currentTime-.05)continue;for(const e of s.at[i%s.len])inst(a,bgm.gain,e,t,s.sd)}}
+function bgmStop(fast){if(!bgm.on)return;bgm.on=false;bgm.key='';clearInterval(bgm.timer);const g=bgm.gain;bgm.gain=null;
+  try{const t=ac.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(Math.max(.0001,g.gain.value),t);g.gain.exponentialRampToValueAtTime(.0001,t+(fast?.06:.9));setTimeout(()=>{try{g.disconnect()}catch(e){}},fast?150:1100)}catch(e){}}
+function bgmDuck(k){bgm.duck=k;if(!bgm.on||!bgm.gain)return;try{const t=ac.currentTime,g=bgm.gain.gain;g.cancelScheduledValues(t);g.setValueAtTime(Math.max(.0001,g.value),t);g.exponentialRampToValueAtTime(Math.max(.0001,bgm.vol*k),t+.3)}catch(e){}}
+/* 現在該放哪一首：看遊戲狀態和爬到第幾段 */
+function musicSync(){
+  if(mode==='play'){const st=stageAt(Math.max(y,0)),name=st<3?'low':st<6?'mid':'top',tempo=name==='top'?Math.min(1.2,1+(st-6)*.03):1;bgmDuck(1);bgmStart(name,+tempo.toFixed(2))}
+  else if(mode==='pause'){bgmDuck(.3)}
+  else if(mode==='end'){bgmStop(false)}
+  else{bgmDuck(1);bgmStart('calm',1)}
+}
+/* 音效 */
+function fx(f){if(!sfxOn())return;const a=acGet();if(!a)return;try{f(a,a.destination,a.currentTime)}catch(e){}}
+const SFX={
+  jump:()=>fx((a,o,t)=>osc(a,o,'triangle',330,t,.07,.004,.02,.12,{to:620,toT:.12})),
+  dbl:()=>fx((a,o,t)=>{osc(a,o,'triangle',520,t,.06,.004,.02,.12,{to:980,toT:.1});osc(a,o,'sine',1560,t+.05,.03,.003,.003,.18)}),
+  spring:()=>fx((a,o,t)=>{osc(a,o,'sine',180,t,.09,.004,.04,.25,{to:720,toT:.22});osc(a,o,'triangle',360,t+.02,.04,.004,.03,.2,{to:1100,toT:.2})}),
+  land:()=>fx((a,o,t)=>{noise(a,o,t,.05,.07,'lowpass',900);osc(a,o,'sine',140,t,.05,.003,.003,.09,{to:80,toT:.08})}),
+  slip:()=>fx((a,o,t)=>osc(a,o,'triangle',520,t,.05,.006,.1,.25,{to:180,toT:.35})),
+  bonk:()=>fx((a,o,t)=>{osc(a,o,'square',240,t,.04,.003,.03,.1,{to:120,toT:.12});noise(a,o,t,.05,.08,'bandpass',800,1)}),
+  zap:()=>fx((a,o,t)=>{[0,.05,.1].forEach(k=>osc(a,o,'sawtooth',900-k*2000,t+k,.03,.002,.02,.04,{lp:2400}));noise(a,o,t,.03,.15,'highpass',3000)}),
+  stage:()=>fx((a,o,t)=>[0,4,7,12].forEach((n,i)=>osc(a,o,'sine',midiHz(76+n),t+i*.08,.05,.004,.004,.5))),
+  record:()=>fx((a,o,t)=>{[0,4,7,12,16].forEach((n,i)=>osc(a,o,'triangle',midiHz(72+n),t+i*.07,.06,.004,.05,.35));osc(a,o,'sine',midiHz(96),t+.4,.04,.004,.004,.8)}),
+  warn:()=>fx((a,o,t)=>{osc(a,o,'square',880,t,.035,.003,.08,.05);osc(a,o,'square',880,t+.18,.035,.003,.08,.05)}),
+  tick:()=>fx((a,o,t)=>osc(a,o,'sine',1320,t,.04,.002,.002,.06)),
+  fall:()=>fx((a,o,t)=>osc(a,o,'triangle',600,t,.06,.005,.2,.3,{to:110,toT:.5})),
+  whistle:()=>fx((a,o,t)=>{osc(a,o,'sine',1800,t,.05,.01,.25,.1);osc(a,o,'sine',1500,t+.32,.05,.01,.35,.15)}),
+  end:()=>fx((a,o,t)=>[0,2,4,7].forEach((n,i)=>osc(a,o,'triangle',midiHz(67+[0,4,7,12][i]),t+.15+i*.11,.05,.004,.04,.45))),
+  go:()=>fx((a,o,t)=>{osc(a,o,'triangle',midiHz(72),t,.05,.004,.04,.2);osc(a,o,'triangle',midiHz(79),t+.1,.06,.004,.08,.3)})
+};
+/* iPad 要在學生按按鈕的那一下才能開聲音：第一次碰畫面時把聲音打開 */
+['pointerdown','keydown'].forEach(n=>addEventListener(n,()=>{acGet();if(!bgm.on&&!bgmOff&&bgm.want)musicSync()},{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{try{if(!ac)return;if(document.hidden)ac.suspend();else{ac.resume();musicSync()}}catch(e){}});
 const canvas=el('field'), ctx=canvas.getContext('2d');
 function loadImage(src){const image=new Image();image.src=src;return image;}
 const platformArt=loadImage('img/sky/platforms.webp'), trapArt=loadImage('img/sky/traps.webp');
@@ -71,7 +193,7 @@ const myBest=()=>{try{return (P&&P.skyBest())||{a:0,ws:0}}catch(e){return {a:0,w
 let best=myBest().a*10;
 let h=570, mode='ready', clock=0, peak=0, falls=0, camera=0, cameraX=0, checkpoint=path[0];
 let doubleReady=true, airTime=0, departY=0, tagStage=0, shockLock=0;
-let lastPassTick=0,busy=false,recAt=0,recM=0,runBest=null;
+let lastPassTick=0,busy=false,recAt=0,recM=0,runBest=null,recDone=false,warned=false,lastTick=0;
 let x=120,y=0,vx=0,vy=0,standing=path[0],facing=1,walk=0,grace=0,queued=0,noteUntil=0;
 let lastTime=0,accumulator=0;
 const keys=new Set(), pointers=new Map(), controls=[...document.querySelectorAll('[data-action]')];
@@ -171,7 +293,7 @@ function hitAirObstacle(){
     if(Math.hypot(x-point.x,y+19-point.y)>point.radius+10)continue;
     const messages={swing:'碰到擺錘 · 等它擺過再跳',fall:'碰到落石 · 看金色虛線避開',sweep:'被風彈推偏 · 等它橫掃過再跳'};
     shockLock=.78;vy=Math.min(vy,-65);vx=(Math.sign(x-point.x)||o.dir)*132;
-    tell(messages[o.type]);
+    tell(messages[o.type]);SFX.bonk();
     break;
   }
 }
@@ -204,6 +326,7 @@ function openCover(state,tag,title,description,button){
   el('end').hidden=true;
   el('message').hidden=true;
   clearInput();
+  musicSync();
 }
 function play(){
   if(!passLeft()){settle(true);return;}
@@ -211,12 +334,13 @@ function play(){
   el('veil').hidden=true;
   el('pause').hidden=false;
   el('end').hidden=false;
+  musicSync();
 }
 function pause(){
   if(mode==='play')openCover('pause','稍作休息','攀登暫停','繼續後會從原本的位置接著跳。','繼續攀登');
 }
 function restart(){
-  clock=peak=falls=walk=camera=cameraX=tagStage=shockLock=0;
+  clock=peak=falls=walk=camera=cameraX=tagStage=shockLock=0;recDone=false;warned=false;lastTick=0;
   facing=1;
   checkpoint=path[0];recM=0;recAt=0;
   segmentCache.clear();chunkWindow='';refreshSegments(0);
@@ -243,19 +367,23 @@ function exists(p,t){
   return p.born===null || t-p.born<.48 || t-p.born>2.7;
 }
 function land(p){
+  const airTime0=airTime;
   standing=p;y=deck(p,clock);vy=0;doubleReady=true;airTime=0;
-  if(departY-p.y>=150){falls++;tell('滑落 '+meters(departY-p.y)+' m，從這裡再爬');}
+  if(departY-p.y>=150){falls++;tell('滑落 '+meters(departY-p.y)+' m，從這裡再爬');SFX.slip();}else if(airTime0>.25)SFX.land();
   departY=p.y;
   const entered=stageAt(p.y);
   if(entered>tagStage){
     tagStage=entered;
     tell('第 '+(entered+1)+' 段 · '+stageInfo(entered).hint);
+    SFX.stage();musicSync();
   }
   if(p.type==='crumble'&&(p.born===null||clock-p.born>2.7))p.born=clock;
   if(p.y>peak){
     peak=p.y;
     if(peak>best)best=peak;
     record(false);
+    /* 這一局第一次超過自己的最佳紀錄：音效＋提示（一局只響一次） */
+    if(!recDone&&runBest&&runBest.a>0&&meters(peak)>runBest.a){recDone=true;SFX.record();tell('新紀錄！ '+meters(peak)+' m');}
   }
   if(p.type==='beacon')tell('通過燈塔！繼續挑戰無盡雲階');
 }
@@ -330,6 +458,7 @@ function settle(timeUp){
   record(true);updateHud();
   const now=myBest(),m=meters(peak);best=Math.max(best,now.a*10);
   const isNew=m>0&&m>before.a, wkNew=m>0&&m>before.ws;
+  if(timeUp)SFX.whistle();setTimeout(()=>isNew||wkNew?SFX.record():SFX.end(),timeUp?700:350);
   openCover('end',timeUp?'時間到！':'本次成績',m+' 公尺',
     (isNew?'新紀錄！':wkNew?'本週新紀錄！':'')+'你的最佳 '+now.a+' m · 本週最佳 '+now.ws+' m'+(P&&P.isTest()?'（測試帳號不上榜）':''),startText('再挑戰'));
   runBest=null;
@@ -355,17 +484,17 @@ function step(dt){
   if(standing&&(!exists(standing,clock)||!onDeck(standing,x,clock)))standing=null;
   if(queued&&grace){
     const onSpring=standing?.type==='spring';
-    vy=onSpring?665:jumpSpeed;standing=null;queued=grace=0;
+    vy=onSpring?665:jumpSpeed;standing=null;queued=grace=0;if(onSpring)SFX.spring();else SFX.jump();
     if(onSpring)tell('彈跳台 · 高跳');
   }else if(queued&&doubleReady&&!standing&&airTime>.12){
-    vy=420;doubleReady=false;queued=0;
+    vy=420;doubleReady=false;queued=0;SFX.dbl();
     tell('二段跳');
   }
   if(standing&&!shockLock&&edgeHazard(standing,x,clock)){
     const side=Math.sign(x-standing.x);
     const warning={spike:'紅晶伸出 · 站中央或等它縮回',gear:'被齒輪推開 · 落腳時瞄準金色中央',shock:'碰到電光 · 下次瞄準中央金踏板'};
     x=clamp(standing.x+side*(standing.w/2+9),13,WORLD-13);
-    tell(warning[standing.type]);
+    tell(warning[standing.type]);standing.type==='shock'?SFX.zap():SFX.bonk();
     standing=null;vy=-75;grace=0;shockLock=.75;
   }
   hitAirObstacle();
@@ -380,7 +509,7 @@ function step(dt){
   camera+=(Math.max(0,y-look())-camera)*Math.min(1,dt*13);
   cameraX+=(clamp(x-W*.5+vx*.13,0,WORLD-W)-cameraX)*Math.min(1,dt*10);
   if(y< -95){
-    falls++;
+    falls++;SFX.fall();
     settle(false);return;
   }
   if(clock>noteUntil)el('message').hidden=true;
@@ -783,6 +912,8 @@ function updatePass(){
   const balance=!P?'':isTest()?'測試帳號：不用遊戲券、不上榜':'遊戲券 '+tickets()+' 張'+(left?' · 這次還可以玩 '+format(seconds):' · 一張玩 5 分鐘');
   if(el('ticketLine').textContent!==balance)el('ticketLine').textContent=balance;
   el('clockBox').classList.toggle('warn',!!left&&left<=30000&&mode==='play');
+  /* 剩 30 秒提醒一次；最後 5 秒每秒滴一聲 */
+  if(mode==='play'&&left){if(left<=30000&&!warned){warned=true;SFX.warn();}if(seconds<=5&&seconds!==lastTick){lastTick=seconds;SFX.tick();}}
   if(!left&&(mode==='play'||mode==='pause')){settle(true);return;}
   if(mode==='ready'||mode==='end'){
     const t=startText(mode==='ready'?'開始':'再挑戰');
@@ -797,11 +928,15 @@ el('start').onclick=()=>{
     busy=true;let r=null;try{r=P.startPlay('sky',0)}catch(e){}busy=false;
     if(!r||!r.ok){el('detail').textContent='遊戲券用完了！去練習題目可以拿到新的遊戲券。';updatePass();return;}
   }
-  runBest=myBest();
+  runBest=myBest();acGet();SFX.go();
   restart();
   updatePass();
 };
 el('pause').onclick=pause;
+/* 音樂開關（只管背景音樂；音效跟著平台的設定） */
+function musPaint(){const b=el('mus');if(!b)return;b.classList.toggle('off',bgmOff);b.setAttribute('aria-label',bgmOff?'打開音樂':'關掉音樂');}
+el('mus').onclick=()=>{bgmOff=!bgmOff;try{localStorage.setItem('sky_bgm_off',bgmOff?'1':'0')}catch(e){}if(bgmOff)bgmStop(true);else{acGet();musicSync();}musPaint();};
+musPaint();
 el('end').onclick=()=>{if(mode==='play')settle(false);};
 window.addEventListener('blur',()=>{keyboardEvents.clear();clearInput();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){keyboardEvents.clear();pause();record(true);}else updatePass();});
