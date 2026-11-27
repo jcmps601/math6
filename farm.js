@@ -134,6 +134,8 @@
   const tst = () => { try { return !!(user && isTest(user.seat)); } catch (e) { return false; } };
   function F() {
     if (!sum) return null;
+    /* 2026-11-27 雲端讀回來的田有時是「物件」不是陣列（例如中間有空格）：轉回陣列，不能當成沒有農場整個重開（會把菜弄不見） */
+    if (sum.farm && sum.farm.p && typeof sum.farm.p === 'object' && !Array.isArray(sum.farm.p)) { const o = sum.farm.p; sum.farm.p = Array.from({ length: MAXP }, (_, k) => o[k] || 0); }
     if (!sum.farm || !Array.isArray(sum.farm.p)) sum.farm = { xp: 0, water: START_WATER, fert: 1, p: Array(MAXP).fill(0), store: {}, log: [], u: 0, b: Date.now() };   // 新開的空農場：u 0、b 記開農場的時間（跟雲端合併時，雲端原本的農場不會被這份空的蓋掉）
     const f = sum.farm; f.store = f.store || {}; f.log = f.log || []; while (f.p.length < MAXP) f.p.push(0);
     if (tst()) {   // 測試帳號（98、99）：水、肥料用不完，農場直接升到最高解鎖等級（12 塊田、所有種子）
@@ -144,10 +146,23 @@
   }
   const coins = () => (PET.P() && PET.P().coin) || 0;
   function addCoin(n) { const p = PET.P(); if (p) PET.coinAdd(p, n); }   // 記在寵物的金幣帳本（換平板、同步都不會不見）
-  let pubT = 0;
+  /* 公開給同學看的農場（farm/座號）：
+     2026-11-27 同學反映「自己明明沒種菜，別人看他的農場卻有」：公開的那份只在「這台按了農場的東西」1 秒後才上傳，
+     收成完馬上關掉、斷網、或是別台平板改了農場，公開的那份就停在舊的樣子，同學看到的是好幾天前的菜（還幫不存在的菜澆水）。
+     改成：① 每次進度上傳雲端成功後，都用「合併好的最新農場」檢查一次，跟上次公開的不一樣就重新公開；每次打開平台第一次一定公開
+           ② 離開／切到背景時，還沒送出的那份馬上送出
+           ③ 上傳的內容先整理過（不會有 undefined、NaN 讓上傳失敗） */
+  let pubT = 0, pubSig = '';
+  function pubNow(force) {
+    if (!user || !sum) return; const f = F(); if (!f) return;
+    const v = JSON.parse(JSON.stringify({ xp: f.xp | 0, sm: f.sm ? 1 : 0, p: f.p.slice(0, MAXP).map(x => x || 0), d: fdS() }));
+    const sg = user.seat + '|' + JSON.stringify(v); if (!force && sg === pubSig) return; pubSig = sg;
+    v.t = Date.now(); enqueue(`${ROOT}/farm/${user.seat}`, v, true);
+  }
+  function pubFlush() { if (pubT) { clearTimeout(pubT); pubT = 0; pubNow(true); } }
   function save() {
     const f = F(); f.u = Date.now(); saveSum(true);
-    clearTimeout(pubT); pubT = setTimeout(() => { if (!user) return; const f = F(); enqueue(`${ROOT}/farm/${user.seat}`, { xp: f.xp | 0, sm: f.sm ? 1 : 0, p: f.p.map(x => x || 0), d: fdS(), t: Date.now() }, true); }, 1000);
+    clearTimeout(pubT); pubT = setTimeout(() => { pubT = 0; pubNow(true); }, 1000);
   }
   function addXp(n) {
     const f = F(), b = lvOf(f.xp).lv;
@@ -749,5 +764,5 @@
   @media (max-width:700px){.frow2{grid-template-columns:1fr}.fseeds{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr))}.fvg{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
-  window.FARM = { view: farmView, page, visitList, gain, endRound, homeCard, farmSVG, crop, produce, CROPS, stat, F, lvOf, plotsFor, applyInbox };
+  window.FARM = { pub: pubNow, pubFlush, view: farmView, page, visitList, gain, endRound, homeCard, farmSVG, crop, produce, CROPS, stat, F, lvOf, plotsFor, applyInbox };
 })();
