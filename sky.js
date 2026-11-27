@@ -223,12 +223,15 @@ function makeSegment(n){
     [69,157,259,386,478,573,706,800]
   ][n%4];
   const plan=layers[n%layers.length].plan;
-  return split.map((offset,i)=>{
+  const seg=split.map((offset,i)=>{
     const type=i===7?'save':plan[i];
     const x=from+(to-from)*(i+1)/chunkSize+(i===7?0:Math.round((roll()-.5)*22));
     const width=i===7?158:type==='spring'?110:type==='lift'?98:type==='mist'?112:type==='guide'?118:Math.max(63,115-difficulty*5-Math.round(roll()*11));
     return {x,y:tower+n*chunkHeight+offset,w:width,type,i:path.length+n*chunkSize+i,born:null};
   });
+  /* 隱藏成就「登上 601」：第 3 段無盡雲階的休息平台改成剛好 601 公尺的「601 雲台」（2026-11-27） */
+  if(n===2){const q=seg[7];q.y=SKY601*10;q.type='p601';q.w=200;}
+  return seg;
 }
 function refreshSegments(height){
   const start=Math.max(0,Math.floor((height-tower-960)/chunkHeight));
@@ -386,6 +389,7 @@ function land(p){
     if(!recDone&&runBest&&runBest.a>0&&meters(peak)>runBest.a){recDone=true;SFX.record();tell('新紀錄！ '+meters(peak)+' m');}
   }
   if(p.type==='beacon')tell('通過燈塔！繼續挑戰無盡雲階');
+  if(p.type==='p601'&&!p.got){p.got=true;let nw=false;try{nw=!!(P&&P.skyEgg&&P.skyEgg())}catch(e){}tell(nw?'登上 601！發現隱藏成就！':'登上 601 雲台！');SFX.record();}
 }
 const held=action=>keys.has(action)||[...pointers.values()].includes(action);
 function clearInput(){
@@ -585,7 +589,8 @@ function backdrop(){
     }
   }
 }
-const terrainTiles={rock:0,glide:1,crumble:2,ice:3,lift:4,spring:5,shock:6,save:7,beacon:7,fan:1,mist:1,gear:7,spike:6,guide:7};
+const SKY601=601,sky601Art=loadImage('img/sky/sky601.webp');   // 601 雲台的圖：860×170，台面在第 76 像素
+const terrainTiles={p601:7,rock:0,glide:1,crumble:2,ice:3,lift:4,spring:5,shock:6,save:7,beacon:7,fan:1,mist:1,gear:7,spike:6,guide:7};
 function sheetDraw(image,box,x,y,w,h){
   if(!box||!image.complete||!image.naturalWidth)return false;
   ctx.drawImage(image,...box,x,y,w,h);return true;
@@ -622,7 +627,10 @@ function platform(p){
   if(p.type==='crumble'&&p.born!==null&&clock-p.born<.48)ctx.globalAlpha=1-(clock-p.born)*1.38;
   const terrain=SCENE_ATLAS.platforms[terrainTiles[p.type]];
   const depth=clamp(p.w*terrain[3]/terrain[2],20,56);
-  if(!sheetDraw(platformArt,terrain,left-2,top-4,p.w+4,depth)){
+  if(p.type==='p601'&&sky601Art.complete&&sky601Art.naturalWidth){const k=(p.w+8)/860;
+    if(p.got){ctx.save();ctx.globalAlpha=.3+.15*Math.sin(clock*3);ellipse(middle,top-4,p.w*.52,16,'#fff3b0');ctx.restore();}   // 站上去以後雲台會發光
+    ctx.drawImage(sky601Art,left-4,top-76*k,p.w+8,170*k);}
+  else if(!sheetDraw(platformArt,terrain,left-2,top-4,p.w+4,depth)){
     const [, ,far,rock,grass]=liveSection(p.y).pal;
     polygon(far,[[left,top],[right,top],[right-13,top+18],[middle,top+26],[left+12,top+17]]);
     polygon(grass,[[left,top-2],[right,top-2],[right-3,top+4],[left+4,top+4]]);
@@ -680,7 +688,7 @@ function platform(p){
     }
   }
   const next=p.i<path.length-1?path[p.i+1]:nearby.find(s=>s.i===p.i+1);
-  if(next&&next.y-p.y>126&&['rock','guide','save'].includes(p.type))hintSign(middle+9,top,'二段跳');
+  if(next&&next.y-p.y>126&&['rock','guide','save','p601'].includes(p.type))hintSign(middle+9,top,'二段跳');
   ctx.restore();
 }
 function drawAirObstacles(){
