@@ -812,6 +812,17 @@ html:not(.rm) body.lite .np-gold::after,html:not(.rm) body.lite .np-candy::after
 #lkcard .a{font-size:.95rem;font-weight:900;color:#7048e8}#lkcard .b{font-size:1.5rem;font-weight:900}#lkcard .s{font-size:.95rem;color:#868e96;font-weight:700}
 @media (max-width:560px){#lkcard .go{width:100%}}
 /* 名片商店 */
+/* 隱藏成就（彩蛋） */
+.eggtrain{position:fixed;left:0;bottom:.4rem;height:min(18vh,9rem);z-index:90;pointer-events:none;animation:eggtrain 6s linear forwards}
+@keyframes eggtrain{from{transform:translateX(100vw)}to{transform:translateX(-110%)}}
+.eggrun{position:fixed;left:0;bottom:12vh;z-index:90;pointer-events:none;display:flex;align-items:flex-end;gap:.4rem;animation:eggrun 4.2s ease-in-out forwards}
+.eggrun .eggpet{width:min(26vw,10rem);height:min(26vw,10rem);animation:eggbob .35s ease-in-out infinite alternate}.eggrun .eggpet svg{width:100%;height:100%}
+.eggrun .eggsay{background:#fff;border:3px solid #ffd43b;border-radius:18px;padding:.4rem .8rem;font-weight:900;font-size:1.2rem;white-space:nowrap;margin-bottom:60%}
+@keyframes eggrun{0%{transform:translateX(-30vw)}40%,60%{transform:translateX(38vw)}100%{transform:translateX(110vw)}}
+@keyframes eggbob{from{transform:translateY(0)}to{transform:translateY(-12%)}}
+.eggm img{width:11rem;height:11rem;object-fit:contain;display:block;margin:0 auto .3rem}
+#lkshop .lkc.egg .lkhow{font-style:italic;color:#7048e8}
+.eggspin{animation:eggspin .9s ease-in-out!important}@keyframes eggspin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(.9)}100%{transform:rotate(360deg) scale(1)}}
 #lkshop{position:fixed;inset:0;z-index:60;background:rgba(40,30,15,.45);display:flex;align-items:center;justify-content:center;padding:1rem}
 #lkshop .lkbox{background:#fffaf0;border-radius:26px;width:min(48rem,100%);max-height:100%;overflow:auto;padding:1rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 #lkshop .lktop{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}#lkshop .lkme2{display:flex;align-items:center;gap:1.1rem;flex:1;min-width:14rem}#lkshop .lkme2 .lkav{margin:.6rem}
@@ -1822,6 +1833,10 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.fdc){const a=sum.fdc||{},b=r.fdc,nw=(b.u||0)>(a.u||0)?b:a;sum.fdc={own:Object.assign({},a.own||{},b.own||{}),s:Array.from({length:6},(_,k)=>(nw.s&&nw.s[k])||''),u:Math.max(a.u||0,b.u||0)}}   // 農場裝飾：買過的兩邊合起來，擺法以最後擺的那台為準
   if(r.farm){const A=sum.farm,xa=A&&A.xl,xb=r.farm.xl;if(!A||!A.p||typeof A.p!=='object')sum.farm=r.farm;else if((r.farm.xp||0)!==(A.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm;
     if(xa||xb){const f=sum.farm,X={b:Math.max(+(xa||{}).b||0,+(xb||{}).b||0),e:{}};for(const Y of [xa,xb])for(const d in (Y&&Y.e)||{})X.e[d]=Math.max(X.e[d]||0,+Y.e[d]||0);f.xl=X;const t=X.b+Object.values(X.e).reduce((a,v)=>a+(+v||0),0);if(t>(f.xp||0))f.xp=t}}   // 農場經驗帳本：兩台加的經驗都算   /* 農場經驗只會增加：留經驗比較多的那份（另一台的舊資料、空農場都蓋不過來）；一樣多才看誰比較新 */
+  /* 隱藏成就：找到的、累計的取大；今天摸了幾下看同一天取大；現在連續答對幾題看比較新的那台 */
+  if(r.egg){const a=sum.egg||{},b=r.egg,o={};for(const k of new Set([...Object.keys(a),...Object.keys(b)])){
+      if(k==='pd'){const x=a.pd||{},y=b.pd||{};o.pd=x.d===y.d?{d:x.d,n:mx(x.n,y.n)}:(String(x.d||'')>String(y.d||'')?x:y)}
+      else if(k==='st')o.st=(a.u||0)>=(b.u||0)?(a.st||0):(b.st||0);else o[k]=mx(a[k],b[k])}sum.egg=o}
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{}),r:Object.assign({},r.uq.r||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
   if(r.qf&&r.qf.d===dkey()){const D=qfDay();for(const k of r.qf.k||[])if(!D.k.includes(k))D.k.push(k)}   // 今天第一次就答錯的題目：兩台合起來
@@ -2174,6 +2189,7 @@ function render0(){const P=document.getElementById('pane');P.innerHTML='';
 function renderHome(P){const n=todayN(),done=n>=GOAL;
   P.appendChild(el('div','hello',`<span class="mascot">${ico(PET.night()?'mascot-sleep':done?'mascot-yay':'mascot-hi')}</span><div class="hw"><div class="hi">${isTest(user.seat)?testName(user.seat).replace('🧪 ',''):user.seat+' 號'}，${done?'今天的任務完成了！':'嗨！今天也來練習吧'}</div><div class="bubble">${pick(done?CHEER_DONE:CHEER)}</div></div><div class="hres">${resPills()}<button class="rwbtn" id="rwbtn">${ico('pr-hint','ii')}獎勵說明</button></div>`));
   {const b=P.querySelector('#rwbtn');if(b)tap(b,rewardHelp)}
+  {const ms=P.querySelector('.hello .mascot');if(ms&&!isTest(user.seat))ms.addEventListener('pointerdown',eggTap)}   // 隱藏成就：連點 6 下
   /* 今日任務＋連續天數：同一張卡片 */
   const t=el('div','cd');t.id='today';t.innerHTML=ringSVG(n/GOAL)+`<div class="tinfo"><div class="t1">今日任務</div><div class="t2">${Math.min(n,999)} <small>/ ${GOAL} 題</small></div></div>`;
   const SM=mixOf(subj),gb=el('button','go',(done?'再練一回':'繼續練習')+(SM?'':'（數學）')+' ▶');tap(gb,()=>startPractice((SM||MIX).key));t.querySelector('.tinfo').appendChild(gb);
@@ -2389,6 +2405,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v209',d:'11/27',it:[['❓','平台藏了 8 個「隱藏成就」！到名片的「稱號」最下面，看看謎語提示，猜猜要怎麼找到'],['🎖️','找到的隱藏成就會有特別的徽章和稱號，有的還有小驚喜']]},
   {v:'v208',d:'11/27',it:[['🎵','無盡雲階有音樂和音效了！每一段的音樂都不一樣，爬到無盡雲階會越來越快'],['🔊','右上角可以只關掉音樂；音效跟著平台「設定」裡的音效開關']]},
   {v:'v207',d:'11/27',it:[['🌾','修好「去同學農場看到的菜，跟同學自己農場不一樣」的問題：同學看到的農場會跟著你的農場一起更新'],['🔒','平台有新版時，如果你的進度已經用新版存過，會請你先按「更新」再繼續，進度不會被舊版蓋掉']]},
   {v:'v206',d:'11/27',it:[['🦔','栗栗蝟第三階換新圖：盾牌改用扣帶固定，看起來更自然'],['☁️','無盡雲階：福氣獅改成四隻腳跑步，栗栗蝟、星空鯨、菇菇的動作也修得更好看']]},
@@ -2980,7 +2997,7 @@ const lkU3=s=>{try{return UN.filter(u=>u.g&&!u.hid&&u.s===s&&((sum.best||{})[u.k
   lkTot=()=>(sum&&sum.total)||0,lkFmx=()=>(sum&&sum.fmx)||0,lkFirst=()=>(sum&&sum.first)||0,lkRate=()=>lkTot()?Math.round(lkFirst()/lkTot()*100):0,
   lkAm=()=>Object.keys((sum&&sum.amd)||{}).length,lkWin=()=>(sum&&sum.look&&sum.look.vw)||0,
   lkGames=()=>{if(!sum)return 0;const g=new Set(Object.keys(sum.gb2||{}));Object.keys(sum.gb3||{}).forEach(k=>g.add(k.slice(0,k.lastIndexOf('_'))));((sum.look&&sum.look.vg)||[]).forEach(x=>g.add('vs-'+x));return g.size};
-const LK_CAT=[['study','學習','pr-pen'],['pet','寵物','nav-pet'],['farm','農場','nav-farm'],['game','遊戲','nav-game'],['all','總成就','rw-star']];
+const LK_CAT=[['study','學習','pr-pen'],['pet','寵物','nav-pet'],['farm','農場','nav-farm'],['game','遊戲','nav-game'],['all','總成就','rw-star'],['egg','隱藏成就','egg-lock']];
 const lkP=(a,n,u)=>()=>`${Math.min(a(),n).toLocaleString()} / ${n.toLocaleString()} ${u}`;
 const LK_TT=[
   ['t-practice','練習小達人',0,'study','累計練習 300 題',()=>lkTot()>=300,lkP(lkTot,300,'題'),'practice'],
@@ -3004,20 +3021,71 @@ const LK_TT=[
   ['t-explore','遊戲探險家',0,'game','玩過 8 種不同的遊戲',()=>lkGames()>=8,lkP(lkGames,8,'種'),'explorer'],
   ['t-battle','對戰小勇士',1,'game','對戰贏 10 場',()=>lkWin()>=10,lkP(lkWin,10,'場'),'battle'],
   ['t-boss','打魔王勇者',2,'game','4 週都有參加打魔王',()=>lkA('bw')>=4,lkP(()=>lkA('bw'),4,'週'),'boss'],
-  ['t-star','閃亮之星',3,'all','拿到其他 15 個稱號',()=>lkTtN()>=15,lkP(()=>lkTtN(),15,'個'),'star']];
-const lkTtN=()=>LK_TT.filter(x=>x[0]!=='t-star'&&x[5]()).length;
+  ['t-star','閃亮之星',3,'all','拿到其他 15 個稱號',()=>lkTtN()>=15,lkP(()=>lkTtN(),15,'個'),'star'],
+  /* 隱藏成就（2026-11-27 彩蛋）：還沒找到時只看得到「？？？」和謎語（第 9 格），找到才顯示名稱和條件。資料在 sum.egg */
+  ['t-egg-train','601 號列車長',2,'egg','連續 60 題第一次就答對',()=>eggN('sx')>=60,()=>'','egg-train','答對、答對、再答對……聽說會有火車經過'],
+  ['t-egg-601','601 紀念',1,'egg','累計練習到第 601 題',()=>lkTot()>=601,()=>'','egg-601','做到一個很熟悉的數字時，會有驚喜'],
+  ['t-egg-switch','秘密開關',0,'egg','在首頁連點打招呼的小幫手 6 下',()=>eggN('tap')>=1,()=>'','egg-switch','首頁跟你打招呼的小幫手，好像藏著什麼'],
+  ['t-egg-wb','錯題終結者',2,'egg','錯題本從 10 題以上清到 0 題',()=>eggN('wbz')>=1,()=>'','egg-wb','把很多錯題都練會、讓錯題本變成空的那一天'],
+  ['t-egg-pat','摸摸大師',2,'egg','摸寵物的頭累計 601 下（一天最多算 50 下）',()=>eggN('pt')>=601,()=>'','egg-pat','多陪陪寵物，牠都記得'],
+  ['t-egg-barn','豐收穀倉',2,'egg','12 塊田同時種同一種作物',()=>eggN('barn')>=1,()=>'','egg-barn','田裡全部都是同一種作物時……'],
+  ['t-egg-gold','金色作物',3,'egg','農場累計收成 601 次',()=>lkA('hv')>=601,()=>'','egg-gold','收成很多很多次以後，會出現閃亮亮的東西'],
+  ['t-egg-sky','登上 601',2,'egg','無盡雲階站上 601 公尺的雲台',()=>eggN('s601')>=1,()=>'','egg-sky','雲階上有一個跟我們班有關的高度']];
+const lkTtN=()=>LK_TT.filter(x=>x[0]!=='t-star'&&x[3]!=='egg'&&x[5]()).length;   // 閃亮之星不算隱藏成就
 /* 以前用金幣買的稱號（現在改成成就）：買過的把錢退回去 */
 const LK_OLDTT={'t-practice':100,'t-math':200,'t-zh':200,'t-farm':150,'t-pet':150,'t-battle':200,'t-morning':150,'t-star':300};
 const LK={};LK_FR.forEach(([id,n,t])=>LK[id]={k:'fr',n,t,p:LK_TIER[t][1]});LK_NP.forEach(([id,n,p],i)=>LK[id]={k:'np',n,p,t:p>=800?3:p>=600?2:p>=400?1:0});
-LK_TT.forEach(([id,n,t,cat,how,ok,prog,img])=>LK[id]={k:'tt',n,p:0,t,cat,how,ok,prog,img});
+LK_TT.forEach(([id,n,t,cat,how,ok,prog,img,hint])=>LK[id]={k:'tt',n,p:0,t,cat,how,ok,prog,img,hint});
 const lkBadge=(id,cls)=>{const I=LK[id],C=LK_CAT.find(c=>c[0]===I.cat);return `<img class="${cls||'lkbg'}" src="img/look/ach-${I.img}.webp" alt="" draggable="false" onerror="this.onerror=null;this.src='img/ui/${C[2]}.webp';this.classList.add('fb')">`};
+/* ===================== 隱藏成就（彩蛋，2026-11-27）=====================
+   sum.egg = { st 現在連續第一次就答對幾題, sx 最多連續, tap 1＝找到秘密開關, wb10 1＝錯題本曾經有 10 題以上, wbz 1＝清空了,
+               pt 摸寵物累計（每天最多算 EGG_PAT_DAY 下）, pd {d 日期, n 今天算了幾下}, barn 1, s601 1, u 最後更新 }
+   獎勵只有稱號、裝飾、動畫，金幣只給一次（秘密開關 10、金色作物 100），不給遊戲券 */
+const EGG_PAT_DAY=50;
+function eggMe(){if(!sum)return {};return sum.egg=sum.egg||{}}
+const eggN=k=>{try{return +(sum&&sum.egg&&sum.egg[k])||0}catch(e){return 0}};
+const eggRM=()=>{try{return cfgRM()}catch(e){return false}};
+/* 1. 答題：第一次就答對連續 6 的倍數，開過一列 601 號列車（一輪最多一次）；答錯就重算 */
+function eggAns(ok){const E=eggMe();if(ok){E.st=(E.st||0)+1;if(E.st>(E.sx||0))E.sx=E.st;if(E.st%6===0&&round&&!round.egtr){round.egtr=1;eggTrain()}}else E.st=0;E.u=Date.now()}
+function eggTrain(){if(eggRM())return;const t=document.createElement('img');t.className='eggtrain';t.src='img/ui/egg-train.webp';t.alt='';document.body.appendChild(t);
+  try{[523,659,784].forEach((f,i)=>tone(f,.18,'triangle',.05,i*.12));setTimeout(()=>{tone(1047,.35,'sine',.05);tone(1319,.35,'sine',.04,.05)},450)}catch(e){}setTimeout(()=>t.remove(),6200)}
+/* 2. 第 601 題：特別慶祝 */
+function egg601(){try{confetti(120);sfx.win()}catch(e){}toast('🎉 這是你練習的第 601 題！跟我們班一樣的數字！')}
+/* 3. 首頁連點小幫手 6 下：自己的寵物從畫面跑過去 */
+let eggTaps=[];function eggTap(){const now=Date.now();eggTaps=eggTaps.filter(t=>now-t<2500);eggTaps.push(now);if(eggTaps.length<6)return;eggTaps=[];
+  const E=eggMe(),first=!E.tap;E.tap=1;E.u=now;let coin=false;try{const p=PET.P();if(first&&p)coin=PET.coinOnce(p,'egg_tap',10)}catch(e){}saveSum(true);
+  let art='';try{const p=PET.P();art=p&&p.st==='pet'?PET.petArt(PET.look(p,{mood:'happy'})):''}catch(e){}
+  if(!eggRM()&&art){const r=document.createElement('div');r.className='eggrun';r.innerHTML=`<div class="eggpet">${art}</div><div class="eggsay">被你發現了！</div>`;document.body.appendChild(r);setTimeout(()=>r.remove(),4300)}
+  try{tone(880,.1,'triangle',.06);tone(1175,.15,'triangle',.06,.1)}catch(e){}
+  if(first)setTimeout(()=>toast(coin?'🤫 你找到秘密開關了！🪙+10':'🤫 你找到秘密開關了！'),art?1800:0);setTimeout(lkAch,art&&!eggRM()?3600:0)}   // 寵物跑完再跳「發現隱藏成就」
+/* 5. 摸寵物（pet.js 摸摸頭時呼叫）：每天最多算 50 下；每 10 下回傳 true（寵物害羞轉一圈） */
+window.eggPat=function(){if(!user||!sum)return false;const E=eggMe(),d=dkey();if(!E.pd||E.pd.d!==d)E.pd={d,n:0};if(E.pd.n>=EGG_PAT_DAY)return false;
+  E.pd.n++;E.pt=(E.pt||0)+1;E.u=Date.now();saveSum(false);if(E.pt===601)setTimeout(lkAch,800);return E.pt%10===0};
+/* 4、6：要看現在狀態的（錯題本、農場的田），每次檢查成就時順便看 */
+function eggCheck(){if(!user||!sum)return;const E=eggMe();let ch=false;
+  const n=wbLoad().length;if(n>=10&&!E.wb10){E.wb10=1;ch=true}if(E.wb10&&n===0&&!E.wbz){E.wbz=1;ch=true}
+  try{if(!E.barn){const f=FARM.F();if(f&&FARM.plotsFor(FARM.lvOf(f.xp).lv)>=12){const c=f.p[0]&&f.p[0].c;if(c&&f.p.slice(0,12).every(x=>x&&x.c===c)){E.barn=1;ch=true}}}
+    if(E.barn)FARM.fdGrant('fd-barn')}catch(e){}
+  if(ch){E.u=Date.now();saveSum(true)}}
+/* 7. 金色作物：收成第 601 次，金色蘿蔔直接換成 🪙100（只有一次） */
+function eggGoldPay(){try{const p=PET.P();if(!p||!PET.coinOnce(p,'egg_gold',100))return false;saveSum(true);return true}catch(e){return false}}
+function eggGold(next){
+  {const m=el('div','pmod','');m.innerHTML=`<div class="pmc rwh eggm"><img src="img/ui/egg-goldcarrot.webp" alt=""><div class="pmh">金色蘿蔔！</div><div class="rws">你在農場收成了第 601 次，長出一根閃亮亮的金色蘿蔔！<br>商人用 ${ico('rw-coin','ii')}100 跟你買走了</div><button class="go rwok">太棒了</button></div>`;
+    document.body.appendChild(m);tap(m.querySelector('.rwok'),()=>{m.remove();if(next)next()});try{confetti(80)}catch(e){}}}
+/* 找到隱藏成就：大大的徽章跳出來 */
+function eggFound(L){if(!L.length)return;const x=L[0];const m=el('div','pmod','');m.innerHTML=`<div class="pmc rwh eggm"><img src="img/look/ach-${x[7]}.webp" alt=""><div class="pmh">發現隱藏成就！</div><div class="rws"><b>${x[1]}</b><br>${x[4]}${L.length>1?`<br>（還有 ${L.length-1} 個也一起找到了）`:''}<br><small>可以到名片把稱號裝上</small></div><button class="go rwok">好耶</button></div>`;
+  document.body.appendChild(m);tap(m.querySelector('.rwok'),()=>{m.remove();if(L.length>1)eggFound(L.slice(1))});try{sfx.win();confetti(80)}catch(e){}}
 /* 每次畫面更新時檢查：有新達成的稱號就跳通知；早自修做完記下這一天；以前買稱號的退錢 */
 let lkRfT=0;function lkAch(){if(!user||!sum||isTest(user.seat))return;const L=lkMe();
   try{if(typeof amN==='function'&&amN()>0&&uqN('am')>=amN()){sum.amd=sum.amd||{};if(!sum.amd[dkey()]){sum.amd[dkey()]=1;saveSum(true)}}}catch(e){}
   try{const p=PET.P();if(p&&!(p.cl&&p.cl.e&&p.cl.e.ttrf)){const n=Object.keys(L.own||{}).reduce((a,id)=>a+(LK_OLDTT[id]||0),0);if(n){p.cl=p.cl||{b:p.coin||0};p.cl.e=p.cl.e||{};p.cl.e.ttrf=n;p.coin=PET.coinOf(p);saveSum(true);lkRfT=1;setTimeout(()=>toast(`🎁 稱號改成「做到就解鎖」，以前買稱號的 🪙${n} 退還給你了`),900)}}}catch(e){}
+  try{eggCheck()}catch(e){}
   const first=!L.ach;L.ach=L.ach||{};const nw=LK_TT.filter(x=>!L.ach[x[0]]&&x[5]());if(!nw.length){if(first)saveSum(true);return}
   nw.forEach(x=>L.ach[x[0]]=1);saveSum(true);
-  setTimeout(()=>{lkRfT=0;toast(nw.length===1?`🎖️ 解鎖稱號「${nw[0][1]}」！到名片裝上吧`:`🎖️ 解鎖了 ${nw.length} 個稱號：${nw.map(x=>x[1]).join('、')}`);try{sfx.win();confetti(60)}catch(e){}},lkRfT?4500:900)}   // 剛退錢的話等退錢的通知看完再跳
+  const eg=nw.filter(x=>x[3]==='egg'),nm=nw.filter(x=>x[3]!=='egg');
+  const gold=eg.some(x=>x[0]==='t-egg-gold')&&eggGoldPay();
+  setTimeout(()=>{lkRfT=0;if(nm.length)toast(nm.length===1?`🎖️ 解鎖稱號「${nm[0][1]}」！到名片裝上吧`:`🎖️ 解鎖了 ${nm.length} 個稱號：${nm.map(x=>x[1]).join('、')}`);try{sfx.win();confetti(60)}catch(e){}
+    if(eg.length)setTimeout(()=>gold?eggGold(()=>eggFound(eg)):eggFound(eg),nm.length?2600:0)},lkRfT?4500:900)}   // 金色蘿蔔的視窗先跳，按了再跳「發現隱藏成就」   // 剛退錢的話等退錢的通知看完再跳
 /* 對戰贏幾場、玩過哪些對戰遊戲：讀公開的對戰紀錄（一次登入讀一次） */
 let lkWinT=0;async function lkWinLoad(){if(!user||!sum||Date.now()-lkWinT<10*60000)return;lkWinT=Date.now();try{await fbReady;if(!db)return;
   const v=(await timeout(db.ref(`${ROOT}/xq/${user.seat}`).get(),8000)).val()||{},H=Object.entries(v).filter(([,x])=>x).map(([k,x])=>({...x,k}));
@@ -3053,7 +3121,9 @@ function lkShop(){if(!user||!sum)return;const old=document.getElementById('lksho
     const card=id=>{const I=LK[id],has=lkHas(id),on=L[I.k]===id&&has;let pv='';
       if(I.k==='fr')pv=lkAv(user.seat,user.seat,'big',null,id);
       else if(I.k==='np')pv=`<span class="lkn ${id}">${user.seat} 號</span>`;
+      else if(I.cat==='egg'&&!has)pv=`<img class="lkbg" src="img/look/ach-egg-lock.webp" alt="" draggable="false"><em class="lkt">？？？</em>`;
       else pv=`${lkBadge(id)}<em class="lkt">${I.n}</em>`;
+      if(I.cat==='egg'&&!has)return `<div class="lkc lock egg"><div class="lkp">${pv}</div><div class="lkhow">${I.hint}</div></div>`;
       const tag=`<i class="lkq" style="--qc:${LK_TIER[I.t][2]}">${LK_TIER[I.t][0]}</i>`;
       const btn=on?`<button class="lkb eq" data-off="${id}">使用中</button>`:has?`<button class="lkb use" data-use="${id}">換上</button>`:
         I.how?`<div class="lkhow">${I.how}<small>${I.prog()}</small></div>`:`<button class="lkb buy" data-buy="${id}">🪙 ${I.p}<small>${c<I.p?'先看看':'試戴看看'}</small></button>`;
@@ -3160,6 +3230,7 @@ window.__learn601={
   snd:()=>sndOn,   // 平台「設定 → 音效」有沒有開（無盡雲階的音效跟著它）
   /* 無盡雲階：最佳高度、記錄高度、排行榜 */
   skyBest:()=>skyGet(), skyRec:m=>skyRec(m), skyBoard:()=>skyBoard(),
+  skyEgg(){if(!user||!sum||isTest(user.seat))return false;const E=eggMe();if(E.s601)return false;E.s601=1;E.u=Date.now();saveSum(true);lkAch();return true},   // 隱藏成就：站上 601 公尺
   /* 開一局:5 分鐘還沒用完就直接玩;用完了才扣 1 張券、重新給 5 分鐘 */
   startPlay(g,d){if(!user||!sum)return {ok:false};if(playLeft()>0)return {ok:true};
     if(isTest(user.seat)){sum.se=Date.now()+PLAY_MS;saveSum(true);return {ok:true}}   // 測試帳號:不用券,時間到了自動再給 5 分鐘
@@ -3542,6 +3613,7 @@ function finish(q,ok){solved=true;$('#prac').classList.add('sv');dis($('#hint'),
   const uk=ukeyOf(pu),dup=qdHas(q),wbe=pu==='wb'&&wbLoad().find(x=>x.k===qKey(q)),wnr=!!(pu==='wb'&&(q.nr||wbe&&wbe.q.nr)),over=!!uk&&uqN(uk)>=UNIT_CAP;if(uk&&!dup&&!wnr)uqPush(uk,round.res[cur]==='ok');
   const rew=!dup&&!wnr&&(!over||uqHit(uk)>=UQ_NEED);/* 超過 20 題：最近 10 題答對 8 題以上才有獎勵 */if(uk&&!dup){const uq=uqDay();uq.u[uk]=(uq.u[uk]||0)+1}if(!dup)qdAdd(q);   // 防刷題：這個單元今天前 UNIT_CAP 題才有獎勵；同一題今天做過就不再加
   const k=dkey();if(rew){dvAdd(k);ctAdd(round.res[cur]==='ok');sum.total++;if(round.res[cur]==='ok'){sum.first++;round.rf=(round.rf||0)+1;fvAdd(k)}}
+  if(rew&&!isTest(user.seat)){try{eggAns(round.res[cur]==='ok')}catch(e){}if(sum.total===601)setTimeout(egg601,600)}   // 隱藏成就：連續答對、第 601 題
   const tkp=!ok||!rew?0:round.res[cur]==='ok'?1:q.type==='mc'?(q.opts.length>=3?0.5:0):q.type==='grp'?0.5:1;   // 這題的遊戲券分數
   let rushed=false;if(rew)sum.tc=(sum.tc||0)+1;sum.tco=(sum.tco||0)+tkp;
   if(!rew){}
@@ -4134,7 +4206,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v208';let verNew=false,verBusy=false,verForce=false;
+const APP_VER='learn601-v209';let verNew=false,verBusy=false,verForce=false;
 /* 版本號（數字）：上傳進度時記在 sum.kv。別台用比較新的版本存過，這台（舊版）就不能再蓋上去 */
 function KV(){const m=/v(\d+)$/.exec(APP_VER);return m?+m[1]:0}
 /* 一定要更新：拿掉「稍後」，在首頁就請學生按更新（進度還在平板上，更新後會自動上傳） */
