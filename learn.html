@@ -369,6 +369,7 @@ svg text{font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-
 #bgames,#bdiffs{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.6rem}
 .bgb,.bdb{border:3px solid #e9ecef;background:#fff;border-radius:14px;font-size:1.1rem;font-weight:900;color:#555;padding:.3rem .7rem}
 .bgb.on{border-color:#e8590c;background:#fff4e6;color:#e8590c}.bdb.on{border-color:#495057;background:#495057;color:#fff}
+#skycard{display:flex;align-items:center;gap:1.2rem;margin-top:.8rem;flex-wrap:wrap;border-left:.6rem solid #5c7cfa}#skycard .ski{width:4.6rem;height:4.6rem;flex:none}#skycard .xi{flex:1;min-width:12rem}#skycard .t{font-size:1.7rem;font-weight:900}#skycard .s{font-size:1.15rem;color:#999;font-weight:800}#skycard .s b{color:#4263eb}#skycard .go{margin:0 0 0 auto}
 #xqcard{display:flex;align-items:center;gap:1.2rem;margin-top:.8rem}#xqcard .tkn{font-size:3rem}#xqcard .t{font-size:1.7rem;font-weight:900}#xqcard .s{font-size:1.15rem;color:#999;font-weight:800}#xqcard .go{margin:0 0 0 auto}
 #board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;background:none;box-shadow:none;padding:0}
 #wrboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;background:none;box-shadow:none;padding:0}
@@ -1831,6 +1832,8 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   sum.bossR=Object.assign(sum.bossR||{},r.bossR||{});
   /* 方塊對戰：段位會升也會降 → 看最後更新的那台；這台還沒有就用雲端的。40 排競速：留最快的（2026-11-22：以前沒合併，換平板段位會不見） */
   if(r.bks!=null&&(sum.bks==null||(r.last||0)>myLast))sum.bks=r.bks;if(r.bksp>0)sum.bksp=sum.bksp>0?Math.min(sum.bksp,r.bksp):r.bksp;
+  /* 無盡雲階：歷史最高留大的；週別不一樣就留比較新的那一週 */
+  if(r.sky){const a=r.sky,b=sum.sky||{},o={a:mx(a.a,b.a),t:mx(a.t,b.t)};if(a.w===b.w){o.w=a.w;o.ws=mx(a.ws,b.ws)}else{const n=String(a.w||'')>String(b.w||'')?a:b;o.w=n.w||'';o.ws=n.ws||0}sum.sky=o}
   sum.gb3=sum.gb3||{};for(const k in r.gb3||{}){const g=k.slice(0,k.lastIndexOf('_'));if(sum.gb3[k]==null||sBetter(g,r.gb3[k],sum.gb3[k]))sum.gb3[k]=r.gb3[k]}}
 /* 老師在雲端清除紀錄後,平板上留下的舊進度也要歸零(還有沒上傳的資料就不動) */
 function resetIfCleared(remote){if(remote!=null||!user||!sum)return false;
@@ -2371,6 +2374,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v204',d:'11/27',it:[['☁️','新遊戲「無盡雲階」：在挑戰樂園裡，帶著你的寵物一路往上爬！越上面機關越多、越難'],['⏱','用遊戲券的 5 分鐘時間玩：掉下去可以馬上再爬，時間到就結算'],['🏅','排行榜分「本週」和「歷史最佳」，比的是站穩的最高高度']]},
   {v:'v203',d:'11/27',it:[['🎁','打倒魔王的獎勵記得按「領獎勵」！如果到下週換新魔王了還沒領，平台會自動放進你的口袋，不會不見'],['🏅','打魔王分數一樣多的人，名次也一樣（例如兩個人並列第 2 名）']]},
   {v:'v202',d:'11/27',it:[['🎉','「更新說明」可以看以前每一次的更新了！不小心關掉也沒關係：在「更多 → 更新說明」隨時都看得到']]},
   {v:'v200',d:'11/27',it:[['👀','買之前可以先看看了！房間擺設、農場裝飾、頭像框、名牌、坦克造型，都會先給你看換上的樣子，滿意再買（金幣不夠也能先看）'],['🐢','智慧神龜戴帽子更合身了'],['🐾','在別台平板換了寵物，不會再被換回原本那一隻']]},
@@ -2695,6 +2699,7 @@ function renderGame(P){const h=el('div','h1',`<span class="tag">🎮</span>601 �
     tap(mi,()=>{sn--;upd()});tap(pl,()=>{sn++;upd()});tap(al,()=>{sn=tn;upd()});tap(go,()=>sellTk(sn));
     [mi,nv,pl].forEach(x=>st.appendChild(x));if(tn>1){st.appendChild(al);sr.appendChild(st)}sr.appendChild(go);upd();c.appendChild(sr)}
   P.appendChild(c);
+  P.appendChild(skyCard());
   const x=el('div','cd');x.id='xqcard';x.innerHTML='<div class="tkn">'+ico('vs-vs','tki')+'</div><div class="xi"><div class="t">雙人對戰</div><div class="s"><span>跟同學連線對戰</span><span>輸的人用 1 張遊戲券</span><span>中途離開算輸</span></div><div class="xr" id="xqrec"></div></div>';
   const xw=el('div');xw.className='xbtns';const xv=el('button','go',ico('vs-inv','bi')+'邀請同學');tap(xv,()=>openTool({...XQ_TOOL,f:'chess.html?pick=1'}));
   const xb=el('button','go gray',ico('vs-xq','bi')+'軍棋');tap(xb,()=>openTool({...XQ_TOOL,f:'chess.html?g=xq'}));
@@ -3093,6 +3098,35 @@ function garage(){return new Promise(done=>{if(!user||!sum){done();return}
       sum.tks=sum.tks||{own:{}};sum.tks.own=sum.tks.own||{};sum.tks.own[k]=1;if(TK_OLD[k]){sum.tks.rf=sum.tks.rf||{};sum.tks.rf[k]=sum.tks.rf[k]||2}sum.tks.use=k;sum.tks.u=Date.now();saveSum(true);if(tryK===k)tryK='';
       try{sfx.ok()}catch(e){}toast(`🎉 買到「${v.n}」坦克了！`);paintNavs&&paintNavs();paint()}))}
   box.addEventListener('pointerdown',e=>{if(e.target===box)close()});paint()})}
+/* ===================== 無盡雲階（2026-11-27）=====================
+   一個人玩的爬高遊戲（sky.html、sky.js），用共用的 5 分鐘遊戲時間（startPlay），時間到就結算、不能接關。
+   成績：sum.sky={a:歷史最高公尺, w:週別（星期一）, ws:那一週最高, t}；雲端 lb/skyclimb/座號={s:歷史最高, w, ws, p:'寵物-階', t}
+   （排行榜只顯示座號＋寵物圖；測試帳號不上榜；Firebase 規則要有 lb/skyclimb 那一段，沒有的話上傳會被拒、之後看榜時自動補傳） */
+const SKY_TOOL={id:'sky',i:'☁️',k:'遊戲',n:'無盡雲階',f:'sky.html'};
+const SKY_MAX=20000;   // 5 分鐘不可能超過的高度（公尺），超過當作錯誤不記
+function skyGet(){const k=(sum&&sum.sky)||{},wk=bossWk();return {a:Math.floor(k.a||0),ws:k.w===wk?Math.floor(k.ws||0):0}}
+function skyPet(){try{const p=PET.P();return p&&p.st==='pet'&&p.sp?p.sp+'-'+PET.stageOf(PET.lvOf(p.xp||0).lv):''}catch(e){return ''}}
+function skyPush(){if(!user||!sum||isTest(user.seat))return;const k=sum.sky;if(!k||!(k.a>0))return;
+  enqueue(`${ROOT}/lb/skyclimb/${user.seat}`,{s:Math.floor(k.a),w:String(k.w||''),ws:Math.floor(k.ws||0),p:skyPet(),t:Date.now()},true)}
+/* 爬到 m 公尺：比歷史最高或本週最高還高才記（只會變高，不會被低分蓋掉） */
+function skyRec(m){m=Math.floor(+m||0);if(!user||!sum||!(m>0)||m>SKY_MAX)return skyGet();
+  const wk=bossWk(),k=sum.sky||{a:0,w:wk,ws:0};if(k.w!==wk){k.w=wk;k.ws=0}
+  let ch=false;if(m>(k.a||0)){k.a=m;ch=true}if(m>(k.ws||0)){k.ws=m;ch=true}
+  if(ch){k.t=Date.now();sum.sky=k;saveSum(true);skyPush()}return skyGet()}
+/* 排行榜：本週、歷史最佳（同樣高度名次一樣）；自己那一列用這台平板最新的；雲端比自己少就補傳 */
+async function skyBoard(){if(!(await fbOnline()))return null;let v;try{v=(await timeout(db.ref(`${ROOT}/lb/skyclimb`).get(),8000)).val()||{}}catch(e){return null}
+  const wk=bossWk(),all=[],week=[],ok=p=>typeof p==='string'&&/^[a-z]+-[0-2]$/.test(p)?p:'';
+  for(const [st,o] of Object.entries(v)){const seat=+st;if(!o||!seat||isTest(seat))continue;const s=Math.floor(+o.s||0),ws=o.w===wk?Math.floor(+o.ws||0):0;
+    if(s>0&&s<=SKY_MAX)all.push({seat,s,p:ok(o.p)});if(ws>0&&ws<=SKY_MAX)week.push({seat,s:ws,p:ok(o.p)})}
+  if(user&&sum&&!isTest(user.seat)){const m=skyGet(),me=user.seat,pp=skyPet(),c=v[me]||{};
+    const put=(L,s)=>{const i=L.findIndex(r=>r.seat===me);if(s>0){if(i>=0)L[i]={seat:me,s:Math.max(s,L[i].s),p:pp||L[i].p};else L.push({seat:me,s,p:pp})}};
+    put(all,m.a);put(week,m.ws);if(m.a>(+c.s||0)||m.ws>(c.w===wk?(+c.ws||0):0))skyPush()}
+  const rk=L=>{L.sort((a,b)=>b.s-a.s||a.seat-b.seat);L.forEach(r=>r.rank=1+L.filter(x=>x.s>r.s).length);return L};
+  return {all:rk(all),week:rk(week),me:user?user.seat:null}}
+/* 挑戰樂園裡的「無盡雲階」卡片 */
+function skyCard(){const c=el('div','cd');c.id='skycard';const m=skyGet();
+  c.innerHTML=`<img class="ski" src="img/ui/sky-entry.webp" alt="" draggable="false"><div class="xi"><div class="t">無盡雲階</div><div class="s">帶著寵物往上爬，越高越難！用遊戲券的 5 分鐘時間玩<br>${m.a>0?`我的最高 <b>${m.a} 公尺</b>　本週 <b>${m.ws} 公尺</b>`:'還沒有紀錄，來挑戰看看'}</div></div>`;
+  const b=el('button','go','去爬雲階 ▶');tap(b,()=>openTool(SKY_TOOL));c.appendChild(b);return c}
 /* game.html 在平台裡開啟時會呼叫這些(同一個網站,可以直接呼叫) */
 window.__learn601={
   seat:()=>user?user.seat:null,
@@ -3104,6 +3138,8 @@ window.__learn601={
   /* 大砲遊戲：坦克造型、打開車庫 */
   tankSkin:()=>tankSkin(), garage:()=>garage(),
   left:()=>playLeft(),
+  /* 無盡雲階：最佳高度、記錄高度、排行榜 */
+  skyBest:()=>skyGet(), skyRec:m=>skyRec(m), skyBoard:()=>skyBoard(),
   /* 開一局:5 分鐘還沒用完就直接玩;用完了才扣 1 張券、重新給 5 分鐘 */
   startPlay(g,d){if(!user||!sum)return {ok:false};if(playLeft()>0)return {ok:true};
     if(isTest(user.seat)){sum.se=Date.now()+PLAY_MS;saveSum(true);return {ok:true}}   // 測試帳號:不用券,時間到了自動再給 5 分鐘
@@ -4078,7 +4114,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v203';let verNew=false,verBusy=false;
+const APP_VER='learn601-v204';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
