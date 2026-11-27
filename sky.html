@@ -26,6 +26,7 @@ canvas{display:block;width:100%;height:100%}
 .where #objective{color:#f8dea6}
 .btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
 .btns button{display:flex;align-items:center;gap:5px;padding:5px 10px}.btns img{width:24px;height:24px}
+.mus svg{width:24px;height:24px;fill:#ffd486}.mus .sl{stroke:#ff8a80;fill:none;display:none}.mus.off svg{fill:#8fa3b8}.mus.off .sl{display:block}
 @media (max-width:480px){.chip{padding:3px 7px}.chip small{font-size:.66rem}.btns button{padding:5px 8px}.btns .rk{display:none}}
 .message{position:absolute;top:calc(max(8px,env(safe-area-inset-top)) + 106px);left:50%;translate:-50% 0;background:#fff1bf;color:#233644;max-width:94%;width:max-content;padding:5px 12px;border-radius:16px;font-size:.9rem;font-weight:800;pointer-events:none;text-align:center}
 /* 下方：按鈕直接疊在遊戲畫面上（半透明） */
@@ -79,7 +80,7 @@ canvas{display:block;width:100%;height:100%}
       <div class="chip"><small>本次最高</small><b id="height">0 m</b></div>
     </div>
     <div class="where"><span id="stage">第 1 段 · 林冠步道</span>　<span id="best">最佳 0 m</span><br><span id="objective"></span></div></div>
-    <div class="btns"><button id="rank"><img src="img/ui/sky-gold.webp" alt=""><span class="rk">排行榜</span></button><button id="pause" hidden>暫停</button><button id="end" hidden>結算</button></div>
+    <div class="btns"><button id="mus" class="mus" aria-label="關掉音樂"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5a3 3 0 1 1-2-2.83V5l11-2v11.5a3 3 0 1 1-2-2.83V7.4L9 8.9z"/><path class="sl" d="M3 3l18 18" stroke-width="2.6" stroke-linecap="round"/></svg></button><button id="rank"><img src="img/ui/sky-gold.webp" alt=""><span class="rk">排行榜</span></button><button id="pause" hidden>暫停</button><button id="end" hidden>結算</button></div>
   </div>
   <div class="message" id="message" role="status" hidden></div>
   <nav class="controls" aria-label="攀登操作">
