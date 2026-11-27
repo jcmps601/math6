@@ -746,7 +746,7 @@ img.ico{display:inline-block;vertical-align:middle;object-fit:contain;-webkit-us
 .pgs small{font-size:.85rem;color:#657065}.pgf{margin-top:.5rem;font-weight:800;color:#33443b;display:flex;align-items:center;gap:.3rem}.pgf b{color:#2e7554;font-size:1.2rem}.pgfi{width:1.6rem;height:1.6rem}.pga{margin-top:.5rem}.pga .go{min-height:2.75rem;background:#fff!important;color:#2e7554!important;border:2px solid #b2f2bb;box-shadow:0 3px 0 #d3f9d8!important;font-size:1rem!important;padding:.35rem 1rem!important;width:auto}
 .rwbtn{border:2px solid #e7ddcc;background:#fff;border-radius:999px;font-size:1rem;font-weight:900;color:#657065;padding:.15rem .7rem .15rem .4rem;font-family:inherit}
 #newsm .pmc{max-width:30rem;max-height:86vh;overflow:auto;text-align:left}#newsm .pmh{text-align:center}#newsm .nwv{margin:.7rem 0 .3rem;font-size:1.05rem;font-weight:900;color:#e8590c}#newsm .nwv small{color:#999;font-weight:800;margin-left:.4rem}
-#newsm .nwi{display:flex;gap:.6rem;align-items:flex-start;background:#fffaf0;border-radius:14px;padding:.55rem .75rem;margin-bottom:.4rem;font-size:1.08rem;font-weight:800;line-height:1.45;color:#3b3b3b}#newsm .nwi>i{font-style:normal;font-size:1.35rem;line-height:1.2}#newsm .nwold{opacity:.75}#newsm .go{display:block;margin:.8rem auto 0}
+#newsm .nwi{display:flex;gap:.6rem;align-items:flex-start;background:#fffaf0;border-radius:14px;padding:.55rem .75rem;margin-bottom:.4rem;font-size:1.08rem;font-weight:800;line-height:1.45;color:#3b3b3b}#newsm .nwi>i{font-style:normal;font-size:1.35rem;line-height:1.2}#newsm .nwsub{text-align:center;color:#868e96;font-weight:800;font-size:.95rem;margin:-.2rem 0 .4rem}#newsm details.nwver{border-bottom:2px dashed #f1f3f5;padding-bottom:.3rem}#newsm details.nwver summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:.5rem}#newsm details.nwver summary::-webkit-details-marker{display:none}#newsm .nwnew{background:#e03131;color:#fff;border-radius:999px;font-size:.8rem;padding:0 .5rem}#newsm .nwar{margin-left:auto;width:.6rem;height:.6rem;border-right:3px solid #adb5bd;border-bottom:3px solid #adb5bd;transform:rotate(45deg);transition:transform .2s}#newsm details[open] .nwar{transform:rotate(-135deg)}#newsm .nwall{display:block;margin:.8rem auto 0;border:3px solid #ffd8a8;background:#fff4e6;color:#d9480f;border-radius:999px;font-weight:900;font-size:1.05rem;padding:.35rem 1rem;font-family:inherit}#newsm .go{display:block;margin:.8rem auto 0}
 .zy{display:inline-flex;align-items:center;vertical-align:middle;line-height:1;margin:0 .1em;font-family:"BpmfZihiKaiStd","標楷體","DFKai-SB","BiauKai",inherit}.zy b{display:inline-flex;flex-direction:column;align-items:center;font-size:.82em;font-weight:inherit}.zy b u,.zy b s{text-decoration:none;line-height:1}.zy b s{line-height:.55}.zy i{font-style:normal;font-size:.95em;font-weight:900;margin-left:.02em;align-self:center}.zy i{--o:0em;--n:0em;transform:translateY(calc(var(--o) + var(--n)))}.zy i.t2,.zy i.t4{--o:.28em}.zy i.t3{--o:.02em}.zy.n3 i.t3{--o:.16em}.zy.n3 i{--n:.45em}   /* 聲調：1、2 個符號放在正中間（2 個就是兩個的中間）；3 個放在中間和最下面那個的中間 */
 .zyr .zy{margin:0}.zyr .zy b{font-size:.56em}.zyr .zy i{font-size:.6em}.zyr .zy.n3 i{--n:.5em}   /* 標在字旁邊的注音小一點；單獨出現的注音（選項、句子裡）大一點，聲調才看得清楚 */
 .zyr{display:inline-flex;align-items:center;vertical-align:middle;gap:.04em}.zyr .qbx{display:inline-block;width:.85em;height:.85em;border:.12em solid #9aa0a6;border-radius:.15em;background:#fff;margin:0}.zyr .zc{line-height:1}
@@ -2086,7 +2086,7 @@ function openMore(){closeMore();const wbn=wbLoad().length,full=!!(document.fulls
     <button data-k="snd">${ico(sndOn?'nav-snd':'ic-sound-off')}<b>聲音與設定</b><small>音效${sndOn?'開著':'關著'}・朗讀・減少動態</small></button>
     <button data-k="fs">${ico(full?'ic-fullscreen-exit':'nav-fs')}<b>全螢幕</b><small>${full?'離開全螢幕':'畫面變大'}</small></button>
     <button data-k="help">${ico('pr-hint')}<b>獎勵說明</b><small>金幣、水滴、遊戲券</small></button>
-    <button data-k="news">${ico('rw-star')}<b>更新說明</b><small>${NEWS[0].d} 更新了什麼</small></button>
+    <button data-k="news">${ico('rw-star')}<b>更新說明</b><small>每一版更新了什麼（最新 ${NEWS[0].d}）</small></button>
     <button data-k="off">${ico('ic-sync-done')}<b>帶回家準備</b><small>${offReady()?'✅ 可以離線使用':'在家沒網路也能練'}</small></button>
     <button data-k="pw">${ico('ic-lock-closed')}<b>改密碼</b><small>換一組自己的密碼</small></button>
     <button data-k="lite">${ico('ic-energy-bolt')}<b>省電模式</b><small>${liteOn()?'開著（動畫比較少）':'關著'}</small></button>
@@ -2371,6 +2371,11 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v202',d:'11/27',it:[['🎉','「更新說明」可以看以前每一次的更新了！不小心關掉也沒關係：在「更多 → 更新說明」隨時都看得到']]},
+  {v:'v200',d:'11/27',it:[['👀','買之前可以先看看了！房間擺設、農場裝飾、頭像框、名牌、坦克造型，都會先給你看換上的樣子，滿意再買（金幣不夠也能先看）'],['🐢','智慧神龜戴帽子更合身了'],['🐾','在別台平板換了寵物，不會再被換回原本那一隻']]},
+  {v:'v196',d:'11/26',it:[['📖','早自修閱讀測驗：第一題要先把文章讀完，倒數結束才能作答；答錯一次時，答案在文章的地方會畫黃線，再讀一次就找得到'],['✏️','答錯一次就跑回首頁再進來，那一題會從「第二次機會」開始，不能重來喔'],['📕','錯題本：在錯題再練一次就答對，題目就會拿掉'],['⚔️','一起打王：魔王會隨機挑人攻擊，不會一直打同一個人；每一輪的招式順序也都不一樣了']]},
+  {v:'v195',d:'11/26',it:[['🌾','農場：點田不會再點到寵物了！要請寵物幫忙，按田地左上角的「請○○幫忙」'],['🎟️','同一個人用兩台平板（或主畫面和 Safari）輪流用，題數、遊戲券、寵物經驗、農場經驗都會加在一起，不會不見']]},
+  {v:'v193',d:'11/26',it:[['🀄','每日成語的注音改成直的，標在每個字的右邊，跟課本一樣']]},
   {v:'v192',d:'11/24',it:[['🔧','修正：國語題目的注音有時會變成亂碼（例如「2">」），現在都正常顯示成直的了']]},
   {v:'v191',d:'11/24',it:[['🐳','傳說寵物有技能了！帶在身邊就會發動：星空鯨（金幣 +20%）、福氣獅（每日任務獎勵加倍）、彩虹馬（每天第一次收成多 1 包肥料）、智慧龜（第 21 題起金幣不減半）'],['✨','帶傳說寵物的人，排行榜上名字旁邊會有發光的小寵物']]},
   {v:'v190',d:'11/24',it:[['🎯','同一個單元超過 20 題，還是可以拿獎勵了！只要最近 10 題答對 8 題以上（第一次就答對才算）'],['🏆','學習排行榜新增「本週認真答對」：這週第一次就答對幾題，不限單元'],['🎖️','新稱號：「專心小達人」（一天認真答對 50 題）、「認真學霸」（一天認真答對 150 題）']]},
@@ -2382,12 +2387,18 @@ const NEWS=[
   {v:'v180',d:'11/23',it:[['💥','一起打王：三隻魔王都有新招式（地震重踏、岩牆、連鎖閃電、雷暴、火焰吐息、末日隕石）。看到地上的警告範圍，下一輪就是大招，快開走！'],['🧍','可以 1 個人打王了：每天 2 場，打贏的金幣是多人的一半，跟多人的場數分開算']]},
   {v:'v179',d:'11/22',it:[['🛡️','坦克車庫新增 9 台坦克，砲彈造型也不一樣']]}];
 const newsK=()=>'learn601_news_'+(user?user.seat:0);
-function newsShow(all){if(document.getElementById('newsm'))return;const seen=LS.get(newsK(),null),i=NEWS.findIndex(n=>n.v===seen);
-  const fresh=all?NEWS:(i<0?NEWS.slice(0,1):NEWS.slice(0,i)).slice(0,3);if(!fresh.length)return;
-  const m=el('div','pmod','');m.id='newsm';m.innerHTML=`<div class="pmc"><div class="pmh">${all?'更新說明':'🎉 平台更新了！'}</div>`+
-    fresh.map((n,k)=>`<div class="${all&&k>=3?'nwold':''}"><div class="nwv">${n.d} 更新<small>${n.v}</small></div>${n.it.map(([e,t])=>`<div class="nwi"><i>${e}</i><span>${t}</span></div>`).join('')}</div>`).join('')+
-    `<button class="go nwok">我知道了</button></div>`;document.body.appendChild(m);
-  const close=()=>{m.remove();LS.set(newsK(),NEWS[0].v)};tap(m.querySelector('.nwok'),close);tap(m,e=>{if(e.target===m)close()})}
+/* 2026-11-27 更新說明改成「每一版一格」：新的在上面、沒看過的標「新」；跳出來時只放還沒看過的（最多 3 版），下面有「看全部更新說明」。
+   不小心點到旁邊關掉不算看過，回首頁會再跳一次；按「我知道了」才記成看過。全部的說明隨時在「更多 → 更新說明」 */
+function newsShow(all,uo){if(document.getElementById('newsm'))return;const seen=LS.get(newsK(),null),si=NEWS.findIndex(n=>n.v===seen),unseen=uo!=null?uo:si<0?(seen?NEWS.length:1):si;
+  const list=all?NEWS:NEWS.slice(0,Math.min(unseen,3));if(!list.length)return;
+  const m=el('div','pmod','');m.id='newsm';
+  const ver=(n,k)=>`<details class="nwver"${!all||k<Math.max(1,Math.min(unseen,3))?' open':''}><summary><span class="nwv">${n.d} 更新<small>${n.v}</small></span>${k<unseen?'<b class="nwnew">新</b>':''}<i class="nwar"></i></summary>${n.it.map(([e,t])=>`<div class="nwi"><i>${e}</i><span>${t}</span></div>`).join('')}</details>`;
+  m.innerHTML=`<div class="pmc"><div class="pmh">${all?'更新說明':'🎉 平台更新了！'}</div>${all?`<div class="nwsub">每一次改版都在這裡，點日期可以打開、收起來</div>`:''}`+list.map(ver).join('')+
+    (!all&&NEWS.length>list.length?`<button class="nwall">看全部更新說明（共 ${NEWS.length} 次）</button>`:'')+`<button class="go nwok">我知道了</button></div>`;
+  document.body.appendChild(m);
+  const done=()=>{m.remove();LS.set(newsK(),NEWS[0].v)};tap(m.querySelector('.nwok'),done);
+  const all2=m.querySelector('.nwall');if(all2)tap(all2,()=>{m.remove();newsShow(true,unseen);LS.set(newsK(),NEWS[0].v)});
+  tap(m,e=>{if(e.target===m){m.remove();if(all)LS.set(newsK(),NEWS[0].v)}})}   // 跳出來的那一次點旁邊關掉＝還沒看，回首頁會再跳
 /* 進首頁 4 秒後：沒有其他視窗（老師送禮物、教學…）才跳，不要疊在一起 */
 function newsCheck(){if(!user||!sum||LS.get(newsK(),null)===NEWS[0].v)return;if(document.querySelector('.pmod,#giftm')||!(document.getElementById('home')||{classList:{contains:()=>0}}).classList.contains('on'))return setTimeout(newsCheck,5000);newsShow(false)}
 function rewardHelp(){const m=el('div','pmod','');m.id='rwhelp';m.innerHTML=`<div class="pmc rwh"><div class="pmh">學習獎勵</div>
@@ -4056,7 +4067,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v200';let verNew=false,verBusy=false;
+const APP_VER='learn601-v202';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
