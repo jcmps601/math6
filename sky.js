@@ -391,7 +391,9 @@ function resize(){
   /* 2026-11-27 改成全螢幕：畫面比例不變形。橫的螢幕看得比較寬（高度固定 420），很長的手機看得比較高（最多 960） */
   const r=box.height/box.width;
   if(r*480<420){h=420;W=420/r;}else if(r*480>960){h=960;W=960/r;}else{W=480;h=r*480;}
-  const ctl=document.querySelector('.controls'),ch=ctl?ctl.getBoundingClientRect().height+22:0;
+  /* 地面要在按鈕上面：看下方 45% 範圍內最高的按鈕（按鈕被拉到上面去就不算） */
+  let top=box.bottom;for(const b of controls){const q=b.getBoundingClientRect();if(q.height&&q.top>box.top+box.height*.55)top=Math.min(top,q.top);}
+  const ch=box.bottom-top+22;
   floorPad=Math.max(76,ch*h/box.height);
   const tp=document.querySelector('.top');topPad=tp?(tp.getBoundingClientRect().bottom+6)*h/box.height:0;
   canvas.width=Math.round(box.width*dpi);
@@ -653,6 +655,8 @@ document.addEventListener('keydown',e=>{
   }
 });
 document.addEventListener('keyup',e=>{
+  /* 2026-11-27 防卡鍵：有些鍵盤／中文輸入法放開時 code 是空的或不一樣，對不到就把鍵盤按住的全部放開 */
+  if(!keyboardEvents.has(e.code)){keyboardEvents.clear();keys.clear();return;}
   const action=keyboardEvents.get(e.code);
   keyboardEvents.delete(e.code);
   if(action&&![...keyboardEvents.values()].includes(action))keys.delete(action);
@@ -668,8 +672,11 @@ for(const button of controls){
   button.addEventListener('pointerdown',event=>{
     if(mode!=='play'||event.button!==0)return;
     event.preventDefault();
+    /* 防卡住：第一根手指按下時（isPrimary），之前的手指一定都放開了，把留下來的舊紀錄清掉 */
+    if(event.pointerType!=='mouse'&&event.isPrimary)for(const [id] of pointers)if(id!==event.pointerId)pointers.delete(id);
     pointers.set(event.pointerId,action);
-    button.setPointerCapture(event.pointerId);
+    pointerKind.set(event.pointerId,event.pointerType);
+    try{button.setPointerCapture(event.pointerId);}catch(e){}
     showHeldButtons();
     press(action);
   });
@@ -689,6 +696,74 @@ for(const button of controls){
   button.addEventListener('contextmenu',event=>event.preventDefault());
   button.addEventListener('click',event=>{if(event.detail===0)press(action);});
 }
+/* 2026-11-27 學生遇到「左鍵自己一直按著」：平板有時候手指放開的訊號沒有送到按鈕上
+   （例如從螢幕邊緣滑出、系統手勢、多指），寵物就一直往同一邊走。多加幾層保險：
+   1. 整個頁面任何地方收到「放開／取消」都算數
+   2. 手指放開後檢查：畫面上已經沒有手指 → 全部放開；還有手指 → 只留下手指真的還在上面的按鈕
+   3. 滑鼠在任何地方移動時，如果左鍵已經沒按著，就放開 */
+const pointerKind=new Map();
+function dropPointer(id){pointerKind.delete(id);if(pointers.delete(id))showHeldButtons();}
+for(const type of ['pointerup','pointercancel'])window.addEventListener(type,e=>dropPointer(e.pointerId),true);
+function touchCheck(e){
+  const live=[...(e.touches||[])];
+  for(const [id,act] of pointers){
+    if(pointerKind.get(id)==='mouse')continue;
+    const btn=controls.find(b=>b.dataset.action===act),r=btn&&btn.getBoundingClientRect();
+    const pad=40,still=r&&live.some(t=>t.clientX>=r.left-pad&&t.clientX<=r.right+pad&&t.clientY>=r.top-pad&&t.clientY<=r.bottom+pad);
+    if(!live.length||!still){pointers.delete(id);pointerKind.delete(id);}
+  }
+  showHeldButtons();
+}
+/* iPad：任何手指按下、移動、放開都檢查一次（按鈕上已經沒有手指，就放開那個按鈕） */
+for(const type of ['touchstart','touchmove','touchend','touchcancel'])window.addEventListener(type,touchCheck,{capture:true,passive:true});
+window.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&!(e.buttons&1)&&pointers.has(e.pointerId))dropPointer(e.pointerId);},true);
+/* ===== 按鍵設定（2026-11-27）：按鈕大小 4 種、可以拖拉換位置；存在這台平板（每個座號分開，橫拿、直拿分開記位置） ===== */
+const KS_KEY='sky_keys_'+((()=>{try{return P&&P.seat&&P.seat()}catch(e){return ''}})()||'x');
+let ks={s:1,l:null,p:null},kEdit=false,kBack=null;
+try{const v=JSON.parse(localStorage.getItem(KS_KEY)||'null');if(v&&typeof v==='object')ks={s:[.8,1,1.25,1.5].includes(v.s)?v.s:1,l:v.l||null,p:v.p||null};}catch(e){}
+const kSave=()=>{try{localStorage.setItem(KS_KEY,JSON.stringify(ks))}catch(e){}};
+const kOri=()=>innerWidth>=innerHeight?'l':'p';
+const ctlBox=document.querySelector('.controls');
+/* 把按鈕擺到記住的位置（存的是螢幕寬高的比例，換尺寸也會跟著）；沒有記就用原本的排法 */
+function kApply(){
+  document.documentElement.style.setProperty('--ks',ks.s);
+  const pos=ks[kOri()];
+  ctlBox.classList.toggle('free',!!pos);
+  for(const b of controls){
+    const q=pos&&pos[b.dataset.action];
+    if(q){const r=(b.offsetWidth/2||40)+22,tb=(document.querySelector('.top').getBoundingClientRect().bottom||0)+(b.offsetWidth/2||40)+6;b.style.left=clamp(q[0]*innerWidth,r,innerWidth-r)+'px';b.style.top=clamp(q[1]*innerHeight,Math.min(tb,innerHeight-r),innerHeight-r)+'px';}   // 離螢幕邊緣至少 22px（iPad 邊緣手勢），也不蓋到上面的數字列
+    else{b.style.left='';b.style.top='';}
+  }
+  for(const x of document.querySelectorAll('#ksz button'))x.classList.toggle('on',+x.dataset.k===ks.s);
+  resize();
+}
+/* 第一次拖的時候：先把按鈕現在的位置記下來，變成「自由擺放」 */
+function kFree(){
+  if(ks[kOri()])return;
+  const pos={};for(const b of controls){const q=b.getBoundingClientRect();pos[b.dataset.action]=[(q.left+q.width/2)/innerWidth,(q.top+q.height/2)/innerHeight];}
+  ks[kOri()]=pos;
+}
+function kOpen(){
+  if(mode==='play')pause();
+  kBack=!el('veil').hidden;el('veil').hidden=true;kEdit=true;clearInput();
+  ctlBox.classList.add('edit');el('kset').hidden=false;kApply();
+}
+function kClose(){
+  kEdit=false;ctlBox.classList.remove('edit');el('kset').hidden=true;kSave();kApply();
+  if(kBack)el('veil').hidden=false;
+}
+for(const x of document.querySelectorAll('#ksz button'))x.onclick=()=>{ks.s=+x.dataset.k;kApply();};
+el('kopen').onclick=kOpen;el('kdone').onclick=kClose;
+el('kreset').onclick=()=>{ks={s:1,l:null,p:null};kApply();};
+/* 拖拉按鈕（只有在設定畫面） */
+for(const b of controls){
+  let drag=null;
+  b.addEventListener('pointerdown',e=>{if(!kEdit)return;e.preventDefault();e.stopImmediatePropagation();drag=e.pointerId;try{b.setPointerCapture(e.pointerId)}catch(_){}},true);
+  b.addEventListener('pointermove',e=>{if(!kEdit||drag!==e.pointerId)return;const pos=ks[kOri()]||(kFree(),ks[kOri()]);pos[b.dataset.action]=[clamp(e.clientX/innerWidth,0,1),clamp(e.clientY/innerHeight,0,1)];kApply();},true);
+  for(const t of ['pointerup','pointercancel'])b.addEventListener(t,e=>{if(drag===e.pointerId){drag=null;kSave();}},true);
+}
+addEventListener('resize',()=>kApply());
+kApply();
 let mp=null;try{mp=P&&P.myPet()}catch(e){}
 selectPet(mp?mp.sp+'-'+mp.st:'');
 const passLeft=()=>{try{return P?Math.max(0,P.left()||0):0}catch(e){return 0}};
