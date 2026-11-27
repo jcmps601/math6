@@ -2374,6 +2374,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v206',d:'11/27',it:[['🦔','栗栗蝟第三階換新圖：盾牌改用扣帶固定，看起來更自然'],['☁️','無盡雲階：福氣獅改成四隻腳跑步，栗栗蝟、星空鯨、菇菇的動作也修得更好看']]},
   {v:'v205',d:'11/27',it:[['🎮','無盡雲階：開始前可以按「按鍵設定」，把按鈕調成小、中、大、特大，也可以用手指拖拉按鈕換到自己順手的位置'],['🔧','修好「方向鍵有時候會自己一直按著、寵物一直往同一邊走」的問題']]},
   {v:'v204',d:'11/27',it:[['☁️','新遊戲「無盡雲階」：在挑戰樂園裡，帶著你的寵物一路往上爬！越上面機關越多、越難'],['⏱','用遊戲券的 5 分鐘時間玩：掉下去可以馬上再爬，時間到就結算'],['🏅','排行榜分「本週」和「歷史最佳」，比的是站穩的最高高度']]},
   {v:'v203',d:'11/27',it:[['🎁','打倒魔王的獎勵記得按「領獎勵」！如果到下週換新魔王了還沒領，平台會自動放進你的口袋，不會不見'],['🏅','打魔王分數一樣多的人，名次也一樣（例如兩個人並列第 2 名）']]},
@@ -4115,7 +4116,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v205';let verNew=false,verBusy=false;
+const APP_VER='learn601-v206';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
