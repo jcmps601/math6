@@ -667,12 +667,12 @@
   const nameOf = p => NAMES[p.nm | 0] || '寵物';
   function save(p) { p.u = Date.now(); saveSum(true); pub(p); }
   /* 公開給同學看的樣子：有變才上傳 */
-  function pub(p) {
+  function pub(p, force) {   // force：不管上次記的，一定重新公開（每次打開平台第一次上傳進度後用，2026-11-27）
     if (!user || !p || p.st !== 'pet') return;
     const v = { sp: p.sp, nm: p.nm | 0, lv: lvOf(p.xp || 0).lv, c: p.x | 0, x: p.x | 0, h: p.h || '', g: p.g || '', k: p.k || '', b: p.b || '', dx: dexN() }, key0 = 0;   // 名片（頭像框、名牌、稱號）也一起發布，同學才看得到
     try { const L = window.lkOf ? lkOf(user.seat) : {}; if (L.fr) v.fr = L.fr; if (L.np) v.np = L.np; if (L.tt) v.tt = L.tt; } catch (e) { }
     const key = JSON.stringify(v);
-    if (LS.get('learn601_petpub_' + user.seat, '') === key) return;
+    if (!force && LS.get('learn601_petpub_' + user.seat, '') === key) return;
     LS.set('learn601_petpub_' + user.seat, key); enqueue(`${ROOT}/pet/${user.seat}`, Object.assign({ t: Date.now() }, v), true);
   }
 
