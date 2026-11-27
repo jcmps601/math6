@@ -2371,6 +2371,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v203',d:'11/27',it:[['🎁','打倒魔王的獎勵記得按「領獎勵」！如果到下週換新魔王了還沒領，平台會自動放進你的口袋，不會不見'],['🏅','打魔王分數一樣多的人，名次也一樣（例如兩個人並列第 2 名）']]},
   {v:'v202',d:'11/27',it:[['🎉','「更新說明」可以看以前每一次的更新了！不小心關掉也沒關係：在「更多 → 更新說明」隨時都看得到']]},
   {v:'v200',d:'11/27',it:[['👀','買之前可以先看看了！房間擺設、農場裝飾、頭像框、名牌、坦克造型，都會先給你看換上的樣子，滿意再買（金幣不夠也能先看）'],['🐢','智慧神龜戴帽子更合身了'],['🐾','在別台平板換了寵物，不會再被換回原本那一隻']]},
   {v:'v196',d:'11/26',it:[['📖','早自修閱讀測驗：第一題要先把文章讀完，倒數結束才能作答；答錯一次時，答案在文章的地方會畫黃線，再讀一次就找得到'],['✏️','答錯一次就跑回首頁再進來，那一題會從「第二次機會」開始，不能重來喔'],['📕','錯題本：在錯題再練一次就答對，題目就會拿掉'],['⚔️','一起打王：魔王會隨機挑人攻擊，不會一直打同一個人；每一輪的招式順序也都不一樣了']]},
@@ -3605,28 +3606,38 @@ function bossClaim(wk,R){if(!sum||bossClaimed(wk))return;
   sum.bossR=sum.bossR||{};sum.bossR[wk]=1;
   if(!isTest(user.seat))tkGift('bw_'+wk,1);saveSum(true);logPush({k:'t',boss:wk});sfx.ticket();confetti(90);
   toast(`🎟️ ${bossOf(wk).n}被打倒了！拿到 1 張遊戲券`);paintNavs();render()}
+/* 自動發上週（和更早）沒領的魔王獎勵：一次領完，跳一個視窗告訴他拿到什麼（不會忘記領；兩台平板都領也只算一次，帳本記在同一格） */
+function bossAuto(list){const got=[];list.forEach(([w,X])=>{if(bossClaimed(w))return;const B=bossOf(w),m=myBoss(w);
+    if(w>=BOSS_NEW){const rk=bossRankOf(X,m),c=bossPrize(rk);bossClaim(w,X);if(bossClaimed(w))got.push(`${B.n}：${rk<=BOSS_TOP?`第 ${rk} 名，`:''}🪙 ${c} 金幣`)}
+    else{bossClaim(w,X);if(bossClaimed(w))got.push(`${B.n}：🎟️ 遊戲券 1 張`)}});
+  if(!got.length||document.getElementById('bossam'))return;
+  const md=el('div','pmod','');md.id='bossam';md.innerHTML=`<div class="pmc" style="text-align:center"><div class="pmh">🎁 魔王獎勵到囉！</div><div style="font-size:1.15rem;font-weight:800;line-height:1.7;margin:.4rem 0 .8rem">之前打倒的魔王，你還沒領獎勵，已經自動放進你的口袋：<br>${got.map(t=>`<b>${t}</b>`).join('<br>')}</div><button class="go">太棒了！</button></div>`;
+  document.body.appendChild(md);const x=()=>md.remove();tap(md.querySelector('.go'),x);tap(md,e=>{if(e.target===md)x()})}
 const bossEnd=()=>{const d=new Date(),left=7-((d.getDay()+6)%7);return left<=1?'今天晚上 12 點換新魔王':`還有 ${left} 天`};
 /* 首頁的魔王卡片:先畫平板上的資料,雲端讀回來再更新 */
 function bossCard(){const c=el('div','cd');c.id='boss';const wk=bossWk(),B=bossOf(wk);
   c.innerHTML=`<div class="bmon" id="bmon">${ico(B.img)}</div><div class="binfo"><div class="bt">⚔️ 全班打魔王：<b>${B.n}</b><small>${bossEnd()}</small></div>
     <div class="bbar"><i id="bbi"></i><b id="bbt">讀取中…</b></div><div class="bsub" id="bbs"></div><div class="btop" id="bbtop"></div></div><div class="brw" id="bbrw"></div>`;
   bossPaint(c,wk);return c}
-async function bossPaint(c,wk,tries=0){const B=bossOf(wk);let R,L=null;try{[R,L]=await Promise.all([bossLoad(wk),bossLoad(bossWk(1))])}catch(e){return}
+async function bossPaint(c,wk,tries=0){const B=bossOf(wk);let R,L=null,L2=null,L3=null;try{[R,L,L2,L3]=await Promise.all([bossLoad(wk),bossLoad(bossWk(1)),myBoss(bossWk(2))&&!bossClaimed(bossWk(2))?bossLoad(bossWk(2)):null,myBoss(bossWk(3))&&!bossClaimed(bossWk(3))?bossLoad(bossWk(3)):null])}catch(e){return}   // 2026-11-27 前 2、3 週沒領的也讀（自動補領）
   if(!c.isConnected)return;
   /* 還沒讀到雲端(剛打開、網路慢):先用上次看到的全班點數,不要讓血條看起來又滿了;過幾秒再讀一次 */
   const seenK='learn601_bseen_'+user.seat,seen=LS.get(seenK,null),tot=R.ok?R.tot:Math.max(R.tot,seen&&seen.wk===wk?seen.tot:0);
   if(!R.ok&&tries<6)setTimeout(()=>{if(c.isConnected)bossPaint(c,wk,tries+1)},5000);
-  const left=Math.max(0,R.hp-tot),dead=left<=0,me=myBoss(wk),rk=R.rows.findIndex(r=>r.seat===user.seat);
+  const left=Math.max(0,R.hp-tot),dead=left<=0,me=myBoss(wk),rk=me>0&&R.rows.some(r=>r.seat===user.seat)?bossRankOf(R,me)-1:-1;   // 名次：一樣多分算同一名（跟領獎的名次一致）
   c.classList.toggle('dead',dead);c.querySelector('#bbi').style.width=(left/R.hp*100)+'%';
   c.querySelector('#bbt').textContent=dead?'💥 被打倒了！':`剩 ${left} / ${R.hp}`;
   if(dead){c.querySelector('#bbs').innerHTML=`🎉 全班合力把${B.n}打倒了！`+(me?`我出手了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'下週一會來新的魔王');}
   else c.querySelector('#bbs').innerHTML=(R.ok?`全班已經打了 <b>${tot}</b> 點・`:seen&&seen.wk===wk?`全班已經打了 <b>${tot}</b> 點（連線中…）・`:R.denied?'⏳ 全班的點數還沒開通（請告訴老師）・':'📴 連上網路才看得到全班打了多少・')+(me?`這週我打了 <b>${me}</b> 點${rk>=0&&!isTest(user.seat)?`（第 ${rk+1} 名）`:''}`:'我還沒出手，答對 1 題就打 10 點！')+(wk>=BOSS_NEW&&sum?`・今天 ${sum.bossT&&sum.bossT.d===dkey()?sum.bossT.n:0}／${BOSS_DAY}`:'');   // 2026-11-24 每天上限 500，一週累計可以超過，寫清楚
-  const md=['🥇','🥈','🥉'];c.querySelector('#bbtop').innerHTML=R.rows.length?'本週勇者：'+R.rows.slice(0,5).map((r,i)=>`<span>${md[i]||''}${r.seat} 號 ${r.s}</span>`).join(''):'';
+  const md=['🥇','🥈','🥉'];c.querySelector('#bbtop').innerHTML=R.rows.length?'本週勇者：'+R.rows.slice(0,5).map(r=>`<span>${md[bossRankOf(R,r.s)-1]||''}${r.seat} 號 ${r.s}</span>`).join(''):'';
   /* 打倒了:有出手的人領獎(這週、上週) */
   const rw=c.querySelector('#bbrw');rw.innerHTML='';
-  [[wk,Object.assign({},R,{tot})],[bossWk(1),L]].forEach(([w,X])=>{if(!X||X.tot<X.hp||bossClaimed(w))return;const m=myBoss(w);
-    if(m>=bossMin(w)){const rk=w>=BOSS_NEW&&X.ok?bossRankOf(X,m):0,b=el('button','go',`🎁 領獎勵${w===wk?'':'（上週）'}<small>${w>=BOSS_NEW?(rk?`${rk<=BOSS_TOP?`第 ${rk} 名・`:''}${bossPrize(rk)} 金幣`:'金幣'):'遊戲券 1 張'}</small>`);tap(b,()=>bossClaim(w,X));rw.appendChild(b)}
+  const auto=[];
+  [[wk,Object.assign({},R,{tot})],[bossWk(1),L],[bossWk(2),L2],[bossWk(3),L3]].forEach(([w,X],wi)=>{if(!X||X.tot<X.hp||bossClaimed(w))return;const m=myBoss(w);
+    if(w!==wk&&m>=bossMin(w)&&(w<BOSS_NEW||X.ok)&&!isTest(user.seat))auto.push([w,X]);   // 2026-11-27 這週的自己按「領獎勵」；換新魔王了還沒領（上週、更早）就自動發
+    if(m>=bossMin(w)&&wi<2){const rk=w>=BOSS_NEW&&X.ok?bossRankOf(X,m):0,b=el('button','go',`🎁 領獎勵${w===wk?'':'（上週）'}<small>${w>=BOSS_NEW?(rk?`${rk<=BOSS_TOP?`第 ${rk} 名・`:''}${bossPrize(rk)} 金幣`:'金幣'):'遊戲券 1 張'}</small>`);tap(b,()=>bossClaim(w,X));rw.appendChild(b)}
     else if(w===wk)rw.appendChild(el('div','bnote',`打滿 ${bossMin(w)} 點就能領獎勵（還差 ${bossMin(w)-m} 點）`))});
+  if(auto.length&&!bossPaint.busy){bossPaint.busy=1;setTimeout(()=>{try{bossAuto(auto)}finally{bossPaint.busy=0}},700)}
   /* 還沒打倒:提醒獎勵怎麼算 */
   if(!dead&&wk>=BOSS_NEW&&!rw.children.length)rw.appendChild(el('div','bnote',`打倒魔王後：出手 ${bossMin(wk)} 點以上有參加獎 🪙${BOSS_BASE}；前 ${BOSS_TOP} 名 🪙${bossPrize(BOSS_TOP)}～${bossPrize(1)}，越前面越多！`));
   /* 上次看到之後全班又打了多少:魔王晃一下、跳出傷害數字 */
@@ -4067,7 +4078,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v202';let verNew=false,verBusy=false;
+const APP_VER='learn601-v203';let verNew=false,verBusy=false;
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
