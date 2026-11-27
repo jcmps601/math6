@@ -1753,16 +1753,29 @@ async function ensureBind(){if(!user||!db||!fauth)return false;
   try{if(!fauth.currentUser)await timeout(fauth.signInAnonymously(),10000);const u=fauth.currentUser;if(!u)return false;
     const k=u.uid+'|'+user.seat+'|'+user.pin;if(boundKey===k)return true;
     await timeout(db.ref(`${ROOT}/bind/${u.uid}`).set({s:String(user.seat),p:String(user.pin)}),10000);boundKey=k;return true}catch(e){return false}}
+/* 公開給同學看的（農場、寵物）：進度上傳成功後，用合併好的最新資料檢查一次（2026-11-27：有同學的公開農場停在好幾天前）
+   每次打開平台第一次一定重新公開；之後有變才公開 */
+let pubOnce='';function pubSync(){if(!user||!sum)return;const f=pubOnce!==user.seat;pubOnce=user.seat;
+  try{FARM.pub(f)}catch(e){}try{const p=PET.P();if(p)PET.pub(p,f)}catch(e){}}
+/* 上傳被拒絕或資料有問題而丟掉的：記在學生的紀錄裡（老師後台查得到原因），同一種一天只記一次 */
+const qErrSeen={};function qErr(it,em){try{const w=String(it.p).replace(/^[^/]+\//,'').replace(/^u\/[^/]+\/[^/]+\//,'').split('/')[0];if(w==='log')return;const k=dkey()+w+em.slice(0,30);if(qErrSeen[k])return;qErrSeen[k]=1;logPush({k:'qerr',w,e:em.slice(0,120)})}catch(x){}}
 async function flush(){repFlush().catch(()=>{});if(!db||!online||flushing||!Q.length)return;flushing=true;
   while(Q.length&&online){const it=Q[0],isLb=it.p.startsWith(ROOT+'/lb/')||it.p.startsWith(ROOT+'/xq/')||it.p.startsWith(ROOT+'/boss/')||it.p.startsWith(ROOT+'/stat/')||it.p.startsWith(ROOT+'/pet')||it.p.startsWith(ROOT+'/farm');   // pet/、petlike/、farm/、farmact/
     if(isLb&&!(await ensureBind()))break;
     /* 用「這一筆」來移除(上傳途中同一路徑若有更新的資料排進來,不會被誤刪) */
     const drop=()=>{const i=Q.indexOf(it);if(i>=0)Q.splice(i,1);LS.set('learn601_q',Q)};
     /* 進度（sum）上傳前先讀雲端合併：別台平板做的（例如週末在家）不會被這台舊的紀錄蓋掉 */
-    if(user&&sum&&it.p===base()+'/sum'){try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum));it.v.sy=Date.now()}catch(e){break}}   // sy：這台平板最後一次把進度傳上雲端的時間（老師頁看誰很久沒同步）
+    if(user&&sum&&it.p===base()+'/sum'){let newer=false;try{const cv=(await timeout(db.ref(it.p).get(),10000)).val();
+      /* 2026-11-27 舊版平台不能蓋掉新版存的進度：雲端是比較新的版本存的，這台先不上傳（進度留在平板上），請學生更新後再送 */
+      if(cv&&(+cv.kv||0)>KV()){newer=true}else{if(cv){mergeSum(cv);LS.set('learn601_sum_'+user.seat,sum)}it.v=JSON.parse(JSON.stringify(sum));it.v.sy=Date.now();it.v.kv=KV()}}catch(e){break}
+      if(newer){verMust();break}}   // sy：這台平板最後一次把進度傳上雲端的時間（老師頁看誰很久沒同步）
     if(user&&it.p===base()+'/wbq'){try{const cm=(await timeout(db.ref(it.p).get(),10000)).val();if(cm)wbMerge(cm);it.v=wbMap(wbLoad(),wbTomb())}catch(e){break}}   // 錯題本：先合併別台的再上傳
-    try{await timeout(db.ref(it.p).set(it.v),12000);drop();if(it.p===base()+'/sum'){bkDaily(it.v);try{wkConfirm(it.v)}catch(e){}}}
-    catch(e){if(/permission/i.test(String(e&&(e.code||e.message)))){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();continue}break}}
+    try{await timeout(db.ref(it.p).set(it.v),12000);drop();if(it.p===base()+'/sum'){bkDaily(it.v);try{wkConfirm(it.v)}catch(e){}pubSync()}}
+    catch(e){const em=String(e&&(e.code||e.message));
+      if(/permission/i.test(em)){if(isLb&&!it.r){it.r=1;boundKey='';continue}drop();qErr(it,em);continue}
+      /* 2026-11-27 資料本身有問題（undefined、NaN、不能用的名字）：重送也不會成功，丟掉並記下來，不要卡住後面的上傳 */
+      if(/first argument|contains|invalid|undefined|nan/i.test(em)&&!/timeout/i.test(em)){drop();qErr(it,em);continue}
+      break}}
   flushing=false;paintSync()}
 /* 每天自動備份一次（那天第一次上傳時）：u/座號/密碼/bk/日期，留 14 天；萬一進度被蓋掉，老師頁可以還原 */
 let bkDay='';async function bkDaily(v){if(!user||!db)return;const d=dkey(),k=user.seat+d;if(bkDay===k)return;bkDay=k;
@@ -1807,7 +1820,7 @@ function mergeSum(r){if(!r)return;const mx=(a,b)=>Math.max(a||0,b||0);
   if(r.look){const a=sum.look||{own:{}},b=r.look;const nw=(b.u||0)>(a.u||0)?b:a;sum.look={own:Object.assign({},a.own||{},b.own||{}),fr:nw.fr||'',np:nw.np||'',tt:nw.tt||'',u:Math.max(a.u||0,b.u||0),vw:Math.max(a.vw||0,b.vw||0),vg:[...new Set([...(a.vg||[]),...(b.vg||[])])]};if(a.ach||b.ach)sum.look.ach=Object.assign({},a.ach||{},b.ach||{})}
   if(r.amd)sum.amd=Object.assign({},sum.amd||{},r.amd);   // 早自修完成的日子
   if(r.fdc){const a=sum.fdc||{},b=r.fdc,nw=(b.u||0)>(a.u||0)?b:a;sum.fdc={own:Object.assign({},a.own||{},b.own||{}),s:Array.from({length:6},(_,k)=>(nw.s&&nw.s[k])||''),u:Math.max(a.u||0,b.u||0)}}   // 農場裝飾：買過的兩邊合起來，擺法以最後擺的那台為準
-  if(r.farm){const A=sum.farm,xa=A&&A.xl,xb=r.farm.xl;if(!A||!Array.isArray(A.p))sum.farm=r.farm;else if((r.farm.xp||0)!==(A.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm;
+  if(r.farm){const A=sum.farm,xa=A&&A.xl,xb=r.farm.xl;if(!A||!A.p||typeof A.p!=='object')sum.farm=r.farm;else if((r.farm.xp||0)!==(A.xp||0)){if((r.farm.xp||0)>(A.xp||0))sum.farm=r.farm}else if((r.farm.u||0)>(A.u||0))sum.farm=r.farm;
     if(xa||xb){const f=sum.farm,X={b:Math.max(+(xa||{}).b||0,+(xb||{}).b||0),e:{}};for(const Y of [xa,xb])for(const d in (Y&&Y.e)||{})X.e[d]=Math.max(X.e[d]||0,+Y.e[d]||0);f.xl=X;const t=X.b+Object.values(X.e).reduce((a,v)=>a+(+v||0),0);if(t>(f.xp||0))f.xp=t}}   // 農場經驗帳本：兩台加的經驗都算   /* 農場經驗只會增加：留經驗比較多的那份（另一台的舊資料、空農場都蓋不過來）；一樣多才看誰比較新 */
   if(r.uq&&r.uq.d===dkey()){if(!sum.uq||sum.uq.d!==r.uq.d)sum.uq={d:r.uq.d,u:Object.assign({},r.uq.u||{}),r:Object.assign({},r.uq.r||{})};else{sum.uq.u=sum.uq.u||{};for(const k in r.uq.u||{})sum.uq.u[k]=mx(sum.uq.u[k],r.uq.u[k])}}
   if(r.tks){const a=sum.tks||{own:{}},b=r.tks;sum.tks={own:Object.assign({},a.own||{},b.own||{}),rf:Object.assign({},b.rf||{},a.rf||{}),use:(b.u||0)>(a.u||0)?b.use:a.use,u:Math.max(a.u||0,b.u||0)}}
@@ -2187,6 +2200,8 @@ function listenSum(){if(!db||!user)return;const p=base()+'/sum';if(sumRef&&sumRe
     if(JSON.stringify(sum.days)+(sum.amr||0)!==before&&view==='home'&&$('#home').classList.contains('on'))render()},()=>{})}
 function unlistenSum(){if(sumRef&&sumCb)try{sumRef.off('value',sumCb)}catch(e){}sumRef=null;sumCb=null}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user){listenSum();flush();wbPull()}});
+/* 2026-11-27 切到背景、關掉頁面時：農場還沒送出的公開那份馬上送出（排進上傳清單，存在平板上，下次一定送） */
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&user){try{FARM.pubFlush()}catch(e){}flush()}});addEventListener('pagehide',()=>{if(user){try{FARM.pubFlush()}catch(e){}}});
 /* ===================== 早自修 =====================
    每天 amN() 題（11/19 起 15 題），依老師在老師頁設定的分組出題（存在 learn/u/座號/密碼/am：m 數學、z 國語，'x' 學扶、其他＝一般；ms、zs 是勾選的題型，空的＝全部）
    ・先 2 題每日成語（週末沒有）
@@ -2374,6 +2389,7 @@ function progCard(){const c=el('div','cd');c.id='prog';const R=sum.rh||{};let ke
    每次改版有學生看得到的變化，就在 NEWS 最上面加一筆 {v 版本, d 日期, it:[[圖示, 說明], …]}（只寫學生看得懂、跟他們有關的）。
    學生打開平台時，有還沒看過的就跳出來（只跳最新的 3 筆）；「更多 → 更新說明」可以看全部。看過的版本記在這台平板（learn601_news_座號） */
 const NEWS=[
+  {v:'v207',d:'11/27',it:[['🌾','修好「去同學農場看到的菜，跟同學自己農場不一樣」的問題：同學看到的農場會跟著你的農場一起更新'],['🔒','平台有新版時，如果你的進度已經用新版存過，會請你先按「更新」再繼續，進度不會被舊版蓋掉']]},
   {v:'v206',d:'11/27',it:[['🦔','栗栗蝟第三階換新圖：盾牌改用扣帶固定，看起來更自然'],['☁️','無盡雲階：福氣獅改成四隻腳跑步，栗栗蝟、星空鯨、菇菇的動作也修得更好看']]},
   {v:'v205',d:'11/27',it:[['🎮','無盡雲階：開始前可以按「按鍵設定」，把按鈕調成小、中、大、特大，也可以用手指拖拉按鈕換到自己順手的位置'],['🔧','修好「方向鍵有時候會自己一直按著、寵物一直往同一邊走」的問題']]},
   {v:'v204',d:'11/27',it:[['☁️','新遊戲「無盡雲階」：在挑戰樂園裡，帶著你的寵物一路往上爬！越上面機關越多、越難'],['⏱','用遊戲券的 5 分鐘時間玩：掉下去可以馬上再爬，時間到就結算'],['🏅','排行榜分「本週」和「歷史最佳」，比的是站穩的最高高度']]},
@@ -4116,7 +4132,11 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    所以：打開平台、從背景切回來、每 5 分鐘，各看一次網路上 sw.js 的版本號，跟這一頁的 APP_VER 不一樣就是有新版。
    在首頁、登入畫面（沒有在練習、玩遊戲、看結算）就直接重新載入；正在練習就先在上方提示，回到首頁時再更新。
    進度都先存在平板上，重新載入不會不見。每次改版 APP_VER 要跟 sw.js 的 CACHE 一起改。 */
-const APP_VER='learn601-v206';let verNew=false,verBusy=false;
+const APP_VER='learn601-v207';let verNew=false,verBusy=false,verForce=false;
+/* 版本號（數字）：上傳進度時記在 sum.kv。別台用比較新的版本存過，這台（舊版）就不能再蓋上去 */
+function KV(){const m=/v(\d+)$/.exec(APP_VER);return m?+m[1]:0}
+/* 一定要更新：拿掉「稍後」，在首頁就請學生按更新（進度還在平板上，更新後會自動上傳） */
+function verMust(){if(verForce)return;verForce=true;verNew=true;try{sessionStorage.removeItem('learn601_vl')}catch(e){}const b=document.getElementById('verbar');if(b)b.dataset.k='';verApply()}
 async function verCheck(){if(verBusy||!navigator.onLine||!location.protocol.startsWith('http'))return;verBusy=true;
   try{const t=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/learn601-v\d+/);
     if(m&&m[0]!==APP_VER){verNew=true;try{const r=await navigator.serviceWorker?.getRegistration();r&&r.update()}catch(e){}verApply()}}catch(e){}verBusy=false}
@@ -4131,16 +4151,16 @@ function verLater(){try{return JSON.parse(sessionStorage.getItem('learn601_vl')|
 function verPad(b){try{if(b&&b.isConnected){document.documentElement.style.setProperty('--vbh',b.offsetHeight+'px');document.body.classList.add('vb')}else document.body.classList.remove('vb')}catch(e){}}
 function verApply(){if(!verNew)return;
   let last=0;try{last=+sessionStorage.getItem('learn601_vr')||0}catch(e){}
-  const recent=Date.now()-last<120000,later=verLater(),snooze=later&&later.v===APP_VER&&Date.now()-later.t<1800000;
+  const recent=Date.now()-last<120000,later=verLater(),snooze=!verForce&&later&&later.v===APP_VER&&Date.now()-later.t<1800000;
   let b=document.getElementById('verbar');
   if(snooze||recent){if(b)b.remove();verPad(null);return}
   if(!b){b=document.createElement('div');b.id='verbar';b.setAttribute('role','status');document.body.appendChild(b)}
-  const safe=verSafe(),key=safe?'safe':'busy';if(b.dataset.k===key)return;b.dataset.k=key;
-  b.innerHTML=`<img src="img/ui/ic-update-ready.webp" alt=""><span>${safe?'平台有新版':'平台有新版，回首頁後可更新'}</span>`+(safe?'<button id="verGo">立即更新</button><button id="verNo">稍後</button>':'');requestAnimationFrame(()=>verPad(b));
-  if(safe){tap(b.querySelector('#verGo'),verNow);tap(b.querySelector('#verNo'),()=>{try{sessionStorage.setItem('learn601_vl',JSON.stringify({v:APP_VER,t:Date.now()}))}catch(e){}b.remove();verPad(null)})}}
+  const safe=verSafe(),key=(safe?'safe':'busy')+(verForce?'!':'');if(b.dataset.k===key)return;b.dataset.k=key;
+  b.innerHTML=`<img src="img/ui/ic-update-ready.webp" alt=""><span>${verForce?(safe?'平台有新版，請先更新才能繼續存進度':'平台有新版，回首頁後請按更新'):safe?'平台有新版':'平台有新版，回首頁後可更新'}</span>`+(safe?'<button id="verGo">立即更新</button>'+(verForce?'':'<button id="verNo">稍後</button>'):'');requestAnimationFrame(()=>verPad(b));
+  if(safe){tap(b.querySelector('#verGo'),verNow);if(!verForce)tap(b.querySelector('#verNo'),()=>{try{sessionStorage.setItem('learn601_vl',JSON.stringify({v:APP_VER,t:Date.now()}))}catch(e){}b.remove();verPad(null)})}}
 async function verNow(){const b=document.getElementById('verbar');if(!verSafe()){if(b)b.dataset.k='';return verApply()}
   if(b){b.querySelector('span').textContent='更新中…';b.querySelectorAll('button').forEach(x=>x.disabled=true)}
-  try{if(Q.length&&online){await Promise.race([flush(),new Promise(r=>setTimeout(r,5000))])}}catch(e){}
+  try{if(Q.length&&online&&!verForce){await Promise.race([flush(),new Promise(r=>setTimeout(r,5000))])}}catch(e){}
   try{const r=await navigator.serviceWorker?.getRegistration();if(r){await Promise.race([r.update(),new Promise(x=>setTimeout(x,4000))])}}catch(e){}
   try{sessionStorage.setItem('learn601_vr',String(Date.now()))}catch(e){}location.reload()}
 if(!/[?&]qa=1/.test(location.search))setTimeout(verCheck,2500);setInterval(()=>{if(document.visibilityState==='visible')verCheck()},300000);setInterval(verApply,15000);
