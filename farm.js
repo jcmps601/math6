@@ -77,6 +77,7 @@
   const FD = {
     'fd-windmill': ['荷蘭風車', 'L'], 'fd-coop': ['小雞舍', 'L'], 'fd-well': ['石頭水井', 'L'], 'fd-fountain': ['噴水池', 'L'], 'fd-treehouse': ['小樹屋', 'L'],
     'fd-pumpkinman': ['南瓜稻草人', 'M'], 'fd-robotman': ['機器人稻草人', 'M'], 'fd-swing': ['鞦韆', 'M'], 'fd-picnic': ['野餐墊', 'M'], 'fd-mailbox': ['紅色郵筒', 'M'], 'fd-beehive': ['蜂箱', 'M'],
+    'fd-barn': ['豐收小穀倉', 'M', 1],   // 隱藏成就「豐收穀倉」的獎勵：不能買，找到才有（第 3 格 1＝隱藏）
     'fd-tulip': ['鬱金香花圃', 'S'], 'fd-sunbed': ['向日葵花圃', 'S'], 'fd-mushlamp': ['蘑菇小燈', 'S'], 'fd-whitefence': ['白色籬笆', 'S'], 'fd-lantern': ['石燈籠', 'S']
   };
   /* 6 個位置：x、y（放在地上的點）、最大放得下多大、1＝在田的後面（先畫） */
@@ -177,6 +178,8 @@
   function fdMe() { if (!sum) return { own: {}, s: fdNorm() }; const d = sum.fdc = sum.fdc || {}; d.own = d.own || {}; if (!Array.isArray(d.s) || d.s.length !== FD_SLOT.length) d.s = Array.from({ length: FD_SLOT.length }, (_, k) => (d.s && d.s[k]) || ''); return d; }
   const fdHas = id => !!FD[id] && (tst() || !!fdMe().own[id]);
   const fdS = () => fdMe().s.map(id => fdHas(id) ? id : '');
+  /* 隱藏成就給的裝飾：直接放進「買過的」 */
+  function fdGrant(id) { if (!FD[id] || !sum) return false; const D = fdMe(); if (D.own[id]) return false; D.own[id] = 1; D.u = Date.now(); saveSum(true); return true; }
   let fdK = 0;
   /* 裝飾預覽：把這件放進選好的位置（同一件原本放別處的先拿開），看整個農場的樣子，再決定要不要買 */
   function fdTry(id, k) {
@@ -206,7 +209,7 @@
         <div class="fdpv">${farmSVG(F(), { d: fdS(), slots: fdK })}</div>
         <div class="fdsl">${FD_SLOT.map((s, k) => `<button data-k="${k}" class="${k === fdK ? 'on' : ''}"><b>${k + 1}</b>${FD_SZ[s[2]][0]}位置<small>${fdS()[k] ? FD[fdS()[k]][0] : '空的'}</small></button>`).join('')}</div>
         <div class="fdtip">先點上面的數字選位置，再選要放的裝飾。位置 ${fdK + 1} 放得下${sl[2] === 'L' ? '大、中、小' : '中、小'}的裝飾。</div>
-        <div class="fdg">${Object.keys(FD).sort((a, b) => (fdFits(b, fdK) - fdFits(a, fdK))).map(card).join('')}</div>
+        <div class="fdg">${Object.keys(FD).filter(id => !FD[id][2] || fdHas(id)).sort((a, b) => (fdFits(b, fdK) - fdFits(a, fdK))).map(card).join('')}</div>
         <button class="pmx">好了</button>`;
       m.querySelectorAll('.fdsl [data-k]').forEach(b => tap(b, () => { fdK = +b.dataset.k; draw(); }));
       tap(m.querySelector('.fdpv'), e => { const g = e.target.closest('[data-fs]'); if (g) { fdK = +g.dataset.fs; draw(); } });
@@ -764,5 +767,5 @@
   @media (max-width:700px){.frow2{grid-template-columns:1fr}.fseeds{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr))}.fvg{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
-  window.FARM = { pub: pubNow, pubFlush, view: farmView, page, visitList, gain, endRound, homeCard, farmSVG, crop, produce, CROPS, stat, F, lvOf, plotsFor, applyInbox };
+  window.FARM = { pub: pubNow, pubFlush, fdGrant, view: farmView, page, visitList, gain, endRound, homeCard, farmSVG, crop, produce, CROPS, stat, F, lvOf, plotsFor, applyInbox };
 })();
