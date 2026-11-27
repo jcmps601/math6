@@ -971,8 +971,9 @@
     if (night() && k !== 'pat') { say('😴 噓…牠在睡覺，明天早上再一起玩吧', 2500); return; }
     if (k === 'pat') {
       patJoy();
-      fx('💗', 'heart', 3); bounce('squish', night() ? 'sleep' : 'happy', 900);
-      say(night() ? '呼嚕…Zzz' : pick2(['嘿嘿，好舒服～', '再摸一下！', '我好喜歡你喔！', SPECIES[p.sp].say]), 2200);
+      let spin = false; try { spin = !!(window.eggPat && window.eggPat()); } catch (e) { }   // 隱藏成就「摸摸大師」：每摸 10 下害羞轉一圈
+      fx('💗', 'heart', 3); bounce(spin ? 'eggspin' : 'squish', night() ? 'sleep' : 'happy', 900);
+      say(spin ? '好、好害羞喔～' : night() ? '呼嚕…Zzz' : pick2(['嘿嘿，好舒服～', '再摸一下！', '我好喜歡你喔！', SPECIES[p.sp].say]), 2200);
       tone2(880, .08);
     } else if (k === 'play') {
       if (playLeft(p) <= 0) { say('今天玩夠了，明天再一起玩！', 2500); return; }
